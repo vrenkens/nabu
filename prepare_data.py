@@ -9,6 +9,7 @@ from shutil import copyfile
 import sys
 from random import shuffle
 
+
 #This function will compute the features of all segments and save them on disk
 #	datadir: directory where the kaldi data prep has been done
 #	featdir: directory where the features will be put
@@ -81,6 +82,7 @@ def prepare_data(datadir, featdir, conf):
 				features = feat.compute_mfcc(utterance, rate, float(conf['winlen']), float(conf['winstep']), int(conf['numcep']), int(conf['nfilt']), int(conf['nfft']), float(conf['lowfreq']), conf['highfreq'], float(conf['preemph']), float(conf['ceplifter']), conf['include_energy'] == 'True', conf['snip_edges'] == 'True', conf['apply_mvn'] == 'True')
 			else:
 				raise Exception('unknown feature type')
+			
 			writer.write_next_utt(featdir + '/feats.ark', utt, features)
 
 	writer.close()

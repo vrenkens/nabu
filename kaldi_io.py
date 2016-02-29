@@ -52,7 +52,7 @@ def read_segments(filename):
 # filename: path to wav scp file
 def read_wavfiles(filename):
 	with open(filename) as f:
-		wavfiles = {}
+		wavfiles = OrderedDict()
 		for line in f:
 			data = line.split(" ")
 			if len(data) == 2: #wav.scp contains filenames
