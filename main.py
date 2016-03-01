@@ -6,12 +6,12 @@ import kaldi_io
 import cPickle as pickle
 import gzip
 
-TRAINFEATURES = True
-TESTFEATURES = True
-MONO_GMM = True
-TEST_MONO = True
-TRI_GMM = True
-TEST_TRI = True
+TRAINFEATURES = False
+TESTFEATURES = False
+MONO_GMM = False
+TEST_MONO = False
+TRI_GMM = False
+TEST_TRI = False
 NNET = True
 DECODE = True
 
@@ -72,7 +72,7 @@ if MONO_GMM:
 
 	#train monophone GMM
 	print('------- training monophone GMM ----------')
-	os.system('steps/train_mono.sh --nj %s --cmd %s --config %s/config/mono.conf %s %s %s/%s' % (config.get('general','num_jobs'), config.get('mono_gmm','cmd'), current_dir, config.get('directories','train_features'), config.get('directories','language'), config.get('directories','expdir'), config.get('mono_gmm','name')))
+	#os.system('steps/train_mono.sh --nj %s --cmd %s --config %s/config/mono.conf %s %s %s/%s' % (config.get('general','num_jobs'), config.get('mono_gmm','cmd'), current_dir, config.get('directories','train_features'), config.get('directories','language'), config.get('directories','expdir'), config.get('mono_gmm','name')))
 	
 	#build decoding graphs
 	print('------- building decoding graphs ----------')
@@ -168,6 +168,10 @@ if nnet_cfg['monophone'] == 'True':
 	gmm_name = config.get('mono_gmm','name')
 else:
 	gmm_name = config.get('tri_gmm','name')
+	
+#calculate how in how many mini-batches the batch wil be divided
+assert(int(nnet_cfg['batch_size']) % int(nnet_cfg['mini_batch_size']) == 0)
+nnet_cfg['num_mini_batches'] = int(nnet_cfg['batch_size'])/int(nnet_cfg['mini_batch_size'])
 	
 #get the feature input dim
 reader = kaldi_io.KaldiReadIn(config.get('directories','train_features') + '/feats.scp')

@@ -133,22 +133,30 @@ class nnet:
 				labels_val = tf.constant(val_labels)
 			
 			# variables
-			#define weights and biases in a list
+			#define weights, biases and their derivatives lists
 			weights = []
+			dweights = []
 			biases = []
+			dbiases = []
 			
 			#input layer
 			weights.append(tf.Variable(tf.random_normal([self.conf['input_dim']*(1+2*int(self.conf['context_width'])), int(self.conf['num_hidden_units'])], stddev=float(self.conf['weights_std'])), name = 'W0'))
+			dweights.append(tf.Variable(tf.zeros([self.conf['input_dim']*(1+2*int(self.conf['context_width'])), int(self.conf['num_hidden_units'])]), name = 'dW0'))
 			biases.append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units'])], stddev=float(self.conf['biases_std'])), name = 'b0'))
+			dbiases.append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units'])]), name = 'db0'))
 			
 			#hidden layers
 			for i in range(int(self.conf['num_hidden_layers'])-1):
 				weights.append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units']), int(self.conf['num_hidden_units'])], stddev=float(self.conf['weights_std'])), name = 'W%d' % (i+1)))
+				dweights.append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units']), int(self.conf['num_hidden_units'])]), name = 'dW%d' % (i+1)))
 				biases.append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units'])], stddev=float(self.conf['biases_std'])), name = 'b%d' % (i+1)))
+				dbiases.append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units'])]), name = 'db%d' % (i+1)))
 			
 			#output layer (zero outut layer)
 			weights.append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units']), self.conf['num_labels']]), name = 'W%d' % int(self.conf['num_hidden_layers'])))
+			dweights.append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units']), self.conf['num_labels']]), name = 'dW%d' % int(self.conf['num_hidden_layers'])))
 			biases.append(tf.Variable(tf.zeros([self.conf['num_labels']]), name = 'b%d' % int(self.conf['num_hidden_layers'])))
+			dbiases.append(tf.Variable(tf.zeros([self.conf['num_labels']]), name = 'db%d' % int(self.conf['num_hidden_layers'])))
 			
 			#the amount of steps already taken
 			global_step = tf.Variable(0, trainable=False, name = 'global_step')
@@ -201,6 +209,7 @@ class nnet:
 			#define the initialisation computation for all the number of layers (needed for layer by layer initialisation). In this optimisation only the final hidden layer and the softmax is updated
 			loss = []
 			init_optimize = []
+			update_gradients = []
 			for num_layers in range(int(self.conf['num_hidden_layers'])):
 			
 				#compute the logits (output before softmax)
@@ -209,15 +218,21 @@ class nnet:
 				#compute the training loss
 				loss.append(tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits, labels)))
 				
+				#define the training opimisation 
+				gradients = tf.gradients(loss[num_layers], [weights[num_layers], biases[num_layers], weights[len(weights)-1], biases[len(biases)-1]])
+				update_gradients.append([dweights[num_layers].assign(tf.add(dweights[num_layers], gradients[0]/self.conf['num_mini_batches'])), dbiases[num_layers].assign(tf.add(dbiases[num_layers], gradients[1]/self.conf['num_mini_batches'])), dweights[len(weights)-1].assign(tf.add(dweights[len(weights)-1], gradients[2]/self.conf['num_mini_batches'])), dbiases[len(biases)-1].assign(tf.add(dbiases[len(biases)-1], gradients[3]/self.conf['num_mini_batches']))])
+				
+				gradients_to_apply = [(dweights[num_layers].value(), weights[num_layers]), (dweights[len(weights)-1].value(), weights[len(weights)-1]), (dbiases[num_layers].value(), biases[num_layers]), (dbiases[len(biases)-1].value(), biases[len(biases)-1])]
+				
 				#optimizing operation
-				init_optimize.append(optimizer.minimize(loss[num_layers], global_step=global_step, var_list = [weights[num_layers], biases[num_layers], weights[len(weights)-1], biases[len(biases)-1]]))
-			
-			#define the training opimisation (gradients are computed first for visualisation purposes)
-			if self.conf['visualise_gradients'] == 'True':
-				gradients = optimizer.compute_gradients(loss[len(loss)-1])
-				optimize = optimizer.apply_gradients(gradients, global_step=global_step)
-			else:
-				optimize = optimizer.minimize(loss[len(loss)-1], global_step=global_step)
+				init_optimize.append(optimizer.apply_gradients(gradients_to_apply, global_step=global_step))
+				
+			gradients_to_apply = []
+			for i in range(len(weights)):
+				gradients_to_apply.append((dweights[i].value(), weights[i]))
+				gradients_to_apply.append((dbiases[i].value(), biases[i]))
+				
+			optimize = optimizer.apply_gradients(gradients_to_apply, global_step=global_step)
 				
 			#prediction computation
 			predictions = tf.nn.softmax(logits)
@@ -229,30 +244,29 @@ class nnet:
 				predictions_val = tf.nn.softmax(logits_val)
 				
 			#create the visualisations							
-			if self.conf['visualise_loss'] == 'True':
+			if self.conf['visualise'] == 'True':
 				#create loss plot
 				loss_summary = tf.scalar_summary('loss', loss[len(loss)-1])
-			if self.conf['visualise_predictions'] == 'True':
 				#create a histogram of predicted labels
 				prediction_summary = tf.histogram_summary('prediction', tf.cast(tf.argmax(predictions,1), tf.float32))
-			if self.conf['visualise_params'] == 'True':
 				#create a histogram of weights and biases
 				weight_summaries = []
 				bias_summaries = []
+				dweight_summaries = []
+				dbias_summaries = []
 				
 				for i in range(int(self.conf['num_hidden_layers'])+1):
 					weight_summaries.append(tf.histogram_summary('W%d' % i, weights[i]))
+					dweight_summaries.append(tf.histogram_summary('dW%d' % i, dweights[i]))
 					bias_summaries.append(tf.histogram_summary('b%d' % i, biases[i]))
-			if self.conf['visualise_gradients'] == 'True':
-				#create a histogram of gradients
-				gradient_summaries = []
-				for gradient in gradients:
-					gradient_summaries.append(tf.histogram_summary('d' + gradient[1].name, gradient[0]))
+					dbias_summaries.append(tf.histogram_summary('db%d' % i, dbiases[i]))
 			
-			if self.conf['visualise_loss'] == 'True' or self.conf['visualise_predictions'] == 'True' or self.conf['visualise_params'] == 'True' or self.conf['visualise_gradients'] == 'True':
-				#merge all summaries
-				merged_summary = tf.merge_all_summaries()					
+				#merge summaries
+				merged_summary = tf.merge_summary([loss_summary, prediction_summary])
+				merged_summary_params = tf.merge_summary(weight_summaries + dweight_summaries + bias_summaries + dbias_summaries)
+				#define writers
 				summary_writer = tf.train.SummaryWriter(self.conf['savedir'] + '/summaries')
+				summary_params_writer = tf.train.SummaryWriter(self.conf['savedir'] + '/summaries')
 			
 			#saver object
 			saver = tf.train.Saver(max_to_keep=int(self.conf['check_buffer']))
@@ -270,7 +284,7 @@ class nnet:
 				#initialize the variables
 				tf.initialize_all_variables().run()
 				
-				if self.conf['visualise_graph']=='True':
+				if self.conf['visualise']=='True':
 					summary_writer.add_graph(session.graph_def)
 				
 				#set the number of steps
@@ -285,19 +299,32 @@ class nnet:
 					tf.initialize_variables([weights[int(self.conf['num_hidden_layers'])], biases[int(self.conf['num_hidden_layers'])]]).run()
 					
 					for step in range(int(self.conf['init_steps'])):
-						#create a minibatch 
-						(batch_data, batch_labels) = create_minibatch(reader, dictin['alignments'], self.conf['input_dim'], int(self.conf['context_width']), self.conf['num_labels'], int(self.conf['batch_size']), log)
+						
+						#reinitlialize the gradients, loss and prediction accuracy
+						tf.initialize_variables(dweights + dbiases).run()
+						l = 0
+					
+						for mini_step in range(self.conf['num_mini_batches']):
+						
+							#create a minibatch 
+							(batch_data, batch_labels) = create_minibatch(reader, dictin['alignments'], self.conf['input_dim'], int(self.conf['context_width']), self.conf['num_labels'], int(self.conf['batch_size'])/self.conf['num_mini_batches'], log)
 				
-						#prepare nnet data
-						feed_dict = {data_in : batch_data, labels : batch_labels}
+							#prepare nnet data
+							feed_dict = {data_in : batch_data, labels : batch_labels}
 									
-						#do forward backward pass and update					
-						if self.conf['visualise_loss'] == 'True' or self.conf['visualise_predictions'] == 'True' or self.conf['visualise_params'] == 'True' or self.conf['visualise_gradients'] == 'True':
-							_, l, s = session.run([init_optimize[num_layers], loss[num_layers], merged_summary], feed_dict=feed_dict)
-							summary_writer.add_summary(s, global_step = step + int(self.conf['init_steps'])*num_layers)
-						else:
-							_, l = session.run([init_optimize[num_layers], loss[num_layers]], feed_dict=feed_dict)
-							
+							#do forward backward pass and update gradients					
+							if self.conf['visualise'] == 'True':
+								out = session.run([loss[num_layers], merged_summary] + update_gradients[num_layers], feed_dict=feed_dict)
+								l += out[0]/self.conf['num_mini_batches']
+								summary_writer.add_summary(out[1], global_step = step*self.conf['num_mini_batches'] + mini_step + int(self.conf['init_steps'])*num_layers*self.conf['num_mini_batches'])
+							else:
+								out = session.run([loss[num_layers]] + update_gradients[num_layers], feed_dict=feed_dict)
+								l += out[0]/self.conf['num_mini_batches']
+						
+						if self.conf['visualise'] == 'True':
+							summary_params_writer.add_summary(merged_summary_params.eval(), global_step = step + int(self.conf['init_steps'])*num_layers)
+						
+						session.run(init_optimize[num_layers])	
 						print("initialization step %d/%d, #layers %d: training loss = %f" % (step, int(self.conf['init_steps']), num_layers+1, l))
 					
 					#set global_step back to 0
@@ -335,20 +362,36 @@ class nnet:
 				step = int(self.conf['starting_step'])
 				while step < nsteps:
 				
-					#create a minibatch
-					(batch_data, batch_labels) = create_minibatch(reader, dictin['alignments'], self.conf['input_dim'], int(self.conf['context_width']), self.conf['num_labels'], int(self.conf['batch_size']), log)
-				
-					#prepare nnet data
-					feed_dict = {data_in : batch_data, labels : batch_labels}
-									
-					#do forward backward pass and update
-					if self.conf['visualise_loss'] == 'True' or self.conf['visualise_predictions'] == 'True' or self.conf['visualise_params'] == 'True' or self.conf['visualise_gradients'] == 'True':
-						_, l, p, s = session.run([optimize, loss[len(loss)-1], predictions, merged_summary], feed_dict=feed_dict)
-						summary_writer.add_summary(s, global_step = step + int(self.conf['init_steps'])*int(self.conf['num_hidden_layers']))
-					else:					
-						_, l, p = session.run([optimize, loss[len(loss)-1], predictions], feed_dict=feed_dict)
+					#reinitlialize the gradients, loss and prediction accuracy
+					tf.initialize_variables(dweights + dbiases).run()
+					l = 0
+					p = 0
 					
-					print("step %d/%d: training loss = %f, accuracy = %.1f%%, learning rate = %f" % (step, nsteps, l, accuracy(p, batch_labels), learning_rate.eval()))
+					for mini_step in range(self.conf['num_mini_batches']):
+					
+						#create a minibatch
+						(batch_data, batch_labels) = create_minibatch(reader, dictin['alignments'], self.conf['input_dim'], int(self.conf['context_width']), self.conf['num_labels'], int(self.conf['batch_size'])/self.conf['num_mini_batches'], log)
+					
+						#prepare nnet data
+						feed_dict = {data_in : batch_data, labels : batch_labels}
+									
+						#do forward-backward pass and update gradients
+						if self.conf['visualise'] == 'True':
+							#_, l, p, s = session.run([optimize, loss[len(loss)-1], predictions, merged_summary], feed_dict=feed_dict)
+							out = session.run([loss[len(loss)-1], predictions, merged_summary] + update_gradients[len(update_gradients)-1], feed_dict=feed_dict)
+							l += out[0]/self.conf['num_mini_batches']
+							p += accuracy(out[1], batch_labels)/self.conf['num_mini_batches']
+							summary_writer.add_summary(out[2], global_step = step*self.conf['num_mini_batches'] + mini_step + int(self.conf['init_steps'])*int(self.conf['num_hidden_layers']))
+						else:					
+							out = session.run([loss[len(loss)-1], predictions] + update_gradients[len(update_gradients)-1], feed_dict=feed_dict)
+							l += out[0]/self.conf['num_mini_batches']
+							p += accuracy(out[1], batch_labels)/self.conf['num_mini_batches']
+					
+					if self.conf['visualise'] == 'True':
+						summary_params_writer.add_summary(merged_summary_params.eval(), global_step = step + int(self.conf['init_steps'])*int(self.conf['num_hidden_layers']))
+						
+					session.run(optimize)			
+					print("step %d/%d: training loss = %f, accuracy = %.1f%%, learning rate = %f" % (step, nsteps, l, p, learning_rate.eval()))
 					
 					#check performance on evaluation set
 					if val_data.shape[0] > 0 and step % int(self.conf['valid_frequency']) == 0:
