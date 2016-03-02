@@ -17,7 +17,7 @@ DECODE = True
 
 #read config file
 config = configparser.ConfigParser()
-config.read('config/config_AURORA4.cfg')
+config.read('config/config_CGN.cfg')
 current_dir = os.getcwd()
 
 ######################################################################################################
@@ -169,15 +169,10 @@ if nnet_cfg['monophone'] == 'True':
 else:
 	gmm_name = config.get('tri_gmm','name')
 	
-#calculate how in how many mini-batches the batch wil be divided
-assert(int(nnet_cfg['batch_size']) % int(nnet_cfg['mini_batch_size']) == 0)
-nnet_cfg['num_mini_batches'] = int(nnet_cfg['batch_size'])/int(nnet_cfg['mini_batch_size'])
-	
 #get the feature input dim
 reader = kaldi_io.KaldiReadIn(config.get('directories','train_features') + '/feats.scp')
 (_,features,_) = reader.read_next_utt()
 nnet_cfg['input_dim'] = features.shape[1]
-reader.close()
 
 #get number of output labels
 numpdfs = open(config.get('directories','expdir') + '/' + gmm_name + '/graph/num_pdfs')
