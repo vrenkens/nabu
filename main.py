@@ -17,7 +17,7 @@ DECODE = True
 
 #read config file
 config = configparser.ConfigParser()
-config.read('config/config_CGN.cfg')
+config.read('config/config_AURORA4.cfg')
 current_dir = os.getcwd()
 
 ######################################################################################################

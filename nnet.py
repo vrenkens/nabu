@@ -12,6 +12,8 @@ def accuracy(predictions, labels):
 	return (100.0 * np.sum(np.argmax(predictions, 1) == np.argmax(labels, 1)))
 
 #splice the utterance
+# utt: utterance to be spliced
+# context width: how many franes to the left and right should be concatenated
 def splice(utt, context_width):
 	utt_spliced = np.zeros(shape = [utt.shape[0],utt.shape[1]*(1+2*context_width)], dtype=np.float32)
 	utt_spliced[:,context_width*utt.shape[1]:(context_width+1)*utt.shape[1]] = utt
@@ -82,18 +84,15 @@ class nnet:
 			while not looped:
 				if utt_id in dictin['alignments']:
 					#add the spliced utterance to batch			
-					val_data = np.append(val_data, splice(utt_mat,int(self.conf['context_width'])), axis=0)
-				
+					val_data = np.append(val_data, splice(utt_mat,int(self.conf['context_width'])), axis=0)			
 					#add labels to batch
-					val_labels = np.append(val_labels, dictin['alignments'][utt_id])				
+					val_labels = np.append(val_labels, dictin['alignments'][utt_id])		
+					#put labels in one hot encoding	
+					val_labels = (np.arange(self.conf['num_labels']) == val_labels[:,None]).astype(np.float32)							
 				else:
 					log.write('WARNING no alignment for %s, validation set will be smaller\n' % utt_id)
 					
 				(utt_id, utt_mat, looped) = reader.read_next_utt()
-				
-			#put labels in one hot encoding
-			if len(val_labels) > 0:
-				val_labels = (np.arange(self.conf['num_labels']) == val_labels[:,None]).astype(np.float32)
 
 			#open feature reader
 			reader = kaldi_io.KaldiReadIn(dictin['featdir'] + '/feats_shuffled.scp')
@@ -125,11 +124,6 @@ class nnet:
 			data_in = tf.placeholder(tf.float32, shape = [None, self.conf['input_dim']*(1+2*int(self.conf['context_width']))])
 			#output labels
 			labels = tf.placeholder(tf.float32)
-			if op == 'train' and val_data.shape[0] > 0:
-				#validation data
-				data_val = tf.constant(val_data)
-				#validation labels
-				labels_val = tf.constant(val_labels)
 			
 			# variables
 			#define weights, biases and their derivatives lists
@@ -209,50 +203,56 @@ class nnet:
 			else:
 				optimizer = tf.train.GradientDescentOptimizer(learning_rate)
 				
-			#define the initialisation computation for all the number of layers (needed for layer by layer initialisation). In this optimisation only the final hidden layer and the softmax is updated
-			loss = []
-			init_optimize = []
-			update_gradients_init = []
-			for num_layers in range(int(self.conf['num_hidden_layers'])):
+			if op == 'init':
+				#define the initialisation computation for all the number of layers (needed for layer by layer initialisation). In the initialisation we start with a neural net with one hidden layer, we train the 					hidden layer and the softmax for a couple of steps. We then add a new hidden layer and reinitialise the softmax layer. We then train the added layer and the softmax. We do this until the correct 					number of hidden layers is reached 
+				loss = []
+				init_optimize = []
+				update_gradients_init = []
+				for num_layers in range(int(self.conf['num_hidden_layers'])):
 			
+					#compute the logits (output before softmax)
+					logits = model(data_in, num_layers+1)
+				
+					#apply softmax and compute loss
+					loss.append(tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, labels))/num_frames)
+				
+					#define the training opimisation 
+					gradients = tf.gradients(loss[num_layers], [weights[num_layers], biases[num_layers], weights[len(weights)-1], biases[len(biases)-1]])
+					update_gradients_init.append([dweights[num_layers].assign(tf.add(dweights[num_layers], gradients[0]))])
+					update_gradients_init[num_layers].append(dbiases[num_layers].assign(tf.add(dbiases[num_layers], gradients[1])))
+					update_gradients_init[num_layers].append(dweights[len(weights)-1].assign(tf.add(dweights[len(weights)-1], gradients[2])))
+					update_gradients_init[num_layers].append(dbiases[len(biases)-1].assign(tf.add(dbiases[len(biases)-1], gradients[3])))
+					update_gradients_init[num_layers].append(batch_loss.assign(tf.add(batch_loss, loss[num_layers])))
+				
+					gradients_to_apply = [(dweights[num_layers].value(), weights[num_layers]), (dweights[len(weights)-1].value(), weights[len(weights)-1]), (dbiases[num_layers].value(), biases[num_layers]), (dbiases[len(biases)-1].value(), biases[len(biases)-1])]
+				
+					#optimizing operation
+					init_optimize.append(optimizer.apply_gradients(gradients_to_apply, global_step=global_step))
+			else:	
+				#define the training computation (forward prop, back prop, update gradients, update params) 
 				#compute the logits (output before softmax)
-				logits = model(data_in, num_layers+1)
+				logits = model(data_in, int(self.conf['num_hidden_layers']))
 				
-				#compute the training loss
-				loss.append(tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, labels))/num_frames)
+				#apply softmax and compute loss
+				loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, labels))/num_frames
 				
-				#define the training opimisation 
-				gradients = tf.gradients(loss[num_layers], [weights[num_layers], biases[num_layers], weights[len(weights)-1], biases[len(biases)-1]])
-				update_gradients_init.append([dweights[num_layers].assign(tf.add(dweights[num_layers], gradients[0]))])
-				update_gradients_init[num_layers].append(dbiases[num_layers].assign(tf.add(dbiases[num_layers], gradients[1])))
-				update_gradients_init[num_layers].append(dweights[len(weights)-1].assign(tf.add(dweights[len(weights)-1], gradients[2])))
-				update_gradients_init[num_layers].append(dbiases[len(biases)-1].assign(tf.add(dbiases[len(biases)-1], gradients[3])))
-				update_gradients_init[num_layers].append(batch_loss.assign(tf.add(batch_loss, loss[num_layers])))
+				#do backprop to compute gradients
+				gradients = tf.gradients(loss, weights + biases)	
 				
-				gradients_to_apply = [(dweights[num_layers].value(), weights[num_layers]), (dweights[len(weights)-1].value(), weights[len(weights)-1]), (dbiases[num_layers].value(), biases[num_layers]), (dbiases[len(biases)-1].value(), biases[len(biases)-1])]
-				
-				#optimizing operation
-				init_optimize.append(optimizer.apply_gradients(gradients_to_apply, global_step=global_step))
-				
-			gradients = tf.gradients(loss[len(loss)-1], weights + biases)	
-			gradients_to_apply = []
-			update_gradients = [batch_loss.assign(tf.add(batch_loss, loss[len(loss)-1]))]
-			for i in range(len(weights)):
-				gradients_to_apply.append((dweights[i].value(), weights[i]))
-				gradients_to_apply.append((dbiases[i].value(), biases[i]))
-				update_gradients.append(dweights[i].assign(tf.add(dweights[i], gradients[i])))
-				update_gradients.append(dbiases[i].assign(tf.add(dbiases[i], gradients[len(weights)+i])))
-				
-			optimize = optimizer.apply_gradients(gradients_to_apply, global_step=global_step)
+				#accumulate the gradients
+				gradients_to_apply = []
+				update_gradients = [batch_loss.assign(tf.add(batch_loss, loss))]
+				for i in range(len(weights)):
+					gradients_to_apply.append((dweights[i].value(), weights[i]))
+					gradients_to_apply.append((dbiases[i].value(), biases[i]))
+					update_gradients.append(dweights[i].assign(tf.add(dweights[i], gradients[i])))
+					update_gradients.append(dbiases[i].assign(tf.add(dbiases[i], gradients[len(weights)+i])))
+					
+				#apply the gradients to update the parameters
+				optimize = optimizer.apply_gradients(gradients_to_apply, global_step=global_step)
 				
 			#prediction computation
 			predictions = tf.nn.softmax(logits)
-			
-			#prediction of the validation set
-			if op == 'train' and val_data.shape[0] > 0:
-				logits_val = model(data_val, int(self.conf['num_hidden_layers']))
-				loss_val = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits_val, labels_val))
-				predictions_val = tf.nn.softmax(logits_val)
 				
 			#create the visualisations							
 			if self.conf['visualise'] == 'True':
@@ -318,7 +318,7 @@ class nnet:
 						while not finished:
 				
 							#prepare nnet data
-							if batch_data.shape[0] > int(self.conf['mini_batch_size']) and int(self.conf['mini_batch_size']) != '-1':
+							if batch_data.shape[0] > int(self.conf['mini_batch_size']) and self.conf['mini_batch_size'] != '-1':
 								feed_dict = {data_in : batch_data[0:int(self.conf['mini_batch_size']),:], labels : batch_labels[0:int(self.conf['mini_batch_size']),:]}
 								batch_data = batch_data[int(self.conf['mini_batch_size']):batch_data.shape[0],:]
 								batch_labels = batch_labels[int(self.conf['mini_batch_size']):batch_labels.shape[0],:]
@@ -339,7 +339,7 @@ class nnet:
 							summary_writer.add_summary(merged_summary.eval(), global_step = step + int(self.conf['init_steps'])*num_layers)
 						
 						session.run(init_optimize[num_layers])	
-						print("initialization step %d/%d, #layers %d: training loss = %f" % (step, int(self.conf['init_steps']), num_layers+1, batch_loss.eval()))
+						print("initialization step %d/%d, #layers %d: training loss = %f" % (step + 1, int(self.conf['init_steps']), num_layers+1, batch_loss.eval()))
 						
 						#reinitlialize the gradients, loss and prediction accuracy
 						tf.initialize_variables(dweights + dbiases + [batch_loss]).run()
@@ -357,10 +357,12 @@ class nnet:
 				summary_writer.close()
 				
 			elif op == 'train':
-			
-		
 				#load the initial neural net
 				saver.restore(session, self.conf['savedir'] + '/model-' + self.conf['starting_step'])
+				
+				#visualize the graph
+				if self.conf['visualise']=='True':
+					summary_writer.add_graph(session.graph_def)
 				
 				#calculate number of steps
 				nsteps =  int(int(self.conf['num_epochs']) * len(dictin['alignments']) / int(self.conf['batch_size']))
@@ -376,50 +378,30 @@ class nnet:
 				#loop over number of steps
 				step = int(self.conf['starting_step'])
 				while step < nsteps:
-					
-					#create a batch 
-					(batch_data, batch_labels) = create_batch(reader, dictin['alignments'], self.conf['input_dim'], int(self.conf['context_width']), self.conf['num_labels'], int(self.conf['batch_size']), log)
-					nframes = batch_data.shape[0]
-					session.run(num_frames.assign(nframes))
-						
-					finished = False
-					p = 0
-					while not finished:
 				
-						if batch_data.shape[0] > int(self.conf['mini_batch_size']) and int(self.conf['mini_batch_size']) != '-1':
-							feed_labels = batch_labels[0:int(self.conf['mini_batch_size']),:]
-							feed_dict = {data_in : batch_data[0:int(self.conf['mini_batch_size']),:], labels : feed_labels}
-							batch_data = batch_data[int(self.conf['mini_batch_size']):batch_data.shape[0],:]
-							batch_labels = batch_labels[int(self.conf['mini_batch_size']):batch_labels.shape[0],:]
-						else:
-							feed_labels = batch_labels
-							feed_dict = {data_in : batch_data, labels : feed_labels}
-							finished = True
-								
-						#do forward-backward pass and update gradients
-						if self.conf['visualise'] == 'True':
-							out = session.run([loss[len(loss)-1], predictions, prediction_summary] + update_gradients, feed_dict=feed_dict)
-							p += accuracy(out[1], feed_labels )
-							summary_writer.add_summary(out[2], global_step = mini_step)
-						else:					
-							out = session.run([loss[len(loss)-1], predictions] + update_gradients, feed_dict=feed_dict)
-							p += accuracy(out[1], batch_labels)
-							
-						mini_step += 1
-					
-					if self.conf['visualise'] == 'True':
-						summary_writer.add_summary(merged_summary.eval(), global_step = step)
-						
-					session.run(optimize)			
-					print("step %d/%d: training loss = %f, accuracy = %.1f%%, learning rate = %f" % (step, nsteps, batch_loss.eval(), p/nframes, learning_rate.eval()))
-					
-					#reinitlialize the gradients, loss and prediction accuracy
-					tf.initialize_variables(dweights + dbiases + [batch_loss]).run()
-					
 					#check performance on evaluation set
-					if val_data.shape[0] > 0 and step % int(self.conf['valid_frequency']) == 0:
-						l_val = loss_val.eval()
-						print("validation loss: %f" % (l_val))
+					p = 0
+					nframes = val_data.shape[0]
+					session.run(num_frames.assign(nframes))
+					if self.conf['mini_batch_size'] == '-1' and val_data.shape[0] > 0:
+						feed_dict = {data_in : val_data, labels : val_labels}
+						pl, _ = session.run([predictions, update_gradients[0]], feed_dict = feed_dict)
+						p += accuracy(pl, val_labels)
+					else:
+						for i in range(0,nframes-int(self.conf['mini_batch_size'])+1,int(self.conf['mini_batch_size'])):
+							feed_dict = {data_in : val_data[i:i+int(self.conf['mini_batch_size']),:], labels : val_labels[i:i+int(self.conf['mini_batch_size']),:]}
+							pl, _ = session.run([predictions, update_gradients[0]], feed_dict = feed_dict)
+							p += accuracy(pl, val_labels[i:i+int(self.conf['mini_batch_size']),:])
+						remaining_frames = nframes % int(self.conf['mini_batch_size'])
+						if remaining_frames != 0:
+							feed_dict = {data_in : val_data[nframes - remaining_frames + 1: nframes,:], labels : val_labels[nframes - remaining_frames + 1: nframes,:]}
+							pl, _ = session.run([predictions, update_gradients[0]], feed_dict = feed_dict)
+							p += accuracy(pl, val_labels[nframes - remaining_frames + 1: nframes,:])
+					
+					if nframes > 0 and step % int(self.conf['valid_frequency']) == 0:
+						l_val = batch_loss.eval()
+						tf.initialize_variables([batch_loss]).run()
+						print("validation loss = %f, validation accuracy = %.1f%%" % (l_val, p/nframes))
 						if l_val < old_loss:
 							#if performance is better, checkpoint and move on
 							val_saver.save(session, self.conf['savedir'] + '/validation/validation-checkpoint')
@@ -449,6 +431,45 @@ class nnet:
 							retry_count += 1
 							continue
 					
+					#create a batch 
+					(batch_data, batch_labels) = create_batch(reader, dictin['alignments'], self.conf['input_dim'], int(self.conf['context_width']), self.conf['num_labels'], int(self.conf['batch_size']), log)
+					nframes = batch_data.shape[0]
+					session.run(num_frames.assign(nframes))
+						
+					finished = False
+					p = 0
+					while not finished:
+				
+						if batch_data.shape[0] > int(self.conf['mini_batch_size']) and self.conf['mini_batch_size'] != '-1':
+							feed_labels = batch_labels[0:int(self.conf['mini_batch_size']),:]
+							feed_dict = {data_in : batch_data[0:int(self.conf['mini_batch_size']),:], labels : feed_labels}
+							batch_data = batch_data[int(self.conf['mini_batch_size']):batch_data.shape[0],:]
+							batch_labels = batch_labels[int(self.conf['mini_batch_size']):batch_labels.shape[0],:]
+						else:
+							feed_labels = batch_labels
+							feed_dict = {data_in : batch_data, labels : feed_labels}
+							finished = True
+								
+						#do forward-backward pass and update gradients
+						if self.conf['visualise'] == 'True':
+							out = session.run([predictions, prediction_summary] + update_gradients, feed_dict=feed_dict)
+							p += accuracy(out[0], feed_labels)
+							summary_writer.add_summary(out[1], global_step = mini_step)
+						else:					
+							out = session.run([predictions] + update_gradients, feed_dict=feed_dict)
+							p += accuracy(out[0], feed_labels)
+							
+						mini_step += 1
+					
+					if self.conf['visualise'] == 'True':
+						summary_writer.add_summary(merged_summary.eval(), global_step = step)
+						
+					session.run(optimize)			
+					print("step %d/%d: training loss = %f, accuracy = %.1f%%, learning rate = %f, #frames in batch = %d" % (step + 1, nsteps, batch_loss.eval(), p/nframes, learning_rate.eval(), nframes))
+					
+					#reinitlialize the gradients, loss and prediction accuracy
+					tf.initialize_variables(dweights + dbiases + [batch_loss]).run()
+					
 					#save the neural net if at checkpoint
 					if step % int(self.conf['check_freq']) == 0:
 						saver.save(session, self.conf['savedir'] + '/model', global_step=step)
@@ -474,13 +495,33 @@ class nnet:
 					#add the spiced utterance to batch			
 					batch_data = np.append(batch_data, splice(utt_mat,int(self.conf['context_width'])), axis=0)
 				
-				feed_dict = {data_in : batch_data}
-				
-				#compute the predictions
-				p = session.run(predictions, feed_dict=feed_dict)
+				if self.conf['mini_batch_size'] == '-1':
+					#compute the predictions
+					p = session.run(predictions, feed_dict=feed_dict)
 
-				#compute the prior
-				prior = np.sum(p,0)
+					#compute the prior
+					prior = np.sum(p,0)
+				else:
+					prior = np.zeros(self.conf['num_labels'])
+					for i in range(0, batch_data.shape[0]-int(self.conf['mini_batch_size']), int(self.conf['mini_batch_size'])):
+						feed_dict = {data_in : batch_data[i:i+int(self.conf['mini_batch_size'])]}
+				
+						#compute the predictions
+						p = session.run(predictions, feed_dict=feed_dict)
+
+						#compute the prior
+						prior += np.sum(p,0)
+				
+					remaining_frames = batch_data.shape[0]%int(self.conf['mini_batch_size'])
+					if remaining_frames != 0:
+						feed_dict = {data_in : batch_data[batch_data.shape[0] - remaining_frames + 1:batch_data.shape[0]]}
+				
+						#compute the predictions
+						p = session.run(predictions, feed_dict=feed_dict)
+
+						#compute the prior
+						prior += np.sum(p,0)
+					
 				prior = np.divide(prior, np.sum(prior))
 				
 				#set the prior
@@ -508,9 +549,7 @@ class nnet:
 					p = session.run(predictions, feed_dict=feed_dict)
 					p = np.divide(p,prior)
 					p = np.divide(p,np.sum(p))
-					
-					
-					
+
 					#write the likelihoods in kaldi feature format
 					writer.write_next_utt(self.conf['decodedir'] + '/feats.ark', utt_id, p)
 					
