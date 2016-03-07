@@ -31,8 +31,8 @@ def read_alignments(filename):
 	with gzip.open(filename, 'rb') as f:
 		alignments = {}
 		for line in f:
-			data = line.split(" ")
-			alignments[data[0]] = np.asarray(map(int,data[1:len(data)-1])) #segment:alignment
+			data = line.replace(' \n','').split(' ')
+			alignments[data[0]] = np.asarray(map(int,data[1:len(data)])) #segment:alignment
 	return alignments
 
 #this function reads a segment file that is used in kaldi
@@ -41,7 +41,7 @@ def read_segments(filename):
 	with open(filename) as f:
 		segments = OrderedDict()
 		for line in f:
-			data = line.split(" ") #seg utt begin end
+			data = line.replace('\n','').split(' ') #seg utt begin end
 			if data[1] not in segments:
 				segments[data[1]] = [(data[0], float(data[2]), float(data[3]))] #utt: [(seg , begin, end)]
 			else:
@@ -54,9 +54,9 @@ def read_wavfiles(filename):
 	with open(filename) as f:
 		wavfiles = OrderedDict()
 		for line in f:
-			data = line.split(" ")
+			data = line.replace('\n','').split(' ')
 			if len(data) == 2: #wav.scp contains filenames
-				wavfiles[data[0]] = (data[1][0:len(data[1])-1], False) #utterance:(filename, not extended)
+				wavfiles[data[0]] = (data[1], False) #utterance:(filename, not extended)
 			else: #wav.scp contains extended filenames
 				wavfiles[data[0]] = (line[len(data[0])+1:len(line)-1], True) #utterance: (extended filename, extended)
 	return wavfiles
@@ -67,7 +67,7 @@ def read_utt2spk(filename):
 	with open(filename) as f:
 		utt2spk = {}
 		for line in f:
-			data = line.split(" ")
+			data = line.replace('\n','').split(' ')
 			utt2spk[data[0]] = data[1]
 	return utt2spk
 

@@ -28,6 +28,7 @@ feat.py: Does feature computation currently supports:
 
 prepare_data.py: data prep functionality
 - compute the features for al the utterances
+- compute meanad variance statistics
 - shuffle the examples for mini-batch training
 
 kaldi_io.py: functionality to interface with kaldi

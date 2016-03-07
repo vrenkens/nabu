@@ -6,12 +6,12 @@ import kaldi_io
 import cPickle as pickle
 import gzip
 
-TRAINFEATURES = True
-TESTFEATURES = True
-MONO_GMM = True
-TEST_MONO = True
-TRI_GMM = True
-TEST_TRI = True
+TRAINFEATURES = False
+TESTFEATURES = False
+MONO_GMM = False
+TEST_MONO = False
+TRI_GMM = False
+TEST_TRI = False
 NNET = True
 DECODE = True
 
@@ -26,7 +26,7 @@ if TRAINFEATURES:
 	feat_cfg = dict(config.items('features'))
 
 	print('------- computing MFCC training features ----------')
-	#prepare_data.prepare_data(config.get('directories','train_data'), config.get('directories','train_features') + '/mfcc',feat_cfg, 'mfcc')
+	prepare_data.prepare_data(config.get('directories','train_data'), config.get('directories','train_features') + '/mfcc',feat_cfg, 'mfcc')
 
 	print('------- computing cmvn stats ----------')
 	if config.get('features','apply_cmvn'):
@@ -230,7 +230,7 @@ else:
 	gmm_name = config.get('tri_gmm','name')
 	
 #get the feature input dim
-reader = kaldi_io.KaldiReadIn(config.get('directories','train_features') + '/' + feat_cfg['type'] + '/feats.scp')
+reader = kaldi_io.KaldiReadIn(config.get('directories','train_features') + '/' + config.get('features','type') + '/feats.scp')
 (_,features,_) = reader.read_next_utt()
 nnet_cfg['input_dim'] = features.shape[1]
 
@@ -254,32 +254,32 @@ if NNET:
 			
 		#read the utterance to speaker mapping
 		print('------- reading utt2spk ----------')
-		utt2spk = kaldi_io.read_utt2spk(config.get('directories','train_features') + '/' + feat_cfg['type'] + '/utt2spk')
+		utt2spk = kaldi_io.read_utt2spk(config.get('directories','train_features') + '/' + config.get('features','type') + '/utt2spk')
 
 	#initialize the neural net
 	if nnet_cfg['starting_step'] == '-1':	
 	
 		#shuffle the examples on disk
 		print('------- shuffling examples ----------')
-		prepare_data.shuffle_examples(config.get('directories','train_features') + '/' + feat_cfg['type'], int(nnet_cfg['valid_size']))
+		prepare_data.shuffle_examples(config.get('directories','train_features') + '/' + config.get('features','type'), int(nnet_cfg['valid_size']))
 	
 		#initlialize the neural net
 		print('------- initializing neural net ----------')
-		Nnet.graphop('init', {'featdir':config.get('directories','train_features') + '/' + feat_cfg['type'], 'alignments':alignments, 'utt2spk':utt2spk})
+		Nnet.graphop('init', {'featdir':config.get('directories','train_features') + '/' + config.get('features','type'), 'alignments':alignments, 'utt2spk':utt2spk})
 	
 	if nnet_cfg['starting_step'][0:5] != 'final':		
 		#train the neural net		
 		print('------- training neural net ----------')
-		Nnet.graphop('train', {'featdir':config.get('directories','train_features') + '/' + feat_cfg['type'], 'alignments':alignments, 'utt2spk':utt2spk})
+		Nnet.graphop('train', {'featdir':config.get('directories','train_features') + '/' + config.get('features','type'), 'alignments':alignments, 'utt2spk':utt2spk})
 	
 	if nnet_cfg['starting_step'] != 'final-prio':
 		#compute the state prior probabilities
 		print('------- computing state priors ----------')
-		Nnet.graphop('prior', {'featdir':config.get('directories','train_features') + '/' + feat_cfg['type'], 'utt2spk':utt2spk})
+		Nnet.graphop('prior', {'featdir':config.get('directories','train_features') + '/' + config.get('features','type'), 'utt2spk':utt2spk})
 		
 	#create a dumy neural net
 	print('------- creating dummy nnet ----------')
-	kaldi_io.create_dummy('%s/%s' % (config.get('directories','expdir'), gmm_name), nnet_cfg['decodedir'], config.get('directories','test_features') + '/' + feat_cfg['type'], nnet_cfg['num_labels'])
+	kaldi_io.create_dummy('%s/%s' % (config.get('directories','expdir'), gmm_name), nnet_cfg['decodedir'], config.get('directories','test_features') + '/' + config.get('features','type'), nnet_cfg['num_labels'])
 	
 	#change directory to kaldi egs
 	os.chdir(config.get('directories','kaldi_egs'))
@@ -298,11 +298,11 @@ if NNET:
 if DECODE:
 	#read the utterance to speaker mapping
 	print('------- reading utt2spk ----------')
-	utt2spk = kaldi_io.read_utt2spk(config.get('directories','test_features') + '/' + feat_cfg['type'] + '/utt2spk')
+	utt2spk = kaldi_io.read_utt2spk(config.get('directories','test_features') + '/' + config.get('features','type') + '/utt2spk')
 
 	#use the neural net to calculate posteriors for the testing set
 	print('------- computing state pseudo-likelihoods ----------')
-	Nnet.graphop('decode', {'featdir':config.get('directories','test_features') + '/' + feat_cfg['type'], 'utt2spk':utt2spk})
+	Nnet.graphop('decode', {'featdir':config.get('directories','test_features') + '/' + config.get('features','type'), 'utt2spk':utt2spk})
 	
 	#change directory to kaldi egs
 	os.chdir(config.get('directories','kaldi_egs'))
