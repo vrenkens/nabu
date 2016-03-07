@@ -60,6 +60,16 @@ def read_wavfiles(filename):
 			else: #wav.scp contains extended filenames
 				wavfiles[data[0]] = (line[len(data[0])+1:len(line)-1], True) #utterance: (extended filename, extended)
 	return wavfiles
+	
+#this function will read the utt2spk file used in kaldi
+# filename: path to wav scp file
+def read_utt2spk(filename):
+	with open(filename) as f:
+		utt2spk = {}
+		for line in f:
+			data = line.split(" ")
+			utt2spk[data[0]] = data[1]
+	return utt2spk
 
 #this function creates a dummy neural nnet for kaldi with the transition model taken from the gmm	
 # gmm_dir: directory of the gmm model
@@ -130,33 +140,9 @@ def create_dummy(gmm_dir, nnet_dir, feat_dir, num_labels):
 # this function has been adapted from pdnn toolkit (see licence at the top of this file)(https://github.com/yajiemiao/pdnn)
 class KaldiReadIn(object):
 
-	def __init__(self, scp_path):
-	
-		self.scp_position = 0
-		fin = open(scp_path,"r")
-		self.scp_data = []
-		line = fin.readline()
-		while line != '' and line != None:
-			utt_id, path_pos = line.replace('\n','').split(' ')
-			path, pos = path_pos.split(':')
-			self.scp_data.append((utt_id, path, pos))
-			line = fin.readline()
-
-		fin.close()		
-		
-	def read_next_utt(self):
-		
-		if len(self.scp_data) == 0:
-			return None , None, True 
-		
-		if self.scp_position >= len(self.scp_data): #if at end of file loop around
-			looped = True
-			self.scp_position = 0
-		else: 
-			looped = False
-
-		ark_read_buffer = open(self.scp_data[self.scp_position][1], 'rb')
-		ark_read_buffer.seek(int(self.scp_data[self.scp_position][2]),0)
+	def read_utt_data(self, index):
+		ark_read_buffer = open(self.scp_data[index][0], 'rb')
+		ark_read_buffer.seek(int(self.scp_data[index][1]),0)
 		header = struct.unpack('<xcccc', ark_read_buffer.read(5))
 		if header[0] != "B":
 			print "Input .ark file is not binary"; exit(1)
@@ -172,9 +158,38 @@ class KaldiReadIn(object):
 
 		ark_read_buffer.close()
 		
+		return utt_mat
+
+	def __init__(self, scp_path):
+	
+		self.scp_position = 0
+		fin = open(scp_path,"r")
+		self.utt_ids = []
+		self.scp_data = []
+		line = fin.readline()
+		while line != '' and line != None:
+			utt_id, path_pos = line.replace('\n','').split(' ')
+			path, pos = path_pos.split(':')
+			self.utt_ids.append(utt_id)
+			self.scp_data.append((path, pos))
+			line = fin.readline()
+
+		fin.close()		
+		
+	def read_next_utt(self):
+		
+		if len(self.scp_data) == 0:
+			return None , None, True 
+		
+		if self.scp_position >= len(self.scp_data): #if at end of file loop around
+			looped = True
+			self.scp_position = 0
+		else: 
+			looped = False
+		
 		self.scp_position += 1
 		
-		return self.scp_data[self.scp_position-1][0], utt_mat, looped
+		return self.utt_ids[self.scp_position-1], self.read_utt_data(self.scp_position-1), looped
 		
 	def read_next_scp(self):
 		
@@ -183,7 +198,7 @@ class KaldiReadIn(object):
 			
 		self.scp_position += 1
 		
-		return self.scp_data[self.scp_position-1][0]
+		return self.utt_ids[self.scp_position-1]
 		
 	def read_previous_scp(self):
 		
@@ -192,7 +207,14 @@ class KaldiReadIn(object):
 			
 		self.scp_position -= 1
 		
-		return self.scp_data[self.scp_position+1][0]
+		return self.utt_ids[self.scp_position+1]
+		
+	def read_utt(self, utt_id):
+		
+		return self.read_utt_data(self.utt_ids.index(utt_id))
+		
+	
+		
         
 # Class to write numpy matrices into Kaldi .ark file and create the corresponding .scp file. 
 # It only supports binary-formatted .ark files. Text and compressed .ark files are not supported.

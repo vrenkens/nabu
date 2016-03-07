@@ -31,8 +31,7 @@ def snip(sig, rate, winlen, winstep):
 # preemph: pre-emphesis coefficient
 # include_energy: if set to True the energy will be appended to the features
 # snip_edges: if set to true the signal will be cut so the length is appropriate for the sliding window length and step, otherwise the window will go over the edge and pad the signal
-# apply_mvn: set to True for meand and variance normalisation, the features will be normalised to zero mean and unit variance
-def compute_fbank(sig, rate, winlen=0.025,winstep=0.01, nfilt=39, nfft=512, lowfreq=0, highfreq=None, preemph=0.97, include_energy=True, snip_edges = True, apply_mvn = True):
+def compute_fbank(sig, rate, winlen=0.025,winstep=0.01, nfilt=39, nfft=512, lowfreq=0, highfreq=None, preemph=0.97, include_energy=True, snip_edges = True):
 	
 	if snip_edges:
 		#snip the edges
@@ -48,9 +47,6 @@ def compute_fbank(sig, rate, winlen=0.025,winstep=0.01, nfilt=39, nfft=512, lowf
 		fbank_feat[:,feat.shape[1]] = energy
 	else:
 		fbank_feat = feat		
-	if apply_mvn:
-		#mean an variance normaisation
-		fbank_feat = np.divide(np.subtract(fbank_feat, np.mean(fbank_feat, 0)), np.std(fbank_feat, 0))
 	
 	return fbank_feat
 
@@ -68,26 +64,10 @@ def compute_fbank(sig, rate, winlen=0.025,winstep=0.01, nfilt=39, nfft=512, lowf
 #	ceplifter: alue of the cepstral lifter
 # include_energy: if set to True the energy will be appended to the features
 # snip_edges: if set to true the signal will be cut so the length is appropriate for the sliding window length and step, otherwise the window will go over the edge and pad the signal
-# apply_mvn: set to True for meand and variance normalisation, the features will be normalised to zero mean and unit variance
-def compute_mfcc(sig, rate, winlen=0.025, winstep=0.01, numcep = 12, nfilt=26, nfft=512, lowfreq=0, highfreq=None, preemph=0.97, ceplifter=22, include_energy=True, snip_edges = True, apply_mvn = True):
+def compute_mfcc(sig, rate, winlen=0.025, winstep=0.01, numcep = 12, nfilt=26, nfft=512, lowfreq=0, highfreq=None, preemph=0.97, ceplifter=22, include_energy=True, snip_edges = True):
 	
 	if snip_edges:
 		#snip the edges
 		sig = snip(sig, rate, winlen, winstep)
-		
-	#compute mfcc features and energy
-	(feat,energy) = mfcc(sig, rate, winlen, winstep, numcep, nfilt, nfft, lowfreq, highfreq, preemph, ceplifter, include_energy)
 	
-	if include_energy:
-		#append the energy
-		mfcc_feat = np.ndarray(shape=(feat.shape[0], feat.shape[1] + 1))
-		mfcc_feat[:,0:feat.shape[1]] = feat
-		mfcc_feat[:,feat.shape[1]] = energy
-	else:
-		mfcc_feat = feat	
-	
-	if apply_mvn:
-		#mean and variance normalisation
-		mfcc_feat = np.divide(np.subtract(mfcc_feat, np.mean(mfcc_feat, 0)), np.std(mfcc_feat, 0))
-	
-	return mfcc_feat
+	return mfcc(sig, rate, winlen, winstep, numcep, nfilt, nfft, lowfreq, highfreq, preemph, ceplifter, include_energy)

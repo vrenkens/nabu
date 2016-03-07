@@ -22,16 +22,27 @@ def splice(utt, context_width):
 		utt_spliced[0:utt_spliced.shape[0]-i-1, (context_width+i+1)*utt.shape[1]:(context_width+i+2)*utt.shape[1]] = utt[i+1:utt.shape[0],:] #add right context	
 	
 	return utt_spliced
+	
+def apply_cmvn(utt, stats):
+	mean = stats[0,0:stats.shape[1]-1]/stats[0,stats.shape[1]-1]
+	variance = stats[1,0:stats.shape[1]-1]/stats[0,stats.shape[1]-1] - np.square(mean)
+	return np.divide(np.subtract(utt_mat, mean), variance)
 
 #create a batch of data
-def create_batch(reader, alignments, input_dim, context_width, num_labels, batch_size, log):
+def create_batch(reader, reader_cmvn, alignments, utt2spk, input_dim, context_width, num_labels, batch_size, log):
 
 	batch_data = np.empty([0,input_dim*(1+2*context_width)], dtype=np.float32)
 	batch_labels = np.empty([0,0], dtype=np.float32)
 	num_utt = 0
 	while num_utt < batch_size:
+		#read utterance
 		(utt_id, utt_mat, _) = reader.read_next_utt()
 		if utt_id in alignments:
+			#read cmvn stats
+			stats = reader_cmvn.read_utt(utt2spk[utt_id])
+			#apply cmvn
+			utt_mat = apply_cmvn(utt_mat, stats)
+		
 			#add the spliced utterance to batch			
 			batch_data = np.append(batch_data, splice(utt_mat,context_width), axis=0)
 			
@@ -60,60 +71,10 @@ class nnet:
 	def graphop(self, op, dictin):
 	
 		assert(op in ['init', 'train', 'prior', 'decode'])
-		
-		# ---------- operation preprocessing ------------
+					
 		#clear the summaries
 		if os.path.isdir(self.conf['savedir'] + '/summaries-' + op):
 			shutil.rmtree(self.conf['savedir'] + '/summaries-' + op)
-		if op == 'init':
-			#open feature reader
-			reader = kaldi_io.KaldiReadIn(dictin['featdir'] + '/feats_shuffled.scp')	
-	
-			#open log
-			log = open(self.conf['savedir'] + '/init.log', 'w')
-			
-		elif op == 'train':
-			log = open(self.conf['savedir'] + '/train.log', 'w')
-		
-			reader = kaldi_io.KaldiReadIn(dictin['featdir'] + '/feats_validation.scp')
-		
-			#create validation set
-			val_data = np.empty([0,self.conf['input_dim']*(1+2*int(self.conf['context_width']))], dtype=np.float32)
-			val_labels = np.empty([0,0], dtype=np.float32)
-			(utt_id, utt_mat, looped) = reader.read_next_utt()
-			while not looped:
-				if utt_id in dictin['alignments']:
-					#add the spliced utterance to batch			
-					val_data = np.append(val_data, splice(utt_mat,int(self.conf['context_width'])), axis=0)			
-					#add labels to batch
-					val_labels = np.append(val_labels, dictin['alignments'][utt_id])		
-					#put labels in one hot encoding	
-					val_labels = (np.arange(self.conf['num_labels']) == val_labels[:,None]).astype(np.float32)							
-				else:
-					log.write('WARNING no alignment for %s, validation set will be smaller\n' % utt_id)
-					
-				(utt_id, utt_mat, looped) = reader.read_next_utt()
-
-			#open feature reader
-			reader = kaldi_io.KaldiReadIn(dictin['featdir'] + '/feats_shuffled.scp')
-						
-			#go to the initial line (start at point after initilaization and #steps allready taken)
-			num_utt = 0
-			while num_utt < int(self.conf['batch_size'])*(int(self.conf['starting_step'])+int(self.conf['init_steps'])*int(self.conf['num_hidden_layers'])):
-				utt_id = reader.read_next_scp()
-				if utt_id in dictin['alignments']:
-					num_utt = num_utt + 1
-			
-		elif op == 'prior':
-			#open feature reader
-			reader = kaldi_io.KaldiReadIn(dictin['featdir'] + '/feats_shuffled.scp')
-			
-		elif op == 'decode':
-			#open feature reader
-			reader = kaldi_io.KaldiReadIn(dictin['featdir'] + '/feats.scp')
-			
-			#open prior writer
-			writer = kaldi_io.KaldiWriteOut(self.conf['decodedir'] + '/feats.scp')
 		
 		# ---------- graph definition ------------
 		
@@ -165,7 +126,7 @@ class nnet:
 			batch_loss = tf.Variable(tf.zeros([], dtype=tf.float32), trainable = False, name = 'batch_loss')
 			
 			#propagate does the computations of a single layer 
-			def propagate(data, w, b):
+			def propagate(data, w, b, dropout):
 				data = tf.matmul(data, w) + b
 				if self.conf['nonlin'] == 'relu':
 					data = tf.maximum(float(self.conf['relu_leak'])*data,data)
@@ -176,18 +137,18 @@ class nnet:
 				else:
 					raise Exception('unknown nonlinearity')
 					
-				if float(self.conf['dropout']) < 1:
+				if float(self.conf['dropout']) < 1 and dropout:
 					data = tf.nn.dropout(data, float(self.conf['dropout']))
 				if self.conf['l2_norm'] == 'True':
 					data = tf.nn.l2_normalize(data,1)*np.sqrt(float(self.conf['num_hidden_units']))				
 				return data
 
 			#model propagates the data through the entire neural net
-			def model(data, num_layers):	
+			def model(data, num_layers, dropout):	
 
 				#propagate through the neural net
 				for i in range(num_layers):
-					data = propagate(data, weights[i], biases[i])
+					data = propagate(data, weights[i], biases[i], dropout)
 					
 				#output layer (no softmax yet)
 				return tf.matmul(data, weights[int(self.conf['num_hidden_layers'])]) + biases[int(self.conf['num_hidden_layers'])]
@@ -211,18 +172,18 @@ class nnet:
 				for num_layers in range(int(self.conf['num_hidden_layers'])):
 			
 					#compute the logits (output before softmax)
-					logits = model(data_in, num_layers+1)
+					logits = model(data_in, num_layers+1, True)
 				
 					#apply softmax and compute loss
 					loss.append(tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, labels))/num_frames)
 				
 					#define the training opimisation 
 					gradients = tf.gradients(loss[num_layers], [weights[num_layers], biases[num_layers], weights[len(weights)-1], biases[len(biases)-1]])
-					update_gradients_init.append([dweights[num_layers].assign(tf.add(dweights[num_layers], gradients[0]))])
-					update_gradients_init[num_layers].append(dbiases[num_layers].assign(tf.add(dbiases[num_layers], gradients[1])))
-					update_gradients_init[num_layers].append(dweights[len(weights)-1].assign(tf.add(dweights[len(weights)-1], gradients[2])))
-					update_gradients_init[num_layers].append(dbiases[len(biases)-1].assign(tf.add(dbiases[len(biases)-1], gradients[3])))
-					update_gradients_init[num_layers].append(batch_loss.assign(tf.add(batch_loss, loss[num_layers])))
+					update_gradients_init.append([dweights[num_layers].assign(tf.add(dweights[num_layers], gradients[0])).op])
+					update_gradients_init[num_layers].append(dbiases[num_layers].assign(tf.add(dbiases[num_layers], gradients[1])).op)
+					update_gradients_init[num_layers].append(dweights[len(weights)-1].assign(tf.add(dweights[len(weights)-1], gradients[2])).op)
+					update_gradients_init[num_layers].append(dbiases[len(biases)-1].assign(tf.add(dbiases[len(biases)-1], gradients[3])).op)
+					update_gradients_init[num_layers].append(batch_loss.assign(tf.add(batch_loss, loss[num_layers])).op)
 				
 					gradients_to_apply = [(dweights[num_layers].value(), weights[num_layers]), (dweights[len(weights)-1].value(), weights[len(weights)-1]), (dbiases[num_layers].value(), biases[num_layers]), (dbiases[len(biases)-1].value(), biases[len(biases)-1])]
 				
@@ -231,7 +192,7 @@ class nnet:
 			else:	
 				#define the training computation (forward prop, back prop, update gradients, update params) 
 				#compute the logits (output before softmax)
-				logits = model(data_in, int(self.conf['num_hidden_layers']))
+				logits = model(data_in, int(self.conf['num_hidden_layers']), True)
 				
 				#apply softmax and compute loss
 				loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, labels))/num_frames
@@ -241,47 +202,112 @@ class nnet:
 				
 				#accumulate the gradients
 				gradients_to_apply = []
-				update_gradients = [batch_loss.assign(tf.add(batch_loss, loss))]
+				update_gradients = [batch_loss.assign(tf.add(batch_loss, loss)).op]
 				for i in range(len(weights)):
 					gradients_to_apply.append((dweights[i].value(), weights[i]))
 					gradients_to_apply.append((dbiases[i].value(), biases[i]))
-					update_gradients.append(dweights[i].assign(tf.add(dweights[i], gradients[i])))
-					update_gradients.append(dbiases[i].assign(tf.add(dbiases[i], gradients[len(weights)+i])))
+					update_gradients.append(dweights[i].assign(tf.add(dweights[i], gradients[i])).op)
+					update_gradients.append(dbiases[i].assign(tf.add(dbiases[i], gradients[len(weights)+i])).op)
 					
 				#apply the gradients to update the parameters
 				optimize = optimizer.apply_gradients(gradients_to_apply, global_step=global_step)
+				
+			#operation to evalueate the validation set
+			logits = model(data_in, int(self.conf['num_hidden_layers']), False)
+			loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, labels))/num_frames
+			update_val_loss = batch_loss.assign(tf.add(batch_loss, loss)).op
 				
 			#prediction computation
 			predictions = tf.nn.softmax(logits)
 				
 			#create the visualisations							
-			if self.conf['visualise'] == 'True':
-				#create loss plot
-				loss_summary = tf.scalar_summary('loss', batch_loss)
-				#create a histogram of predicted labels
-				prediction_summary = tf.histogram_summary('prediction', tf.cast(tf.argmax(predictions,1), tf.float32))
-				#create a histogram of weights and biases
-				weight_summaries = []
-				bias_summaries = []
-				dweight_summaries = []
-				dbias_summaries = []
-				
-				for i in range(int(self.conf['num_hidden_layers'])+1):
-					weight_summaries.append(tf.histogram_summary('W%d' % i, weights[i]))
-					dweight_summaries.append(tf.histogram_summary('dW%d' % i, dweights[i]))
-					bias_summaries.append(tf.histogram_summary('b%d' % i, biases[i]))
-					dbias_summaries.append(tf.histogram_summary('db%d' % i, dbiases[i]))
+			#create loss plot
+			loss_summary = tf.scalar_summary('loss', batch_loss)
+			#create a histogram of weights and biases
+			weight_summaries = []
+			bias_summaries = []
+			dweight_summaries = []
+			dbias_summaries = []
 			
-				#merge summaries
-				merged_summary = tf.merge_summary(weight_summaries + dweight_summaries + bias_summaries + dbias_summaries + [loss_summary])
-				#define writers
-				summary_writer = tf.train.SummaryWriter(self.conf['savedir'] + '/summaries-' + op)
+			for i in range(int(self.conf['num_hidden_layers'])+1):
+				weight_summaries.append(tf.histogram_summary('W%d' % i, weights[i]))
+				dweight_summaries.append(tf.histogram_summary('dW%d' % i, dweights[i]))
+				bias_summaries.append(tf.histogram_summary('b%d' % i, biases[i]))
+				dbias_summaries.append(tf.histogram_summary('db%d' % i, dbiases[i]))
+		
+			#merge summaries
+			merged_summary = tf.merge_summary(weight_summaries + dweight_summaries + bias_summaries + dbias_summaries + [loss_summary])
+			#define writers
+			summary_writer = tf.train.SummaryWriter(self.conf['savedir'] + '/summaries-' + op)
 			
 			#saver object
 			saver = tf.train.Saver(max_to_keep=int(self.conf['check_buffer']))
 			
 			if self.conf['valid_adapt'] == 'True':
 				val_saver = tf.train.Saver(max_to_keep=1)
+				
+				
+		# ---------- operation preprocessing ------------
+		if op == 'init':
+			#open feature reader
+			reader = kaldi_io.KaldiReadIn(dictin['featdir'] + '/feats_shuffled.scp')
+			reader_cmvn = kaldi_io.KaldiReadIn(dictin['featdir'] + '/cmvn.scp')	
+	
+			#open log
+			log = open(self.conf['savedir'] + '/init.log', 'w')
+			
+		elif op == 'train':
+			log = open(self.conf['savedir'] + '/train.log', 'w')
+		
+			reader = kaldi_io.KaldiReadIn(dictin['featdir'] + '/feats_validation.scp')
+			reader_cmvn = kaldi_io.KaldiReadIn(dictin['featdir'] + '/cmvn.scp')
+		
+			#create validation set
+			val_data = np.empty([0,self.conf['input_dim']*(1+2*int(self.conf['context_width']))], dtype=np.float32)
+			val_labels = np.empty([0,0], dtype=np.float32)
+			(utt_id, utt_mat, looped) = reader.read_next_utt()
+			while not looped:
+				if utt_id in dictin['alignments']:
+					#read cmvn stats
+					stats = reader_cmvn.read_utt(dictin['utt2spk'][utt_id])
+					#apply cmvn
+					utt_mat = apply_cmvn(utt_mat, stats)
+					
+					#add the spliced utterance to batch			
+					val_data = np.append(val_data, splice(utt_mat,int(self.conf['context_width'])), axis=0)			
+					
+					#add labels to batch
+					val_labels = np.append(val_labels, dictin['alignments'][utt_id])					
+				else:
+					log.write('WARNING no alignment for %s, validation set will be smaller\n' % utt_id)
+					
+				(utt_id, utt_mat, looped) = reader.read_next_utt()
+
+			#put labels in one hot encoding	
+			val_labels = (np.arange(self.conf['num_labels']) == val_labels[:,None]).astype(np.float32)	
+				
+			#open feature reader
+			reader = kaldi_io.KaldiReadIn(dictin['featdir'] + '/feats_shuffled.scp')
+						
+			#go to the initial line (start at point after initilaization and #steps allready taken)
+			num_utt = 0
+			while num_utt < int(self.conf['batch_size'])*(int(self.conf['starting_step'])+int(self.conf['init_steps'])*int(self.conf['num_hidden_layers'])):
+				utt_id = reader.read_next_scp()
+				if utt_id in dictin['alignments']:
+					num_utt = num_utt + 1
+			
+		elif op == 'prior':
+			#open feature reader
+			reader = kaldi_io.KaldiReadIn(dictin['featdir'] + '/feats_shuffled.scp')
+			reader_cmvn = kaldi_io.KaldiReadIn(dictin['featdir'] + '/cmvn.scp')
+			
+		elif op == 'decode':
+			#open feature reader
+			reader = kaldi_io.KaldiReadIn(dictin['featdir'] + '/feats.scp')
+			reader_cmvn = kaldi_io.KaldiReadIn(dictin['featdir'] + '/cmvn.scp')
+			
+			#open prior writer
+			writer = kaldi_io.KaldiWriteOut(self.conf['decodedir'] + '/feats.scp')
 	
 		# ---------- execute operation ------------
 		
@@ -298,7 +324,6 @@ class nnet:
 				
 				#set the number of steps
 				session.run(num_steps.assign(int(self.conf['init_steps'])))
-				mini_step = 0
 				
 				#do layer by layer initialization
 				for num_layers in range(int(self.conf['num_hidden_layers'])):
@@ -309,7 +334,7 @@ class nnet:
 					for step in range(int(self.conf['init_steps'])):
 						
 						#create a batch 
-						(batch_data, batch_labels) = create_batch(reader, dictin['alignments'], self.conf['input_dim'], int(self.conf['context_width']), self.conf['num_labels'], int(self.conf['batch_size']), log)
+						(batch_data, batch_labels) = create_batch(reader, reader_cmvn, dictin['alignments'], dictin['utt2spk'], self.conf['input_dim'], int(self.conf['context_width']), self.conf['num_labels'], int(self.conf['batch_size']), log)
 						
 						nframes = batch_data.shape[0]
 						session.run(num_frames.assign(nframes))
@@ -327,13 +352,7 @@ class nnet:
 								finished = True
 									
 							#do forward backward pass and update gradients					
-							if self.conf['visualise'] == 'True':
-								out = session.run([loss[num_layers], prediction_summary] + update_gradients_init[num_layers], feed_dict=feed_dict)
-								summary_writer.add_summary(out[1], global_step = mini_step)
-							else:
-								out = session.run([loss[num_layers]] + update_gradients_init[num_layers], feed_dict=feed_dict)
-							
-							mini_step += 1
+							session.run(update_gradients_init[num_layers], feed_dict=feed_dict)
 							
 						if self.conf['visualise'] == 'True':
 							summary_writer.add_summary(merged_summary.eval(), global_step = step + int(self.conf['init_steps'])*num_layers)
@@ -369,7 +388,6 @@ class nnet:
 				
 				#set the number of steps
 				session.run(num_steps.assign(nsteps))
-				mini_step = 0
 				
 				if self.conf['valid_adapt'] == 'True':
 					old_loss = float('inf')
@@ -379,26 +397,26 @@ class nnet:
 				step = int(self.conf['starting_step'])
 				while step < nsteps:
 				
-					#check performance on evaluation set
-					p = 0
-					nframes = val_data.shape[0]
-					session.run(num_frames.assign(nframes))
-					if self.conf['mini_batch_size'] == '-1' and val_data.shape[0] > 0:
-						feed_dict = {data_in : val_data, labels : val_labels}
-						pl, _ = session.run([predictions, update_gradients[0]], feed_dict = feed_dict)
-						p += accuracy(pl, val_labels)
-					else:
-						for i in range(0,nframes-int(self.conf['mini_batch_size'])+1,int(self.conf['mini_batch_size'])):
-							feed_dict = {data_in : val_data[i:i+int(self.conf['mini_batch_size']),:], labels : val_labels[i:i+int(self.conf['mini_batch_size']),:]}
-							pl, _ = session.run([predictions, update_gradients[0]], feed_dict = feed_dict)
-							p += accuracy(pl, val_labels[i:i+int(self.conf['mini_batch_size']),:])
-						remaining_frames = nframes % int(self.conf['mini_batch_size'])
-						if remaining_frames != 0:
-							feed_dict = {data_in : val_data[nframes - remaining_frames + 1: nframes,:], labels : val_labels[nframes - remaining_frames + 1: nframes,:]}
-							pl, _ = session.run([predictions, update_gradients[0]], feed_dict = feed_dict)
-							p += accuracy(pl, val_labels[nframes - remaining_frames + 1: nframes,:])
-					
-					if nframes > 0 and step % int(self.conf['valid_frequency']) == 0:
+					if val_data.shape[0] > 0 and step % int(self.conf['valid_frequency']) == 0:
+						#check performance on evaluation set
+						p = 0
+						nframes = val_data.shape[0]
+						session.run(num_frames.assign(nframes))
+						if self.conf['mini_batch_size'] == '-1' and val_data.shape[0] > 0:
+							feed_dict = {data_in : val_data, labels : val_labels}
+							pl, _ = session.run([predictions, update_val_loss], feed_dict = feed_dict)
+							p += accuracy(pl, val_labels)
+						else:
+							for i in range(0,nframes-int(self.conf['mini_batch_size'])+1,int(self.conf['mini_batch_size'])):
+								feed_dict = {data_in : val_data[i:i+int(self.conf['mini_batch_size']),:], labels : val_labels[i:i+int(self.conf['mini_batch_size']),:]}
+								pl, _ = session.run([predictions, update_val_loss], feed_dict = feed_dict)
+								p += accuracy(pl, val_labels[i:i+int(self.conf['mini_batch_size']),:])
+							remaining_frames = nframes % int(self.conf['mini_batch_size'])
+							if remaining_frames != 0:
+								feed_dict = {data_in : val_data[nframes - remaining_frames + 1: nframes,:], labels : val_labels[nframes - remaining_frames + 1: nframes,:]}
+								pl, _ = session.run([predictions, update_val_loss], feed_dict = feed_dict)
+								p += accuracy(pl, val_labels[nframes - remaining_frames + 1: nframes,:])
+								
 						l_val = batch_loss.eval()
 						tf.initialize_variables([batch_loss]).run()
 						print("validation loss = %f, validation accuracy = %.1f%%" % (l_val, p/nframes))
@@ -429,10 +447,9 @@ class nnet:
 									num_utt = num_utt + 1
 							
 							retry_count += 1
-							continue
 					
 					#create a batch 
-					(batch_data, batch_labels) = create_batch(reader, dictin['alignments'], self.conf['input_dim'], int(self.conf['context_width']), self.conf['num_labels'], int(self.conf['batch_size']), log)
+					(batch_data, batch_labels) = create_batch(reader, reader_cmvn, dictin['alignments'], dictin['utt2spk'], self.conf['input_dim'], int(self.conf['context_width']), self.conf['num_labels'], int(self.conf['batch_size']), log)
 					nframes = batch_data.shape[0]
 					session.run(num_frames.assign(nframes))
 						
@@ -450,16 +467,9 @@ class nnet:
 							feed_dict = {data_in : batch_data, labels : feed_labels}
 							finished = True
 								
-						#do forward-backward pass and update gradients
-						if self.conf['visualise'] == 'True':
-							out = session.run([predictions, prediction_summary] + update_gradients, feed_dict=feed_dict)
-							p += accuracy(out[0], feed_labels)
-							summary_writer.add_summary(out[1], global_step = mini_step)
-						else:					
-							out = session.run([predictions] + update_gradients, feed_dict=feed_dict)
-							p += accuracy(out[0], feed_labels)
-							
-						mini_step += 1
+						#do forward-backward pass and update gradients	
+						out = session.run([predictions] + update_gradients, feed_dict=feed_dict)
+						p += accuracy(out[0], feed_labels)
 					
 					if self.conf['visualise'] == 'True':
 						summary_writer.add_summary(merged_summary.eval(), global_step = step)
@@ -487,7 +497,13 @@ class nnet:
 				batch_data = np.empty([0,self.conf['input_dim']*(1+2*int(self.conf['context_width']))], dtype=np.float32)
 				num_utt = 0
 				for _ in range(int(self.conf['ex_prio'])):
+					#read utterance
 					(utt_id, utt_mat, looped) = reader.read_next_utt()
+					#read cmvn stats
+					reader_cmvn.read_utt(dictin['utt2spk'][utt_id])
+					#apply cmvn stats
+					utt_mat = apply_cmvn(utt_mat, stats)
+					
 					if looped:
 						print('WARNING: not enough utterances to compute the prior')
 						break
@@ -543,6 +559,11 @@ class nnet:
 					(utt_id, utt_mat, looped) = reader.read_next_utt()
 					if looped:
 						break
+						
+					#read the cmvn stats
+					stats = reader_cmvn.read_utt(dictin['utt2spk'][utt_id])
+					#apply cmvn
+					utt_mat = apply_cmvn(utt_mat, stats)
 						
 					#compute the state likelihoods
 					feed_dict = {data_in : splice(utt_mat,int(self.conf['context_width']))}

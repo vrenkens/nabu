@@ -14,7 +14,8 @@ from random import shuffle
 #	datadir: directory where the kaldi data prep has been done
 #	featdir: directory where the features will be put
 #	conf: feature configuration
-def prepare_data(datadir, featdir, conf):
+#	feat_type: type of features to be computed
+def prepare_data(datadir, featdir, conf, feat_type):
 	
 	if not os.path.exists(featdir):
 		os.makedirs(featdir)
@@ -36,9 +37,9 @@ def prepare_data(datadir, featdir, conf):
 		os.remove(featdir + '/feats.ark')
 		
 	if conf['highfreq'] == '-1':
-		conf['highfreq'] = None
+		highfreq = None
 	else:
-		conf['highfreq'] = float(conf['highfreq'])
+		highfreq = float(conf['highfreq'])
 	
 	#compute all features and write in ark format
 	if found_segments:
@@ -57,10 +58,10 @@ def prepare_data(datadir, featdir, conf):
 			else:
 				(rate,utterance) = wav.read(wavfiles[utt][0])
 			for seg in segments[utt]:
-				if conf['type'] == 'fbank':
-					features = feat.compute_fbank(utterance[int(seg[1]*rate):int(seg[2]*rate)], rate, float(conf['winlen']), float(conf['winstep']), int(conf['nfilt']), int(conf['nfft']), float(conf['lowfreq']), conf['highfreq'], float(conf['preemph']), conf['include_energy'] == 'True', conf['snip_edges'] == 'True', conf['apply_mvn'] == 'True')
-				elif conf['type'] == 'mfcc':
-					features = feat.compute_mfcc(utterance[int(seg[1]*rate):int(seg[2]*rate)], rate, float(conf['winlen']), float(conf['winstep']), int(conf['numcep']), int(conf['nfilt']), int(conf['nfft']), float(conf['lowfreq']), conf['highfreq'], float(conf['preemph']), float(conf['ceplifter']), conf['include_energy'] == 'True', conf['snip_edges'] == 'True', conf['apply_mvn'] == 'True')
+				if feat_type == 'fbank':
+					features = feat.compute_fbank(utterance[int(seg[1]*rate):int(seg[2]*rate)], rate, float(conf['winlen']), float(conf['winstep']), int(conf['nfilt_fbank']), int(conf['nfft']), float(conf['lowfreq']), highfreq, float(conf['preemph']), conf['include_energy'] == 'True', conf['snip_edges'] == 'True')
+				elif feat_type == 'mfcc':
+					features = feat.compute_mfcc(utterance[int(seg[1]*rate):int(seg[2]*rate)], rate, float(conf['winlen']), float(conf['winstep']), int(conf['numcep']), int(conf['nfilt_mfcc']), int(conf['nfft']), float(conf['lowfreq']), highfreq, float(conf['preemph']), float(conf['ceplifter']), conf['include_energy'] == 'True', conf['snip_edges'] == 'True')
 				else:
 					raise Exception('unknown feature type')
 				writer.write_next_utt(featdir + '/feats.ark', seg[0], features)
@@ -76,10 +77,10 @@ def prepare_data(datadir, featdir, conf):
 				os.remove(featdir + '/duplicate.wav')
 			else:
 				(rate,utterance) = wav.read(wavfiles[utt][0])
-			if conf['type'] == 'fbank':
-				features = feat.compute_fbank(utterance, rate, float(conf['winlen']), float(conf['winstep']), int(conf['nfilt']), int(conf['nfft']), float(conf['lowfreq']), conf['highfreq'], float(conf['preemph']), conf['include_energy'] == 'True', conf['snip_edges'] == 'True', conf['apply_mvn'] == 'True')
-			elif conf['type'] == 'mfcc':
-				features = feat.compute_mfcc(utterance, rate, float(conf['winlen']), float(conf['winstep']), int(conf['numcep']), int(conf['nfilt']), int(conf['nfft']), float(conf['lowfreq']), conf['highfreq'], float(conf['preemph']), float(conf['ceplifter']), conf['include_energy'] == 'True', conf['snip_edges'] == 'True', conf['apply_mvn'] == 'True')
+			if feat_type == 'fbank':
+				features = feat.compute_fbank(utterance, rate, float(conf['winlen']), float(conf['winstep']), int(conf['nfilt_fbank']), int(conf['nfft']), float(conf['lowfreq']), highfreq, float(conf['preemph']), conf['include_energy'] == 'True', conf['snip_edges'] == 'True')
+			elif feat_type == 'mfcc':
+				features = feat.compute_mfcc(utterance, rate, float(conf['winlen']), float(conf['winstep']), int(conf['numcep']), int(conf['nfilt_mfcc']), int(conf['nfft']), float(conf['lowfreq']), highfreq, float(conf['preemph']), float(conf['ceplifter']), conf['include_energy'] == 'True', conf['snip_edges'] == 'True')
 			else:
 				raise Exception('unknown feature type')
 			
@@ -92,6 +93,39 @@ def prepare_data(datadir, featdir, conf):
 	copyfile(datadir + '/spk2utt', featdir + '/spk2utt')
 	copyfile(datadir + '/text', featdir + '/text')
 	copyfile(datadir + '/wav.scp', featdir + '/wav.scp')
+	
+def compute_cmvn(featdir):
+	#read the spk2utt file
+	spk2utt = open(featdir + '/spk2utt', 'r')
+	
+	#create feature reader
+	reader = kaldi_io.KaldiReadIn(featdir + '/feats.scp')
+	
+	#create writer for cmvn stats
+	writer = kaldi_io.KaldiWriteOut(featdir + '/cmvn.scp')
+	
+	#loop over speakers
+	for line in spk2utt:
+		#cut off end of line character
+		line = line[0:len(line)-1] 
+	
+		split = line.split(' ')
+		
+		#get first speaker utterance
+		spk_data = reader.read_utt(split[1])
+		
+		#get the rest of the utterances
+		for utt_id in split[2:len(split)]:
+			spk_data = np.append(spk_data, reader.read_utt(utt_id), axis=0)
+			
+		#compute mean and variance
+		stats = np.zeros([2,spk_data.shape[1]+1])
+		stats[0,0:spk_data.shape[1]] = np.sum(spk_data, 0)
+		stats[1,0:spk_data.shape[1]] = np.sum(np.square(spk_data),0)
+		stats[0, spk_data.shape[1]] = spk_data.shape[0]
+		
+		#write stats to file
+		writer.write_next_utt(featdir + '/cmvn.ark', split[0], stats)
 	
 #this function will shuffle the utterances
 #	featdir: directory where the features can be found
