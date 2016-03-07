@@ -453,13 +453,15 @@ class nnet:
 								end_point = nframes
 							else:
 								end_point = min(i+int(self.conf['mini_batch_size']), nframes)
+								
 							feed_dict = {data_in : val_data[i:end_point,:], labels : val_labels[i:end_point,:]}
-							i = end_point
 						
 							#accumulate loss and get predictions
 							pl, _ = session.run([predictions, update_val_loss], feed_dict = feed_dict)
 							#update accuracy
-							p += accuracy(pl, val_labels[i:i+int(self.conf['mini_batch_size']),:])
+							p += accuracy(pl, val_labels[i:end_point,:])
+							#update iterator
+							i = end_point
 						
 						#get the accumulated loss		
 						l_val = batch_loss.eval()
@@ -577,15 +579,15 @@ class nnet:
 				finished = False
 				while not finished:
 					# prepare data
-						if batch_data.shape[0] > int(self.conf['mini_batch_size']) and self.conf['mini_batch_size'] != '-1':
-							feed_labels = batch_labels[0:int(self.conf['mini_batch_size']),:]
-							feed_dict = {data_in : batch_data[0:int(self.conf['mini_batch_size']),:], labels : feed_labels}
-							batch_data = batch_data[int(self.conf['mini_batch_size']):batch_data.shape[0],:]
-							batch_labels = batch_labels[int(self.conf['mini_batch_size']):batch_labels.shape[0],:]
-						else:
-							feed_labels = batch_labels
-							feed_dict = {data_in : batch_data, labels : feed_labels}
-							finished = True
+					if batch_data.shape[0] > int(self.conf['mini_batch_size']) and self.conf['mini_batch_size'] != '-1':
+						feed_labels = batch_labels[0:int(self.conf['mini_batch_size']),:]
+						feed_dict = {data_in : batch_data[0:int(self.conf['mini_batch_size']),:], labels : feed_labels}
+						batch_data = batch_data[int(self.conf['mini_batch_size']):batch_data.shape[0],:]
+						batch_labels = batch_labels[int(self.conf['mini_batch_size']):batch_labels.shape[0],:]
+					else:
+						feed_labels = batch_labels
+						feed_dict = {data_in : batch_data, labels : feed_labels}
+						finished = True
 			
 					#compute the predictions
 					p = session.run(predictions, feed_dict=feed_dict)
