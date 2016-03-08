@@ -12,6 +12,8 @@ MONO_GMM = False
 TEST_MONO = False
 TRI_GMM = False
 TEST_TRI = False
+LDA_GMM = False
+TEST_LDA = False
 NNET = True
 DECODE = True
 
@@ -206,6 +208,47 @@ if TEST_TRI:
 	
 	#go back to working dir
 	os.chdir(current_dir)
+	
+######################################################################################################	
+#use kaldi to train the LDA+MLLT GMM
+if LDA_GMM:
+	#change directory to kaldi egs
+	os.chdir(config.get('directories','kaldi_egs'))
+	
+	#train triphone GMM
+	print('------- training LDA+MLLT GMM ----------')
+	os.system('steps/train_lda_mllt.sh.sh --cmd %s --config %s/config/lda_mllt.conf --left-context=%s --right-context=%s %s %s %s %s %s/%s/ali %s/%s' % (config.get('lda_mllt','cmd'), current_dir, config.get('lda_mllt','context_width'), config.get('lda_mllt','context_width'), config.get('lda_mllt','num_leaves'), config.get('lda_mllt','tot_gauss'), config.get('directories','train_features') + '/mfcc', config.get('directories','language'), config.get('directories','expdir'), config.get('tri_gmm','name'), config.get('directories','expdir'), config.get('lda_mllt','name')))
+	
+	#build decoding graphs
+	print('------- building decoding graphs ----------')
+	os.system('utils/mkgraph.sh %s %s/%s %s/%s/graph' % (config.get('directories','language_test'), config.get('directories','expdir'), config.get('lda_mllt','name'), config.get('directories','expdir'), config.get('lda_mllt','name')))
+	
+	#align the data
+	print('------- aligning the data ----------')
+	os.system('steps/align_si.sh --nj %s --cmd %s --config %s/config/ali_lda_mllt.conf %s %s %s/%s %s/%s/ali' % (config.get('general','num_jobs'), config.get('lda_mllt','cmd'), current_dir, config.get('directories','train_features') + '/mfcc', config.get('directories','language'), config.get('directories','expdir'), config.get('lda_mllt','name'), config.get('directories','expdir'), config.get('lda_mllt','name')))
+	
+	#convert alignments (transition-ids) to pdf-ids
+	for i in range(int(config.get('general','num_jobs'))):
+		os.system('gunzip -c %s/%s/ali/ali.%d.gz | ali-to-pdf %s/%s/ali/final.mdl ark:- ark,t:- | gzip >  %s/%s/ali/pdf.%d.gz' % (config.get('directories','expdir'), config.get('lda_mllt','name'), i+1, config.get('directories','expdir'), config.get('lda_mllt','name'), config.get('directories','expdir'), config.get('lda_mllt','name'), i+1))
+	
+	#go back to working dir
+	os.chdir(current_dir)
+
+######################################################################################################
+#use kaldi to test the triphone GMM
+if TEST_LDA:
+	#change directory to kaldi egs
+	os.chdir(config.get('directories','kaldi_egs'))
+	
+	#decode using kaldi
+	print('------- testing triphone GMM ----------')
+	os.system('steps/decode.sh --cmd %s --nj %s %s/%s/graph %s %s/%s/decode | tee %s/%s/decode.log || exit 1;' % (config.get('lda_mllt','cmd'), config.get('general','num_jobs'), config.get('directories','expdir'), config.get('lda_mllt','name'), config.get('directories','test_features') + '/mfcc', config.get('directories','expdir'), config.get('lda_mllt','name'), config.get('directories','expdir'), config.get('lda_mllt','name')))
+	
+	#get results
+	os.system('grep WER %s/%s/decode/wer_* | utils/best_wer.sh' % (config.get('directories','expdir'), config.get('lda_mllt','name')))
+	
+	#go back to working dir
+	os.chdir(current_dir)
 
 ######################################################################################################
 #get nnet configs
@@ -222,12 +265,6 @@ if not os.path.isdir(nnet_cfg['savedir'] + '/validation'):
 nnet_cfg['decodedir'] = nnet_cfg['savedir'] + '/decode'
 if not os.path.isdir(nnet_cfg['decodedir']):
 	os.mkdir(nnet_cfg['decodedir'])
-
-#check which gmm model should be used
-if nnet_cfg['monophone'] == 'True':
-	gmm_name = config.get('mono_gmm','name')
-else:
-	gmm_name = config.get('tri_gmm','name')
 	
 #get the feature input dim
 reader = kaldi_io.KaldiReadIn(config.get('directories','train_features') + '/' + config.get('features','type') + '/feats.scp')
@@ -235,7 +272,7 @@ reader = kaldi_io.KaldiReadIn(config.get('directories','train_features') + '/' +
 nnet_cfg['input_dim'] = features.shape[1]
 
 #get number of output labels
-numpdfs = open(config.get('directories','expdir') + '/' + gmm_name + '/graph/num_pdfs')
+numpdfs = open(config.get('directories','expdir') + '/' + nnet_cfg['gmm_name'] + '/graph/num_pdfs')
 num_labels = numpdfs.read()
 nnet_cfg['num_labels'] = int(num_labels[0:len(num_labels)-1])
 	
@@ -250,7 +287,7 @@ if NNET:
 		print('------- reading alignments ----------')
 		alignments = {}
 		for i in range(int(config.get('general','num_jobs'))):
-			alignments.update(kaldi_io.read_alignments(config.get('directories','expdir') + '/' + gmm_name + '/ali/pdf.' + str(i+1) + '.gz'))
+			alignments.update(kaldi_io.read_alignments(config.get('directories','expdir') + '/' + nnet_cfg['gmm_name'] + '/ali/pdf.' + str(i+1) + '.gz'))
 			
 		#read the utterance to speaker mapping
 		print('------- reading utt2spk ----------')
@@ -279,7 +316,7 @@ if NNET:
 		
 	#create a dumy neural net
 	print('------- creating dummy nnet ----------')
-	kaldi_io.create_dummy('%s/%s' % (config.get('directories','expdir'), gmm_name), nnet_cfg['decodedir'], config.get('directories','test_features') + '/' + config.get('features','type'), nnet_cfg['num_labels'])
+	kaldi_io.create_dummy('%s/%s' % (config.get('directories','expdir'), nnet_cfg['gmm_name']), nnet_cfg['decodedir'], config.get('directories','test_features') + '/' + config.get('features','type'), nnet_cfg['num_labels'])
 	
 	#change directory to kaldi egs
 	os.chdir(config.get('directories','kaldi_egs'))

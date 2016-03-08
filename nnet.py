@@ -35,7 +35,7 @@ def apply_cmvn(utt, stats):
 	mean = stats[0,0:stats.shape[1]-1]/stats[0,stats.shape[1]-1]
 	#compute variance
 	variance = stats[1,0:stats.shape[1]-1]/stats[0,stats.shape[1]-1] - np.square(mean)
-	return np.divide(np.subtract(utt, mean), variance)
+	return np.divide(np.subtract(utt, mean), np.sqrt(variance))
 
 #create a batch of data
 def create_batch(reader, reader_cmvn, alignments, utt2spk, input_dim, context_width, num_labels, batch_size, log):
