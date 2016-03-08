@@ -563,7 +563,7 @@ class nnet:
 					#read utterance
 					(utt_id, utt_mat, looped) = reader.read_next_utt()
 					#read cmvn stats
-					reader_cmvn.read_utt(dictin['utt2spk'][utt_id])
+					stats = reader_cmvn.read_utt(dictin['utt2spk'][utt_id])
 					#apply cmvn stats
 					utt_mat = apply_cmvn(utt_mat, stats)
 					
@@ -580,13 +580,10 @@ class nnet:
 				while not finished:
 					# prepare data
 					if batch_data.shape[0] > int(self.conf['mini_batch_size']) and self.conf['mini_batch_size'] != '-1':
-						feed_labels = batch_labels[0:int(self.conf['mini_batch_size']),:]
-						feed_dict = {data_in : batch_data[0:int(self.conf['mini_batch_size']),:], labels : feed_labels}
+						feed_dict = {data_in : batch_data[0:int(self.conf['mini_batch_size']),:]}
 						batch_data = batch_data[int(self.conf['mini_batch_size']):batch_data.shape[0],:]
-						batch_labels = batch_labels[int(self.conf['mini_batch_size']):batch_labels.shape[0],:]
 					else:
-						feed_labels = batch_labels
-						feed_dict = {data_in : batch_data, labels : feed_labels}
+						feed_dict = {data_in : batch_data}
 						finished = True
 			
 					#compute the predictions

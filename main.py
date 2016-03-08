@@ -270,6 +270,9 @@ if not os.path.isdir(nnet_cfg['decodedir']):
 reader = kaldi_io.KaldiReadIn(config.get('directories','train_features') + '/' + config.get('features','type') + '/feats.scp')
 (_,features,_) = reader.read_next_utt()
 nnet_cfg['input_dim'] = features.shape[1]
+		
+#read the utterance to speaker mapping
+utt2spk = kaldi_io.read_utt2spk(config.get('directories','train_features') + '/' + config.get('features','type') + '/utt2spk')
 
 #get number of output labels
 numpdfs = open(config.get('directories','expdir') + '/' + nnet_cfg['gmm_name'] + '/graph/num_pdfs')
@@ -288,10 +291,6 @@ if NNET:
 		alignments = {}
 		for i in range(int(config.get('general','num_jobs'))):
 			alignments.update(kaldi_io.read_alignments(config.get('directories','expdir') + '/' + nnet_cfg['gmm_name'] + '/ali/pdf.' + str(i+1) + '.gz'))
-			
-		#read the utterance to speaker mapping
-		print('------- reading utt2spk ----------')
-		utt2spk = kaldi_io.read_utt2spk(config.get('directories','train_features') + '/' + config.get('features','type') + '/utt2spk')
 
 	#initialize the neural net
 	if nnet_cfg['starting_step'] == '-1':	
