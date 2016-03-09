@@ -1,7 +1,7 @@
 from six.moves import configparser
 import prepare_data
 import os
-import nnet
+import nnet_cleanup as nnet
 import kaldi_io
 import cPickle as pickle
 import gzip
@@ -19,7 +19,7 @@ DECODE = True
 
 #read config file
 config = configparser.ConfigParser()
-config.read('config/config_CGN.cfg')
+config.read('config/config_AURORA4.cfg')
 current_dir = os.getcwd()
 
 ######################################################################################################
@@ -260,6 +260,8 @@ if not os.path.isdir(nnet_cfg['savedir']):
 	os.mkdir(nnet_cfg['savedir'])
 if not os.path.isdir(nnet_cfg['savedir'] + '/validation'):
 	os.mkdir(nnet_cfg['savedir'] + '/validation')
+if not os.path.isdir(nnet_cfg['savedir'] + '/training'):
+	os.mkdir(nnet_cfg['savedir'] + '/training')
 	
 #define location to save decoding files
 nnet_cfg['decodedir'] = nnet_cfg['savedir'] + '/decode'
@@ -292,26 +294,21 @@ if NNET:
 		for i in range(int(config.get('general','num_jobs'))):
 			alignments.update(kaldi_io.read_alignments(config.get('directories','expdir') + '/' + nnet_cfg['gmm_name'] + '/ali/pdf.' + str(i+1) + '.gz'))
 
-	#initialize the neural net
 	if nnet_cfg['starting_step'] == '-1':	
 	
 		#shuffle the examples on disk
 		print('------- shuffling examples ----------')
 		prepare_data.shuffle_examples(config.get('directories','train_features') + '/' + config.get('features','type'), int(nnet_cfg['valid_size']))
 	
-		#initlialize the neural net
-		print('------- initializing neural net ----------')
-		Nnet.graphop('init', {'featdir':config.get('directories','train_features') + '/' + config.get('features','type'), 'alignments':alignments, 'utt2spk':utt2spk})
-	
 	if nnet_cfg['starting_step'][0:5] != 'final':		
 		#train the neural net		
 		print('------- training neural net ----------')
-		Nnet.graphop('train', {'featdir':config.get('directories','train_features') + '/' + config.get('features','type'), 'alignments':alignments, 'utt2spk':utt2spk})
+		Nnet.train(config.get('directories','train_features') + '/' + config.get('features','type'), alignments, utt2spk)
 	
 	if nnet_cfg['starting_step'] != 'final-prio':
 		#compute the state prior probabilities
 		print('------- computing state priors ----------')
-		Nnet.graphop('prior', {'featdir':config.get('directories','train_features') + '/' + config.get('features','type'), 'utt2spk':utt2spk})
+		Nnet.prior(config.get('directories','train_features') + '/' + config.get('features','type'), utt2spk)
 		
 	#create a dumy neural net
 	print('------- creating dummy nnet ----------')
@@ -323,9 +320,9 @@ if NNET:
 	#build decoding graphs
 	print('------- building decoding graphs ----------')
 	if nnet_cfg['monophone'] == 'True':
-		os.system('utils/mkgraph.sh --mono %s %s %s/graph' % (config.get('directories','language_test_bg'), nnet_cfg['decodedir'], nnet_cfg['decodedir']))
+		os.system('utils/mkgraph.sh --mono %s %s %s/graph' % (config.get('directories','language_test'), nnet_cfg['decodedir'], nnet_cfg['decodedir']))
 	else:
-		os.system('utils/mkgraph.sh %s %s %s/graph' % (config.get('directories','language_test_bg'), nnet_cfg['decodedir'], nnet_cfg['decodedir']))
+		os.system('utils/mkgraph.sh %s %s %s/graph' % (config.get('directories','language_test'), nnet_cfg['decodedir'], nnet_cfg['decodedir']))
 	
 	#go back to working dir
 	os.chdir(current_dir)
@@ -338,7 +335,7 @@ if DECODE:
 
 	#use the neural net to calculate posteriors for the testing set
 	print('------- computing state pseudo-likelihoods ----------')
-	Nnet.graphop('decode', {'featdir':config.get('directories','test_features') + '/' + config.get('features','type'), 'utt2spk':utt2spk})
+	Nnet.decode(config.get('directories','test_features') + '/' + config.get('features','type'), utt2spk)
 	
 	#change directory to kaldi egs
 	os.chdir(config.get('directories','kaldi_egs'))
