@@ -1,7 +1,7 @@
 from six.moves import configparser
 import prepare_data
 import os
-import nnet_cleanup as nnet
+import nnet as nnet
 import kaldi_io
 import cPickle as pickle
 import gzip
