@@ -33,10 +33,10 @@ if GMMTRAINFEATURES:
 	prepare_data.prepare_data(config.get('directories','train_data'), config.get('directories','train_features') + '/' + feat_cfg['name'],feat_cfg, feat_cfg['type'])
 	
 	print('------- computing cmvn stats ----------')
-	if config.get('features','apply_cmvn'):
+	if config.get('gmm-features','apply_cmvn'):
 		#compute cmvn stats
 		prepare_data.compute_cmvn(config.get('directories','train_features') + '/' + feat_cfg['name'])	
-	elif config.get('features','kaldi_cmvn'):
+	elif config.get('gmm-features','kaldi_cmvn'):
 		#change directory to kaldi egs
 		os.chdir(config.get('directories','kaldi_egs'))
 		#compute kaldi cmvn stats
@@ -58,10 +58,10 @@ if DNNTRAINFEATURES:
 		prepare_data.prepare_data(config.get('directories','train_data'), config.get('directories','train_features') + '/' + feat_cfg['name'],feat_cfg, feat_cfg['type'])
 	
 		print('------- computing cmvn stats ----------')
-		if config.get('features','apply_cmvn'):
+		if config.get('dnn-features','apply_cmvn'):
 			#compute cmvn stats
 			prepare_data.compute_cmvn(config.get('directories','train_features') + '/' + feat_cfg['name'])	
-		elif config.get('features','kaldi_cmvn'):
+		elif config.get('dnn-features','kaldi_cmvn'):
 			#change directory to kaldi egs
 			os.chdir(config.get('directories','kaldi_egs'))
 			#compute kaldi cmvn stats
@@ -86,10 +86,10 @@ if GMMTESTFEATURES:
 	prepare_data.prepare_data(config.get('directories','test_data'), config.get('directories','test_features') + '/' + feat_cfg['name'],feat_cfg, feat_cfg['type'])
 	
 	print('------- computing cmvn stats ----------')
-	if config.get('features','apply_cmvn'):
+	if config.get('gmm-features','apply_cmvn'):
 		#compute cmvn stats
 		prepare_data.compute_cmvn(config.get('directories','test_features') + '/' + feat_cfg['name'])	
-	elif config.get('features','kaldi_cmvn'):
+	elif config.get('gmm-features','kaldi_cmvn'):
 		#change directory to kaldi egs
 		os.chdir(config.get('directories','kaldi_egs'))
 		#compute kaldi cmvn stats
@@ -111,10 +111,10 @@ if DNNTESTFEATURES:
 		prepare_data.prepare_data(config.get('directories','test_data'), config.get('directories','test_features') + '/' + feat_cfg['name'],feat_cfg, feat_cfg['type'])
 	
 		print('------- computing cmvn stats ----------')
-		if config.get('features','apply_cmvn'):
+		if config.get('dnn-features','apply_cmvn'):
 			#compute cmvn stats
 			prepare_data.compute_cmvn(config.get('directories','test_features') + '/' + feat_cfg['name'])	
-		elif config.get('features','kaldi_cmvn'):
+		elif config.get('dnn-features','kaldi_cmvn'):
 			#change directory to kaldi egs
 			os.chdir(config.get('directories','kaldi_egs'))
 			#compute kaldi cmvn stats
