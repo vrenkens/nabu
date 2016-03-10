@@ -61,7 +61,7 @@ def prepare_data(datadir, featdir, conf, feat_type):
 				if feat_type == 'fbank':
 					features = feat.compute_fbank(utterance[int(seg[1]*rate):int(seg[2]*rate)], rate, float(conf['winlen']), float(conf['winstep']), int(conf['nfilt_fbank']), int(conf['nfft']), float(conf['lowfreq']), highfreq, float(conf['preemph']), conf['include_energy'] == 'True', conf['snip_edges'] == 'True')
 				elif feat_type == 'mfcc':
-					features = feat.compute_mfcc(utterance[int(seg[1]*rate):int(seg[2]*rate)], rate, float(conf['winlen']), float(conf['winstep']), int(conf['numcep']), int(conf['nfilt_mfcc']), int(conf['nfft']), float(conf['lowfreq']), highfreq, float(conf['preemph']), float(conf['ceplifter']), conf['include_energy'] == 'True', conf['snip_edges'] == 'True')
+					features = feat.compute_mfcc(utterance[int(seg[1]*rate):int(seg[2]*rate)], rate, float(conf['winlen']), float(conf['winstep']), int(conf['numcep']), int(conf['nfilt']), int(conf['nfft']), float(conf['lowfreq']), highfreq, float(conf['preemph']), float(conf['ceplifter']), conf['include_energy'] == 'True', conf['snip_edges'] == 'True')
 				else:
 					raise Exception('unknown feature type')
 				writer.write_next_utt(featdir + '/feats.ark', seg[0], features)
@@ -80,7 +80,7 @@ def prepare_data(datadir, featdir, conf, feat_type):
 			if feat_type == 'fbank':
 				features = feat.compute_fbank(utterance, rate, float(conf['winlen']), float(conf['winstep']), int(conf['nfilt_fbank']), int(conf['nfft']), float(conf['lowfreq']), highfreq, float(conf['preemph']), conf['include_energy'] == 'True', conf['snip_edges'] == 'True')
 			elif feat_type == 'mfcc':
-				features = feat.compute_mfcc(utterance, rate, float(conf['winlen']), float(conf['winstep']), int(conf['numcep']), int(conf['nfilt_mfcc']), int(conf['nfft']), float(conf['lowfreq']), highfreq, float(conf['preemph']), float(conf['ceplifter']), conf['include_energy'] == 'True', conf['snip_edges'] == 'True')
+				features = feat.compute_mfcc(utterance, rate, float(conf['winlen']), float(conf['winstep']), int(conf['numcep']), int(conf['nfilt']), int(conf['nfft']), float(conf['lowfreq']), highfreq, float(conf['preemph']), float(conf['ceplifter']), conf['include_energy'] == 'True', conf['snip_edges'] == 'True')
 			else:
 				raise Exception('unknown feature type')
 			
