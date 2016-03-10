@@ -12,8 +12,8 @@ MONO_GMM = False
 TEST_MONO = False
 TRI_GMM = False
 TEST_TRI = False
-LDA_GMM = False
-TEST_LDA = False
+LDA_GMM = True
+TEST_LDA = True
 NNET = True
 DECODE = True
 
@@ -217,7 +217,7 @@ if LDA_GMM:
 	
 	#train triphone GMM
 	print('------- training LDA+MLLT GMM ----------')
-	os.system('steps/train_lda_mllt.sh.sh --cmd %s --config %s/config/lda_mllt.conf --left-context=%s --right-context=%s %s %s %s %s %s/%s/ali %s/%s' % (config.get('lda_mllt','cmd'), current_dir, config.get('lda_mllt','context_width'), config.get('lda_mllt','context_width'), config.get('lda_mllt','num_leaves'), config.get('lda_mllt','tot_gauss'), config.get('directories','train_features') + '/mfcc', config.get('directories','language'), config.get('directories','expdir'), config.get('tri_gmm','name'), config.get('directories','expdir'), config.get('lda_mllt','name')))
+	os.system('steps/train_lda_mllt.sh --cmd %s --config %s/config/lda_mllt.conf --context-opts "--context_width=%s" %s %s %s %s %s/%s/ali %s/%s' % (config.get('lda_mllt','cmd'), current_dir, config.get('lda_mllt','context_width'), config.get('lda_mllt','num_leaves'), config.get('lda_mllt','tot_gauss'), config.get('directories','train_features') + '/mfcc', config.get('directories','language'), config.get('directories','expdir'), config.get('tri_gmm','name'), config.get('directories','expdir'), config.get('lda_mllt','name')))
 	
 	#build decoding graphs
 	print('------- building decoding graphs ----------')
@@ -241,7 +241,7 @@ if TEST_LDA:
 	os.chdir(config.get('directories','kaldi_egs'))
 	
 	#decode using kaldi
-	print('------- testing triphone GMM ----------')
+	print('------- testing LDA+MLLT GMM ----------')
 	os.system('steps/decode.sh --cmd %s --nj %s %s/%s/graph %s %s/%s/decode | tee %s/%s/decode.log || exit 1;' % (config.get('lda_mllt','cmd'), config.get('general','num_jobs'), config.get('directories','expdir'), config.get('lda_mllt','name'), config.get('directories','test_features') + '/mfcc', config.get('directories','expdir'), config.get('lda_mllt','name'), config.get('directories','expdir'), config.get('lda_mllt','name')))
 	
 	#get results
