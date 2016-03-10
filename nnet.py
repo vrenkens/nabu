@@ -127,6 +127,7 @@ class Nnet:
 		return data
 
 	def create_graph(self):
+		nnet = {}
 		graph = tf.Graph()
 		with graph.as_default():
 			#input data
@@ -153,7 +154,7 @@ class Nnet:
 			nnet['state_prior'] = tf.Variable(tf.ones([self.conf['num_labels']]), trainable=False, name = 'priors')
 			
 			#saver object that saves all the neural net parameters
-			nnet['global_saver'] = tf.train.Saver([state_prior] + weights + biases)
+			nnet['global_saver'] = tf.train.Saver([nnet['state_prior']] + nnet['weights'] + nnet['biases'])
 		
 		return graph, nnet
 	
@@ -208,7 +209,7 @@ class Nnet:
 			for num_layers in range(int(self.conf['num_hidden_layers'])):
 		
 				#compute the logits (output before softmax)
-				out = self.model(data_in, nnet['weights'][0:num_layers+1], nnet['biases'][0:num_layers+1], True)
+				out = self.model(nnet['data_in'], nnet['weights'][0:num_layers+1], nnet['biases'][0:num_layers+1], True)
 				logits = tf.matmul(out, nnet['weights'][len(nnet['weights'])-1]) + nnet['biases'][len(nnet['biases'])-1]
 			
 				#apply softmax and compute loss
@@ -290,11 +291,11 @@ class Nnet:
 			
 						#prepare nnet data
 						if batch_data.shape[0] > int(self.conf['mini_batch_size']) and self.conf['mini_batch_size'] != '-1':
-							feed_dict = {data_in : batch_data[0:int(self.conf['mini_batch_size']),:], labels : batch_labels[0:int(self.conf['mini_batch_size']),:]}
+							feed_dict = {nnet['data_in'] : batch_data[0:int(self.conf['mini_batch_size']),:], labels : batch_labels[0:int(self.conf['mini_batch_size']),:]}
 							batch_data = batch_data[int(self.conf['mini_batch_size']):batch_data.shape[0],:]
 							batch_labels = batch_labels[int(self.conf['mini_batch_size']):batch_labels.shape[0],:]
 						else:
-							feed_dict = {data_in : batch_data, labels : batch_labels}
+							feed_dict = {nnet['data_in'] : batch_data, labels : batch_labels}
 							finished = True
 								
 						#do forward backward pass and update gradients					
@@ -374,7 +375,7 @@ class Nnet:
 				
 			#define the training computation (forward prop, back prop, update gradients, update params) 
 			#compute the logits (output before softmax)
-			out = self.model(data_in, nnet['weights'][0:len(nnet['weights'])-1], nnet['biases'][0:len(nnet['biases'])-1], True)
+			out = self.model(nnet['data_in'], nnet['weights'][0:len(nnet['weights'])-1], nnet['biases'][0:len(nnet['biases'])-1], True)
 			logits = tf.matmul(out, nnet['weights'][len(nnet['weights'])-1]) + nnet['biases'][len(nnet['biases'])-1]
 			
 			#apply softmax and compute loss
@@ -522,7 +523,7 @@ class Nnet:
 						else:
 							end_point = min(i+int(self.conf['mini_batch_size']), nframes)
 							
-						feed_dict = {data_in : val_data[i:end_point,:], labels : val_labels[i:end_point,:]}
+						feed_dict = {nnet['data_in'] : val_data[i:end_point,:], labels : val_labels[i:end_point,:]}
 					
 						#accumulate loss and get predictions
 						pl, _ = session.run([predictions, update_loss], feed_dict = feed_dict)
@@ -584,12 +585,12 @@ class Nnet:
 					# prepare data
 					if batch_data.shape[0] > int(self.conf['mini_batch_size']) and self.conf['mini_batch_size'] != '-1':
 						feed_labels = batch_labels[0:int(self.conf['mini_batch_size']),:]
-						feed_dict = {data_in : batch_data[0:int(self.conf['mini_batch_size']),:], labels : feed_labels}
+						feed_dict = {nnet['data_in'] : batch_data[0:int(self.conf['mini_batch_size']),:], labels : feed_labels}
 						batch_data = batch_data[int(self.conf['mini_batch_size']):batch_data.shape[0],:]
 						batch_labels = batch_labels[int(self.conf['mini_batch_size']):batch_labels.shape[0],:]
 					else:
 						feed_labels = batch_labels
-						feed_dict = {data_in : batch_data, labels : feed_labels}
+						feed_dict = {nnet['data_in'] : batch_data, labels : feed_labels}
 						finished = True
 							
 					#do forward-backward pass and update gradients	
@@ -629,7 +630,7 @@ class Nnet:
 		#define the decoding operation
 		graph, nnet = self.create_graph()
 		with graph.as_default():
-			out = self.model(data_in, nnet['weights'][0:len(nnet['weights'])-1], nnet['biases'][0:len(nnet['biases'])-1], True)
+			out = self.model(nnet['data_in'], nnet['weights'][0:len(nnet['weights'])-1], nnet['biases'][0:len(nnet['biases'])-1], True)
 			logits = tf.matmul(out, nnet['weights'][len(nnet['weights'])-1]) + nnet['biases'][len(nnet['biases'])-1]
 			predictions = tf.nn.softmax(logits)
 	
@@ -667,10 +668,10 @@ class Nnet:
 			while not finished:
 				# prepare data
 				if batch_data.shape[0] > int(self.conf['mini_batch_size']) and self.conf['mini_batch_size'] != '-1':
-					feed_dict = {data_in : batch_data[0:int(self.conf['mini_batch_size']),:]}
+					feed_dict = {nnet['data_in'] : batch_data[0:int(self.conf['mini_batch_size']),:]}
 					batch_data = batch_data[int(self.conf['mini_batch_size']):batch_data.shape[0],:]
 				else:
-					feed_dict = {data_in : batch_data}
+					feed_dict = {nnet['data_in'] : batch_data}
 					finished = True
 	
 				#compute the predictions
@@ -696,7 +697,7 @@ class Nnet:
 		#define the decoding operation
 		graph, nnet = self.create_graph()
 		with graph.as_default():
-			out = self.model(data_in, nnet['weights'][0:len(nnet['weights'])-1], nnet['biases'][0:len(nnet['biases'])-1], True)
+			out = self.model(nnet['data_in'], nnet['weights'][0:len(nnet['weights'])-1], nnet['biases'][0:len(nnet['biases'])-1], True)
 			logits = tf.matmul(out, nnet['weights'][len(nnet['weights'])-1]) + nnet['biases'][len(nnet['biases'])-1]
 			predictions = tf.nn.softmax(logits)
 			
@@ -730,7 +731,7 @@ class Nnet:
 				utt_mat = apply_cmvn(utt_mat, stats)
 				
 				#prepare data
-				feed_dict = {data_in : splice(utt_mat,int(self.conf['context_width']))}
+				feed_dict = {nnet['data_in'] : splice(utt_mat,int(self.conf['context_width']))}
 				#compute predictions
 				p = session.run(predictions, feed_dict=feed_dict)
 				#apply prior to predictions
