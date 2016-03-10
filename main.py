@@ -1,7 +1,7 @@
 from six.moves import configparser
 import prepare_data
 import os
-import nnet as nnet
+import nnet
 import kaldi_io
 import cPickle as pickle
 import gzip
@@ -282,7 +282,7 @@ num_labels = numpdfs.read()
 nnet_cfg['num_labels'] = int(num_labels[0:len(num_labels)-1])
 	
 #create the neural net 	
-Nnet = nnet.nnet(nnet_cfg)
+Nnet = nnet.Nnet(nnet_cfg)
 
 if NNET:
 	

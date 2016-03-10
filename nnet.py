@@ -81,7 +81,7 @@ def create_batch(reader, reader_cmvn, alignments, utt2spk, input_dim, context_wi
 	
 	return (batch_data, batch_labels)
 
-class nnet:
+class Nnet:
 	#create nnet and define variables in the computational graph
 	#	conf: nnet configuration
 	def __init__(self, conf):
@@ -130,32 +130,32 @@ class nnet:
 		graph = tf.Graph()
 		with graph.as_default():
 			#input data
-			data_in = tf.placeholder(tf.float32, shape = [None, self.conf['input_dim']*(1+2*int(self.conf['context_width']))])
+			nnet['data_in'] = tf.placeholder(tf.float32, shape = [None, self.conf['input_dim']*(1+2*int(self.conf['context_width']))])
 		
 			#define weights, biases and their derivatives lists
-			weights = []
-			biases = []
+			nnet['weights'] = []
+			nnet['biases'] = []
 		
 			#input layer, initialise as random normal
-			weights.append(tf.Variable(tf.random_normal([self.conf['input_dim']*(1+2*int(self.conf['context_width'])), int(self.conf['num_hidden_units'])], stddev=float(self.conf['weights_std'])), name = 'W0'))
-			biases.append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units'])], stddev=float(self.conf['biases_std'])), name = 'b0'))
+			nnet['weights'].append(tf.Variable(tf.random_normal([self.conf['input_dim']*(1+2*int(self.conf['context_width'])), int(self.conf['num_hidden_units'])], stddev=float(self.conf['weights_std'])), name = 'W0'))
+			nnet['biases'].append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units'])], stddev=float(self.conf['biases_std'])), name = 'b0'))
 		
 			#hidden layers, initialise as random normal
 			for i in range(int(self.conf['num_hidden_layers'])-1):
-				weights.append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units']), int(self.conf['num_hidden_units'])], stddev=float(self.conf['weights_std'])), name = 'W%d' % (i+1)))
-				biases.append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units'])], stddev=float(self.conf['biases_std'])), name = 'b%d' % (i+1)))
+				nnet['weights'].append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units']), int(self.conf['num_hidden_units'])], stddev=float(self.conf['weights_std'])), name = 'W%d' % (i+1)))
+				nnet['biases'].append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units'])], stddev=float(self.conf['biases_std'])), name = 'b%d' % (i+1)))
 		
 			#output layer, initialise as zero
-			weights.append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units']), self.conf['num_labels']]), name = 'W%d' % int(self.conf['num_hidden_layers'])))
-			biases.append(tf.Variable(tf.zeros([self.conf['num_labels']]), name = 'b%d' % int(self.conf['num_hidden_layers'])))
+			nnet['weights'].append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units']), self.conf['num_labels']]), name = 'W%d' % int(self.conf['num_hidden_layers'])))
+			nnet['biases'].append(tf.Variable(tf.zeros([self.conf['num_labels']]), name = 'b%d' % int(self.conf['num_hidden_layers'])))
 		
 			#the state prior probabilities
-			state_prior = tf.Variable(tf.ones([self.conf['num_labels']]), trainable=False, name = 'priors')
+			nnet['state_prior'] = tf.Variable(tf.ones([self.conf['num_labels']]), trainable=False, name = 'priors')
 			
 			#saver object that saves all the neural net parameters
-			global_saver = tf.train.Saver([state_prior] + weights + biases)
+			nnet['global_saver'] = tf.train.Saver([state_prior] + weights + biases)
 		
-		return graph, data_in, weights, biases, state_prior, global_saver
+		return graph, nnet
 	
 	#Initialise the neural net. We start with a neural net with one hidden layer, we train the hidden layer and the softmax for a couple of steps. We then add a new hidden layer and reinitialise the softmax layer. We then train the added layer and the softmax. We do this until the correct number of hidden layers is reached 
 	#	featdir: directory where the features are located
@@ -168,7 +168,7 @@ class nnet:
 			shutil.rmtree(self.conf['savedir'] + '/summaries-init')
 		
 		#define the initialisation computation for all the number of layers (needed for layer by layer initialisation). In the initialisation 
-		graph, data_in, weights, biases, state_prior, global_saver = self.create_graph()
+		graph, nnet = self.create_graph()
 		with graph.as_default():
 		
 			#output targets
@@ -208,14 +208,14 @@ class nnet:
 			for num_layers in range(int(self.conf['num_hidden_layers'])):
 		
 				#compute the logits (output before softmax)
-				out = self.model(data_in, weights[0:num_layers+1], biases[0:num_layers+1], True)
-				logits = tf.matmul(out, weights[len(weights)-1]) + biases[len(biases)-1]
+				out = self.model(data_in, nnet['weights'][0:num_layers+1], nnet['biases'][0:num_layers+1], True)
+				logits = tf.matmul(out, nnet['weights'][len(nnet['weights'])-1]) + nnet['biases'][len(nnet['biases'])-1]
 			
 				#apply softmax and compute loss
 				loss.append(tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, labels))/num_frames)
 				
 				#compute the gradients
-				gradients = tf.gradients(loss[num_layers], [weights[num_layers], biases[num_layers], weights[len(weights)-1], biases[len(biases)-1]])
+				gradients = tf.gradients(loss[num_layers], [nnet['weights'][num_layers], nnet['biases'][num_layers], nnet['weights'][len(weights)-1], nnet['biases'][len(biases)-1]])
 				
 				#operations to accumulate the gradients
 				update_gradients.append([dweights[num_layers].assign(tf.add(dweights[num_layers], gradients[0])).op])
@@ -227,7 +227,7 @@ class nnet:
 				update_gradients[num_layers].append(batch_loss.assign(tf.add(batch_loss, loss[num_layers])).op)
 			
 				#list of gradients that will be used to update the parameters
-				gradients_to_apply = [(dweights[num_layers].value(), weights[num_layers]), (dweights[len(dweights)-1].value(), weights[len(dweights)-1]), (dbiases[num_layers].value(), biases[num_layers]), (dbiases[len(dbiases)-1].value(), biases[len(dbiases)-1])]
+				gradients_to_apply = [(dweights[num_layers].value(), nnet['weights'][num_layers]), (dweights[len(dweights)-1].value(), nnet['weights'][len(dweights)-1]), (dbiases[num_layers].value(), nnet['biases'][num_layers]), (dbiases[len(dbiases)-1].value(), nnet['biases'][len(dbiases)-1])]
 			
 				#operation to apply the computed gradients
 				optimize.append(optimizer.apply_gradients(gradients_to_apply))
@@ -242,9 +242,9 @@ class nnet:
 			dbias_summaries = []
 			
 			for i in range(int(self.conf['num_hidden_layers'])+1):
-				weight_summaries.append(tf.histogram_summary('W%d' % i, weights[i]))
+				weight_summaries.append(tf.histogram_summary('W%d' % i, nnet['weights'][i]))
 				dweight_summaries.append(tf.histogram_summary('dW%d' % i, dweights[i]))
-				bias_summaries.append(tf.histogram_summary('b%d' % i, biases[i]))
+				bias_summaries.append(tf.histogram_summary('b%d' % i, nnet['biases'][i]))
 				dbias_summaries.append(tf.histogram_summary('db%d' % i, dbiases[i]))
 		
 			#merge summaries
@@ -312,7 +312,7 @@ class nnet:
 					tf.initialize_variables(dweights + dbiases + [batch_loss]).run()
 					
 				#save the initialised neural net
-				global_saver.save(session, self.conf['savedir'] + '/init')
+				nnet['global_saver'].save(session, self.conf['savedir'] + '/init')
 			
 			#close the log
 			log.close()
@@ -329,7 +329,7 @@ class nnet:
 		if os.path.isdir(self.conf['savedir'] + '/summaries-train'):
 			shutil.rmtree(self.conf['savedir'] + '/summaries-train')
 			
-		graph, data_in, weights, biases, state_prior, global_saver = self.create_graph()
+		graph, nnet = self.create_graph()
 		with graph.as_default():		
 			
 			#output targets
@@ -374,22 +374,22 @@ class nnet:
 				
 			#define the training computation (forward prop, back prop, update gradients, update params) 
 			#compute the logits (output before softmax)
-			out = self.model(data_in, weights[0:len(weights)-1], biases[0:len(biases)-1], True)
-			logits = tf.matmul(out, weights[len(weights)-1]) + biases[len(biases)-1]
+			out = self.model(data_in, nnet['weights'][0:len(nnet['weights'])-1], nnet['biases'][0:len(nnet['biases'])-1], True)
+			logits = tf.matmul(out, nnet['weights'][len(nnet['weights'])-1]) + nnet['biases'][len(nnet['biases'])-1]
 			
 			#apply softmax and compute loss
 			loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, labels))/num_frames
 			
 			#do backprop to compute gradients
-			gradients = tf.gradients(loss, weights + biases)	
+			gradients = tf.gradients(loss,nnet['weights'] + nnet['biases'])	
 			
 			#accumulate the gradients and make a list of gradients that need to be applied to update the parameters
 			gradients_to_apply = []
 			update_gradients = []
 			update_loss = batch_loss.assign(tf.add(batch_loss, loss)).op
 			for i in range(len(dweights)):
-				gradients_to_apply.append((dweights[i].value(), weights[i]))
-				gradients_to_apply.append((dbiases[i].value(), biases[i]))
+				gradients_to_apply.append((dweights[i].value(), nnet['weights'][i]))
+				gradients_to_apply.append((dbiases[i].value(), nnet['biases'][i]))
 				update_gradients.append(dweights[i].assign(tf.add(dweights[i], gradients[i])).op)
 				update_gradients.append(dbiases[i].assign(tf.add(dbiases[i], gradients[len(dweights)+i])).op)
 				
@@ -409,9 +409,9 @@ class nnet:
 			dbias_summaries = []
 			
 			for i in range(int(self.conf['num_hidden_layers'])+1):
-				weight_summaries.append(tf.histogram_summary('W%d' % i, weights[i]))
+				weight_summaries.append(tf.histogram_summary('W%d' % i, nnet['weights'][i]))
 				dweight_summaries.append(tf.histogram_summary('dW%d' % i, dweights[i]))
-				bias_summaries.append(tf.histogram_summary('b%d' % i, biases[i]))
+				bias_summaries.append(tf.histogram_summary('b%d' % i, nnet['biases'][i]))
 				dbias_summaries.append(tf.histogram_summary('db%d' % i, dbiases[i]))
 		
 			#merge summaries
@@ -476,7 +476,7 @@ class nnet:
 		with tf.Session(graph=graph) as session:
 			if self.conf['starting_step'] == '-1':			
 				tf.initialize_all_variables().run()
-				global_saver.restore(session, self.conf['savedir'] + '/init')
+				nnet['global_saver'].restore(session, self.conf['savedir'] + '/init')
 				
 				#save the initial neural net
 				saver.save(session, self.conf['savedir'] + '/training/model', global_step = 0)
@@ -616,10 +616,10 @@ class nnet:
 				step += 1
 						
 			#save the final neural net
-			global_saver.save(session, self.conf['savedir'] + '/final')
+			nnet['global_saver'].save(session, self.conf['savedir'] + '/final')
 		
 		#close the log 
-		log .close()
+		log.close()
 	
 	#compute the prior probability of the states. They are used to compute the pseudo likelihoods. The prior is computed by computing the average predictions from a chosen number of utterances
 	#	featdir: directory where the features are located
@@ -627,10 +627,10 @@ class nnet:
 	def prior(self, featdir, utt2spk):
 	
 		#define the decoding operation
-		graph, data_in, weights, biases, state_prior, global_saver = self.create_graph()
+		graph, nnet = self.create_graph()
 		with graph.as_default():
-			out = self.model(data_in, weights[0:len(weights)-1], biases[0:len(biases)-1], True)
-			logits = tf.matmul(out, weights[len(weights)-1]) + biases[len(biases)-1]
+			out = self.model(data_in, nnet['weights'][0:len(nnet['weights'])-1], nnet['biases'][0:len(nnet['biases'])-1], True)
+			logits = tf.matmul(out, nnet['weights'][len(nnet['weights'])-1]) + nnet['biases'][len(nnet['biases'])-1]
 			predictions = tf.nn.softmax(logits)
 	
 		#open feature reader
@@ -641,7 +641,7 @@ class nnet:
 		#start tensorflow session
 		with tf.Session(graph=graph) as session:
 			#load the final neural net
-			global_saver.restore(session, self.conf['savedir'] + '/final')
+			nnet['global_saver'].restore(session, self.conf['savedir'] + '/final')
 		
 			#create the batch to compute the prior
 			batch_data = np.empty([0,self.conf['input_dim']*(1+2*int(self.conf['context_width']))], dtype=np.float32)
@@ -683,10 +683,10 @@ class nnet:
 			prior = np.divide(prior, np.sum(prior))
 		
 			#set the prior in the neural net
-			session.run(self.state_prior.assign(prior))
+			session.run(nnet['state_prior'].assign(prior))
 		
 			#save the final neural net with priors
-			self.global_saver.save(session, self.conf['savedir'] + '/final-prio')
+			nnet['global_saver'].save(session, self.conf['savedir'] + '/final-prio')
 
 	#compute pseudo likelihoods for a set of utterances
 	#	featdir: directory where the features are located
@@ -694,10 +694,10 @@ class nnet:
 	def decode(self, featdir, utt2spk):
 		
 		#define the decoding operation
-		graph, data_in, weights, biases, state_prior, global_saver = self.create_graph()
+		graph, nnet = self.create_graph()
 		with graph.as_default():
-			out = self.model(data_in, weights[0:len(weights)-1], biases[0:len(biases)-1], True)
-			logits = tf.matmul(out, weights[len(weights)-1]) + biases[len(biases)-1]
+			out = self.model(data_in, nnet['weights'][0:len(nnet['weights'])-1], nnet['biases'][0:len(nnet['biases'])-1], True)
+			logits = tf.matmul(out, nnet['weights'][len(nnet['weights'])-1]) + nnet['biases'][len(nnet['biases'])-1]
 			predictions = tf.nn.softmax(logits)
 			
 		#open feature reader
@@ -713,10 +713,10 @@ class nnet:
 		#start tensorflow session
 		with tf.Session(graph=graph) as session:
 			#load the final neural net with priors
-			global_saver.restore(session, self.conf['savedir'] + '/final-prio')
+			nnet['global_saver'].restore(session, self.conf['savedir'] + '/final-prio')
 		
 			#get the state prior out of the graph (division broadcasting not possible in tf)
-			prior = self.state_prior.eval()
+			prior = nnet['state_prior'].eval()
 		
 			#feed the utterances one by one to the neural net
 			while True:
