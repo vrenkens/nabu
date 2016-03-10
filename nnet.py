@@ -106,13 +106,12 @@ class Nnet:
 			data = tf.nn.tanh(data)
 		else:
 			raise Exception('unknown nonlinearity')
-
-		#apply dropout	
-		if dropout<1:
-			data = tf.nn.dropout(data, dropout)
 		#apply l2 normalisation
 		if self.conf['l2_norm'] == 'True':
 			data = tf.nn.l2_normalize(data,1)*np.sqrt(float(self.conf['num_hidden_units']))				
+		#apply dropout	
+		if dropout<1:
+			data = tf.nn.dropout(data, dropout)
 	
 		return data
 
@@ -210,7 +209,7 @@ class Nnet:
 			for num_layers in range(int(self.conf['num_hidden_layers'])):
 		
 				#compute the logits (output before softmax)
-				out = self.model(nnet['data_in'], nnet['weights'][0:num_layers+1], nnet['biases'][0:num_layers+1], conf['dropout'])
+				out = self.model(nnet['data_in'], nnet['weights'][0:num_layers+1], nnet['biases'][0:num_layers+1], 1)
 				logits = tf.matmul(out, nnet['weights'][len(nnet['weights'])-1]) + nnet['biases'][len(nnet['biases'])-1]
 			
 				#apply softmax and compute loss
@@ -444,7 +443,7 @@ class Nnet:
 				
 			#define the training computation (forward prop, back prop, update gradients, update params) 
 			#compute the logits (output before softmax)
-			out = self.model(nnet['data_in'], nnet['weights'][0:len(nnet['weights'])-1], nnet['biases'][0:len(nnet['biases'])-1], conf['dropout'])
+			out = self.model(nnet['data_in'], nnet['weights'][0:len(nnet['weights'])-1], nnet['biases'][0:len(nnet['biases'])-1], float(conf['dropout']))
 			logits = tf.matmul(out, nnet['weights'][len(nnet['weights'])-1]) + nnet['biases'][len(nnet['biases'])-1]
 			
 			#apply softmax and compute loss

@@ -36,14 +36,8 @@ if GMMTRAINFEATURES:
 	if config.get('gmm-features','apply_cmvn'):
 		#compute cmvn stats
 		prepare_data.compute_cmvn(config.get('directories','train_features') + '/' + feat_cfg['name'])	
-	elif config.get('gmm-features','kaldi_cmvn'):
-		#change directory to kaldi egs
-		os.chdir(config.get('directories','kaldi_egs'))
-		#compute kaldi cmvn stats
-		os.system('steps/compute_cmvn_stats.sh %s %s/cmvn %s' % (config.get('directories','train_features') + '/' + feat_cfg['name'], config.get('directories','expdir'), config.get('directories','train_features') + '/' + feat_cfg['name']))
-		#go back to working dir
-		os.chdir(current_dir)
 	else:
+		#create fake cmvn statistics
 		#change directory to kaldi egs
 		os.chdir(config.get('directories','kaldi_egs'))
 		#create fake cmvn stats
@@ -61,14 +55,8 @@ if DNNTRAINFEATURES:
 		if config.get('dnn-features','apply_cmvn'):
 			#compute cmvn stats
 			prepare_data.compute_cmvn(config.get('directories','train_features') + '/' + feat_cfg['name'])	
-		elif config.get('dnn-features','kaldi_cmvn'):
-			#change directory to kaldi egs
-			os.chdir(config.get('directories','kaldi_egs'))
-			#compute kaldi cmvn stats
-			os.system('steps/compute_cmvn_stats.sh %s %s/cmvn %s' % (config.get('directories','train_features') + '/' + feat_cfg['name'], config.get('directories','expdir'), config.get('directories','train_features') + '/' + feat_cfg['name']))
-			#go back to working dir
-			os.chdir(current_dir)
 		else:
+			#create fake cmvn statistics
 			#change directory to kaldi egs
 			os.chdir(config.get('directories','kaldi_egs'))
 			#create fake cmvn stats
@@ -89,14 +77,8 @@ if GMMTESTFEATURES:
 	if config.get('gmm-features','apply_cmvn'):
 		#compute cmvn stats
 		prepare_data.compute_cmvn(config.get('directories','test_features') + '/' + feat_cfg['name'])	
-	elif config.get('gmm-features','kaldi_cmvn'):
-		#change directory to kaldi egs
-		os.chdir(config.get('directories','kaldi_egs'))
-		#compute kaldi cmvn stats
-		os.system('steps/compute_cmvn_stats.sh %s %s/cmvn %s' % (config.get('directories','test_features') + '/' + feat_cfg['name'], config.get('directories','expdir'), config.get('directories','test_features') + '/' + feat_cfg['name']))
-		#go back to working dir
-		os.chdir(current_dir)
 	else:
+		#create fake cmvn statistics
 		#change directory to kaldi egs
 		os.chdir(config.get('directories','kaldi_egs'))
 		#create fake cmvn stats
@@ -114,14 +96,8 @@ if DNNTESTFEATURES:
 		if config.get('dnn-features','apply_cmvn'):
 			#compute cmvn stats
 			prepare_data.compute_cmvn(config.get('directories','test_features') + '/' + feat_cfg['name'])	
-		elif config.get('dnn-features','kaldi_cmvn'):
-			#change directory to kaldi egs
-			os.chdir(config.get('directories','kaldi_egs'))
-			#compute kaldi cmvn stats
-			os.system('steps/compute_cmvn_stats.sh %s %s/cmvn %s' % (config.get('directories','test_features') + '/' + feat_cfg['name'], config.get('directories','expdir'), config.get('directories','test_features') + '/' + feat_cfg['name']))
-			#go back to working dir
-			os.chdir(current_dir)
 		else:
+			#create fake cmvn statistics
 			#change directory to kaldi egs
 			os.chdir(config.get('directories','kaldi_egs'))
 			#create fake cmvn stats
