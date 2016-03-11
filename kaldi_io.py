@@ -140,6 +140,22 @@ def create_dummy(gmm_dir, nnet_dir, feat_dir, num_labels):
 # this function has been adapted from pdnn toolkit (see licence at the top of this file)(https://github.com/yajiemiao/pdnn)
 class KaldiReadIn(object):
 
+	def __init__(self, scp_path):
+	
+		self.scp_position = 0
+		fin = open(scp_path,"r")
+		self.utt_ids = []
+		self.scp_data = []
+		line = fin.readline()
+		while line != '' and line != None:
+			utt_id, path_pos = line.replace('\n','').split(' ')
+			path, pos = path_pos.split(':')
+			self.utt_ids.append(utt_id)
+			self.scp_data.append((path, pos))
+			line = fin.readline()
+
+		fin.close()		
+		
 	def read_utt_data(self, index):
 		ark_read_buffer = open(self.scp_data[index][0], 'rb')
 		ark_read_buffer.seek(int(self.scp_data[index][1]),0)
@@ -159,23 +175,7 @@ class KaldiReadIn(object):
 		ark_read_buffer.close()
 		
 		return utt_mat
-
-	def __init__(self, scp_path):
 	
-		self.scp_position = 0
-		fin = open(scp_path,"r")
-		self.utt_ids = []
-		self.scp_data = []
-		line = fin.readline()
-		while line != '' and line != None:
-			utt_id, path_pos = line.replace('\n','').split(' ')
-			path, pos = path_pos.split(':')
-			self.utt_ids.append(utt_id)
-			self.scp_data.append((path, pos))
-			line = fin.readline()
-
-		fin.close()		
-		
 	def read_next_utt(self):
 		
 		if len(self.scp_data) == 0:

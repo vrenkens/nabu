@@ -295,7 +295,7 @@ if DECODE:
 	
 	#create a dummy neural net
 	print('------- creating dummy nnet ----------')
-	kaldi_io.create_dummy(config.get('directories','expdir'), + '/' + config.get('nnet-structure','gmm_name'), decodedir, config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), num_labels)
+	kaldi_io.create_dummy(config.get('directories','expdir') + '/' + config.get('nnet-structure','gmm_name'), decodedir, config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), num_labels)
 	
 	#change directory to kaldi egs
 	os.chdir(config.get('directories','kaldi_egs'))

@@ -249,7 +249,7 @@ class Nnet:
 				dbias_summaries.append(tf.histogram_summary('db%d' % i, dbiases[i]))
 		
 			#merge summaries
-			merged_summary = tf.merge_summary(weight_summaries + dweight_summaries + bias_summaries + dbias_summaries + [loss_summary])
+			merged_summary = tf.merge_all_summaries()
 			#define writers
 			summary_writer = tf.train.SummaryWriter(conf['savedir'] + '/summaries-init')
 	
@@ -450,7 +450,7 @@ class Nnet:
 			loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, labels))/num_frames
 			
 			#do backprop to compute gradients
-			gradients = tf.gradients(loss,nnet['weights'] + nnet['biases'])	
+			gradients = tf.gradients(loss, nnet['weights'] + nnet['biases'])	
 			
 			#accumulate the gradients and make a list of gradients that need to be applied to update the parameters
 			gradients_to_apply = []
@@ -558,8 +558,7 @@ class Nnet:
 				#visualize the graph
 				if conf['visualise']=='True':
 					summary_writer.add_graph(session.graph_def)
-					summary_writer
-			
+
 				#calculate number of steps
 				nsteps =  int(int(conf['num_epochs']) * len(alignments) / int(conf['batch_size']))
 			
