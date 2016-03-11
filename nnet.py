@@ -752,7 +752,10 @@ class Nnet:
 				#apply prior to predictions
 				p = np.divide(p,prior)
 				#compute pseudo-likelihood by normalising the weighted predictions
-				p = np.divide(p,np.sum(p))
+				p = np.divide(p,np.sum(p,1)[:,np.newaxis])
 				#write the pseudo-likelihoods in kaldi feature format
 				writer.write_next_utt(decodedir + '/feats.ark', utt_id, p)
+			
+		#close the writer
+		writer.close()
 
