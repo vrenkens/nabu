@@ -467,6 +467,16 @@ class Nnet:
 			
 			#prediction computation
 			predictions = tf.nn.softmax(logits)
+			
+			#evaluate the model without useing dropout (needed for validation)
+			#compute the logits (output before softmax)
+			out = self.model(nnet['data_in'], nnet['weights'][0:len(nnet['weights'])-1], nnet['biases'][0:len(nnet['biases'])-1], 1)
+			logits = tf.matmul(out, nnet['weights'][len(nnet['weights'])-1]) + nnet['biases'][len(nnet['biases'])-1]
+			
+			#apply softmax and compute loss
+			loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, labels))/num_frames
+			update_loss_val = batch_loss.assign(tf.add(batch_loss, loss)).op
+			predictions_val = tf.nn.softmax(logits)
 				
 			#create the visualisations							
 			#create loss plot
@@ -595,7 +605,7 @@ class Nnet:
 							feed_dict = {nnet['data_in'] : val_data[i:end_point,:], labels : val_labels[i:end_point,:]}
 					
 							#accumulate loss and get predictions
-							pl, _ = session.run([predictions, update_loss], feed_dict = feed_dict)
+							pl, _ = session.run([predictions_val, update_loss_val], feed_dict = feed_dict)
 							#update accuracy
 							p += accuracy(pl, val_labels[i:end_point,:])
 							#update iterator

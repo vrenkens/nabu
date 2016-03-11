@@ -17,7 +17,7 @@ TEST_TRI = False
 LDA_GMM = False
 TEST_LDA = False
 NNET = True
-DECODE = True
+DECODE = False
 
 #read config file
 config = configparser.ConfigParser()
