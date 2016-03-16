@@ -16,7 +16,7 @@ TRI_GMM = False
 TEST_TRI = False
 LDA_GMM = False
 TEST_LDA = False
-NNET = False
+NNET = True
 DECODE = True
 
 #read config file

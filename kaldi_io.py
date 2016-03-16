@@ -110,7 +110,7 @@ def create_dummy(gmm_dir, nnet_dir, feat_dir, num_labels):
 	#add zero bias params
 	nnet.write('<BiasParams>  [' + s[1:len(s)-1] + ' ]\n')
 	nnet.write('<RankIn> 20 <RankOut> 80 <UpdatePeriod> 4 <NumSamplesHistory> 2000 <Alpha> 4 <MaxChangePerSample> 0.075 </AffineComponentPreconditionedOnline>\n')
-	s = str(np.ones([num_labels,],np.float32)/num_labels)
+	s = str(np.ones([num_labels,],np.float32))
 	nnet.write('</Components> </Nnet>  [' + s[1:len(s)-1] + ' ]')
 
 	nnet.close()
