@@ -6,16 +6,16 @@ import kaldi_io
 import cPickle as pickle
 import gzip
 
-GMMTRAINFEATURES = False
-GMMTESTFEATURES = False
-DNNTRAINFEATURES = False
-DNNTESTFEATURES = False
-MONO_GMM = False
-TEST_MONO = False
-TRI_GMM = False
-TEST_TRI = False
-LDA_GMM = False
-TEST_LDA = False
+GMMTRAINFEATURES = True
+GMMTESTFEATURES = True
+DNNTRAINFEATURES = True
+DNNTESTFEATURES = True
+MONO_GMM = True
+TEST_MONO = True
+TRI_GMM = True
+TEST_TRI = True
+LDA_GMM = True
+TEST_LDA = True
 NNET = True
 DECODE = True
 
@@ -24,8 +24,7 @@ config = configparser.ConfigParser()
 config.read('config/config_AURORA4.cfg')
 current_dir = os.getcwd()
 
-######################################################################################################
-#compute the features of the training set
+#compute the features of the training set for GMM training
 if GMMTRAINFEATURES:
 	feat_cfg = dict(config.items('gmm-features'))
 
@@ -45,6 +44,7 @@ if GMMTRAINFEATURES:
 		#go back to working dir
 		os.chdir(current_dir)
 
+#compute the features of the training set for DNN training if they are different then the GMM features
 if DNNTRAINFEATURES:		
 	if config.get('dnn-features','name') != config.get('gmm-features','name'):
 		feat_cfg = dict(config.items('dnn-features'))
@@ -65,8 +65,7 @@ if DNNTRAINFEATURES:
 			os.chdir(current_dir)
 	
 	
-######################################################################################################
-#compute the features of the testing set
+#compute the features of the training set for GMM testing
 if GMMTESTFEATURES:
 	feat_cfg = dict(config.items('gmm-features'))
 
@@ -86,6 +85,7 @@ if GMMTESTFEATURES:
 		#go back to working dir
 		os.chdir(current_dir)
 	
+#compute the features of the training set for DNN testing if they are different then the GMM features
 if DNNTESTFEATURES:		
 	if config.get('dnn-features','name') != config.get('gmm-features','name'):
 		feat_cfg = dict(config.items('dnn-features'))
@@ -106,7 +106,6 @@ if DNNTESTFEATURES:
 			os.chdir(current_dir)
 	
 
-######################################################################################################	
 #use kaldi to train the monophone GMM
 if MONO_GMM:
 	#change directory to kaldi egs
@@ -132,7 +131,7 @@ if MONO_GMM:
 	#go back to working dir
 	os.chdir(current_dir)
 
-######################################################################################################	
+
 #use kaldi to test the monophone gmm
 if TEST_MONO:
 	#change directory to kaldi egs
@@ -148,7 +147,7 @@ if TEST_MONO:
 	#go back to working dir
 	os.chdir(current_dir)
 
-######################################################################################################	
+
 #use kaldi to train the triphone GMM
 if TRI_GMM:
 	#change directory to kaldi egs
@@ -173,7 +172,7 @@ if TRI_GMM:
 	#go back to working dir
 	os.chdir(current_dir)
 
-######################################################################################################
+
 #use kaldi to test the triphone GMM
 if TEST_TRI:
 	#change directory to kaldi egs
@@ -189,7 +188,7 @@ if TEST_TRI:
 	#go back to working dir
 	os.chdir(current_dir)
 	
-######################################################################################################	
+
 #use kaldi to train the LDA+MLLT GMM
 if LDA_GMM:
 	#change directory to kaldi egs
@@ -214,8 +213,7 @@ if LDA_GMM:
 	#go back to working dir
 	os.chdir(current_dir)
 
-######################################################################################################
-#use kaldi to test the triphone GMM
+#use kaldi to test the LDA+MLLT GMM
 if TEST_LDA:
 	#change directory to kaldi egs
 	os.chdir(config.get('directories','kaldi_egs'))
@@ -230,7 +228,6 @@ if TEST_LDA:
 	#go back to working dir
 	os.chdir(current_dir)
 
-######################################################################################################
 #get nnet structure configs
 nnet_cfg = dict(config.items('nnet-structure'))
 	
@@ -256,7 +253,7 @@ if NNET:
 	if config.get('nnet-train','starting_step') == '-1':		
 		#shuffle the examples on disk
 		print('------- shuffling examples ----------')
-		prepare_data.shuffle_examples(config.get('directories','train_features') + '/' +  config.get('dnn-features','name'), int(config.get('nnet-train','valid_size')))
+		prepare_data.shuffle_examples(config.get('directories','train_features') + '/' +  config.get('dnn-features','name'))
 	
 	#read the alignments
 	print('------- reading alignments ----------')
@@ -281,7 +278,6 @@ if NNET:
 	Nnet.train(config.get('directories','train_features') + '/' +  config.get('dnn-features','name'), alignments, utt2spk, train_cfg)
 		
 
-######################################################################################################		
 if DECODE:
 	#read the utterance to speaker mapping
 	print('------- reading utt2spk ----------')
@@ -291,6 +287,8 @@ if DECODE:
 	print('------- computing state pseudo-likelihoods ----------')
 	savedir = config.get('directories','expdir') + '/' + config.get('nnet-structure','name')
 	decodedir = savedir + '/decode'
+	if not os.path.isdir(decodedir):
+		os.mkdir(decodedir)
 	Nnet.decode(config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), utt2spk, savedir, decodedir)
 	
 	#create a dummy neural net

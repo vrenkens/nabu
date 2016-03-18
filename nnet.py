@@ -1,5 +1,4 @@
 import kaldi_io
-
 import numpy as np
 import tensorflow as tf
 from six.moves import cPickle as pickle
@@ -7,7 +6,6 @@ from six.moves import range
 import gzip
 import shutil
 import os
-import copy
 
 #compute the accuracy of predicted labels
 #	predictions: predicted labels
@@ -129,150 +127,150 @@ class Nnet:
 	#	num_layers: number of hidden layers in the neural net (> 0)
 	#	returns the computational graph and neural net
 	def create_graph(self, num_layers):
-		nnet = {}
+		nnet_dict = {}
 		graph = tf.Graph()
 		with graph.as_default():
 			#input data
-			nnet['data_in'] = tf.placeholder(tf.float32, shape = [None, self.conf['input_dim']*(1+2*int(self.conf['context_width']))])
+			nnet_dict['data_in'] = tf.placeholder(tf.float32, shape = [None, self.conf['input_dim']*(1+2*int(self.conf['context_width']))])
 		
 			#define weights, biases and their derivatives lists
-			nnet['weights'] = []
-			nnet['biases'] = []
+			nnet_dict['weights'] = []
+			nnet_dict['biases'] = []
 		
 			#input layer, initialise as random normal
-			nnet['weights'].append(tf.Variable(tf.random_normal([self.conf['input_dim']*(1+2*int(self.conf['context_width'])), int(self.conf['num_hidden_units'])], stddev=1/np.sqrt(self.conf['input_dim'])), name = 'Win'))
-			nnet['biases'].append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units'])], stddev=float(self.conf['biases_std'])), name = 'bin'))
+			nnet_dict['weights'].append(tf.Variable(tf.random_normal([self.conf['input_dim']*(1+2*int(self.conf['context_width'])), int(self.conf['num_hidden_units'])], stddev=1/np.sqrt(self.conf['input_dim'])), name = 'Win'))
+			nnet_dict['biases'].append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units'])], stddev=float(self.conf['biases_std'])), name = 'bin'))
 		
 			#hidden layers, initialise as random normal
 			for i in range(num_layers-1):
-				nnet['weights'].append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units']), int(self.conf['num_hidden_units'])], stddev=1/np.sqrt(float(self.conf['num_hidden_units']))), name = 'W%d' % i))
-				nnet['biases'].append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units'])], stddev=float(self.conf['biases_std'])), name = 'b%d' % i))
+				nnet_dict['weights'].append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units']), int(self.conf['num_hidden_units'])], stddev=1/np.sqrt(float(self.conf['num_hidden_units']))), name = 'W%d' % i))
+				nnet_dict['biases'].append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units'])], stddev=float(self.conf['biases_std'])), name = 'b%d' % i))
 		
 			#output layer, initialise as zero
-			nnet['weights'].append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units']), self.conf['num_labels']]), name = 'Wout'))
-			nnet['biases'].append(tf.Variable(tf.zeros([self.conf['num_labels']]), name = 'bout'))
+			nnet_dict['weights'].append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units']), self.conf['num_labels']]), name = 'Wout'))
+			nnet_dict['biases'].append(tf.Variable(tf.zeros([self.conf['num_labels']]), name = 'bout'))
 		
 			#the state prior probabilities
-			nnet['state_prior'] = tf.Variable(tf.ones([self.conf['num_labels']]), trainable=False, name = 'priors')
+			nnet_dict['state_prior'] = tf.Variable(tf.ones([self.conf['num_labels']]), trainable=False, name = 'priors')
 			
 			#saver object that saves all the neural net parameters
-			nnet['global_saver'] = tf.train.Saver([nnet['state_prior']] + nnet['weights'] + nnet['biases'])
+			nnet_dict['global_saver'] = tf.train.Saver([nnet_dict['state_prior']] + nnet_dict['weights'] + nnet_dict['biases'])
 			
 			#saver that stores everything but the last hidden layer this is needed to restore the variables when a layer is added in the initialisation
-			nnet['prev_saver'] = tf.train.Saver(nnet['weights'][0:num_layers-1] + nnet['biases'][0:num_layers-1] + [nnet['weights'][num_layers], nnet['biases'][num_layers]])
+			nnet_dict['prev_saver'] = tf.train.Saver(nnet_dict['weights'][0:num_layers-1] + nnet_dict['biases'][0:num_layers-1] + [nnet_dict['weights'][num_layers], nnet_dict['biases'][num_layers]])
 		
-		return graph, nnet
+		return graph, nnet_dict
 	
 	#expand the graph for training
 	#	graph: basic graph created with create_graph
-	#	nnet: neural net created with create_graph
+	#	nnet_dict: neural net created with create_graph
 	#	conf: configuration
-	def expand_graph_train(self, graph, nnet, conf):
+	def expand_graph_train(self, graph, nnet_dict, conf):
 		with graph.as_default():		
 			
 			#output targets
-			nnet['labels'] = tf.placeholder(tf.float32)
+			nnet_dict['labels'] = tf.placeholder(tf.float32)
 		
 			#define the derivatives of the weights and biases in a list
-			nnet['dweights'] = []
-			nnet['dbiases'] = []
+			nnet_dict['dweights'] = []
+			nnet_dict['dbiases'] = []
 			
 			#input layer
-			nnet['dweights'].append(tf.Variable(tf.zeros([self.conf['input_dim']*(1+2*int(self.conf['context_width'])), int(self.conf['num_hidden_units'])]), name = 'dWin'))
-			nnet['dbiases'].append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units'])]), name = 'dbin'))
+			nnet_dict['dweights'].append(tf.Variable(tf.zeros([self.conf['input_dim']*(1+2*int(self.conf['context_width'])), int(self.conf['num_hidden_units'])]), name = 'dWin'))
+			nnet_dict['dbiases'].append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units'])]), name = 'dbin'))
 			
 			#hidden layer (only one updated at a time so only one needed)
-			for i in range(len(nnet['weights'])-2):
-				nnet['dweights'].append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units']), int(self.conf['num_hidden_units'])]), name = 'dW%d' % i))
-				nnet['dbiases'].append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units'])]), name = 'db%d' % i))
+			for i in range(len(nnet_dict['weights'])-2):
+				nnet_dict['dweights'].append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units']), int(self.conf['num_hidden_units'])]), name = 'dW%d' % i))
+				nnet_dict['dbiases'].append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units'])]), name = 'db%d' % i))
 			
 			#output layer, initialise as zero
-			nnet['dweights'].append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units']), self.conf['num_labels']]), name = 'dWout'))
-			nnet['dbiases'].append(tf.Variable(tf.zeros([self.conf['num_labels']]), name = 'dbout'))
+			nnet_dict['dweights'].append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units']), self.conf['num_labels']]), name = 'dWout'))
+			nnet_dict['dbiases'].append(tf.Variable(tf.zeros([self.conf['num_labels']]), name = 'dbout'))
 			
 			#the number of frames presented to compute the gradient
-			nnet['num_frames'] = tf.Variable(tf.zeros([], dtype=tf.float32), trainable = False, name = 'num_frames')
+			nnet_dict['num_frames'] = tf.Variable(tf.zeros([], dtype=tf.float32), trainable = False, name = 'num_frames')
 			#the total loss of the batch
-			nnet['batch_loss'] = tf.Variable(tf.zeros([], dtype=tf.float32), trainable = False, name = 'batch_loss')
+			nnet_dict['batch_loss'] = tf.Variable(tf.zeros([], dtype=tf.float32), trainable = False, name = 'batch_loss')
 			#the total number of steps to be taken
-			nnet['num_steps'] = tf.Variable(0, trainable = False, name = 'num_steps')
+			nnet_dict['num_steps'] = tf.Variable(0, trainable = False, name = 'num_steps')
 			#the amount of steps already taken
-			nnet['global_step'] = tf.Variable(0, trainable=False, name = 'global_step')
+			nnet_dict['global_step'] = tf.Variable(0, trainable=False, name = 'global_step')
 			#a variable to scale the learning rate (used to reduce the learning rate in case validation performance drops)
-			nnet['learning_rate_fact'] = tf.Variable(tf.ones([], dtype=tf.float32), trainable = False, name = 'learning_rate_fact')
+			nnet_dict['learning_rate_fact'] = tf.Variable(tf.ones([], dtype=tf.float32), trainable = False, name = 'learning_rate_fact')
 			
 			#compute the learning rate with exponential decay and scale with the learning rate factor
-			nnet['learning_rate'] = tf.mul(tf.train.exponential_decay(float(conf['initial_learning_rate']), nnet['global_step'], nnet['num_steps'], float(conf['learning_rate_decay'])), nnet['learning_rate_fact'])
+			nnet_dict['learning_rate'] = tf.mul(tf.train.exponential_decay(float(conf['initial_learning_rate']), nnet_dict['global_step'], nnet_dict['num_steps'], float(conf['learning_rate_decay'])), nnet_dict['learning_rate_fact'])
 			
 			#define the optimizer
-			optimizer = tf.train.AdamOptimizer(nnet['learning_rate'])
+			optimizer = tf.train.AdamOptimizer(nnet_dict['learning_rate'])
 				
 			#define the training computation (forward prop, back prop, update gradients, update params) 
 			#compute the logits (output before softmax)
-			out = self.model(nnet['data_in'], nnet['weights'][0:len(nnet['weights'])-1], nnet['biases'][0:len(nnet['biases'])-1], float(conf['dropout']))
-			logits = tf.matmul(out, nnet['weights'][len(nnet['weights'])-1]) + nnet['biases'][len(nnet['biases'])-1]
+			out = self.model(nnet_dict['data_in'], nnet_dict['weights'][0:len(nnet_dict['weights'])-1], nnet_dict['biases'][0:len(nnet_dict['biases'])-1], float(conf['dropout']))
+			logits = tf.matmul(out, nnet_dict['weights'][len(nnet_dict['weights'])-1]) + nnet_dict['biases'][len(nnet_dict['biases'])-1]
 			
 			#apply softmax and compute loss
-			loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, nnet['labels']))/nnet['num_frames']
+			loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, nnet_dict['labels']))/nnet_dict['num_frames']
 			
 			#do backprop to compute gradients
-			gradients = tf.gradients(loss, nnet['weights'] + nnet['biases'])
+			gradients = tf.gradients(loss, nnet_dict['weights'] + nnet_dict['biases'])
 			
 			#accumulate the gradients and make a list of gradients that need to be applied to update the parameters
 			gradients_to_apply = []
-			nnet['update_gradients'] = []
-			nnet['update_loss'] = nnet['batch_loss'].assign(tf.add(nnet['batch_loss'], loss)).op
-			for i in range(len(nnet['dweights'])):
-				gradients_to_apply.append((nnet['dweights'][i].value(), nnet['weights'][i]))
-				gradients_to_apply.append((nnet['dbiases'][i].value(), nnet['biases'][i]))
-				nnet['update_gradients'].append(nnet['dweights'][i].assign(tf.add(nnet['dweights'][i], gradients[i])).op)
-				nnet['update_gradients'].append(nnet['dbiases'][i].assign(tf.add(nnet['dbiases'][i], gradients[len(nnet['dweights'])+i])).op)
+			nnet_dict['update_gradients'] = []
+			nnet_dict['update_loss'] = nnet_dict['batch_loss'].assign(tf.add(nnet_dict['batch_loss'], loss)).op
+			for i in range(len(nnet_dict['dweights'])):
+				gradients_to_apply.append((nnet_dict['dweights'][i].value(), nnet_dict['weights'][i]))
+				gradients_to_apply.append((nnet_dict['dbiases'][i].value(), nnet_dict['biases'][i]))
+				nnet_dict['update_gradients'].append(nnet_dict['dweights'][i].assign(tf.add(nnet_dict['dweights'][i], gradients[i])).op)
+				nnet_dict['update_gradients'].append(nnet_dict['dbiases'][i].assign(tf.add(nnet_dict['dbiases'][i], gradients[len(nnet_dict['dweights'])+i])).op)
 				
 			#apply the gradients to update the parameters
-			nnet['optimize'] = optimizer.apply_gradients(gradients_to_apply, global_step=nnet['global_step'])
+			nnet_dict['optimize'] = optimizer.apply_gradients(gradients_to_apply, global_step=nnet_dict['global_step'])
 			
 			#prediction computation
-			nnet['predictions'] = tf.nn.softmax(logits)
+			nnet_dict['predictions'] = tf.nn.softmax(logits)
 			
 			#evaluate the model without useing dropout (needed for validation)
 			#compute the logits (output before softmax)
-			out = self.model(nnet['data_in'], nnet['weights'][0:len(nnet['weights'])-1], nnet['biases'][0:len(nnet['biases'])-1], 1)
-			logits = tf.matmul(out, nnet['weights'][len(nnet['weights'])-1]) + nnet['biases'][len(nnet['biases'])-1]
+			out = self.model(nnet_dict['data_in'], nnet_dict['weights'][0:len(nnet_dict['weights'])-1], nnet_dict['biases'][0:len(nnet_dict['biases'])-1], 1)
+			logits = tf.matmul(out, nnet_dict['weights'][len(nnet_dict['weights'])-1]) + nnet_dict['biases'][len(nnet_dict['biases'])-1]
 			
 			#apply softmax and compute loss
-			loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, nnet['labels']))/nnet['num_frames']
-			nnet['update_loss_val'] = nnet['batch_loss'].assign(tf.add(nnet['batch_loss'], loss)).op
-			nnet['predictions_val'] = tf.nn.softmax(logits)
+			loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, nnet_dict['labels']))/nnet_dict['num_frames']
+			nnet_dict['update_loss_val'] = nnet_dict['batch_loss'].assign(tf.add(nnet_dict['batch_loss'], loss)).op
+			nnet_dict['predictions_val'] = tf.nn.softmax(logits)
 				
 			#create the visualisations							
 			#create loss plot
-			loss_summary = tf.scalar_summary('loss', nnet['batch_loss'])
+			loss_summary = tf.scalar_summary('loss', nnet_dict['batch_loss'])
 			#create a histogram of weights, biases and their gradients
 			weight_summaries = []
 			bias_summaries = []
 			dweight_summaries = []
 			dbias_summaries = []
 			
-			for i in range(len(nnet['dweights'])):
-				weight_summaries.append(tf.histogram_summary('W%d' % i, nnet['weights'][i]))
-				dweight_summaries.append(tf.histogram_summary('dW%d' % i, nnet['dweights'][i]))
-				bias_summaries.append(tf.histogram_summary('b%d' % i, nnet['biases'][i]))
-				dbias_summaries.append(tf.histogram_summary('db%d' % i, nnet['dbiases'][i]))
+			for i in range(len(nnet_dict['dweights'])):
+				weight_summaries.append(tf.histogram_summary('W%d' % i, nnet_dict['weights'][i]))
+				dweight_summaries.append(tf.histogram_summary('dW%d' % i, nnet_dict['dweights'][i]))
+				bias_summaries.append(tf.histogram_summary('b%d' % i, nnet_dict['biases'][i]))
+				dbias_summaries.append(tf.histogram_summary('db%d' % i, nnet_dict['dbiases'][i]))
 		
 			#merge summaries
-			nnet['merged_summary'] = tf.merge_summary(weight_summaries + dweight_summaries + bias_summaries + dbias_summaries + [loss_summary])
+			nnet_dict['merged_summary'] = tf.merge_summary(weight_summaries + dweight_summaries + bias_summaries + dbias_summaries + [loss_summary])
 			#define writers
-			nnet['summary_writer'] = tf.train.SummaryWriter(conf['savedir'] + '/summaries-train')
+			nnet_dict['summary_writer'] = tf.train.SummaryWriter(conf['savedir'] + '/summaries-train')
 			
 			#saver object that saves the training progress
-			nnet['saver'] = tf.train.Saver(max_to_keep=int(conf['check_buffer']))
+			nnet_dict['saver'] = tf.train.Saver(max_to_keep=int(conf['check_buffer']))
 			
 			#if we use the validation set to adapt the learning rate, create a saver to checkpoint the last time the validation set was evaluated
 			if conf['valid_adapt'] == 'True':
-				nnet['val_saver'] = tf.train.Saver(max_to_keep=1)
+				nnet_dict['val_saver'] = tf.train.Saver(max_to_keep=1)
 				
 			#initialisation op
-			nnet['init_vars'] = tf.initialize_all_variables()	
+			nnet_dict['init_vars'] = tf.initialize_all_variables()	
 	
 	
 	#compute the prior probability of the states. They are used to compute the pseudo likelihoods. The prior is computed by computing the average predictions from a chosen number of utterances
@@ -281,7 +279,7 @@ class Nnet:
 	def prior(self, alignments, conf):
 	
 		#define the decoding operation
-		graph, nnet = self.create_graph(int(self.conf['num_hidden_layers']))
+		graph, nnet_dict = self.create_graph(int(self.conf['num_hidden_layers']))
 		
 		prior = np.zeros([self.conf['num_labels']])
 		
@@ -298,13 +296,13 @@ class Nnet:
 		#start tensorflow session
 		with tf.Session(graph=graph) as session:
 			#load the nnet
-			nnet['global_saver'].restore(session, conf['savedir'] + '/final')
+			nnet_dict['global_saver'].restore(session, conf['savedir'] + '/final')
 		
 			#set the prior in the neural net
-			session.run(nnet['state_prior'].assign(prior))
+			session.run(nnet_dict['state_prior'].assign(prior))
 		
 			#save the final neural net with priors
-			nnet['global_saver'].save(session, conf['savedir'] + '/final-prio')
+			nnet_dict['global_saver'].save(session, conf['savedir'] + '/final-prio')
 	
 	#creats the validation set
 	#	featdir: directory where the validation features are located
@@ -312,11 +310,9 @@ class Nnet:
 	#	reader_cmvn: reader for the cmvn statistics
 	#	utt2spk: mapping from utterance to speaker
 	#	returns the validation data and validation labels
-	def create_validation(self, featdir, alignments, reader_cmvn, utt2spk):
-		#open feature reader for validation data
-		reader = kaldi_io.KaldiReadIn(featdir + '/feats_validation.scp')
+	def create_validation(self, reader, alignments, reader_cmvn, utt2spk):
 
-		#create validation set go through all the utterances in feats_validation.scp
+		#create validation set go through all the utterances in the reader
 		#define empty validation data
 		val_data = np.empty([0,self.conf['input_dim']*(1+2*int(self.conf['context_width']))], dtype=np.float32)
 		#define empty validation labels
@@ -349,7 +345,7 @@ class Nnet:
 
 	#checks the performance on the validation set goes back in training if performance is worse than previous step
 	#	session: the tensorflow session
-	#	nnet: the neural net
+	#	nnet_dict: the neural net
 	#	conf: the training configuration
 	#	val_data: the data in the validation set
 	#	val_label: the labels in the validation set
@@ -357,13 +353,13 @@ class Nnet:
 	#	prev_step: the step where the validation performance was checked last
 	#	old_loss: validation loss when the validation performance was checked last
 	#	returns True if validation performance was better, False otherwise
-	def validation_step(self, session, nnet, conf, val_data, val_labels, step, prev_step, old_loss):
+	def validation_step(self, session, nnet_dict, conf, val_data, val_labels, step, prev_step, old_loss):
 		#initialise accuracy 	
 		p = 0
 	
 		#tell the neural net how many frames are in the entire batch
 		nframes = val_data.shape[0]
-		session.run(nnet['num_frames'].assign(nframes))
+		session.run(nnet_dict['num_frames'].assign(nframes))
 	
 		#feed the batch in a number of minibatches to the neural net and accumulate the loss
 		i = 0
@@ -374,20 +370,20 @@ class Nnet:
 			else:
 				end_point = min(i+int(conf['mini_batch_size']), nframes)
 			
-			feed_dict = {nnet['data_in'] : val_data[i:end_point,:], nnet['labels'] : val_labels[i:end_point,:]}
+			feed_dict = {nnet_dict['data_in'] : val_data[i:end_point,:], nnet_dict['labels'] : val_labels[i:end_point,:]}
 	
 			#accumulate loss and get predictions
-			pl, _ = session.run([nnet['predictions_val'], nnet['update_loss_val']], feed_dict = feed_dict)
+			pl, _ = session.run([nnet_dict['predictions_val'], nnet_dict['update_loss_val']], feed_dict = feed_dict)
 			#update accuracy
 			p += accuracy(pl, val_labels[i:end_point,:])
 			#update iterator
 			i = end_point
 	
 		#get the accumulated loss		
-		l_val = nnet['batch_loss'].eval(session=session)
+		l_val = nnet_dict['batch_loss'].eval(session=session)
 		
 		#reinitialise the accumulated loss
-		tf.initialize_variables([nnet['batch_loss']]).run(session=session)
+		tf.initialize_variables([nnet_dict['batch_loss']]).run(session=session)
 		
 		print("validation loss = %f, validation accuracy = %.1f%%" % (l_val, p/nframes))
 		
@@ -396,19 +392,19 @@ class Nnet:
 			#check if validation loss is lower than previously
 			if l_val < old_loss:
 				#if performance is better, checkpoint and move on
-				nnet['val_saver'].save(session,conf['savedir'] + '/validation/validation-checkpoint')
+				nnet_dict['val_saver'].save(session,conf['savedir'] + '/validation/validation-checkpoint')
 				#update old loss
 				old_loss = l_val
 				#set last step that validation has been performed 
 				prev_step = step
-				return True
+				return True, prev_step, old_loss
 			else:
 				#go back to the point where the validation set was previously evaluated
-				nnet['val_saver'].restore(session, conf['savedir'] + '/validation/validation-checkpoint')
+				nnet_dict['val_saver'].restore(session, conf['savedir'] + '/validation/validation-checkpoint')
 			
 				print('performance on validation set is worse, retrying with halved learning rate')
 				#half the learning rate
-				session.run(nnet['learning_rate_fact'].assign(nnet['learning_rate_fact'].eval(session = session)/2))
+				session.run(nnet_dict['learning_rate_fact'].assign(nnet_dict['learning_rate_fact'].eval(session = session)/2))
 		
 				#go back in the dataset to the previous point
 				num_utt = 0
@@ -419,26 +415,26 @@ class Nnet:
 				
 				#set the step back to the previous point 
 				step = prev_step
-				session.run(nnet['global_step'].assign(step))
+				session.run(nnet_dict['global_step'].assign(step))
 				
 				#save the net with adjusted learing_rate_fact	
-				nnet['val_saver'].save(session,conf['savedir'] + '/validation/validation-checkpoint')
+				nnet_dict['val_saver'].save(session,conf['savedir'] + '/validation/validation-checkpoint')
 				
-				return False
+				return False, prev_step, old_loss
 		else:
-			return True
+			return True, prev_step, old_loss
 			
 	#does the training step: forward, backward pass and update parameters
 	#	session: the tensorflow session
-	#	nnet: the neural net
+	#	nnet_dict: the neural net
 	#	conf: the training configuration
 	#	step: the current step
 	#	batch_data: the data for this batch
 	#	batch_label: the labels for this batch
-	def training_step(self, session, nnet, conf, step, batch_data, batch_labels):
+	def training_step(self, session, nnet_dict, conf, step, batch_data, batch_labels):
 		#tell the neural net how many frames are in the entire batch
 		nframes = batch_data.shape[0]
-		session.run(nnet['num_frames'].assign(nframes))
+		session.run(nnet_dict['num_frames'].assign(nframes))
 	
 		#feed the batch in a number of minibatches to the neural net and accumulate the gradients and loss (we do it this way to limit memory usage)	
 		finished = False
@@ -448,30 +444,30 @@ class Nnet:
 			# prepare data
 			if batch_data.shape[0] > int(conf['mini_batch_size']) and conf['mini_batch_size'] != '-1':
 				feed_labels = batch_labels[0:int(conf['mini_batch_size']),:]
-				feed_dict = {nnet['data_in'] : batch_data[0:int(conf['mini_batch_size']),:], nnet['labels'] : feed_labels}
+				feed_dict = {nnet_dict['data_in'] : batch_data[0:int(conf['mini_batch_size']),:], nnet_dict['labels'] : feed_labels}
 				batch_data = batch_data[int(conf['mini_batch_size']):batch_data.shape[0],:]
 				batch_labels = batch_labels[int(conf['mini_batch_size']):batch_labels.shape[0],:]
 			else:
 				feed_labels = batch_labels
-				feed_dict = {nnet['data_in'] : batch_data, nnet['labels'] : feed_labels}
+				feed_dict = {nnet_dict['data_in'] : batch_data, nnet_dict['labels'] : feed_labels}
 				finished = True
 				
 			#do forward-backward pass and update gradients	
-			out = session.run([nnet['predictions'], nnet['update_loss']] + nnet['update_gradients'], feed_dict=feed_dict)
+			out = session.run([nnet_dict['predictions'], nnet_dict['update_loss']] + nnet_dict['update_gradients'], feed_dict=feed_dict)
 			#update batch accuracy
 			p += accuracy(out[0], feed_labels)
 	
 		#write summaries to disk so Tensorboard can read them
 		if conf['visualise'] == 'True':
-			nnet['summary_writer'].add_summary(nnet['merged_summary'].eval(session=session), global_step = step)
+			nnet_dict['summary_writer'].add_summary(nnet_dict['merged_summary'].eval(session=session), global_step = step)
 			
 		#do the optimization operation
-		session.run(nnet['optimize'])
+		session.run(nnet_dict['optimize'])
 			
-		print("step %d: training loss = %f, accuracy = %.1f%%, learning rate = %f, #frames in batch = %d" % (step + 1, nnet['batch_loss'].eval(session=session), p/nframes, nnet['learning_rate'].eval(session=session), nframes))
+		print("step %d: training loss = %f, accuracy = %.1f%%, learning rate = %f, #frames in batch = %d" % (step + 1, nnet_dict['batch_loss'].eval(session=session), p/nframes, nnet_dict['learning_rate'].eval(session=session), nframes))
 	
 		#reinitlialize the gradients, loss and prediction accuracy
-		tf.initialize_variables(nnet['dweights'] + nnet['dbiases'] + [nnet['batch_loss']]).run(session=session)
+		tf.initialize_variables(nnet_dict['dweights'] + nnet_dict['dbiases'] + [nnet_dict['batch_loss']]).run(session=session)
 	
 	# Train the neural network with stochastic gradient descent 
 	#	featdir: directory where the features are located
@@ -489,13 +485,13 @@ class Nnet:
 			#open cmvn statistics reader
 			reader_cmvn = kaldi_io.KaldiReadIn(featdir + '/cmvn.scp')
 			
-			#create the validation set
-			if int(conf['valid_size']) > 0:
-				val_data, val_labels = self.create_validation(featdir, alignments, reader_cmvn, utt2spk)
-			
 			#open feature reader for training data
 			reader = kaldi_io.KaldiReadIn(featdir + '/feats_shuffled.scp')
 			
+			#create the validation set
+			if int(conf['valid_size']) > 0:
+				val_data, val_labels = self.create_validation(reader.split(int(conf['valid_size'])), alignments, reader_cmvn, utt2spk)
+						
 			#go to the point in the database where the training was at checkpoint
 			num_utt = 0
 			while num_utt < int(conf['batch_size'])*int(conf['starting_step']):
@@ -506,17 +502,17 @@ class Nnet:
 			#check to see if we need to initialise the neural net or load a checkpointed one
 			if conf['starting_step'] == '0':		
 				num_layers = 1	
-				graph, nnet = self.create_graph(num_layers)
-				self.expand_graph_train(graph, nnet, conf)
+				graph, nnet_dict = self.create_graph(num_layers)
+				self.expand_graph_train(graph, nnet_dict, conf)
 				session = tf.Session(graph=graph)
-				session.run(nnet['init_vars'])
+				session.run(nnet_dict['init_vars'])
 				step = 0
 			else:
 				num_layers = min(int(int(conf['starting_step'])/int(conf['add_layer_period']))+1, int(self.conf['num_hidden_layers']))
-				graph, nnet = self.create_graph(num_layers)
-				self.expand_graph_train(graph, nnet, conf)
+				graph, nnet_dict = self.create_graph(num_layers)
+				self.expand_graph_train(graph, nnet_dict, conf)
 				session = tf.Session(graph=graph)
-				nnet['saver'].restore(session, conf['savedir'] + '/training/model-' + conf['starting_step'])
+				nnet_dict['saver'].restore(session, conf['savedir'] + '/training/model-' + conf['starting_step'])
 				step = int(conf['starting_step'])				
 
 			#calculate number of steps
@@ -524,14 +520,12 @@ class Nnet:
 			print('starting training, total number of steps = %d' % nsteps)
 		
 			#set the number of steps
-			session.run(nnet['num_steps'].assign(nsteps))
+			session.run(nnet_dict['num_steps'].assign(nsteps))
 		
 			#compute the first validation perfomance
 			if int(conf['valid_size']) > 0:
-				prev_step = 0
 				retry_count = 0
-				old_loss = float('inf')
-				self.validation_step(session, nnet, conf, val_data, val_labels, step, prev_step, old_loss)
+				_, prev_step, old_loss = self.validation_step(session, nnet_dict, conf, val_data, val_labels, step, 0, float('inf'))
 		
 			#flag to see if all layers have been added
 			if num_layers == int(self.conf['num_hidden_layers']):
@@ -547,43 +541,45 @@ class Nnet:
 					num_layers += 1
 					print('adding a layer to the nearal net, current number of layers = %d' % (num_layers))
 					#save the current neural net
-					nnet['global_saver'].save(session, conf['savedir'] + '/training/model-addlayer')
+					nnet_dict['global_saver'].save(session, conf['savedir'] + '/training/model-addlayer')
 					#close the session
 					session.close()
 					#create a new graph with an extra layer
-					graph, nnet = self.create_graph(num_layers)
-					self.expand_graph_train(graph, nnet, conf)
+					graph, nnet_dict = self.create_graph(num_layers)
+					self.expand_graph_train(graph, nnet_dict, conf)
 					#open a session
 					session = tf.Session(graph=graph)
 					#initialise the graph
-					session.run(nnet['init_vars'])
+					session.run(nnet_dict['init_vars'])
 					#load the previous neural net
-					nnet['prev_saver'].restore(session, conf['savedir'] + '/training/model-addlayer')
+					nnet_dict['prev_saver'].restore(session, conf['savedir'] + '/training/model-addlayer')
 					#reinitialise the softmax
-					tf.initialize_variables([nnet['weights'][num_layers], nnet['biases'][num_layers]]).run(session = session)
+					tf.initialize_variables([nnet_dict['weights'][num_layers], nnet_dict['biases'][num_layers]]).run(session = session)
 					#compute the first validation perfomance
-					if int(conf['valid_size']) > 0:
-						old_loss = float('inf')
+					if int(conf['valid_size']) > 0:					
 						retry_count = 0
-						self.validation_step(session, nnet, conf, val_data, val_labels, step, prev_step, old_loss)
+						_, prev_step, old_loss = self.validation_step(session, nnet_dict, conf, val_data, val_labels, step, prev_step, old_loss = float('inf'))
 					if num_layers == int(self.conf['num_hidden_layers']):
 						nnet_complete = True
 						#visualize the complete graph
 						if conf['visualise']=='True':
-							nnet['summary_writer'].add_graph(session.graph_def)
+							nnet_dict['summary_writer'].add_graph(session.graph_def)
 				
 				#training step
 				#create a training batch 
 				(batch_data, batch_labels) = create_batch(reader, reader_cmvn, alignments, utt2spk, self.conf['input_dim'], int(self.conf['context_width']), self.conf['num_labels'], int(conf['batch_size']))
 				#do the training step
-				self.training_step(session, nnet, conf, step, batch_data, batch_labels)
+				self.training_step(session, nnet_dict, conf, step, batch_data, batch_labels)
 				
 				#check performance on validation set if we're at a validation frequency step with a complete net or an incomplete net where a layer is going to be added in the next step
 				if int(conf['valid_size']) > 0 and ((step % int(conf['valid_frequency']) == 0 and nnet_complete) or ((step + 1) % int(conf['add_layer_period']) == 0 and not nnet_complete)):
-					if self.validation_step(session, nnet, conf, val_data, val_labels, step, prev_step, old_loss):
+					sucess, prev_step, old_loss = self.validation_step(session, nnet_dict, conf, val_data, val_labels, step, prev_step, old_loss)
+					if sucess:
 						#reset retry counter
 						retry_count = 0
 					else:
+						#increment retry counter
+						retry_count += 1
 						#if the maximum number of retries has been reached, terminate training
 						if retry_count == int(conf['valid_retries']):
 							print('WARNING: terminating learning (early stopping)')
@@ -594,13 +590,13 @@ class Nnet:
 				
 				#save the neural net if at checkpoint
 				if step % int(conf['check_freq']) == 0:
-					nnet['saver'].save(session, conf['savedir'] + '/training/model', global_step=step)
+					nnet_dict['saver'].save(session, conf['savedir'] + '/training/model', global_step=step)
 				
 				#increment the step
 				step += 1
 				
 			#save the final neural net
-			nnet['global_saver'].save(session, conf['savedir'] + '/final')
+			nnet_dict['global_saver'].save(session, conf['savedir'] + '/final')
 			
 			#close the tf session 
 			session.close()
@@ -611,13 +607,15 @@ class Nnet:
 	#compute pseudo likelihoods for a set of utterances
 	#	featdir: directory where the features are located
 	#	utt2spk: mapping from utterance to speaker 
+	#	savedir: location of the neural net
+	#	decodir: location wher output should be stored
 	def decode(self, featdir, utt2spk, savedir, decodedir):
 		
 		#define the decoding operation
-		graph, nnet = self.create_graph(int(self.conf['num_hidden_layers']))
+		graph, nnet_dict = self.create_graph(int(self.conf['num_hidden_layers']))
 		with graph.as_default():
-			out = self.model(nnet['data_in'], nnet['weights'][0:len(nnet['weights'])-1], nnet['biases'][0:len(nnet['biases'])-1], 1)
-			logits = tf.matmul(out, nnet['weights'][len(nnet['weights'])-1]) + nnet['biases'][len(nnet['biases'])-1]
+			out = self.model(nnet_dict['data_in'], nnet_dict['weights'][0:len(nnet_dict['weights'])-1], nnet_dict['biases'][0:len(nnet_dict['biases'])-1], 1)
+			logits = tf.matmul(out, nnet_dict['weights'][len(nnet_dict['weights'])-1]) + nnet_dict['biases'][len(nnet_dict['biases'])-1]
 			predictions = tf.nn.softmax(logits)
 			
 		#open feature reader
@@ -627,16 +625,16 @@ class Nnet:
 			os.remove(decodedir + '/feats.ark')
 		#open cmvn statistics reader
 		reader_cmvn = kaldi_io.KaldiReadIn(featdir + '/cmvn.scp')			
-		#open prior writer
+		#open likelihood writer
 		writer = kaldi_io.KaldiWriteOut(decodedir + '/feats.scp')
 		
 		#start tensorflow session
 		with tf.Session(graph=graph) as session:
 			#load the final neural net with priors
-			nnet['global_saver'].restore(session, savedir + '/final-prio')
+			nnet_dict['global_saver'].restore(session, savedir + '/final-prio')
 		
-			#get the state prior out of the graph (division broadcasting not possible in tf)
-			prior = nnet['state_prior'].eval()
+			#get the state prior out of the graph
+			prior = nnet_dict['state_prior'].eval()
 		
 			#feed the utterances one by one to the neural net
 			while True:
@@ -650,13 +648,11 @@ class Nnet:
 				utt_mat = apply_cmvn(utt_mat, stats)
 				
 				#prepare data
-				feed_dict = {nnet['data_in'] : splice(utt_mat,int(self.conf['context_width']))}
+				feed_dict = {nnet_dict['data_in'] : splice(utt_mat,int(self.conf['context_width']))}
 				#compute predictions
 				p = session.run(predictions, feed_dict=feed_dict)
 				#apply prior to predictions
 				p = np.divide(p,prior)
-				#compute pseudo-likelihood by normalising the weighted predictions
-				#p = np.divide(p,np.sum(p,1)[:,np.newaxis])
 				#write the pseudo-likelihoods in kaldi feature format
 				writer.write_next_utt(decodedir + '/feats.ark', utt_id, p)
 			

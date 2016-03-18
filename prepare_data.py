@@ -130,21 +130,17 @@ def compute_cmvn(featdir):
 #this function will shuffle the utterances
 #	featdir: directory where the features can be found
 #	valid_size: size of the validation set if it is chosen as part of the training set
-def shuffle_examples(featdir,valid_size=0):
+def shuffle_examples(featdir):
 	#read feats.scp
 	featsfile = open(featdir + '/feats.scp', 'r')
 	feats = featsfile.readlines()
 	
 	#shuffle feats randomly
 	shuffle(feats)
-	
-	#create the validation set
-	valid_file = open(featdir + '/feats_validation.scp', 'w')
-	valid_file.writelines(feats[0:valid_size])
-	
+
 	#wite them to feats_shuffled.scp
 	feats_shuffledfile = open(featdir + '/feats_shuffled.scp', 'w')
-	feats_shuffledfile.writelines(feats[valid_size:len(feats)])
+	feats_shuffledfile.writelines(feats)
 	
 	
 		
