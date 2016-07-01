@@ -6,6 +6,7 @@ from six.moves import range
 import gzip
 import shutil
 import os
+import pdb
 
 #compute the accuracy of predicted labels
 #	predictions: predicted labels
@@ -352,7 +353,7 @@ class Nnet:
 	#	step: the current step
 	#	prev_step: the step where the validation performance was checked last
 	#	old_loss: validation loss when the validation performance was checked last
-	#	returns True if validation performance was better, False otherwise
+	#	returns True if validation performance was better, False otherwise and the updated old_loss
 	def validation_step(self, session, nnet_dict, conf, val_data, val_labels, step, prev_step, old_loss):
 		#initialise accuracy 	
 		p = 0
@@ -397,7 +398,7 @@ class Nnet:
 				old_loss = l_val
 				#set last step that validation has been performed 
 				prev_step = step
-				return True, prev_step, old_loss
+				return True, old_loss
 			else:
 				#go back to the point where the validation set was previously evaluated
 				nnet_dict['val_saver'].restore(session, conf['savedir'] + '/validation/validation-checkpoint')
@@ -405,13 +406,6 @@ class Nnet:
 				print('performance on validation set is worse, retrying with halved learning rate')
 				#half the learning rate
 				session.run(nnet_dict['learning_rate_fact'].assign(nnet_dict['learning_rate_fact'].eval(session = session)/2))
-		
-				#go back in the dataset to the previous point
-				num_utt = 0
-				while num_utt < int(conf['batch_size'])*(step-prev_step):
-					utt_id = reader.read_previous_scp()
-					if utt_id in alignments:
-						num_utt = num_utt + 1
 				
 				#set the step back to the previous point 
 				step = prev_step
@@ -420,9 +414,9 @@ class Nnet:
 				#save the net with adjusted learing_rate_fact	
 				nnet_dict['val_saver'].save(session,conf['savedir'] + '/validation/validation-checkpoint')
 				
-				return False, prev_step, old_loss
+				return False, old_loss
 		else:
-			return True, prev_step, old_loss
+			return True, old_loss
 			
 	#does the training step: forward, backward pass and update parameters
 	#	session: the tensorflow session
@@ -525,7 +519,8 @@ class Nnet:
 			#compute the first validation perfomance
 			if int(conf['valid_size']) > 0:
 				retry_count = 0
-				_, prev_step, old_loss = self.validation_step(session, nnet_dict, conf, val_data, val_labels, step, 0, float('inf'))
+				_, old_loss = self.validation_step(session, nnet_dict, conf, val_data, val_labels, step, 0, float('inf'))
+				prev_step = step
 		
 			#flag to see if all layers have been added
 			if num_layers == int(self.conf['num_hidden_layers']):
@@ -558,7 +553,8 @@ class Nnet:
 					#compute the first validation perfomance
 					if int(conf['valid_size']) > 0:					
 						retry_count = 0
-						_, prev_step, old_loss = self.validation_step(session, nnet_dict, conf, val_data, val_labels, step, prev_step, old_loss = float('inf'))
+						_, old_loss = self.validation_step(session, nnet_dict, conf, val_data, val_labels, step, prev_step, old_loss = float('inf'))
+						prev_step = step
 					if num_layers == int(self.conf['num_hidden_layers']):
 						nnet_complete = True
 						#visualize the complete graph
@@ -573,13 +569,27 @@ class Nnet:
 				
 				#check performance on validation set if we're at a validation frequency step with a complete net or an incomplete net where a layer is going to be added in the next step
 				if int(conf['valid_size']) > 0 and ((step % int(conf['valid_frequency']) == 0 and nnet_complete) or ((step + 1) % int(conf['add_layer_period']) == 0 and not nnet_complete)):
-					sucess, prev_step, old_loss = self.validation_step(session, nnet_dict, conf, val_data, val_labels, step, prev_step, old_loss)
+					sucess, old_loss = self.validation_step(session, nnet_dict, conf, val_data, val_labels, step, prev_step, old_loss)
 					if sucess:
 						#reset retry counter
 						retry_count = 0
+						
+						#update the prevous step
+						prev_step = step
 					else:
 						#increment retry counter
 						retry_count += 1
+						
+						#go back in the dataset to the previous point
+						num_utt = 0
+						while num_utt < int(conf['batch_size'])*(step-prev_step):
+							utt_id = reader.read_previous_scp()
+							if utt_id in alignments:
+								num_utt = num_utt + 1
+							
+						#reset the step	
+						step = prev_step
+						
 						#if the maximum number of retries has been reached, terminate training
 						if retry_count == int(conf['valid_retries']):
 							print('WARNING: terminating learning (early stopping)')

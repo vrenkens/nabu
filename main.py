@@ -6,16 +6,16 @@ import kaldi_io
 import cPickle as pickle
 import gzip
 
-GMMTRAINFEATURES = True
-GMMTESTFEATURES = True
-DNNTRAINFEATURES = True
-DNNTESTFEATURES = True
-MONO_GMM = True
-TEST_MONO = True
-TRI_GMM = True
-TEST_TRI = True
-LDA_GMM = True
-TEST_LDA = True
+GMMTRAINFEATURES = False
+GMMTESTFEATURES = False
+DNNTRAINFEATURES = False
+DNNTESTFEATURES = False
+MONO_GMM = False
+TEST_MONO = False
+TRI_GMM = False
+TEST_TRI = False
+LDA_GMM = False
+TEST_LDA = False
 NNET = True
 DECODE = True
 
