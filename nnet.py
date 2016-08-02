@@ -131,25 +131,119 @@ class Nnet:
 		nnet_dict = {}
 		graph = tf.Graph()
 		with graph.as_default():
+		
+			#---create placeholders---
+			
 			#input data
-			nnet_dict['data_in'] = tf.placeholder(tf.float32, shape = [None, self.conf['input_dim']*(1+2*int(self.conf['context_width']))])
-		
-			#define weights, biases and their derivatives lists
-			nnet_dict['weights'] = []
-			nnet_dict['biases'] = []
-		
-			#input layer, initialise as random normal
-			nnet_dict['weights'].append(tf.Variable(tf.random_normal([self.conf['input_dim']*(1+2*int(self.conf['context_width'])), int(self.conf['num_hidden_units'])], stddev=1/np.sqrt(self.conf['input_dim'])), name = 'Win'))
-			nnet_dict['biases'].append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units'])], stddev=float(self.conf['biases_std'])), name = 'bin'))
-		
-			#hidden layers, initialise as random normal
-			for i in range(num_layers-1):
-				nnet_dict['weights'].append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units']), int(self.conf['num_hidden_units'])], stddev=1/np.sqrt(float(self.conf['num_hidden_units']))), name = 'W%d' % i))
-				nnet_dict['biases'].append(tf.Variable(tf.random_normal([int(self.conf['num_hidden_units'])], stddev=float(self.conf['biases_std'])), name = 'b%d' % i))
-		
-			#output layer, initialise as zero
-			nnet_dict['weights'].append(tf.Variable(tf.zeros([int(self.conf['num_hidden_units']), self.conf['num_labels']]), name = 'Wout'))
-			nnet_dict['biases'].append(tf.Variable(tf.zeros([self.conf['num_labels']]), name = 'bout'))
+			data_in = tf.placeholder(tf.float32, shape = [None, self.conf['input_dim']*(1+2*int(self.conf['context_width']))])
+			
+			#reference labels
+			labels = tf.placeholder(tf.float32)
+			
+			#---define variables---
+			
+			#helper variables
+			
+			#number of frames used to compute the gradient
+			num_frames = tf.Variable(tf.zeros([], dtype=tf.float32), trainable = False, name = 'num_frames')
+			
+			#the total number of steps to be taken
+			num_steps = tf.Variable(0, trainable = False, name = 'num_steps')
+			
+			#the amount of steps already taken
+			global_step = tf.Variable(0, trainable=False, name = 'global_step')
+			
+			#a variable to scale the learning rate (used to reduce the learning rate in case validation performance drops)
+			learning_rate_fact = tf.Variable(tf.ones([], dtype=tf.float32), trainable = False, name = 'learning_rate_fact')
+			
+			#compute the learning rate with exponential decay and scale with the learning rate factor
+			learning_rate = tf.mul(tf.train.exponential_decay(float(conf['initial_learning_rate']), global_step, num_steps, float(conf['learning_rate_decay'])), learning_rate_fact)
+			
+			#the optimizer
+			optimizer = tf.train.AdamOptimizer(learning_rate)
+			
+			#the weights and biases
+			weights = [None]*(int(self.conf['num_hidden_layers'])+1)
+			biases = [None]*(int(self.conf['num_hidden_layers'])+1)
+			
+			with tf.variable_scope('model_params'):	
+			
+				#input layer
+				with tf.variable_scope('layer0'):
+					weights[0] = tf.get_variable('weights', [self.conf['input_dim']*(1+2*int(self.conf['context_width'])), int(self.conf['num_hidden_units'])], tf.random_normal_initializer(stddev=1/np.sqrt(self.conf['input_dim'])))
+					biases[0] = tf.get_variable('biases',  [int(self.conf['num_hidden_units'])], tf.random_normal_initializer(stddev=float(self.conf['biases_std'])))					
+
+				#hidden layers
+				for layer in range(1, int(self.conf['num_hidden_layers'])):
+					with tf.variable_scope('layer' + str(layer)):
+						weights[layer] = tf.get_variable('weights', [int(self.conf['num_hidden_units']), int(self.conf['num_hidden_units'])], tf.random_normal_initializer(stddev=1/np.sqrt(float(self.conf['num_hidden_units']))))
+						biases[layer] = tf.get_variable('biases',  [int(self.conf['num_hidden_units'])], tf.random_normal_initializer(stddev=float(self.conf['biases_std'])))
+				
+				#output layer
+				with tf.variable_scope('layer' + self.conf['num_hidden_layers']):
+					weights[-1] = tf.get_variable('weights', [int(self.conf['num_hidden_units']), self.conf['num_labels'])], tf.constant_initializer())
+					biases[-1] = tf.get_variable('biases',  [self.conf['num_labels']], tf.constant_initializer())		
+				
+						
+			#the gradients of the weights and biases
+			dweights = [None]*(int(self.conf['num_hidden_layers'])+1)
+			dbiases = [None]*(int(self.conf['num_hidden_layers'])+1)
+			with tf.variable_scope('gradients'):
+				
+				#input layer
+				with tf.variable_scope('layer0'):
+					dweights[0] = tf.get_variable('dweights', [self.conf['input_dim']*(1+2*int(self.conf['context_width'])), int(self.conf['num_hidden_units'])], tf.constant_initializer())
+					dbiases[0] = tf.get_variable('dbiases',  [int(self.conf['num_hidden_units'])], tf.constant_initializer())		
+				
+				#hidden layers
+				for layer in range(1, int(self.conf['num_hidden_layers'])):
+					with tf.variable_scope('layer' + str(layer)):
+					dweights[layer] = tf.get_variable('dweights', [int(self.conf['num_hidden_units']), int(self.conf['num_hidden_units'])], tf.constant_initializer())
+					dbiases[layer] = tf.get_variable('dbiases',  [int(self.conf['num_hidden_units'])], tf.constant_initializer())
+				
+				#output layer
+				with tf.variable_scope('layer' + self.conf['num_hidden_layers']):
+					dweights[-1] = tf.get_variable('dweights', [int(self.conf['num_hidden_units']), self.conf['num_labels'])], tf.constant_initializer())
+					dbiases[-1] = tf.get_variable('dbiases',  [self.conf['num_labels']], tf.constant_initializer())
+						
+			#---define the operations that will be used for training---
+			
+			#create an operation to update the gradients
+			#	batchgrads: list of gradients of this minibatch
+			#	gradients: variables where the gradients are accumulated in, in the same order as batchgrads
+			#	name: name of the operation
+			#	returns: the operation that updates the gradients
+			def update_gradients(batchgrads, gradients, name=None):
+				operations = [None]*len(gradients)
+				for i in range(len(gradients)):
+					operations[i] += gradients[i].assign(gradients[i] + batchgrads[i]).op
+				
+				return tf.group(operations, name=name)
+				
+			#create an operation to apply the gradients
+			#	variables: the variables that will be updated
+			#	gradients: the gradients of the variables in the same order as variables
+			#	optimizer: the optimizer that is being used
+			#	global_step: the variable that holds the step (it will be incremented if the gradients are applied)
+			#	name: name of the operation
+			#	returns: the operation that applies the gradients
+			def apply_gradients(variables, gradients, optimizer, global_step, name=None):
+				gradvar = [None]*len(gradients)
+				for i in range(len(gradients)):
+					gradvar[i] = (gradients[i].value(), variables[i])
+				
+				return optimizer.apply_gradients(gradvar, global_step=global_step, name=name)
+			
+			with tf.name_scope("trainops"):
+				with tf.name_scope("layer0"):
+					output = propagate(data_in, weights[0], biases[0], float(conf['dropout']))
+					logits = tf.matmul(weights[-1], output) + biases[-1]
+					loss = tf.div(tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, labels)),num_frames)
+					gradients = tf.gradients(loss, [weights[i] for i in [0,-1]] + [biases[i] for i in [0,-1]])
+					update_gradients(gradients, [dweights[i] for i in [0,-1]] + [dbiases[i] for i in [0,-1]], 'update_gradients')
+					apply_gradients([weights[i] for i in [0,-1]] + [biases[i] for i in [0,-1]], [dweights[i] for i in [0,-1]] + [dbiases[i] for i in [0,-1]], optimizer, global_step, 'apply_gradients')
+					
+			
 		
 			#the state prior probabilities
 			nnet_dict['state_prior'] = tf.Variable(tf.ones([self.conf['num_labels']]), trainable=False, name = 'priors')
