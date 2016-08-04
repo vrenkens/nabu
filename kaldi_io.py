@@ -217,11 +217,9 @@ class KaldiReadIn(object):
 		
 		return self.read_utt_data(self.utt_ids.index(utt_id))
 		
-	def split(self, num_utt):
-		reader = KaldiReadIn(None, self.scp_data[0:num_utt], self.utt_ids[0:num_utt])
-		self.scp_data = self.scp_data[num_utt:len(self.scp_data)]
-		self.utt_ids = self.utt_ids[num_utt:len(self.utt_ids)]
-		return reader
+	def split(self):
+		self.scp_data = self.scp_data[self.scp_position:-1]
+		self.utt_ids = self.utt_ids[self.scp_position:-1]
 	
 		
         

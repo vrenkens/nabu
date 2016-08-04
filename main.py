@@ -6,18 +6,22 @@ import kaldi_io
 import cPickle as pickle
 import gzip
 
-GMMTRAINFEATURES = True
-GMMTESTFEATURES = True
-DNNTRAINFEATURES = True
-DNNTESTFEATURES = True
-MONO_GMM = True
-TEST_MONO = True
-TRI_GMM = True
-TEST_TRI = True
-LDA_GMM = True
-TEST_LDA = True
-NNET = True
-DECODE = True
+#here you can set which steps should be executed. If a step has been executed in the past the result have been saved and the step does not have to be executed again (if nothing has changed)
+GMMTRAINFEATURES = False 	#required 
+GMMTESTFEATURES = False 	#required if the performance of the GMM is tested
+DNNTRAINFEATURES = False 	#required
+DNNTESTFEATURES = False 	#required if the performance of the DNN is tested
+TRAIN_MONO = False 			#required
+ALIGN_MONO = False			#required if the monophone GMM is used for alignments
+TEST_MONO = False 			#required if the performance of the monphone GMM is tested
+TRAIN_TRI = False			#required if the triphone or LDA GMM is used for alignments
+ALIGN_TRI = False			#required if the triphone GMM is used for alignments
+TEST_TRI = False			#required if the performance of the triphone GMM is tested
+TRAIN_LDA = False			#required if the LDA GMM is used for alignments
+ALIGN_LDA = False			#required if the LDA GMM is used for alignments
+TEST_LDA = False			#required if the performance of the LDA GMM is tested
+TRAIN_NNET = True			#required
+TEST_NNET = False			#required if the performance of the DNN is tested
 
 #read config file
 config = configparser.ConfigParser()
@@ -107,7 +111,7 @@ if DNNTESTFEATURES:
 	
 
 #use kaldi to train the monophone GMM
-if MONO_GMM:
+if TRAIN_MONO:
 	#change directory to kaldi egs
 	os.chdir(config.get('directories','kaldi_egs'))
 
@@ -119,6 +123,14 @@ if MONO_GMM:
 	print('------- building decoding graphs ----------')
 	os.system('utils/mkgraph.sh --mono %s %s/%s %s/%s/graph' % (config.get('directories','language_test'), config.get('directories','expdir'), config.get('mono_gmm','name'), config.get('directories','expdir'), config.get('mono_gmm','name')))
 	
+	#go back to working dir
+	os.chdir(current_dir)
+
+
+if ALIGN_MONO:
+	#change directory to kaldi egs
+	os.chdir(config.get('directories','kaldi_egs'))
+
 	#align the data
 	print('------- aligning the data ----------')
 	os.system('steps/align_si.sh --nj %s --cmd %s --config %s/config/ali_mono.conf %s %s %s/%s %s/%s/ali' % (config.get('general','num_jobs'), config.get('general','cmd'), current_dir, config.get('directories','train_features') + '/' + config.get('gmm-features','name'), config.get('directories','language'), config.get('directories','expdir'), config.get('mono_gmm','name'), config.get('directories','expdir'), config.get('mono_gmm','name')))
@@ -149,7 +161,7 @@ if TEST_MONO:
 
 
 #use kaldi to train the triphone GMM
-if TRI_GMM:
+if TRAIN_TRI:
 	#change directory to kaldi egs
 	os.chdir(config.get('directories','kaldi_egs'))
 	
@@ -161,6 +173,13 @@ if TRI_GMM:
 	print('------- building decoding graphs ----------')
 	os.system('utils/mkgraph.sh %s %s/%s %s/%s/graph' % (config.get('directories','language_test'), config.get('directories','expdir'), config.get('tri_gmm','name'), config.get('directories','expdir'), config.get('tri_gmm','name')))
 	
+	#go back to working dir
+	os.chdir(current_dir)
+
+if ALIGN_TRI:
+	#change directory to kaldi egs
+	os.chdir(config.get('directories','kaldi_egs'))
+		
 	#align the data
 	print('------- aligning the data ----------')
 	os.system('steps/align_si.sh --nj %s --cmd %s --config %s/config/ali_tri.conf %s %s %s/%s %s/%s/ali' % (config.get('general','num_jobs'), config.get('general','cmd'), current_dir, config.get('directories','train_features') + '/' + config.get('gmm-features','name'), config.get('directories','language'), config.get('directories','expdir'), config.get('tri_gmm','name'), config.get('directories','expdir'), config.get('tri_gmm','name')))
@@ -190,7 +209,7 @@ if TEST_TRI:
 	
 
 #use kaldi to train the LDA+MLLT GMM
-if LDA_GMM:
+if TRAIN_LDA:
 	#change directory to kaldi egs
 	os.chdir(config.get('directories','kaldi_egs'))
 	
@@ -202,6 +221,13 @@ if LDA_GMM:
 	print('------- building decoding graphs ----------')
 	os.system('utils/mkgraph.sh %s %s/%s %s/%s/graph' % (config.get('directories','language_test'), config.get('directories','expdir'), config.get('lda_mllt','name'), config.get('directories','expdir'), config.get('lda_mllt','name')))
 	
+	#go back to working dir
+	os.chdir(current_dir)
+
+if ALIGN_LDA:	
+	#change directory to kaldi egs
+	os.chdir(config.get('directories','kaldi_egs'))
+
 	#align the data
 	print('------- aligning the data ----------')
 	os.system('steps/align_si.sh --nj %s --cmd %s --config %s/config/ali_lda_mllt.conf %s %s %s/%s %s/%s/ali' % (config.get('general','num_jobs'), config.get('general','cmd'), current_dir, config.get('directories','train_features') + '/' + config.get('gmm-features','name'), config.get('directories','language'), config.get('directories','expdir'), config.get('lda_mllt','name'), config.get('directories','expdir'), config.get('lda_mllt','name')))
@@ -228,29 +254,27 @@ if TEST_LDA:
 	#go back to working dir
 	os.chdir(current_dir)
 
-#get nnet structure configs
-nnet_cfg = dict(config.items('nnet-structure'))
-	
 #get the feature input dim
 reader = kaldi_io.KaldiReadIn(config.get('directories','train_features') + '/' + config.get('dnn-features','name') + '/feats.scp')
 (_,features,_) = reader.read_next_utt()
-nnet_cfg['input_dim'] = features.shape[1]
+input_dim = features.shape[1]
 		
 #read the utterance to speaker mapping
 utt2spk = kaldi_io.read_utt2spk(config.get('directories','train_features') + '/' +  config.get('dnn-features','name') + '/utt2spk')
 
 #get number of output labels
-numpdfs = open(config.get('directories','expdir') + '/' + config.get('nnet-structure','gmm_name') + '/graph/num_pdfs')
+numpdfs = open(config.get('directories','expdir') + '/' + config.get('nnet','gmm_name') + '/graph/num_pdfs')
 num_labels = numpdfs.read()
-nnet_cfg['num_labels'] = int(num_labels[0:len(num_labels)-1])
+num_labels = int(num_labels[0:len(num_labels)-1])
+numpdfs.close()
 	
 #create the neural net 	
-Nnet = nnet.Nnet(nnet_cfg)
+Nnet = nnet.Nnet(config, input_dim, num_labels)
 
-if NNET:
+if TRAIN_NNET:
 
 	#only shuffle if we start with initialisation
-	if config.get('nnet-train','starting_step') == '-1':		
+	if config.get('nnet','starting_step') == '0':
 		#shuffle the examples on disk
 		print('------- shuffling examples ----------')
 		prepare_data.shuffle_examples(config.get('directories','train_features') + '/' +  config.get('dnn-features','name'))
@@ -259,33 +283,21 @@ if NNET:
 	print('------- reading alignments ----------')
 	alignments = {}
 	for i in range(int(config.get('general','num_jobs'))):
-		alignments.update(kaldi_io.read_alignments(config.get('directories','expdir') + '/' + config.get('nnet-structure','gmm_name') + '/ali/pdf.' + str(i+1) + '.gz'))
-		
-	#get the training configurations
-	train_cfg = dict(config.items('nnet-train'))
+		alignments.update(kaldi_io.read_alignments(config.get('directories','expdir') + '/' + config.get('nnet','gmm_name') + '/ali/pdf.' + str(i+1) + '.gz'))
 	
-	#define location to save neural nets
-	train_cfg['savedir'] = config.get('directories','expdir') + '/' + config.get('nnet-structure','name')
-	if not os.path.isdir(train_cfg['savedir']):
-		os.mkdir(train_cfg['savedir'])
-	if not os.path.isdir(train_cfg['savedir'] + '/validation'):
-		os.mkdir(train_cfg['savedir'] + '/validation')
-	if not os.path.isdir(train_cfg['savedir'] + '/training'):
-		os.mkdir(train_cfg['savedir'] + '/training')
-	
-	#train the neural net		
+	#train the neural net
 	print('------- training neural net ----------')
-	Nnet.train(config.get('directories','train_features') + '/' +  config.get('dnn-features','name'), alignments, utt2spk, train_cfg)
+	Nnet.train(config.get('directories','train_features') + '/' +  config.get('dnn-features','name'), alignments, utt2spk)
 		
 
-if DECODE:
+if TEST_NNET:
 	#read the utterance to speaker mapping
 	print('------- reading utt2spk ----------')
 	utt2spk = kaldi_io.read_utt2spk(config.get('directories','test_features') + '/' +  config.get('dnn-features','name') + '/utt2spk')
 
 	#use the neural net to calculate posteriors for the testing set
 	print('------- computing state pseudo-likelihoods ----------')
-	savedir = config.get('directories','expdir') + '/' + config.get('nnet-structure','name')
+	savedir = config.get('directories','expdir') + '/' + config.get('nnet','name')
 	decodedir = savedir + '/decode'
 	if not os.path.isdir(decodedir):
 		os.mkdir(decodedir)
@@ -293,14 +305,14 @@ if DECODE:
 	
 	#create a dummy neural net
 	print('------- creating dummy nnet ----------')
-	kaldi_io.create_dummy(config.get('directories','expdir') + '/' + config.get('nnet-structure','gmm_name'), decodedir, config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), nnet_cfg['num_labels'])
+	kaldi_io.create_dummy(config.get('directories','expdir') + '/' + config.get('nnet','gmm_name'), decodedir, config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), nnet_cfg['num_labels'])
 	
 	#change directory to kaldi egs
 	os.chdir(config.get('directories','kaldi_egs'))
 	
 	#build decoding graphs
 	print('------- building decoding graphs ----------')
-	if config.get('nnet-train','monophone') == 'True':
+	if config.get('nnet','monophone') == 'True':
 		os.system('utils/mkgraph.sh --mono %s %s %s/graph' % (config.get('directories','language_test'), decodedir, decodedir))
 	else:
 		os.system('utils/mkgraph.sh %s %s %s/graph' % (config.get('directories','language_test'), decodedir, decodedir))
