@@ -155,62 +155,73 @@ class Nnet:
 					raise Exception('unknown nonlinearity')
 				#apply l2 normalisation
 				if self.conf['l2_norm'] == 'True':
-					data = tf.nn.l2_normalize(data,1)*np.sqrt(float(self.conf['num_hidden_units']))		
+					data = tf.nn.l2_normalize(data,1)*np.sqrt(float(self.conf['num_hidden_units']))
 				#apply dropout	
 				if dropout<1:
 					data = tf.nn.dropout(data, dropout)
 	
 				return data
 			
-			with tf.name_scope("trainops"):
 			
-				#operation to half the learning rate
-				tf.group(learning_rate_fact.assign(learning_rate_fact/2).op, name='half_learning_rate')
+			with tf.name_scope('train') as trainscope:
+				with tf.name_scope(''):
+					with tf.name_scope('decode') as decodescope:
+						with tf.name_scope(trainscope):
+							#operation to half the learning rate
+							tf.group(learning_rate_fact.assign(learning_rate_fact/2).op, name='half_learning_rate')
 			
-				#compute the learning rate with exponential decay and scale with the learning rate factor
-				learning_rate = tf.mul(tf.train.exponential_decay(float(self.conf['initial_learning_rate']), global_step, num_steps, float(self.conf['learning_rate_decay'])), learning_rate_fact, name='learning_rate')
+							#compute the learning rate with exponential decay and scale with the learning rate factor
+							learning_rate = tf.mul(tf.train.exponential_decay(float(self.conf['initial_learning_rate']), global_step, num_steps, float(self.conf['learning_rate_decay'])), learning_rate_fact, name='learning_rate')
 			
-				#the optimizer
-				optimizer = tf.train.AdamOptimizer(learning_rate)
+							#the optimizer
+							optimizer = tf.train.AdamOptimizer(learning_rate)
 				
-				#the operation to add the number of frames to the number of frames in the batch
-				tf.group(num_frames.assign_add(tf.cast(tf.shape(data_in)[0],tf.float32)).op, name='update_nframes')
+							#the operation to add the number of frames to the number of frames in the batch
+							tf.group(num_frames.assign_add(tf.cast(tf.shape(data_in)[0],tf.float32)).op, name='update_nframes')
 			
-				#set the input data as the data at the current layer
-				data = data_in
-		
-				for layer in range(int(self.conf['num_hidden_layers'])):
-					with tf.variable_scope('layer' + str(layer)):
-						#update the data by propagating through the layer
-						data = propagate(data, weights[layer], biases[layer], float(self.conf['dropout']))
-						
-						#compute the logits for this layer
-						logits = tf.matmul(data, weights[-1]) + biases[-1]
-						
-						#compute the loss for this layer
-						loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, labels))
-						
-						#the layers that can be updated with this loss
-						updatelayers =  [-1] + [i for i in xrange(layer+1)]
-						
-						#comput ethe gradients for the loss at this layer
-						gradients = tf.gradients(loss, [weights[i] for i in updatelayers] + [biases[i] for i in updatelayers])
-						
-						#the operation to add the computed gradients to the batch gradients
-						update_grad_ops = tf.group(*update_gradients(gradients, [dweights[i] for i in updatelayers] + [dbiases[i] for i in updatelayers]), name='update_grads')
-						
-						#the operation to add the computed loss to the batch loss
-						tf.group(batch_loss.assign_add(loss).op, name='update_loss')
-						
-						#operation to apply the gradients and update the parameters
-						apply_gradients([weights[i] for i in updatelayers] + [biases[i] for i in updatelayers], [dweights[i] for i in updatelayers] + [dbiases[i] for i in updatelayers], optimizer, global_step, num_frames, 'apply_grads')
+						#set the input data as the data at the current layer
+						data = data_in
+	
+						for layer in range(int(self.conf['num_hidden_layers'])):
+							with tf.name_scope(decodescope):
+								with tf.variable_scope('layer' + str(layer)):
+									#update the data by propagating through the layer
+									data = propagate(data, weights[layer], biases[layer], float(self.conf['dropout']))
 					
-				#operation that computes the average loss of the batch
-				tf.div(batch_loss, num_frames, name='avrg_loss')
+							with tf.name_scope(trainscope):
+								with tf.variable_scope('layer' + str(layer)):
+									#compute the logits for this layer
+									logits = tf.matmul(data, weights[-1]) + biases[-1]
+					
+									#compute the loss for this layer
+									loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits, labels))
+					
+									#the layers that can be updated with this loss
+									updatelayers =  [-1] + [i for i in xrange(layer+1)]
+					
+									#comput ethe gradients for the loss at this layer
+									gradients = tf.gradients(loss, [weights[i] for i in updatelayers] + [biases[i] for i in updatelayers])
+					
+									#the operation to add the computed gradients to the batch gradients
+									update_grad_ops = tf.group(*update_gradients(gradients, [dweights[i] for i in updatelayers] + [dbiases[i] for i in updatelayers]), name='update_grads')
+					
+									#the operation to add the computed loss to the batch loss
+									tf.group(batch_loss.assign_add(loss).op, name='update_loss')
+					
+									#operation to apply the gradients and update the parameters
+									apply_gradients([weights[i] for i in updatelayers] + [biases[i] for i in updatelayers], [dweights[i] for i in updatelayers] + [dbiases[i] for i in updatelayers], optimizer, global_step, num_frames, 'apply_grads')
 			
-			#---define the operation used for testing---
-			posterior = tf.nn.softmax(logits)
-			tf.div(posterior, prior, name='decode')
+						with tf.name_scope(trainscope):
+							#operation that computes the average loss of the batch
+							tf.div(batch_loss, num_frames, name='avrg_loss')
+			
+						#---define the operation used for testing---
+						with tf.name_scope(decodescope):
+							with tf.variable_scope('layer' + self.conf['num_hidden_layers']):
+								logits = tf.matmul(data, weights[-1]) + biases[-1]
+								posterior = tf.nn.softmax(logits)
+								
+							tf.div(posterior, prior, name='decode')
 			
 			#--create sumaries for visualisation purposes
 			
@@ -285,25 +296,25 @@ class Nnet:
 			#get the training operations
 				
 			#update number of frames
-			update_nframes = self.graph.get_operation_by_name('trainops/update_nframes')
+			update_nframes = self.graph.get_operation_by_name('train/update_nframes')
 			
 			#compute the learning rate
-			learning_rate = self.graph.get_operation_by_name('trainops/learning_rate').outputs[0]
+			learning_rate = self.graph.get_operation_by_name('train/learning_rate').outputs[0]
 			
 			#compute the average loss in the batch
-			batch_loss = self.graph.get_operation_by_name('trainops/avrg_loss').outputs[0]
+			batch_loss = self.graph.get_operation_by_name('train/avrg_loss').outputs[0]
 			
 			#half the learning rate
-			half_learning_rate = self.graph.get_operation_by_name('trainops/half_learning_rate')
+			half_learning_rate = self.graph.get_operation_by_name('train/half_learning_rate')
 				
 			#update the loss
-			update_loss = self.graph.get_operation_by_name('trainops/layer' + str(num_layers) + '/update_loss')
+			update_loss = self.graph.get_operation_by_name('train/layer' + str(num_layers) + '/update_loss')
 			
 			#update the gradients
-			update_grads = self.graph.get_operation_by_name('trainops/layer' + str(num_layers) + '/update_grads')
+			update_grads = self.graph.get_operation_by_name('train/layer' + str(num_layers) + '/update_grads')
 			
 			#apply the gradients
-			apply_grads = self.graph.get_operation_by_name('trainops/layer' + str(num_layers) + '/apply_grads')
+			apply_grads = self.graph.get_operation_by_name('train/layer' + str(num_layers) + '/apply_grads')
 			
 			#get the placeholders
 			data_in = self.graph.get_operation_by_name('input').outputs[0]
@@ -400,13 +411,13 @@ class Nnet:
 					#get the training operations
 
 					#update the loss
-					update_loss = self.graph.get_operation_by_name('trainops/layer' + str(num_layers) + '/update_loss')
+					update_loss = self.graph.get_operation_by_name('train/layer' + str(num_layers) + '/update_loss')
 			
 					#update the gradients
-					update_grads = self.graph.get_operation_by_name('trainops/layer' + str(num_layers) + '/update_grads')
+					update_grads = self.graph.get_operation_by_name('train/layer' + str(num_layers) + '/update_grads')
 			
 					#apply the gradients
-					apply_grads = self.graph.get_operation_by_name('trainops/layer' + str(num_layers) + '/apply_grads')
+					apply_grads = self.graph.get_operation_by_name('train/layer' + str(num_layers) + '/apply_grads')
 					
 					old_loss = np.inf
 					
@@ -478,10 +489,10 @@ class Nnet:
 			tf.train.Saver(tf.get_collection(tf.GraphKeys.VARIABLES, scope='model_params')).restore(self.conf['savedir'] + '/final')
 			
 			#get the input placeholder
-			data_in = self.graph.get_tensor_by_name('data')
+			data_in = self.graph.get_operation_by_name('input').outputs[0]
 			
 			#get the output of the neural net
-			decode = self.graph.get_operation_by_name('decode').outputs[0]
+			decode = self.graph.get_operation_by_name('decode/decode').outputs[0]
 		
 			#feed the utterances one by one to the neural net
 			while True:
@@ -495,9 +506,6 @@ class Nnet:
 				
 				#apply cmvn
 				utt_mat = apply_cmvn(utt_mat, stats)
-				
-				#prepare data
-				feed_dict = {data_in : splice(utt_mat,int(self.conf['context_width']))}
 				
 				#compute predictions
 				output = decode.eval(feed_dict={data_in : splice(utt_mat,int(self.conf['context_width']))})
