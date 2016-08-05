@@ -327,30 +327,10 @@ class Nnet:
 			#loop over number of steps
 			while step < nsteps:
 		
-				#add a layer if needed
-				if step % int(self.conf['add_layer_period']) == 0 and step != 0 and num_layers < int(self.conf['num_hidden_layers']):
-					#increment the number of layers
-					num_layers += 1
-					#reinititalise the output layer
-					tf.initialize_variables(tf.get_collection(tf.GraphKeys.VARIABLES, scope='model_params/layer' + self.conf['num_hidden_layers'])).run()
-			
-					#get the training operations
-
-					#update the loss
-					update_loss = self.graph.get_operation_by_name('trainops/layer' + str(num_layers) + '/update_loss')
-			
-					#update the gradients
-					update_grads = self.graph.get_operation_by_name('trainops/layer' + str(num_layers) + '/update_grads')
-			
-					#apply the gradients
-					apply_grads = self.graph.get_operation_by_name('trainops/layer' + str(num_layers) + '/apply_grads')
-			
 				#validation step (before and after a layer is added or at validation frequency with a complete network)
 				valid_step = False
 				if int(self.conf['valid_size']) > 0:
 					if step % int(self.conf['add_layer_period']) == 0 and num_layers <= int(self.conf['num_hidden_layers']):
-						valid_step = True
-					if (step + 1) % int(self.conf['add_layer_period']) == 0 and num_layers < int(self.conf['num_hidden_layers']):
 						valid_step = True
 					if step % int(self.conf['valid_frequency']) == 0 and num_layers == int(self.conf['num_hidden_layers']):
 						valid_step == True
@@ -409,6 +389,29 @@ class Nnet:
 						
 						#half the learning rate
 						half_learning_rate.run()
+				
+				#add a layer if needed
+				if step % int(self.conf['add_layer_period']) == 0 and step != 0 and num_layers < int(self.conf['num_hidden_layers']) and num_layers*int(self.conf['add_layer_period'])!=step:
+					#increment the number of layers
+					num_layers += 1
+					#reinititalise the output layer
+					tf.initialize_variables(tf.get_collection(tf.GraphKeys.VARIABLES, scope='model_params/layer' + self.conf['num_hidden_layers'])).run()
+			
+					#get the training operations
+
+					#update the loss
+					update_loss = self.graph.get_operation_by_name('trainops/layer' + str(num_layers) + '/update_loss')
+			
+					#update the gradients
+					update_grads = self.graph.get_operation_by_name('trainops/layer' + str(num_layers) + '/update_grads')
+			
+					#apply the gradients
+					apply_grads = self.graph.get_operation_by_name('trainops/layer' + str(num_layers) + '/apply_grads')
+					
+					old_loss = np.inf
+					
+					continue
+			
 				
 				#training step
 			
