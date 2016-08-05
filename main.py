@@ -7,11 +7,11 @@ import cPickle as pickle
 import gzip
 
 #here you can set which steps should be executed. If a step has been executed in the past the result have been saved and the step does not have to be executed again (if nothing has changed)
-GMMTRAINFEATURES = False 	#required 
+GMMTRAINFEATURES = True 	#required 
 GMMTESTFEATURES = False 	#required if the performance of the GMM is tested
-DNNTRAINFEATURES = False 	#required
-DNNTESTFEATURES = False	 	#required if the performance of the DNN is tested
-TRAIN_MONO = False 			#required
+DNNTRAINFEATURES = True 	#required
+DNNTESTFEATURES = True	 	#required if the performance of the DNN is tested
+TRAIN_MONO = True 			#required
 ALIGN_MONO = False			#required if the monophone GMM is used for alignments
 TEST_MONO = False 			#required if the performance of the monphone GMM is tested
 TRAIN_TRI = True			#required if the triphone or LDA GMM is used for alignments
@@ -20,7 +20,7 @@ TEST_TRI = False			#required if the performance of the triphone GMM is tested
 TRAIN_LDA = True			#required if the LDA GMM is used for alignments
 ALIGN_LDA = True			#required if the LDA GMM is used for alignments
 TEST_LDA = False			#required if the performance of the LDA GMM is tested
-TRAIN_NNET = True			#required
+TRAIN_NNET = False			#required
 TEST_NNET = True			#required if the performance of the DNN is tested
 
 #read config file
@@ -301,11 +301,11 @@ if TEST_NNET:
 	decodedir = savedir + '/decode'
 	if not os.path.isdir(decodedir):
 		os.mkdir(decodedir)
-	Nnet.decode(config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), utt2spk, savedir, decodedir)
+	Nnet.decode(config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), utt2spk, decodedir)
 	
 	#create a dummy neural net
 	print('------- creating dummy nnet ----------')
-	kaldi_io.create_dummy(config.get('directories','expdir') + '/' + config.get('nnet','gmm_name'), decodedir, config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), nnet_cfg['num_labels'])
+	kaldi_io.create_dummy(config.get('directories','expdir') + '/' + config.get('nnet','gmm_name'), decodedir, config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), num_labels)
 	
 	#change directory to kaldi egs
 	os.chdir(config.get('directories','kaldi_egs'))

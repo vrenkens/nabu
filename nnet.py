@@ -445,7 +445,8 @@ class Nnet:
 						step = prev_step
 						
 						#half the learning rate
-						half_learning_rate.run()
+						for i in range(retry_count):
+							half_learning_rate.run()
 				
 				#add a layer if needed
 				if step % int(self.conf['add_layer_period']) == 0 and step != 0 and num_layers < (int(self.conf['num_hidden_layers'])-1) and num_layers*int(self.conf['add_layer_period'])!=step:
@@ -503,11 +504,12 @@ class Nnet:
 				#self.summarywriter.add_graph(self.graph, global_step=step)
 			
 			#compute the state prior probabilities
-			prior = np.array([(np.arange(self.conf['num_labels']) == alignment[:,np.newaxis]).astype(np.float32).sum(0) for alignment in alignments.values()]).sum(1)
+			prior = np.array([(np.arange(self.conf['num_labels']) == alignment[:,np.newaxis]).astype(np.float32).sum(0) for alignment in alignments.values()]).sum(0)
+			prior = prior/prior.sum()
 			
 			#put the prior into the neural net
 			prior_in = self.graph.get_operation_by_name('prior_input').outputs[0]
-			self.graph.get_operation_by_name('train_variables/assign_prior').run(feed_dict={prior_in:prior})
+			self.graph.get_operation_by_name('model_params/assign_prior').run(feed_dict={prior_in:prior})
 			
 			#save the final neural net
 			self.modelsaver.save(session, self.conf['savedir'] + '/final')
@@ -535,7 +537,7 @@ class Nnet:
 		with tf.Session(graph=self.graph) as session:
 			
 			#load the model
-			self.modelsaver.restore(self.conf['savedir'] + '/final')
+			self.modelsaver.restore(session, self.conf['savedir'] + '/final')
 			
 			#get the input placeholder
 			data_in = self.graph.get_operation_by_name('input').outputs[0]
