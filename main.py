@@ -10,18 +10,18 @@ import gzip
 GMMTRAINFEATURES = False 	#required 
 GMMTESTFEATURES = False 	#required if the performance of the GMM is tested
 DNNTRAINFEATURES = False 	#required
-DNNTESTFEATURES = False 	#required if the performance of the DNN is tested
+DNNTESTFEATURES = False	 	#required if the performance of the DNN is tested
 TRAIN_MONO = False 			#required
 ALIGN_MONO = False			#required if the monophone GMM is used for alignments
 TEST_MONO = False 			#required if the performance of the monphone GMM is tested
-TRAIN_TRI = False			#required if the triphone or LDA GMM is used for alignments
+TRAIN_TRI = True			#required if the triphone or LDA GMM is used for alignments
 ALIGN_TRI = False			#required if the triphone GMM is used for alignments
 TEST_TRI = False			#required if the performance of the triphone GMM is tested
-TRAIN_LDA = False			#required if the LDA GMM is used for alignments
-ALIGN_LDA = False			#required if the LDA GMM is used for alignments
+TRAIN_LDA = True			#required if the LDA GMM is used for alignments
+ALIGN_LDA = True			#required if the LDA GMM is used for alignments
 TEST_LDA = False			#required if the performance of the LDA GMM is tested
 TRAIN_NNET = True			#required
-TEST_NNET = False			#required if the performance of the DNN is tested
+TEST_NNET = True			#required if the performance of the DNN is tested
 
 #read config file
 config = configparser.ConfigParser()
@@ -167,7 +167,7 @@ if TRAIN_TRI:
 	
 	#train triphone GMM
 	print('------- training triphone GMM ----------')
-	os.system('steps/train_deltas.sh --cmd %s --config %s/config/tri.conf %s %s %s %s %s/%s/ali %s/%s' % (config.get('general','cmd'), current_dir, config.get('tri_gmm','num_leaves'), config.get('tri_gmm','tot_gauss'), config.get('directories','train_features') + '/' + config.get('gmm-features','name'), config.get('directories','language'), config.get('directories','expdir'), config.get('mono_gmm','name'), config.get('directories','expdir'), config.get('tri_gmm','name')))
+	os.system('steps/train_deltas.sh --cmd %s --config %s/config/tri.conf %s %s %s %s %s/%s %s/%s' % (config.get('general','cmd'), current_dir, config.get('tri_gmm','num_leaves'), config.get('tri_gmm','tot_gauss'), config.get('directories','train_features') + '/' + config.get('gmm-features','name'), config.get('directories','language'), config.get('directories','expdir'), config.get('mono_gmm','name'), config.get('directories','expdir'), config.get('tri_gmm','name')))
 	
 	#build decoding graphs
 	print('------- building decoding graphs ----------')
@@ -215,7 +215,7 @@ if TRAIN_LDA:
 	
 	#train triphone GMM
 	print('------- training LDA+MLLT GMM ----------')
-	os.system('steps/train_lda_mllt.sh --cmd %s --config %s/config/lda_mllt.conf --context-opts "--context_width=%s" %s %s %s %s %s/%s/ali %s/%s' % (config.get('general','cmd'), current_dir, config.get('lda_mllt','context_width'), config.get('lda_mllt','num_leaves'), config.get('lda_mllt','tot_gauss'), config.get('directories','train_features') + '/' + config.get('gmm-features','name'), config.get('directories','language'), config.get('directories','expdir'), config.get('tri_gmm','name'), config.get('directories','expdir'), config.get('lda_mllt','name')))
+	os.system('steps/train_lda_mllt.sh --cmd %s --config %s/config/lda_mllt.conf --context-opts "--context_width=%s" %s %s %s %s %s/%s %s/%s' % (config.get('general','cmd'), current_dir, config.get('lda_mllt','context_width'), config.get('lda_mllt','num_leaves'), config.get('lda_mllt','tot_gauss'), config.get('directories','train_features') + '/' + config.get('gmm-features','name'), config.get('directories','language'), config.get('directories','expdir'), config.get('tri_gmm','name'), config.get('directories','expdir'), config.get('lda_mllt','name')))
 	
 	#build decoding graphs
 	print('------- building decoding graphs ----------')

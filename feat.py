@@ -15,7 +15,7 @@ def snip(sig, rate, winlen, winstep):
 	# calculate the number of frames in the utterance as number of samples in the utterance / number of samples in the frame
 	num_frames = int((len(sig)-winlen*rate)/(winstep*rate)) 
 	# cut of the edges to fit the number of frames
-	sig = sig[0:num_frames*winstep*rate + winlen*rate]
+	sig = sig[0:int(num_frames*winstep*rate + winlen*rate)]
 	
 	return sig
 
