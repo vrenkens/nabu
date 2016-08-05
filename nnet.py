@@ -39,12 +39,21 @@ class Nnet:
 			#reference labels
 			labels = tf.placeholder(tf.float32, shape = [None, num_labels], name = 'targets')
 			
+			#input to set the number of steps
+			num_steps_input = tf.placeholder(tf.int32, shape = [], name = 'num_steps_input')
+			
+			#input to set the prior in the graph
+			prior_input = tf.placeholder(tf.float32, shape = [num_labels], name = 'prior_input')
+			
 			#---define variables---
 			
 			with tf.variable_scope('train_variables'):	
 			
 				#total number of steps
 				num_steps = tf.get_variable('num_steps', [], dtype=tf.int32, initializer=tf.constant_initializer(0), trainable=False)
+				
+				#operation to set the number of steps
+				tf.group(num_steps.assign(num_steps_input), name='assign_num_steps')
 			
 				#the amount of steps already taken
 				global_step = tf.get_variable('global_step', [], dtype=tf.int32, initializer=tf.constant_initializer(0), trainable=False) 
@@ -60,6 +69,9 @@ class Nnet:
 			
 				#the state prior probability to compute pseudo-likelihoods
 				prior = tf.get_variable('prior', [num_labels], initializer=tf.constant_initializer(1.0), trainable=False)
+				
+				#operation to set the prior
+				tf.group(prior.assign(prior_input), name='assign_prior')
 			
 				#input layer
 				with tf.variable_scope('layer0'):
@@ -222,6 +234,21 @@ class Nnet:
 								posterior = tf.nn.softmax(logits)
 								
 							tf.div(posterior, prior, name='decode')
+							
+			#---create operations for initialization---
+			
+			#initialize all variables
+			tf.group(tf.initialize_all_variables(), name='initall')
+			
+			#initialize output layer only 
+			tf.group(tf.initialize_variables(tf.get_collection(tf.GraphKeys.VARIABLES, scope='model_params/layer' + self.conf['num_hidden_layers'])), name='initout')
+			
+			#initialise the batch variables
+			tf.group(tf.initialize_variables(tf.get_collection(tf.GraphKeys.VARIABLES, scope='batch_variables')), name='initbatchvars')
+			
+			#initialise the gradients
+			tf.group(tf.initialize_variables(tf.get_collection(tf.GraphKeys.VARIABLES, scope='gradients')), name='initgrads')
+			
 			
 			#--create sumaries for visualisation purposes
 			
@@ -239,6 +266,14 @@ class Nnet:
 
 				#merge summaries
 				tf.merge_summary(summaries, name='summaries')
+				
+			#--create savers
+			
+			#saver for the model parameters
+			self.modelsaver = tf.train.Saver(tf.get_collection(tf.GraphKeys.VARIABLES, scope='model_params'))
+			
+			#saver for the training variables
+			self.trainsaver = tf.train.Saver(tf.get_collection(tf.GraphKeys.VARIABLES, scope='train_variables'))
 		
 			
 		#create a summary writer for visualisation
@@ -249,6 +284,9 @@ class Nnet:
 				shutil.rmtree(self.conf['savedir'] + '/logdir')
 			
 			self.summarywriter = tf.train.SummaryWriter(logdir=self.conf['savedir'] + '/logdir', graph=self.graph)
+			
+		#finalize the grapg do nothing can be added
+		self.graph.finalize()
 	
 	# Train the neural network with stochastic gradient descent 
 	#	featdir: directory where the features are located
@@ -278,17 +316,14 @@ class Nnet:
 		
 		#start a tensorflow session
 		with tf.Session(graph=self.graph) as session:
-			#create the saver
-			
-			#saver object that saves all the neural net parameters
-			saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.VARIABLES, scope='model_params') + tf.get_collection(tf.GraphKeys.VARIABLES, scope='train_variables'))
 		
 			#if the starting step is 0 initialise the neural net, otherwise load a checkpointed one
 			step = int(self.conf['starting_step'])
 			if step == 0:
-				tf.initialize_all_variables().run()
+				self.graph.get_operation_by_name('initall').run()
 			else:
-				saver.restore(session, self.conf['savedir'] + '/training/model-' + str(step))
+				self.modelsaver.restore(session, self.conf['savedir'] + '/training/model-' + str(step))
+				self.trainsaver.restore(session, self.conf['savedir'] + '/training/trainvars-' + str(step))
 			
 			#compute how many layers have been initialised
 			num_layers = min(int(step/int(self.conf['add_layer_period'])), int(self.conf['num_hidden_layers'])-1)
@@ -316,6 +351,15 @@ class Nnet:
 			#apply the gradients
 			apply_grads = self.graph.get_operation_by_name('train/layer' + str(num_layers) + '/apply_grads')
 			
+			#initialise the output layer
+			initout = self.graph.get_operation_by_name('initout')
+			
+			#initialise the batch variables
+			initbatchvars = self.graph.get_operation_by_name('initbatchvars')
+			
+			#initialise the gradients
+			initgrads = self.graph.get_operation_by_name('initgrads')
+			
 			#get the placeholders
 			data_in = self.graph.get_operation_by_name('input').outputs[0]
 			labels = self.graph.get_operation_by_name('targets').outputs[0]
@@ -328,8 +372,8 @@ class Nnet:
 			nsteps =  int(int(self.conf['num_epochs']) * len(alignments) / int(self.conf['batch_size']))
 			
 			#set the total number of steps in the graph
-			with tf.variable_scope('train_variables', reuse=True):
-				tf.get_variable('num_steps', dtype=tf.int32).assign(nsteps).op.run()
+			nsteps_in = self.graph.get_operation_by_name('num_steps_input').outputs[0]
+			self.graph.get_operation_by_name('train_variables/assign_num_steps').run(feed_dict={nsteps_in:nsteps})
 		
 			retry_count = 0
 			old_loss = np.inf
@@ -337,7 +381,7 @@ class Nnet:
 		
 			#loop over number of steps
 			while step < nsteps:
-		
+				
 				#validation step (before and after a layer is added or at validation frequency with a complete network)
 				valid_step = False
 				if int(self.conf['valid_size']) > 0:
@@ -357,7 +401,7 @@ class Nnet:
 					print('validation loss: %f' % loss)
 					
 					#reinitlialize the batch variables (num_frames and loss)
-					tf.initialize_variables(tf.get_collection(tf.GraphKeys.VARIABLES, scope='batch_variables')).run()
+					initbatchvars.run()
 					
 					#check if the loss is better than the previous loss
 					if loss < old_loss:
@@ -371,7 +415,8 @@ class Nnet:
 						prev_step = step
 						
 						#save the last validation model
-						saver.save(session, self.conf['savedir'] + '/training/model', global_step=step)
+						self.modelsaver.save(session, self.conf['savedir'] + '/training/model', global_step=step)
+						self.trainsaver.save(session, self.conf['savedir'] + '/training/trainvars', global_step=step)
 						
 					#if performance is worse go back to the previous step where the network was validated
 					else:
@@ -393,7 +438,8 @@ class Nnet:
 								num_utt = num_utt + 1
 						
 						#load the previous model
-						saver.restore(session, self.conf['savedir'] + '/training/model-' + str(prev_step))
+						self.modelsaver.restore(session, self.conf['savedir'] + '/training/model-' + str(prev_step))
+						self.trainsaver.restore(session, self.conf['savedir'] + '/training/trainvars-' + str(prev_step))
 						
 						#set the step back to the previous step
 						step = prev_step
@@ -402,11 +448,11 @@ class Nnet:
 						half_learning_rate.run()
 				
 				#add a layer if needed
-				if step % int(self.conf['add_layer_period']) == 0 and step != 0 and num_layers < int(self.conf['num_hidden_layers']) and num_layers*int(self.conf['add_layer_period'])!=step:
+				if step % int(self.conf['add_layer_period']) == 0 and step != 0 and num_layers < (int(self.conf['num_hidden_layers'])-1) and num_layers*int(self.conf['add_layer_period'])!=step:
 					#increment the number of layers
 					num_layers += 1
 					#reinititalise the output layer
-					tf.initialize_variables(tf.get_collection(tf.GraphKeys.VARIABLES, scope='model_params/layer' + self.conf['num_hidden_layers'])).run()
+					initout.run()
 			
 					#get the training operations
 
@@ -443,25 +489,28 @@ class Nnet:
 					self.summarywriter.add_summary(summaries.eval(), global_step=step)
 
 				#reinitlialize all the batch variables (num_frames and loss) and the gradients
-				tf.initialize_variables(tf.get_collection(tf.GraphKeys.VARIABLES, scope='batch_variables') + tf.get_collection(tf.GraphKeys.VARIABLES, scope='gradients')).run()
+				initbatchvars.run()
+				initgrads.run()
 			
 				#increment the step
 				step += 1
 			
 				#save the neural net if at checkpoint
 				if step % int(self.conf['check_freq']) == 0:
-					saver.save(session, self.conf['savedir'] + '/training/model', global_step=step)
+					self.modelsaver.save(session, self.conf['savedir'] + '/training/model', global_step=step)
+					self.trainsaver.save(session, self.conf['savedir'] + '/training/trainvars', global_step=step)
+			
+				#self.summarywriter.add_graph(self.graph, global_step=step)
 			
 			#compute the state prior probabilities
 			prior = np.array([(np.arange(self.conf['num_labels']) == alignment[:,np.newaxis]).astype(np.float32).sum(0) for alignment in alignments.values()]).sum(1)
 			
 			#put the prior into the neural net
-			with tf.variable_scope('model_params', reuse = True):
-				get_variable('prior').assign(prior).op.run()
+			prior_in = self.graph.get_operation_by_name('prior_input').outputs[0]
+			self.graph.get_operation_by_name('train_variables/assign_prior').run(feed_dict={prior_in:prior})
 			
 			#save the final neural net
-			saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.VARIABLES, scope='model_params'))
-			saver.save(session, self.conf['savedir'] + '/final')
+			self.modelsaver.save(session, self.conf['savedir'] + '/final')
 
 	#compute pseudo likelihoods for a set of utterances
 	#	featdir: directory where the features are located
@@ -486,7 +535,7 @@ class Nnet:
 		with tf.Session(graph=self.graph) as session:
 			
 			#load the model
-			tf.train.Saver(tf.get_collection(tf.GraphKeys.VARIABLES, scope='model_params')).restore(self.conf['savedir'] + '/final')
+			self.modelsaver.restore(self.conf['savedir'] + '/final')
 			
 			#get the input placeholder
 			data_in = self.graph.get_operation_by_name('input').outputs[0]
