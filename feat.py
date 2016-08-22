@@ -3,7 +3,6 @@ sys.path.append('python_speech_features')
 from features import logfbank
 from features import mfcc
 import scipy.io.wavfile as wav
-import matplotlib.pyplot as plt
 import numpy as np
 
 #snip the edges of the utterance to fit the sliding window
