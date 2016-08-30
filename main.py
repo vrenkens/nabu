@@ -1,16 +1,23 @@
 from six.moves import configparser
-import prepare_data
 import os
+import sys
+
+sys.path.append('features')
+sys.path.append('io')
+sys.path.append('kaldi')
+sys.path.append('neural networks')
+
 import nnet
-import kaldi_io
-import cPickle as pickle
-import gzip
+import ark
+import kaldiInterface
+import prepare_data
+import kaldiGMM
 
 #here you can set which steps should be executed. If a step has been executed in the past the result have been saved and the step does not have to be executed again (if nothing has changed)
 GMMTRAINFEATURES = True 	#required 
-GMMTESTFEATURES = False 	#required if the performance of the GMM is tested
+GMMTESTFEATURES = False	 	#required if the performance of a GMM is tested
 DNNTRAINFEATURES = True 	#required
-DNNTESTFEATURES = True	 	#required if the performance of the DNN is tested
+DNNTESTFEATURES = False	 	#required if the performance of the DNN is tested
 TRAIN_MONO = True 			#required
 ALIGN_MONO = False			#required if the monophone GMM is used for alignments
 TEST_MONO = False 			#required if the performance of the monphone GMM is tested
@@ -36,37 +43,18 @@ if GMMTRAINFEATURES:
 	prepare_data.prepare_data(config.get('directories','train_data'), config.get('directories','train_features') + '/' + feat_cfg['name'],feat_cfg, feat_cfg['type'])
 	
 	print('------- computing cmvn stats ----------')
-	if config.get('gmm-features','apply_cmvn'):
-		#compute cmvn stats
-		prepare_data.compute_cmvn(config.get('directories','train_features') + '/' + feat_cfg['name'])	
-	else:
-		#create fake cmvn statistics
-		#change directory to kaldi egs
-		os.chdir(config.get('directories','kaldi_egs'))
-		#create fake cmvn stats
-		os.system('steps/compute_cmvn_stats.sh --fake %s %s/cmvn %s' % (config.get('directories','train_features') + '/' + feat_cfg['name'], config.get('directories','expdir'), config.get('directories','train_features') + '/' + feat_cfg['name']))
-		#go back to working dir
-		os.chdir(current_dir)
+	prepare_data.compute_cmvn(config.get('directories','train_features') + '/' + feat_cfg['name'])
 
 #compute the features of the training set for DNN training if they are different then the GMM features
 if DNNTRAINFEATURES:		
 	if config.get('dnn-features','name') != config.get('gmm-features','name'):
 		feat_cfg = dict(config.items('dnn-features'))
+		
 		print('------- computing DNN training features ----------')
 		prepare_data.prepare_data(config.get('directories','train_data'), config.get('directories','train_features') + '/' + feat_cfg['name'],feat_cfg, feat_cfg['type'])
 	
 		print('------- computing cmvn stats ----------')
-		if config.get('dnn-features','apply_cmvn'):
-			#compute cmvn stats
-			prepare_data.compute_cmvn(config.get('directories','train_features') + '/' + feat_cfg['name'])	
-		else:
-			#create fake cmvn statistics
-			#change directory to kaldi egs
-			os.chdir(config.get('directories','kaldi_egs'))
-			#create fake cmvn stats
-			os.system('steps/compute_cmvn_stats.sh --fake %s %s/cmvn %s' % (config.get('directories','train_features') + '/' + feat_cfg['name'], config.get('directories','expdir'), config.get('directories','train_features') + '/' + feat_cfg['name']))
-			#go back to working dir
-			os.chdir(current_dir)
+		prepare_data.compute_cmvn(config.get('directories','train_features') + '/' + feat_cfg['name'])	
 	
 	
 #compute the features of the training set for GMM testing
@@ -77,190 +65,61 @@ if GMMTESTFEATURES:
 	prepare_data.prepare_data(config.get('directories','test_data'), config.get('directories','test_features') + '/' + feat_cfg['name'],feat_cfg, feat_cfg['type'])
 	
 	print('------- computing cmvn stats ----------')
-	if config.get('gmm-features','apply_cmvn'):
-		#compute cmvn stats
-		prepare_data.compute_cmvn(config.get('directories','test_features') + '/' + feat_cfg['name'])	
-	else:
-		#create fake cmvn statistics
-		#change directory to kaldi egs
-		os.chdir(config.get('directories','kaldi_egs'))
-		#create fake cmvn stats
-		os.system('steps/compute_cmvn_stats.sh --fake %s %s/cmvn %s' % (config.get('directories','test_features') + '/' + feat_cfg['name'], config.get('directories','expdir'), config.get('directories','test_features') + '/' + feat_cfg['name']))
-		#go back to working dir
-		os.chdir(current_dir)
+	prepare_data.compute_cmvn(config.get('directories','test_features') + '/' + feat_cfg['name'])	
 	
 #compute the features of the training set for DNN testing if they are different then the GMM features
 if DNNTESTFEATURES:		
 	if config.get('dnn-features','name') != config.get('gmm-features','name'):
 		feat_cfg = dict(config.items('dnn-features'))
-		print('------- computing DNN testing features ----------')
-		prepare_data.prepare_data(config.get('directories','test_data'), config.get('directories','test_features') + '/' + feat_cfg['name'],feat_cfg, feat_cfg['type'])
 	
 		print('------- computing cmvn stats ----------')
-		if config.get('dnn-features','apply_cmvn'):
-			#compute cmvn stats
-			prepare_data.compute_cmvn(config.get('directories','test_features') + '/' + feat_cfg['name'])	
-		else:
-			#create fake cmvn statistics
-			#change directory to kaldi egs
-			os.chdir(config.get('directories','kaldi_egs'))
-			#create fake cmvn stats
-			os.system('steps/compute_cmvn_stats.sh --fake %s %s/cmvn %s' % (config.get('directories','test_features') + '/' + feat_cfg['name'], config.get('directories','expdir'), config.get('directories','test_features') + '/' + feat_cfg['name']))
-			#go back to working dir
-			os.chdir(current_dir)
+		prepare_data.compute_cmvn(config.get('directories','test_features') + '/' + feat_cfg['name'])	
 	
 
 #use kaldi to train the monophone GMM
 if TRAIN_MONO:
-	#change directory to kaldi egs
-	os.chdir(config.get('directories','kaldi_egs'))
+	MonoGmm = kaldiGMM.MonoGmm(config)
+	MonoGmm.train()
 
-	#train monophone GMM
-	print('------- training monophone GMM ----------')
-	os.system('steps/train_mono.sh --nj %s --cmd %s --config %s/config/mono.conf %s %s %s/%s' % (config.get('general','num_jobs'), config.get('general','cmd'), current_dir, config.get('directories','train_features') + '/' + config.get('gmm-features','name'), config.get('directories','language'), config.get('directories','expdir'), config.get('mono_gmm','name')))
-	
-	#build decoding graphs
-	print('------- building decoding graphs ----------')
-	os.system('utils/mkgraph.sh --mono %s %s/%s %s/%s/graph' % (config.get('directories','language_test'), config.get('directories','expdir'), config.get('mono_gmm','name'), config.get('directories','expdir'), config.get('mono_gmm','name')))
-	
-	#go back to working dir
-	os.chdir(current_dir)
-
-
+#get alignments with the monophone GMM
 if ALIGN_MONO:
-	#change directory to kaldi egs
-	os.chdir(config.get('directories','kaldi_egs'))
-
-	#align the data
-	print('------- aligning the data ----------')
-	os.system('steps/align_si.sh --nj %s --cmd %s --config %s/config/ali_mono.conf %s %s %s/%s %s/%s/ali' % (config.get('general','num_jobs'), config.get('general','cmd'), current_dir, config.get('directories','train_features') + '/' + config.get('gmm-features','name'), config.get('directories','language'), config.get('directories','expdir'), config.get('mono_gmm','name'), config.get('directories','expdir'), config.get('mono_gmm','name')))
-	
-	#convert alignments (transition-ids) to pdf-ids
-	for i in range(int(config.get('general','num_jobs'))):
-		print('gunzip -c %s/%s/ali/ali.%d.gz | ali-to-pdf %s/%s/ali/final.mdl ark:- ark,t:- | gzip >  %s/%s/ali/pdf.%d.gz' % (config.get('directories','expdir'), config.get('mono_gmm','name'), i+1, config.get('directories','expdir'), config.get('mono_gmm','name'), config.get('directories','expdir'), config.get('mono_gmm','name'), i+1))
-		os.system('gunzip -c %s/%s/ali/ali.%d.gz | ali-to-pdf %s/%s/ali/final.mdl ark:- ark,t:- | gzip >  %s/%s/ali/pdf.%d.gz' % (config.get('directories','expdir'), config.get('mono_gmm','name'), i+1, config.get('directories','expdir'), config.get('mono_gmm','name'), config.get('directories','expdir'), config.get('mono_gmm','name'), i+1))
-	
-	#go back to working dir
-	os.chdir(current_dir)
-
+	MonoGmm.align()
 
 #use kaldi to test the monophone gmm
 if TEST_MONO:
-	#change directory to kaldi egs
-	os.chdir(config.get('directories','kaldi_egs'))
-	
-	#decode using kaldi
-	print('------- testing monophone GMM ----------')
-	os.system('steps/decode.sh --cmd %s --nj %s %s/%s/graph %s %s/%s/decode | tee %s/%s/decode.log || exit 1;' % (config.get('general','cmd'), config.get('general','num_jobs'), config.get('directories','expdir'), config.get('mono_gmm','name'), config.get('directories','test_features') + '/' + config.get('gmm-features','name'), config.get('directories','expdir'), config.get('mono_gmm','name'), config.get('directories','expdir'), config.get('mono_gmm','name')))
-	
-	#get results
-	os.system('grep WER %s/%s/decode/wer_* | utils/best_wer.sh' % (config.get('directories','expdir'), config.get('mono_gmm','name')))
-	
-	#go back to working dir
-	os.chdir(current_dir)
-
+	MonoGmm.test()
 
 #use kaldi to train the triphone GMM
 if TRAIN_TRI:
-	#change directory to kaldi egs
-	os.chdir(config.get('directories','kaldi_egs'))
-	
-	#train triphone GMM
-	print('------- training triphone GMM ----------')
-	os.system('steps/train_deltas.sh --cmd %s --config %s/config/tri.conf %s %s %s %s %s/%s %s/%s' % (config.get('general','cmd'), current_dir, config.get('tri_gmm','num_leaves'), config.get('tri_gmm','tot_gauss'), config.get('directories','train_features') + '/' + config.get('gmm-features','name'), config.get('directories','language'), config.get('directories','expdir'), config.get('mono_gmm','name'), config.get('directories','expdir'), config.get('tri_gmm','name')))
-	
-	#build decoding graphs
-	print('------- building decoding graphs ----------')
-	os.system('utils/mkgraph.sh %s %s/%s %s/%s/graph' % (config.get('directories','language_test'), config.get('directories','expdir'), config.get('tri_gmm','name'), config.get('directories','expdir'), config.get('tri_gmm','name')))
-	
-	#go back to working dir
-	os.chdir(current_dir)
+	TriGmm = kaldiGMM.TriGmm(config)
+	TriGmm.train()
 
+#get alignments with the triphone GMM
 if ALIGN_TRI:
-	#change directory to kaldi egs
-	os.chdir(config.get('directories','kaldi_egs'))
-		
-	#align the data
-	print('------- aligning the data ----------')
-	os.system('steps/align_si.sh --nj %s --cmd %s --config %s/config/ali_tri.conf %s %s %s/%s %s/%s/ali' % (config.get('general','num_jobs'), config.get('general','cmd'), current_dir, config.get('directories','train_features') + '/' + config.get('gmm-features','name'), config.get('directories','language'), config.get('directories','expdir'), config.get('tri_gmm','name'), config.get('directories','expdir'), config.get('tri_gmm','name')))
-	
-	#convert alignments (transition-ids) to pdf-ids
-	for i in range(int(config.get('general','num_jobs'))):
-		os.system('gunzip -c %s/%s/ali/ali.%d.gz | ali-to-pdf %s/%s/ali/final.mdl ark:- ark,t:- | gzip >  %s/%s/ali/pdf.%d.gz' % (config.get('directories','expdir'), config.get('tri_gmm','name'), i+1, config.get('directories','expdir'), config.get('tri_gmm','name'), config.get('directories','expdir'), config.get('tri_gmm','name'), i+1))
-	
-	#go back to working dir
-	os.chdir(current_dir)
+	TriGmm.align()
 
-
-#use kaldi to test the triphone GMM
+#use kaldi to test the triphone gmm
 if TEST_TRI:
-	#change directory to kaldi egs
-	os.chdir(config.get('directories','kaldi_egs'))
+	TriGmm.test()
 	
-	#decode using kaldi
-	print('------- testing triphone GMM ----------')
-	os.system('steps/decode.sh --cmd %s --nj %s %s/%s/graph %s %s/%s/decode | tee %s/%s/decode.log || exit 1;' % (config.get('general','cmd'), config.get('general','num_jobs'), config.get('directories','expdir'), config.get('tri_gmm','name'), config.get('directories','test_features') + '/' + config.get('gmm-features','name'), config.get('directories','expdir'), config.get('tri_gmm','name'), config.get('directories','expdir'), config.get('tri_gmm','name')))
-	
-	#get results
-	os.system('grep WER %s/%s/decode/wer_* | utils/best_wer.sh' % (config.get('directories','expdir'), config.get('tri_gmm','name')))
-	
-	#go back to working dir
-	os.chdir(current_dir)
-	
-
 #use kaldi to train the LDA+MLLT GMM
 if TRAIN_LDA:
-	#change directory to kaldi egs
-	os.chdir(config.get('directories','kaldi_egs'))
-	
-	#train triphone GMM
-	print('------- training LDA+MLLT GMM ----------')
-	os.system('steps/train_lda_mllt.sh --cmd %s --config %s/config/lda_mllt.conf --context-opts "--context_width=%s" %s %s %s %s %s/%s %s/%s' % (config.get('general','cmd'), current_dir, config.get('lda_mllt','context_width'), config.get('lda_mllt','num_leaves'), config.get('lda_mllt','tot_gauss'), config.get('directories','train_features') + '/' + config.get('gmm-features','name'), config.get('directories','language'), config.get('directories','expdir'), config.get('tri_gmm','name'), config.get('directories','expdir'), config.get('lda_mllt','name')))
-	
-	#build decoding graphs
-	print('------- building decoding graphs ----------')
-	os.system('utils/mkgraph.sh %s %s/%s %s/%s/graph' % (config.get('directories','language_test'), config.get('directories','expdir'), config.get('lda_mllt','name'), config.get('directories','expdir'), config.get('lda_mllt','name')))
-	
-	#go back to working dir
-	os.chdir(current_dir)
+	LdaGmm = kaldiGMM.LdaGmm(config)
+	LdaGmm.train()
 
-if ALIGN_LDA:	
-	#change directory to kaldi egs
-	os.chdir(config.get('directories','kaldi_egs'))
+#get alignments with the LDA+MLLT GMM
+if ALIGN_LDA:
+	LdaGmm.align()
 
-	#align the data
-	print('------- aligning the data ----------')
-	os.system('steps/align_si.sh --nj %s --cmd %s --config %s/config/ali_lda_mllt.conf %s %s %s/%s %s/%s/ali' % (config.get('general','num_jobs'), config.get('general','cmd'), current_dir, config.get('directories','train_features') + '/' + config.get('gmm-features','name'), config.get('directories','language'), config.get('directories','expdir'), config.get('lda_mllt','name'), config.get('directories','expdir'), config.get('lda_mllt','name')))
-	
-	#convert alignments (transition-ids) to pdf-ids
-	for i in range(int(config.get('general','num_jobs'))):
-		os.system('gunzip -c %s/%s/ali/ali.%d.gz | ali-to-pdf %s/%s/ali/final.mdl ark:- ark,t:- | gzip >  %s/%s/ali/pdf.%d.gz' % (config.get('directories','expdir'), config.get('lda_mllt','name'), i+1, config.get('directories','expdir'), config.get('lda_mllt','name'), config.get('directories','expdir'), config.get('lda_mllt','name'), i+1))
-	
-	#go back to working dir
-	os.chdir(current_dir)
-
-#use kaldi to test the LDA+MLLT GMM
+#use kaldi to test the LDA+MLLT gmm
 if TEST_LDA:
-	#change directory to kaldi egs
-	os.chdir(config.get('directories','kaldi_egs'))
+	LdaGmm.test()
 	
-	#decode using kaldi
-	print('------- testing LDA+MLLT GMM ----------')
-	os.system('steps/decode.sh --cmd %s --nj %s %s/%s/graph %s %s/%s/decode | tee %s/%s/decode.log || exit 1;' % (config.get('general','cmd'), config.get('general','num_jobs'), config.get('directories','expdir'), config.get('lda_mllt','name'), config.get('directories','test_features') + '/' + config.get('gmm-features','name'), config.get('directories','expdir'), config.get('lda_mllt','name'), config.get('directories','expdir'), config.get('lda_mllt','name')))
-	
-	#get results
-	os.system('grep WER %s/%s/decode/wer_* | utils/best_wer.sh' % (config.get('directories','expdir'), config.get('lda_mllt','name')))
-	
-	#go back to working dir
-	os.chdir(current_dir)
 
 #get the feature input dim
-reader = kaldi_io.KaldiReadIn(config.get('directories','train_features') + '/' + config.get('dnn-features','name') + '/feats.scp')
+reader = ark.ArkReader(config.get('directories','train_features') + '/' + config.get('dnn-features','name') + '/feats.scp')
 (_,features,_) = reader.read_next_utt()
 input_dim = features.shape[1]
-		
-#read the utterance to speaker mapping
-utt2spk = kaldi_io.read_utt2spk(config.get('directories','train_features') + '/' +  config.get('dnn-features','name') + '/utt2spk')
 
 #get number of output labels
 numpdfs = open(config.get('directories','expdir') + '/' + config.get('nnet','gmm_name') + '/graph/num_pdfs')
@@ -279,21 +138,17 @@ if TRAIN_NNET:
 		print('------- shuffling examples ----------')
 		prepare_data.shuffle_examples(config.get('directories','train_features') + '/' +  config.get('dnn-features','name'))
 	
-	#read the alignments
-	print('------- reading alignments ----------')
-	alignments = {}
-	for i in range(int(config.get('general','num_jobs'))):
-		alignments.update(kaldi_io.read_alignments(config.get('directories','expdir') + '/' + config.get('nnet','gmm_name') + '/ali/pdf.' + str(i+1) + '.gz'))
+	#put all the alignments in one file
+	alifiles = [config.get('directories','expdir') + '/' + config.get('nnet','gmm_name') + '/ali/pdf.' + str(i+1) + '.gz' for i in range(int(config.get('general','num_jobs')))]
+	alifile = config.get('directories','expdir') + '/' + config.get('nnet','gmm_name') + '/ali/pdf.all'
+	os.system('cat %s > %s' % (' '.join(alifiles), alifile))
 	
 	#train the neural net
 	print('------- training neural net ----------')
-	Nnet.train(config.get('directories','train_features') + '/' +  config.get('dnn-features','name'), alignments, utt2spk)
+	Nnet.train(config.get('directories','train_features') + '/' +  config.get('dnn-features','name'), alifile)
 		
 
 if TEST_NNET:
-	#read the utterance to speaker mapping
-	print('------- reading utt2spk ----------')
-	utt2spk = kaldi_io.read_utt2spk(config.get('directories','test_features') + '/' +  config.get('dnn-features','name') + '/utt2spk')
 
 	#use the neural net to calculate posteriors for the testing set
 	print('------- computing state pseudo-likelihoods ----------')
@@ -301,11 +156,11 @@ if TEST_NNET:
 	decodedir = savedir + '/decode'
 	if not os.path.isdir(decodedir):
 		os.mkdir(decodedir)
-	Nnet.decode(config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), utt2spk, decodedir)
+	Nnet.decode(config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), decodedir)
 	
 	#create a dummy neural net
 	print('------- creating dummy nnet ----------')
-	kaldi_io.create_dummy(config.get('directories','expdir') + '/' + config.get('nnet','gmm_name'), decodedir, config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), num_labels)
+	kaldiInterface.create_dummy(config.get('directories','expdir') + '/' + config.get('nnet','gmm_name'), decodedir, config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), num_labels)
 	
 	#change directory to kaldi egs
 	os.chdir(config.get('directories','kaldi_egs'))

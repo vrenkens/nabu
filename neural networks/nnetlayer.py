@@ -1,0 +1,65 @@
+import tensorflow as tf
+import numpy as np
+from abc import ABCMeta, abstractmethod
+
+#this class defines a fully connected feed forward layer
+class FFLayer(object):
+	#create the layer object
+	#	input_dim: input dimension of the layer
+	#	output_dim: output dimension of the layer
+	#	weights_std: standart deviation of the weights initializer
+	#	name: name of the layer
+	#	transfername: name of the transfer function that is used
+	#	l2_norm: boolean that determines of l2_normalisation is used after every layer
+	#	dropout: the chance that a hidden unit is propagated to the next layer
+	def __init__(self, input_dim, output_dim, weights_std, name, transfername='linear', l2_norm=False, dropout=1):
+		
+		#create the model parameters in this layer
+		with tf.variable_scope(name + '_parameters'):
+			self.weights = tf.get_variable('weights', [input_dim, output_dim], initializer=tf.random_normal_initializer(stddev=weights_std))
+			self.biases = tf.get_variable('biases',  [output_dim], initializer=tf.constant_initializer(0))
+				
+		#save the parameters
+		self.transfername = transfername
+		self.l2_norm = l2_norm
+		self.dropout = dropout
+		self.name = name
+		
+	#The call to the layer object does the forward computation
+	#	inputs: the input to the layer
+	#	returns: the output of the layer
+	def __call__(self, inputs):
+			
+		with tf.name_scope(self.name):
+			
+			#apply weights and biases
+			outputs = transferFunction(tf.matmul(inputs, self.weights) + self.biases, self.transfername)
+		
+			#apply l2 normalisation
+			if self.l2_norm:
+				outputs = transferFunction(outputs, 'l2_norm')
+		
+			#apply dropout	
+			if self.dropout<1:
+				outputs = tf.nn.dropout(outputs, self.dropout)
+
+		return outputs
+
+#this function applies the transfer function
+#	inputs: the inputs to the transfer function
+#	name: the name of the function, current options are: relu, sigmoid, tanh, linear or l2_norm
+#	returns: the output to the transfer function
+def transferFunction(inputs, name):
+	if name == 'relu':
+		return tf.nn.relu(inputs)
+	elif name== 'sigmoid':
+		return tf.nn.sigmoid(inputs)
+	elif name == 'tanh':
+		return tf.nn.tanh(inputs)
+	elif name == 'linear':
+		return inputs
+	elif name == 'l2_norm':
+		return tf.nn.l2_normalize(inputs,1)*np.sqrt(inputs.get_shape().as_list()[1])
+	else:
+		raise Exception('unknown transfer function')
+	
