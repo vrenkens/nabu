@@ -17,7 +17,7 @@ import kaldiGMM
 GMMTRAINFEATURES = True 	#required 
 GMMTESTFEATURES = False	 	#required if the performance of a GMM is tested
 DNNTRAINFEATURES = True 	#required
-DNNTESTFEATURES = False	 	#required if the performance of the DNN is tested
+DNNTESTFEATURES = True	 	#required if the performance of the DNN is tested
 TRAIN_MONO = True 			#required
 ALIGN_MONO = False			#required if the monophone GMM is used for alignments
 TEST_MONO = False 			#required if the performance of the monphone GMM is tested

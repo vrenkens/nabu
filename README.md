@@ -23,23 +23,35 @@ main.py: Goes through the neural net training procedure, look at the config file
 - Get the state pseudo-likelihoods of the testing set using the neural net
 - Decode the testing set with Kaldi using the state pseudo-likelihoods and report the results
 
-feat.py: Does feature computation currently supports:
+features/feat.py: Does feature computation currently supports:
 - mfcc
 - fbank
+- ssc
 
-prepare_data.py: data prep functionality
+features/prepare_data.py: data prep functionality
 - compute the features for all the utterances
 - compute mean and variance statistics for normalisation
 - shuffle the examples for mini-batch training
 
-kaldi_io.py: functionality to interface with kaldi
-- read alignments
-- read scp files
-- create dummy neural net for decoding
-- read and write kaldi ark format
+io/ark.py: read and write ark format
+- defines a reader class for ark format
+- defines a writer class for ark format
 
-nnet.py: neural network class 
+io/batdispenser.py: reading and formatting features 
+- defines a class that can read features and do some processing like splicing and cmvn
+- defines a class that can create batches of data 
+
+neural networks/nnet.py: neural network class for a kaldi-style neural network 
 - train: train the neural net 
 - decode: compute pseudo-likelihood
+
+neural networks/nnetgraph.py: creating tensorflow graph structures
+- defines a abstract class for a neural network graph
+- defines a class for a deep neural network, inherits from the neural network graph class
+- defines a class for the training environment for a neural network
+- defines a class for the decoding environment of a neural network
+
+neural networks/nnetlayer.py: layers for a neural network
+- defines a feed forward fully connected layer
 
 
