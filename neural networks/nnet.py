@@ -197,9 +197,12 @@ class Nnet:
 			
 				#compute predictions
 				output = decoder(utt_mat)
+				
+				#floor the values to avoid problems with log
+				np.where(output == 0,np.finfo(float).eps,output)
 
 				#write the pseudo-likelihoods in kaldi feature format
-				writer.write_next_utt(decodedir + '/feats.ark', utt_id, output)
+				writer.write_next_utt(decodedir + '/feats.ark', utt_id, np.log(output))
 		
 		#close the writer
 		writer.close()

@@ -14,20 +14,20 @@ import prepare_data
 import kaldiGMM
 
 #here you can set which steps should be executed. If a step has been executed in the past the result have been saved and the step does not have to be executed again (if nothing has changed)
-GMMTRAINFEATURES = True 	#required 
+GMMTRAINFEATURES = False 	#required 
 GMMTESTFEATURES = False	 	#required if the performance of a GMM is tested
-DNNTRAINFEATURES = True 	#required
-DNNTESTFEATURES = True	 	#required if the performance of the DNN is tested
-TRAIN_MONO = True 			#required
+DNNTRAINFEATURES = False 	#required
+DNNTESTFEATURES = False	 	#required if the performance of the DNN is tested
+TRAIN_MONO = False 			#required
 ALIGN_MONO = False			#required if the monophone GMM is used for alignments
 TEST_MONO = False 			#required if the performance of the monphone GMM is tested
-TRAIN_TRI = True			#required if the triphone or LDA GMM is used for alignments
+TRAIN_TRI = False			#required if the triphone or LDA GMM is used for alignments
 ALIGN_TRI = False			#required if the triphone GMM is used for alignments
 TEST_TRI = False			#required if the performance of the triphone GMM is tested
-TRAIN_LDA = True			#required if the LDA GMM is used for alignments
-ALIGN_LDA = True			#required if the LDA GMM is used for alignments
+TRAIN_LDA = False			#required if the LDA GMM is used for alignments
+ALIGN_LDA = False			#required if the LDA GMM is used for alignments
 TEST_LDA = False			#required if the performance of the LDA GMM is tested
-TRAIN_NNET = True			#required
+TRAIN_NNET = False			#required
 TEST_NNET = True			#required if the performance of the DNN is tested
 
 #read config file
@@ -71,6 +71,9 @@ if GMMTESTFEATURES:
 if DNNTESTFEATURES:		
 	if config.get('dnn-features','name') != config.get('gmm-features','name'):
 		feat_cfg = dict(config.items('dnn-features'))
+	
+		print('------- computing DNN testing features ----------')
+		prepare_data.prepare_data(config.get('directories','test_data'), config.get('directories','test_features') + '/' + feat_cfg['name'],feat_cfg, feat_cfg['type'])
 	
 		print('------- computing cmvn stats ----------')
 		prepare_data.compute_cmvn(config.get('directories','test_features') + '/' + feat_cfg['name'])	
@@ -158,26 +161,17 @@ if TEST_NNET:
 		os.mkdir(decodedir)
 	Nnet.decode(config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), decodedir)
 	
-	#create a dummy neural net
-	print('------- creating dummy nnet ----------')
-	kaldiInterface.create_dummy(config.get('directories','expdir') + '/' + config.get('nnet','gmm_name'), decodedir, config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), num_labels)
-	
+	print('------- decoding testing sets ----------')
+	#copy the gmm model, graph and utterance to speaker mapping to the decoding dir
+	os.system('cp %s %s' %(config.get('directories','expdir') + '/' + config.get('nnet','gmm_name') + '/final.mdl', decodedir))
+	os.system('cp -r %s %s' %(config.get('directories','expdir') + '/' + config.get('nnet','gmm_name') + '/graph', decodedir))
+	os.system('cp %s %s' %(config.get('directories','test_features') + '/' +  config.get('dnn-features','name') + '/utt2spk', decodedir))
+		
 	#change directory to kaldi egs
 	os.chdir(config.get('directories','kaldi_egs'))
 	
-	#build decoding graphs
-	print('------- building decoding graphs ----------')
-	if config.get('nnet','monophone') == 'True':
-		os.system('utils/mkgraph.sh --mono %s %s %s/graph' % (config.get('directories','language_test'), decodedir, decodedir))
-	else:
-		os.system('utils/mkgraph.sh %s %s %s/graph' % (config.get('directories','language_test'), decodedir, decodedir))
-	
-	#create fake cmvn stats
-	os.system('steps/compute_cmvn_stats.sh --fake %s %s/cmvn %s' % (decodedir, config.get('directories','expdir'), decodedir))
-	
 	#decode using kaldi
-	print('------- decoding testing sets ----------')
-	os.system('steps/nnet2/decode.sh --cmd %s --nj %s %s/graph %s %s/kaldi_decode | tee %s/decode.log || exit 1;' % (config.get('general','cmd'), config.get('general','num_jobs'), decodedir, decodedir, decodedir, decodedir))
+	os.system('%s/kaldi/decode.sh --cmd %s --nj %s %s/graph %s %s/kaldi_decode | tee %s/decode.log || exit 1;' % (current_dir, config.get('general','cmd'), config.get('general','num_jobs'), decodedir, decodedir, decodedir, decodedir))
 	
 	#get results
 	os.system('grep WER %s/kaldi_decode/wer_* | utils/best_wer.sh' % decodedir)

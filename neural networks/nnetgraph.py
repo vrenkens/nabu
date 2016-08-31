@@ -13,7 +13,7 @@ class NnetGraph(object):
 		
 		self.name = name
 		
-		if len(args) + len(kwargs) < len(self.fieldnames):
+		if len(args) + len(kwargs) != len(self.fieldnames):
 			raise TypeError('%s() expects %d arguments (%d given)' %(type(self).__name__, len(self.fieldnames), len(args) + len(kwargs)))
 			
 		for a in range(len(args)):
@@ -145,9 +145,6 @@ class DNN(NnetGraph):
 	 				
 			#define the output 
 			self.outputs = tf.nn.softmax(self.logits)/stateprior
-		
-			#normalise the output
-			self.outputs = self.outputs/tf.reduce_sum(self.outputs,1, keep_dims=True)
 		
 			#create a saver 
 			self.saver = tf.train.Saver()
