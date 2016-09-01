@@ -1,0 +1,354 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="classnnetgraph_1_1NnetGraph" kind="class" prot="public">
+    <compoundname>nnetgraph::NnetGraph</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+    <derivedcompoundref refid="classnnetgraph_1_1DNN" prot="public" virt="non-virtual">nnetgraph.DNN</derivedcompoundref>
+      <sectiondef kind="private-static-attrib">
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetGraph_1a97f2b2afdf064eaf26af1eca063c5982" prot="private" static="yes" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetGraph::__metaclass__</definition>
+        <argsstring></argsstring>
+        <name>__metaclass__</name>
+        <initializer>= ABCMeta</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="10" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="10" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetGraph_1a64645c360c6ebfc12489ce179f470053" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetGraph::name</definition>
+        <argsstring></argsstring>
+        <name>name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="19" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="19" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetGraph_1a4954a87025ee4bbc4963773a292fb49a" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetGraph::_inputs</definition>
+        <argsstring></argsstring>
+        <name>_inputs</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="70" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="70" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetGraph_1a080dd4e4e378af6a2667151807f20d64" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetGraph::_outputs</definition>
+        <argsstring></argsstring>
+        <name>_outputs</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="74" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="74" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetGraph_1a1b1357c29560703c90091644b859aff7" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetGraph::_trainlogits</definition>
+        <argsstring></argsstring>
+        <name>_trainlogits</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="78" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="78" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetGraph_1a7865070847a47b7806f7e4fc4aa106d8" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetGraph::_testlogits</definition>
+        <argsstring></argsstring>
+        <name>_testlogits</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="82" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="82" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetGraph_1a1ef39cef6fdae346a713524c94948fed" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetGraph::_saver</definition>
+        <argsstring></argsstring>
+        <name>_saver</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="86" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="86" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classnnetgraph_1_1NnetGraph_1a577e7223d32195828eecacca5e7fe22f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetGraph.__init__</definition>
+        <argsstring></argsstring>
+        <name>__init__</name>
+        <briefdescription>
+<para><ref refid="classnnetgraph_1_1NnetGraph" kindref="compound">NnetGraph</ref> constructor. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>name of the neural network </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>args</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>arguments that will be used as properties of the neural net </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>kwargs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>named arguments that will be used as properties of the neural net </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="17" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="17" bodyend="32"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetGraph_1a25f6ec53d746ada07a4064db60c9f57c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetGraph.extendGraph</definition>
+        <argsstring></argsstring>
+        <name>extendGraph</name>
+        <briefdescription>
+<para>Extends the graph with the neural net graph, this method should define the attributes: inputs, outputs, logits and saver. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="35" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="35" bodyend="37"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetGraph_1ab6ae9e134b34173649c3a18f3463e03f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetGraph.fieldnames</definition>
+        <argsstring></argsstring>
+        <name>fieldnames</name>
+        <briefdescription>
+<para>A list of strings containing the fielnames of the <bold>init</bold> function. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="40" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="40" bodyend="42"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetGraph_1a5fb27655f740d4b9c2e99cf3bcb78547" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetGraph.inputs</definition>
+        <argsstring></argsstring>
+        <name>inputs</name>
+        <briefdescription>
+<para>Inputs placeholder. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="45" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="45" bodyend="47"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetGraph_1aeba1946cfab246f3475bd251c083dbf6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetGraph.outputs</definition>
+        <argsstring></argsstring>
+        <name>outputs</name>
+        <briefdescription>
+<para>Outputs of the graph. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="50" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="50" bodyend="52"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetGraph_1a7e52824ec329ad67a1f3c46e2167e784" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetGraph.trainlogits</definition>
+        <argsstring></argsstring>
+        <name>trainlogits</name>
+        <briefdescription>
+<para>Logits used for training. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="55" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="55" bodyend="57"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetGraph_1add4a8797de4c8b8a8236f75379fcba2d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetGraph.testlogits</definition>
+        <argsstring></argsstring>
+        <name>testlogits</name>
+        <briefdescription>
+<para>Logits used for evaluating (can be the same as training) </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="60" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="60" bodyend="62"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetGraph_1afea62c57c4cd3f95909c2c82e5348618" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetGraph.saver</definition>
+        <argsstring></argsstring>
+        <name>saver</name>
+        <briefdescription>
+<para>Saver of the model parameters. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="65" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="65" bodyend="67"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetGraph_1a5fb27655f740d4b9c2e99cf3bcb78547" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetGraph.inputs</definition>
+        <argsstring></argsstring>
+        <name>inputs</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="69" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="69" bodyend="71"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetGraph_1aeba1946cfab246f3475bd251c083dbf6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetGraph.outputs</definition>
+        <argsstring></argsstring>
+        <name>outputs</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="73" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="73" bodyend="75"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetGraph_1a7e52824ec329ad67a1f3c46e2167e784" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetGraph.trainlogits</definition>
+        <argsstring></argsstring>
+        <name>trainlogits</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="77" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="77" bodyend="79"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetGraph_1add4a8797de4c8b8a8236f75379fcba2d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetGraph.testlogits</definition>
+        <argsstring></argsstring>
+        <name>testlogits</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="81" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="81" bodyend="83"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetGraph_1afea62c57c4cd3f95909c2c82e5348618" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetGraph.saver</definition>
+        <argsstring></argsstring>
+        <name>saver</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="85" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="85" bodyend="89"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>This an abstrace class defining a neural net. </para>    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="53">
+        <label>nnetgraph.NnetGraph</label>
+        <link refid="classnnetgraph_1_1NnetGraph"/>
+        <childnode refid="54" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="54">
+        <label>object</label>
+      </node>
+      <node id="55">
+        <label>nnetgraph.DNN</label>
+        <link refid="classnnetgraph_1_1DNN"/>
+        <childnode refid="53" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="56">
+        <label>nnetgraph.NnetGraph</label>
+        <link refid="classnnetgraph_1_1NnetGraph"/>
+        <childnode refid="57" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="57">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="9" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="9" bodyend="90"/>
+    <listofallmembers>
+      <member refid="classnnetgraph_1_1NnetGraph_1a577e7223d32195828eecacca5e7fe22f" prot="public" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>__init__</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a97f2b2afdf064eaf26af1eca063c5982" prot="private" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>__metaclass__</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a4954a87025ee4bbc4963773a292fb49a" prot="private" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>_inputs</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a080dd4e4e378af6a2667151807f20d64" prot="private" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>_outputs</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a1ef39cef6fdae346a713524c94948fed" prot="private" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>_saver</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a7865070847a47b7806f7e4fc4aa106d8" prot="private" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>_testlogits</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a1b1357c29560703c90091644b859aff7" prot="private" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>_trainlogits</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a25f6ec53d746ada07a4064db60c9f57c" prot="public" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>extendGraph</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1ab6ae9e134b34173649c3a18f3463e03f" prot="public" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>fieldnames</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a5fb27655f740d4b9c2e99cf3bcb78547" prot="public" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>inputs</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a5fb27655f740d4b9c2e99cf3bcb78547" prot="public" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>inputs</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a64645c360c6ebfc12489ce179f470053" prot="public" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>name</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1aeba1946cfab246f3475bd251c083dbf6" prot="public" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>outputs</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1aeba1946cfab246f3475bd251c083dbf6" prot="public" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>outputs</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1afea62c57c4cd3f95909c2c82e5348618" prot="public" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>saver</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1afea62c57c4cd3f95909c2c82e5348618" prot="public" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>saver</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1add4a8797de4c8b8a8236f75379fcba2d" prot="public" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>testlogits</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1add4a8797de4c8b8a8236f75379fcba2d" prot="public" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>testlogits</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a7e52824ec329ad67a1f3c46e2167e784" prot="public" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>trainlogits</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a7e52824ec329ad67a1f3c46e2167e784" prot="public" virt="non-virtual"><scope>nnetgraph::NnetGraph</scope><name>trainlogits</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

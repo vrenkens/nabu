@@ -1,0 +1,307 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="1.8.5">
+  <compound refid="classark_1_1ArkReader" kind="class"><name>ark::ArkReader</name>
+    <member refid="classark_1_1ArkReader_1aaa3a3af73e31cae8619a4f9c8b119e6c" kind="variable"><name>scp_position</name></member>
+    <member refid="classark_1_1ArkReader_1aaeaaec3d3e04d8d14071b980b804b130" kind="variable"><name>utt_ids</name></member>
+    <member refid="classark_1_1ArkReader_1ad35450c56a79a6c7a95db6fc13e3ddc8" kind="variable"><name>scp_data</name></member>
+    <member refid="classark_1_1ArkReader_1a9b333d9c59866b69134a024632d6b1ae" kind="function"><name>__init__</name></member>
+    <member refid="classark_1_1ArkReader_1ad0a4a553d7e071b7ecc363f92c6f8659" kind="function"><name>read_utt_data</name></member>
+    <member refid="classark_1_1ArkReader_1a3acea90e00f29e30659b330d7d94bbc7" kind="function"><name>read_next_utt</name></member>
+    <member refid="classark_1_1ArkReader_1a183e69aa240621eee9200f17783460e5" kind="function"><name>read_next_scp</name></member>
+    <member refid="classark_1_1ArkReader_1ae0ec1f9846c6a4ae7221a80a345a2eaa" kind="function"><name>read_previous_scp</name></member>
+    <member refid="classark_1_1ArkReader_1ad733f1cc66a886ef44bd14aaaede8dbd" kind="function"><name>read_utt</name></member>
+    <member refid="classark_1_1ArkReader_1abca9f5851edb7e7a8eed29b0978b7f46" kind="function"><name>split</name></member>
+  </compound>
+  <compound refid="classark_1_1ArkWriter" kind="class"><name>ark::ArkWriter</name>
+    <member refid="classark_1_1ArkWriter_1a2fa74bfe94936763cca8cbdd9dee78c1" kind="variable"><name>scp_path</name></member>
+    <member refid="classark_1_1ArkWriter_1a8bda42e4b38eb15dd93a78edcb7c4116" kind="variable"><name>scp_file_write</name></member>
+    <member refid="classark_1_1ArkWriter_1aaae1f95df95645063a55420f7935a0f0" kind="function"><name>__init__</name></member>
+    <member refid="classark_1_1ArkWriter_1a2baf126c5088d2bfa98a98a4688eb58e" kind="function"><name>write_next_utt</name></member>
+    <member refid="classark_1_1ArkWriter_1a8bf260f85283c505107867be3b46e483" kind="function"><name>close</name></member>
+  </compound>
+  <compound refid="classbatchdispenser_1_1Batchdispenser" kind="class"><name>batchdispenser::Batchdispenser</name>
+    <member refid="classbatchdispenser_1_1Batchdispenser_1a974f4c32b34e963b1b39fd781bce72d0" kind="variable"><name>featureReader</name></member>
+    <member refid="classbatchdispenser_1_1Batchdispenser_1a211d82608f31c382c07e5df1e17fcfb9" kind="variable"><name>alignments</name></member>
+    <member refid="classbatchdispenser_1_1Batchdispenser_1a98751030475c6bf79d95164b25a783f0" kind="variable"><name>num_labels</name></member>
+    <member refid="classbatchdispenser_1_1Batchdispenser_1ac2d71e528f0275d01abccd02fc112921" kind="variable"><name>size</name></member>
+    <member refid="classbatchdispenser_1_1Batchdispenser_1af47d8795943a28f40603ecbf0fed4aeb" kind="function"><name>__init__</name></member>
+    <member refid="classbatchdispenser_1_1Batchdispenser_1a024c80109ee063f2278bffbe8a756ab8" kind="function"><name>getBatch</name></member>
+    <member refid="classbatchdispenser_1_1Batchdispenser_1a447d1f4555e8e31f4159a96467d61fa0" kind="function"><name>split</name></member>
+    <member refid="classbatchdispenser_1_1Batchdispenser_1a8ad61cec9800fa5dfbe8d877d3ef31c2" kind="function"><name>skipBatch</name></member>
+    <member refid="classbatchdispenser_1_1Batchdispenser_1a284b8d789807ff6e39cd8b7c373132d2" kind="function"><name>returnBatch</name></member>
+    <member refid="classbatchdispenser_1_1Batchdispenser_1af8cd9dcef57df53680acbbae38cb6526" kind="function"><name>computePrior</name></member>
+    <member refid="classbatchdispenser_1_1Batchdispenser_1a3a27138b01c66340ccbbc47bed0a8d03" kind="function"><name>numUtt</name></member>
+  </compound>
+  <compound refid="classnnetgraph_1_1CallableTensor" kind="class"><name>nnetgraph::CallableTensor</name>
+    <member refid="classnnetgraph_1_1CallableTensor_1a9de629bb1df1ce5e3327e5cf90fdc9e0" kind="variable"><name>tensor</name></member>
+    <member refid="classnnetgraph_1_1CallableTensor_1a4766f69abe06153da5b53afe4ce55a4c" kind="function"><name>__init__</name></member>
+    <member refid="classnnetgraph_1_1CallableTensor_1a87f8d02412caffca0c67b07697425a6d" kind="function"><name>__call__</name></member>
+  </compound>
+  <compound refid="classnnetgraph_1_1DNN" kind="class"><name>nnetgraph::DNN</name>
+    <member refid="classnnetgraph_1_1DNN_1a2e78a1e255ddd7cb146aad694cf3b2a1" kind="variable"><name>inputs</name></member>
+    <member refid="classnnetgraph_1_1DNN_1a0f32397414fff2f739513ed92b63174e" kind="variable"><name>prior</name></member>
+    <member refid="classnnetgraph_1_1DNN_1a2e754c90a59f470db6035aff1adf424b" kind="variable"><name>applydropout</name></member>
+    <member refid="classnnetgraph_1_1DNN_1a6e6163b9726ed15d24aa1cb5a2a39168" kind="variable"><name>addLayerOp</name></member>
+    <member refid="classnnetgraph_1_1DNN_1a4168866b75b244c010a3cdb9c1340eab" kind="variable"><name>setPriorOp</name></member>
+    <member refid="classnnetgraph_1_1DNN_1a1f8ba580cbb24bad9d0166f296b524b1" kind="variable"><name>initLastLayerOp</name></member>
+    <member refid="classnnetgraph_1_1DNN_1ac4075e7063abdc28971340fb7f4c2340" kind="variable"><name>trainlogits</name></member>
+    <member refid="classnnetgraph_1_1DNN_1a6a03d2a8afd75ede3b9949679cc92200" kind="variable"><name>testlogits</name></member>
+    <member refid="classnnetgraph_1_1DNN_1a7049bad6c0f97c992794499499a771b1" kind="variable"><name>outputs</name></member>
+    <member refid="classnnetgraph_1_1DNN_1a887babe5c6099bbb5bdf9e7db2177c28" kind="variable"><name>saver</name></member>
+    <member refid="classnnetgraph_1_1DNN_1a6e498be1780113ea9c76d73190cfd836" kind="function"><name>extendGraph</name></member>
+    <member refid="classnnetgraph_1_1DNN_1ab842f9cba9196a99709302e19938ce1f" kind="function"><name>setPrior</name></member>
+    <member refid="classnnetgraph_1_1DNN_1a72399cd0f0574558ebe7982694ca4038" kind="function"><name>addLayer</name></member>
+    <member refid="classnnetgraph_1_1DNN_1ab77e75f2dafd505577ce29e5150e5e50" kind="function"><name>fieldnames</name></member>
+  </compound>
+  <compound refid="classfeat_1_1FeatureComputer" kind="class"><name>feat::FeatureComputer</name>
+    <member refid="classfeat_1_1FeatureComputer_1a588cabfe883e32ee29b5e2e662ac02ec" kind="variable"><name>compFeat</name></member>
+    <member refid="classfeat_1_1FeatureComputer_1ad90c3d56a2afb03e8f3374c44908fceb" kind="variable"><name>conf</name></member>
+    <member refid="classfeat_1_1FeatureComputer_1a8790187028d5c64a290fbd165043e29b" kind="function"><name>__init__</name></member>
+    <member refid="classfeat_1_1FeatureComputer_1a97e524f2ba16835ea8dc91554fed5e5a" kind="function"><name>__call__</name></member>
+  </compound>
+  <compound refid="classbatchdispenser_1_1FeatureReader" kind="class"><name>batchdispenser::FeatureReader</name>
+    <member refid="classbatchdispenser_1_1FeatureReader_1aa80564d79159df29fb030a205cf0a1e1" kind="variable"><name>reader</name></member>
+    <member refid="classbatchdispenser_1_1FeatureReader_1a3dfbd288fd0016979de856c6f953682f" kind="variable"><name>reader_cmvn</name></member>
+    <member refid="classbatchdispenser_1_1FeatureReader_1a501bfb269067c6d23ead58dd31904963" kind="variable"><name>utt2spk</name></member>
+    <member refid="classbatchdispenser_1_1FeatureReader_1a7c816a79dedd93156ef7f4abccb9b7d1" kind="variable"><name>context_width</name></member>
+    <member refid="classbatchdispenser_1_1FeatureReader_1a7fee77e1877febaeb722f76a3bb4de6d" kind="function"><name>__init__</name></member>
+    <member refid="classbatchdispenser_1_1FeatureReader_1a4591ff5a0e2d668965c1f71cbe91e362" kind="function"><name>getUtt</name></member>
+    <member refid="classbatchdispenser_1_1FeatureReader_1a151181fe123aa77477010b9ebdecd1f1" kind="function"><name>nextId</name></member>
+    <member refid="classbatchdispenser_1_1FeatureReader_1adc7e1fcebf1ca5da66f2a07f84a25f17" kind="function"><name>prevId</name></member>
+    <member refid="classbatchdispenser_1_1FeatureReader_1a1afbbb0e27e304690bb4aec1caddea0e" kind="function"><name>split</name></member>
+  </compound>
+  <compound refid="classnnetlayer_1_1FFLayer" kind="class"><name>nnetlayer::FFLayer</name>
+    <member refid="classnnetlayer_1_1FFLayer_1a1373b1cf6fc058820dbb36cc5703c38f" kind="variable"><name>weights</name></member>
+    <member refid="classnnetlayer_1_1FFLayer_1aace95cffd62a426fcf995e3db10d9a77" kind="variable"><name>biases</name></member>
+    <member refid="classnnetlayer_1_1FFLayer_1ad93fca9ebad50094f7b89d904c736a93" kind="variable"><name>transfername</name></member>
+    <member refid="classnnetlayer_1_1FFLayer_1a5850e25e3655c3f6aa9b79cac3e7de36" kind="variable"><name>l2_norm</name></member>
+    <member refid="classnnetlayer_1_1FFLayer_1a7a2b1ddab0e0e9da987e1f8062244626" kind="variable"><name>dropout</name></member>
+    <member refid="classnnetlayer_1_1FFLayer_1a41838499cf2120b3a194491460643a99" kind="variable"><name>name</name></member>
+    <member refid="classnnetlayer_1_1FFLayer_1a6194f76734fbb8b9432bebba41aa3b71" kind="function"><name>__init__</name></member>
+    <member refid="classnnetlayer_1_1FFLayer_1a4d9be9f6b25f86c700f7d4289f4b2d99" kind="function"><name>__call__</name></member>
+  </compound>
+  <compound refid="classkaldiGMM_1_1KaldiGMM" kind="class"><name>kaldiGMM::KaldiGMM</name>
+    <member refid="classkaldiGMM_1_1KaldiGMM_1afd603df1882d6f345bca45b05d600dc4" kind="variable"><name>__metaclass__</name></member>
+    <member refid="classkaldiGMM_1_1KaldiGMM_1a20fd8bbc45fc1c46d0aa9fb593e87381" kind="variable"><name>conf</name></member>
+    <member refid="classkaldiGMM_1_1KaldiGMM_1aac592e636898867e7c21a216d5371e86" kind="function"><name>__init__</name></member>
+    <member refid="classkaldiGMM_1_1KaldiGMM_1aef522e153e8dc4d54ac53492ab5c6d6d" kind="function"><name>train</name></member>
+    <member refid="classkaldiGMM_1_1KaldiGMM_1a2f2f0ae48fcc3ae49ccbf5e073055e61" kind="function"><name>align</name></member>
+    <member refid="classkaldiGMM_1_1KaldiGMM_1a357b7e183e05c0e84e1f8c8a8d18f04d" kind="function"><name>test</name></member>
+    <member refid="classkaldiGMM_1_1KaldiGMM_1a3f492f295eb532de7b2032e86d852fd3" kind="function"><name>name</name></member>
+    <member refid="classkaldiGMM_1_1KaldiGMM_1ab12b3efd630a44e470a9c44a496ac185" kind="function"><name>trainscript</name></member>
+    <member refid="classkaldiGMM_1_1KaldiGMM_1ae372e472e1181a9051d2a2881fd2636e" kind="function"><name>confFile</name></member>
+    <member refid="classkaldiGMM_1_1KaldiGMM_1ae32b41daecea5ac0e59078f9a8be3e52" kind="function"><name>parentGmmLocation</name></member>
+    <member refid="classkaldiGMM_1_1KaldiGMM_1a03f9b65e9173e334318f54038ffc99a6" kind="function"><name>trainops</name></member>
+    <member refid="classkaldiGMM_1_1KaldiGMM_1a276a2f44cee300970fcf8140cd2b5d2f" kind="function"><name>graphopts</name></member>
+  </compound>
+  <compound refid="classkaldiGMM_1_1LdaGmm" kind="class"><name>kaldiGMM::LdaGmm</name>
+    <member refid="classkaldiGMM_1_1LdaGmm_1ad9e88ae8eae998349443c366767ab504" kind="function"><name>name</name></member>
+    <member refid="classkaldiGMM_1_1LdaGmm_1a6f52deeca43e5256952f1790e9cb03b8" kind="function"><name>trainscript</name></member>
+    <member refid="classkaldiGMM_1_1LdaGmm_1a761224af38218fa94b780ae3e3832f34" kind="function"><name>confFile</name></member>
+    <member refid="classkaldiGMM_1_1LdaGmm_1afae2f733a8125c8429712c2cc1faf3ca" kind="function"><name>parentGmmLocation</name></member>
+    <member refid="classkaldiGMM_1_1LdaGmm_1ab258738acf8f8797d001bd067ceb69e1" kind="function"><name>trainops</name></member>
+    <member refid="classkaldiGMM_1_1LdaGmm_1af6fecbd5f14855015e636aaad186665e" kind="function"><name>graphopts</name></member>
+  </compound>
+  <compound refid="classkaldiGMM_1_1MonoGmm" kind="class"><name>kaldiGMM::MonoGmm</name>
+    <member refid="classkaldiGMM_1_1MonoGmm_1a4dbe5a9802f23922f8fb9177d9c811cc" kind="function"><name>name</name></member>
+    <member refid="classkaldiGMM_1_1MonoGmm_1afb4944e4fcb2338fb625ef6f9d5da25d" kind="function"><name>trainscript</name></member>
+    <member refid="classkaldiGMM_1_1MonoGmm_1aeab2d555a4e849b4e591f2e8328db0ab" kind="function"><name>confFile</name></member>
+    <member refid="classkaldiGMM_1_1MonoGmm_1a01286d86d3e8c08e72b804230af548c5" kind="function"><name>parentGmmLocation</name></member>
+    <member refid="classkaldiGMM_1_1MonoGmm_1a7395b2b3446edbcc0a76acd1acb07831" kind="function"><name>trainops</name></member>
+    <member refid="classkaldiGMM_1_1MonoGmm_1a468a29e81bae272a69166458bc4a9acb" kind="function"><name>graphopts</name></member>
+  </compound>
+  <compound refid="classnnet_1_1Nnet" kind="class"><name>nnet::Nnet</name>
+    <member refid="classnnet_1_1Nnet_1a05789c0fcd99fe155eb3361831ea09cb" kind="variable"><name>conf</name></member>
+    <member refid="classnnet_1_1Nnet_1a0764a018d562efc2c8e6428a77c32666" kind="variable"><name>DNN</name></member>
+    <member refid="classnnet_1_1Nnet_1a2630dcdbe09529aaa07c16c0312093eb" kind="function"><name>__init__</name></member>
+    <member refid="classnnet_1_1Nnet_1a1386533d7e4738e5e0264ceab2987c81" kind="function"><name>train</name></member>
+    <member refid="classnnet_1_1Nnet_1aed36f213fbbd76d0cf1488af4631aa1d" kind="function"><name>decode</name></member>
+  </compound>
+  <compound refid="classnnetgraph_1_1NnetDecoder" kind="class"><name>nnetgraph::NnetDecoder</name>
+    <member refid="classnnetgraph_1_1NnetDecoder_1a0264f04b0edda1512a61320708e22dce" kind="variable"><name>graph</name></member>
+    <member refid="classnnetgraph_1_1NnetDecoder_1a1b67af250a03f7c0cbe0cc27b6850d23" kind="variable"><name>nnetGraph</name></member>
+    <member refid="classnnetgraph_1_1NnetDecoder_1a5b0019a01c530f82d46ce492e717cfd4" kind="function"><name>__init__</name></member>
+    <member refid="classnnetgraph_1_1NnetDecoder_1a916b8ffed8f8dcafb47ff9c61ba886d5" kind="function"><name>__call__</name></member>
+    <member refid="classnnetgraph_1_1NnetDecoder_1a33ae73b18d9f6f353da08f4a9aadf686" kind="function"><name>restore</name></member>
+  </compound>
+  <compound refid="classnnetgraph_1_1NnetGraph" kind="class"><name>nnetgraph::NnetGraph</name>
+    <member refid="classnnetgraph_1_1NnetGraph_1a97f2b2afdf064eaf26af1eca063c5982" kind="variable"><name>__metaclass__</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1a64645c360c6ebfc12489ce179f470053" kind="variable"><name>name</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1a4954a87025ee4bbc4963773a292fb49a" kind="variable"><name>_inputs</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1a080dd4e4e378af6a2667151807f20d64" kind="variable"><name>_outputs</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1a1b1357c29560703c90091644b859aff7" kind="variable"><name>_trainlogits</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1a7865070847a47b7806f7e4fc4aa106d8" kind="variable"><name>_testlogits</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1a1ef39cef6fdae346a713524c94948fed" kind="variable"><name>_saver</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1a577e7223d32195828eecacca5e7fe22f" kind="function"><name>__init__</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1a25f6ec53d746ada07a4064db60c9f57c" kind="function"><name>extendGraph</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1ab6ae9e134b34173649c3a18f3463e03f" kind="function"><name>fieldnames</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1a5fb27655f740d4b9c2e99cf3bcb78547" kind="function"><name>inputs</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1aeba1946cfab246f3475bd251c083dbf6" kind="function"><name>outputs</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1a7e52824ec329ad67a1f3c46e2167e784" kind="function"><name>trainlogits</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1add4a8797de4c8b8a8236f75379fcba2d" kind="function"><name>testlogits</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1afea62c57c4cd3f95909c2c82e5348618" kind="function"><name>saver</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1a5fb27655f740d4b9c2e99cf3bcb78547" kind="function"><name>inputs</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1aeba1946cfab246f3475bd251c083dbf6" kind="function"><name>outputs</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1a7e52824ec329ad67a1f3c46e2167e784" kind="function"><name>trainlogits</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1add4a8797de4c8b8a8236f75379fcba2d" kind="function"><name>testlogits</name></member>
+    <member refid="classnnetgraph_1_1NnetGraph_1afea62c57c4cd3f95909c2c82e5348618" kind="function"><name>saver</name></member>
+  </compound>
+  <compound refid="classnnetgraph_1_1NnetTrainer" kind="class"><name>nnetgraph::NnetTrainer</name>
+    <member refid="classnnetgraph_1_1NnetTrainer_1a206fa47fd1d8fbf5d723811b1bbc0bee" kind="variable"><name>numframes_per_batch</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1af0b8647b2d0c3b6977d0c8ce3825864a" kind="variable"><name>nnetGraph</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1a04443a9dcee9bc5be8687d261e1170d5" kind="variable"><name>graph</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1a5b7207158a2a66c947912adeb23a8559" kind="variable"><name>targets</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1abb8e4f89811de6b61fbec9a428f3bb21" kind="variable"><name>num_frames</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1a065207f0782e739c51e459b4c0053f2e" kind="variable"><name>loss</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1ae968321ba2af8c85ae935bf10a3fe2f0" kind="variable"><name>validLoss</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1aeaed9bbaaff5c0b85fff266fcd1e6c98" kind="variable"><name>updateValidLoss</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1a5cc20718f43b067f465c00c0bab41c94" kind="variable"><name>global_step</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1a42fab19fcc0c84dac53bebeff065bf4b" kind="variable"><name>halveLearningRateOp</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1af06f5c79d095b45246157608128a0e8f" kind="variable"><name>initgrads</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1af202c94295526b38014b758e41a69a2f" kind="variable"><name>initloss</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1a969cd8fdf92472e1f1e2339c0299374e" kind="variable"><name>updateLoss</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1ab7b76665bcaa7f95b12ff22f3b0d7333" kind="variable"><name>updateGradientsOp</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1a4bcbddf26035f57c24c82e86e8ebb7b6" kind="variable"><name>applyGradientsOp</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1a69244a57c16590c14bb855b8ce061b3f" kind="variable"><name>initop</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1a27e5a85e4128672feedf9920f43dac50" kind="variable"><name>average_loss</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1ad593ba7c354bebc4532f29bc83ff0ab8" kind="variable"><name>saver</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1aed8cbf0444c8341d305bc95341955759" kind="variable"><name>summary</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1ae5a2fd08bc29f191c9a0c71cd8a1e84b" kind="variable"><name>summarywriter</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1a89d2f7cf6044fa42857f2ef864f76687" kind="function"><name>__init__</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1af663b9f0a8ff41b9caa2d119deb41566" kind="function"><name>computeLoss</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1aed652d306480d80fd23e1f920f7b1545" kind="function"><name>initialize</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1acd1fabc849c35363826dbb53a2cedf3a" kind="function"><name>startVisualization</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1aedfa8af303dab0f0ccc84f48f2d7b729" kind="function"><name>update</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1a452cd3c0bca96de8bb264e9881f27cb4" kind="function"><name>evaluate</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1a9b98444e79d8d5c58f619d9d9d651ddf" kind="function"><name>halve_learning_rate</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1ac2f3d3cc6277614fea8b187994deb852" kind="function"><name>saveModel</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1adf7d34bbbe5d6c719299317741b61ebe" kind="function"><name>restoreModel</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1a036c80b4b086ba19051ddee758ec95fe" kind="function"><name>saveTrainer</name></member>
+    <member refid="classnnetgraph_1_1NnetTrainer_1a4c78092dedea69777c802d951b463a69" kind="function"><name>restoreTrainer</name></member>
+  </compound>
+  <compound refid="classkaldiGMM_1_1TriGmm" kind="class"><name>kaldiGMM::TriGmm</name>
+    <member refid="classkaldiGMM_1_1TriGmm_1a98c301e5577972b01814d0be9b4af3d3" kind="function"><name>name</name></member>
+    <member refid="classkaldiGMM_1_1TriGmm_1ab34ab773d0ce12800697380e85fe4105" kind="function"><name>trainscript</name></member>
+    <member refid="classkaldiGMM_1_1TriGmm_1a299b883f13d8d99db1ef40c9f9bb16da" kind="function"><name>confFile</name></member>
+    <member refid="classkaldiGMM_1_1TriGmm_1a48f2a9f2ee9373a526a34928df328f4b" kind="function"><name>parentGmmLocation</name></member>
+    <member refid="classkaldiGMM_1_1TriGmm_1a232620ccf8fe4a903f231556e9ab3c65" kind="function"><name>trainops</name></member>
+    <member refid="classkaldiGMM_1_1TriGmm_1a8b4da75b5628c79165906977b7ef6dbe" kind="function"><name>graphopts</name></member>
+  </compound>
+  <compound refid="namespaceark" kind="namespace"><name>ark</name>
+  </compound>
+  <compound refid="namespacebase" kind="namespace"><name>base</name>
+    <member refid="namespacebase_1aa11c9f1a606b402d1dfe88ab5ddd73fe" kind="variable"><name>xrange</name></member>
+    <member refid="namespacebase_1a22fa086ac81d94aa4a688c5d7be66758" kind="function"><name>mfcc</name></member>
+    <member refid="namespacebase_1a0848c32918887678213777fd854c30c9" kind="function"><name>fbank</name></member>
+    <member refid="namespacebase_1ad05b7e73e73448053d088e321228b81a" kind="function"><name>logfbank</name></member>
+    <member refid="namespacebase_1a2cee178a496e523fc00c15e7f3974dc1" kind="function"><name>ssc</name></member>
+    <member refid="namespacebase_1a9ef7b39c519344afcdace7f951b7f0dc" kind="function"><name>hz2mel</name></member>
+    <member refid="namespacebase_1a464fef0bcd5d8d0351fb372a3c3f1ec0" kind="function"><name>mel2hz</name></member>
+    <member refid="namespacebase_1a1cfc65aa1a9562ee61492cc47e06e8cc" kind="function"><name>get_filterbanks</name></member>
+    <member refid="namespacebase_1a30e5662710748f1e53813cd1549815e6" kind="function"><name>lifter</name></member>
+  </compound>
+  <compound refid="namespacebatchdispenser" kind="namespace"><name>batchdispenser</name>
+    <member refid="namespacebatchdispenser_1a4aad8b4f2716ded4611d87f11fe0bc8c" kind="function"><name>apply_cmvn</name></member>
+    <member refid="namespacebatchdispenser_1ac0dbac686667c5b2db70c392c2778494" kind="function"><name>splice</name></member>
+  </compound>
+  <compound refid="namespacefeat" kind="namespace"><name>feat</name>
+    <member refid="namespacefeat_1a8bf587a932ddd78ee89436de0527030a" kind="function"><name>snip</name></member>
+  </compound>
+  <compound refid="namespacekaldiGMM" kind="namespace"><name>kaldiGMM</name>
+  </compound>
+  <compound refid="namespacekaldiInterface" kind="namespace"><name>kaldiInterface</name>
+    <member refid="namespacekaldiInterface_1ad8e6e0cb72765e715ad4e3fe5b0cb414" kind="function"><name>read_alignments</name></member>
+    <member refid="namespacekaldiInterface_1ab2738bd9a1d9cdce8c9b2b7b70107338" kind="function"><name>read_segments</name></member>
+    <member refid="namespacekaldiInterface_1adc63eda6f84534117f3056a7665afe1d" kind="function"><name>read_wavfiles</name></member>
+    <member refid="namespacekaldiInterface_1a658043859f7edc770508e57a1190eb26" kind="function"><name>read_utt2spk</name></member>
+  </compound>
+  <compound refid="namespacemain" kind="namespace"><name>main</name>
+    <member refid="namespacemain_1a59f4c06a2e08cedb514149b48b6984aa" kind="variable"><name>GMMTRAINFEATURES</name></member>
+    <member refid="namespacemain_1a296dda895f9c33d33df01417ce747382" kind="variable"><name>GMMTESTFEATURES</name></member>
+    <member refid="namespacemain_1a6ebf47b2524c5cecebbb486e4f63787c" kind="variable"><name>DNNTRAINFEATURES</name></member>
+    <member refid="namespacemain_1a2331ffd68a8dd070648225ccca77c8fb" kind="variable"><name>DNNTESTFEATURES</name></member>
+    <member refid="namespacemain_1a4cb5579a70ff7251002bd8d1f43629ae" kind="variable"><name>TRAIN_MONO</name></member>
+    <member refid="namespacemain_1a6c401dad479e7cf7926155d2bf48f0a0" kind="variable"><name>ALIGN_MONO</name></member>
+    <member refid="namespacemain_1a2fd53590431ab25dd66e4f9d9ced0069" kind="variable"><name>TEST_MONO</name></member>
+    <member refid="namespacemain_1aa01b9466a5ebdfb9338acfdca2e72ce6" kind="variable"><name>TRAIN_TRI</name></member>
+    <member refid="namespacemain_1ae83f4a9ff4328a95882074bbaeb468d1" kind="variable"><name>ALIGN_TRI</name></member>
+    <member refid="namespacemain_1a1febd249322279139da0bd6f58d993dc" kind="variable"><name>TEST_TRI</name></member>
+    <member refid="namespacemain_1a64e425fbf10abaa224238b6de62262f0" kind="variable"><name>TRAIN_LDA</name></member>
+    <member refid="namespacemain_1a275e0fff3e0e28734a03aeeb80a219eb" kind="variable"><name>ALIGN_LDA</name></member>
+    <member refid="namespacemain_1a942616223690f3be7de0c42c1990d822" kind="variable"><name>TEST_LDA</name></member>
+    <member refid="namespacemain_1acc8651b8c8f0bf29743616ce79c9d78f" kind="variable"><name>TRAIN_NNET</name></member>
+    <member refid="namespacemain_1ae4ebeec729daa66b66c2410d696f01cc" kind="variable"><name>TEST_NNET</name></member>
+    <member refid="namespacemain_1a4d1657e9c64d753f696ed3f21ad9fc7b" kind="variable"><name>config</name></member>
+    <member refid="namespacemain_1ab6ce0ba8b2eae35b1a62b444589ef4a7" kind="variable"><name>current_dir</name></member>
+    <member refid="namespacemain_1ab72c15db92586a261a64ea99d1774908" kind="variable"><name>feat_cfg</name></member>
+    <member refid="namespacemain_1a922eedd6aff1ac39abf9d059c1d64702" kind="variable"><name>MonoGmm</name></member>
+    <member refid="namespacemain_1aca7ed93883ffcb2422b31d1ebcf23307" kind="variable"><name>TriGmm</name></member>
+    <member refid="namespacemain_1a5855bbedf1c34be740921f7217cdd48a" kind="variable"><name>LdaGmm</name></member>
+    <member refid="namespacemain_1a6a98d896a958b73b2b0f1023d8d2d7e7" kind="variable"><name>reader</name></member>
+    <member refid="namespacemain_1adad819783f268b5896bb331ac85cd72f" kind="variable"><name>input_dim</name></member>
+    <member refid="namespacemain_1a15698c8d4efb338d8940a561ae814e4f" kind="variable"><name>numpdfs</name></member>
+    <member refid="namespacemain_1afedaaae3357095be73dc6482649e0f7a" kind="variable"><name>num_labels</name></member>
+    <member refid="namespacemain_1aa520fd7e81e42360c4331f0f7da94859" kind="variable"><name>Nnet</name></member>
+    <member refid="namespacemain_1ac8ae82c9df50be2c1f36ec072383ea20" kind="variable"><name>alifiles</name></member>
+    <member refid="namespacemain_1a4df7233a36dca28efdd60a898010f889" kind="variable"><name>alifile</name></member>
+    <member refid="namespacemain_1a1f243f20eea62a5e935e7079458e549d" kind="variable"><name>savedir</name></member>
+    <member refid="namespacemain_1aa7c048288bfba1b6771fa1c34406e56e" kind="variable"><name>decodedir</name></member>
+  </compound>
+  <compound refid="namespacennet" kind="namespace"><name>nnet</name>
+  </compound>
+  <compound refid="namespacennetgraph" kind="namespace"><name>nnetgraph</name>
+  </compound>
+  <compound refid="namespacennetlayer" kind="namespace"><name>nnetlayer</name>
+    <member refid="namespacennetlayer_1a7119c36028e846acf89787e775cc9d4e" kind="function"><name>transferFunction</name></member>
+  </compound>
+  <compound refid="namespaceprepare__data" kind="namespace"><name>prepare_data</name>
+    <member refid="namespaceprepare__data_1a169aebef4dcc8dcba0414c2a740b7019" kind="function"><name>prepare_data</name></member>
+    <member refid="namespaceprepare__data_1acb984f79454c9c386a893ab205ded035" kind="function"><name>compute_cmvn</name></member>
+    <member refid="namespaceprepare__data_1aa190aa928cdefd4773a7d28c06fc1be8" kind="function"><name>shuffle_examples</name></member>
+    <member refid="namespaceprepare__data_1a41f85484bd982d67787bf09abbc634b0" kind="function"><name>read_wav</name></member>
+  </compound>
+  <compound refid="namespacesigproc" kind="namespace"><name>sigproc</name>
+    <member refid="namespacesigproc_1a88d8f5067e2c9ff2ab473c2101dc911c" kind="function"><name>framesig</name></member>
+    <member refid="namespacesigproc_1a3a4844159c538f8d3e3bb8420b3c0106" kind="function"><name>deframesig</name></member>
+    <member refid="namespacesigproc_1a527b46a0f34aee76bb232fe1d12d842d" kind="function"><name>magspec</name></member>
+    <member refid="namespacesigproc_1a56b7774ca1b868a497e9d1b3a65b9b1e" kind="function"><name>powspec</name></member>
+    <member refid="namespacesigproc_1a3b8b0bdb93cdd650bb7e810156538526" kind="function"><name>logpowspec</name></member>
+    <member refid="namespacesigproc_1a92d9db78bb710a1ac69efff4efc450ae" kind="function"><name>preemphasis</name></member>
+  </compound>
+  <compound refid="ark_8py" kind="file"><name>ark.py</name>
+  </compound>
+  <compound refid="base_8py" kind="file"><name>base.py</name>
+  </compound>
+  <compound refid="batchdispenser_8py" kind="file"><name>batchdispenser.py</name>
+  </compound>
+  <compound refid="feat_8py" kind="file"><name>feat.py</name>
+  </compound>
+  <compound refid="kaldiGMM_8py" kind="file"><name>kaldiGMM.py</name>
+  </compound>
+  <compound refid="kaldiInterface_8py" kind="file"><name>kaldiInterface.py</name>
+  </compound>
+  <compound refid="main_8py" kind="file"><name>main.py</name>
+  </compound>
+  <compound refid="nnet_8py" kind="file"><name>nnet.py</name>
+  </compound>
+  <compound refid="nnetgraph_8py" kind="file"><name>nnetgraph.py</name>
+  </compound>
+  <compound refid="nnetlayer_8py" kind="file"><name>nnetlayer.py</name>
+  </compound>
+  <compound refid="prepare__data_8py" kind="file"><name>prepare_data.py</name>
+  </compound>
+  <compound refid="README_8md" kind="file"><name>README.md</name>
+  </compound>
+  <compound refid="sigproc_8py" kind="file"><name>sigproc.py</name>
+  </compound>
+  <compound refid="dir_9a1a4359f87a67855aa82c0560dc9571" kind="dir"><name>features</name>
+  </compound>
+  <compound refid="dir_bc161955dc3a3d2485839eba21420d01" kind="dir"><name>io</name>
+  </compound>
+  <compound refid="dir_e86a72a08626d8201dfd55cfa7f35745" kind="dir"><name>kaldi</name>
+  </compound>
+  <compound refid="dir_021b19af0b44b8421c906842f3bbcb05" kind="dir"><name>neuralNetworks</name>
+  </compound>
+  <compound refid="indexpage" kind="page"><name>index</name>
+  </compound>
+</doxygenindex>

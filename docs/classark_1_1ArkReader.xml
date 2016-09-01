@@ -1,0 +1,201 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="classark_1_1ArkReader" kind="class" prot="public">
+    <compoundname>ark::ArkReader</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classark_1_1ArkReader_1aaa3a3af73e31cae8619a4f9c8b119e6c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>ark.ArkReader::scp_position</definition>
+        <argsstring></argsstring>
+        <name>scp_position</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" line="30" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classark_1_1ArkReader_1aaeaaec3d3e04d8d14071b980b804b130" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>ark.ArkReader::utt_ids</definition>
+        <argsstring></argsstring>
+        <name>utt_ids</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" line="32" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classark_1_1ArkReader_1ad35450c56a79a6c7a95db6fc13e3ddc8" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>ark.ArkReader::scp_data</definition>
+        <argsstring></argsstring>
+        <name>scp_data</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" line="33" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classark_1_1ArkReader_1a9b333d9c59866b69134a024632d6b1ae" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def ark.ArkReader.__init__</definition>
+        <argsstring></argsstring>
+        <name>__init__</name>
+        <briefdescription>
+<para><ref refid="classark_1_1ArkReader" kindref="compound">ArkReader</ref> constructor. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>scp_path</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>path to the .scp file </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" line="28" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" bodystart="28" bodyend="43"/>
+      </memberdef>
+      <memberdef kind="function" id="classark_1_1ArkReader_1ad0a4a553d7e071b7ecc363f92c6f8659" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def ark.ArkReader.read_utt_data</definition>
+        <argsstring></argsstring>
+        <name>read_utt_data</name>
+        <briefdescription>
+<para>read data from the archive </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>index</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>index of the utterance that will be read </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>a numpy array containing the data from the utterance </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" line="47" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" bodystart="47" bodyend="66"/>
+      </memberdef>
+      <memberdef kind="function" id="classark_1_1ArkReader_1a3acea90e00f29e30659b330d7d94bbc7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def ark.ArkReader.read_next_utt</definition>
+        <argsstring></argsstring>
+        <name>read_next_utt</name>
+        <briefdescription>
+<para>read the next utterance in the scp file </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>the utterance ID of the utterance that was read, the utterance data, bool that is true if the reader looped back to the beginning </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" line="69" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" bodystart="69" bodyend="83"/>
+      </memberdef>
+      <memberdef kind="function" id="classark_1_1ArkReader_1a183e69aa240621eee9200f17783460e5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def ark.ArkReader.read_next_scp</definition>
+        <argsstring></argsstring>
+        <name>read_next_scp</name>
+        <briefdescription>
+<para>read the next utterance ID but don&apos;t read the data </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>the utterance ID of the utterance that was read </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" line="86" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" bodystart="86" bodyend="94"/>
+      </memberdef>
+      <memberdef kind="function" id="classark_1_1ArkReader_1ae0ec1f9846c6a4ae7221a80a345a2eaa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def ark.ArkReader.read_previous_scp</definition>
+        <argsstring></argsstring>
+        <name>read_previous_scp</name>
+        <briefdescription>
+<para>read the previous utterance ID but don&apos;t read the data </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>the utterance ID of the utterance that was read </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" line="97" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" bodystart="97" bodyend="105"/>
+      </memberdef>
+      <memberdef kind="function" id="classark_1_1ArkReader_1ad733f1cc66a886ef44bd14aaaede8dbd" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def ark.ArkReader.read_utt</definition>
+        <argsstring></argsstring>
+        <name>read_utt</name>
+        <briefdescription>
+<para>read the data of a certain utterance ID </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>the utterance data corresponding to the ID </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" line="108" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" bodystart="108" bodyend="111"/>
+      </memberdef>
+      <memberdef kind="function" id="classark_1_1ArkReader_1abca9f5851edb7e7a8eed29b0978b7f46" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def ark.ArkReader.split</definition>
+        <argsstring></argsstring>
+        <name>split</name>
+        <briefdescription>
+<para>Split of the data that was read so far. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" line="113" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" bodystart="113" bodyend="118"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>Class to read Kaldi ark format. </para>    </briefdescription>
+    <detaileddescription>
+<para>Each time, it reads one line of the .scp file and reads in the corresponding features into a numpy matrix. It only supports binary-formatted .ark files. Text and compressed .ark files are not supported. The inspiration for this class came from pdnn toolkit (see licence at the top of this file)(<ulink url="https://github.com/yajiemiao/pdnn">https://github.com/yajiemiao/pdnn</ulink>) </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="0">
+        <label>ark.ArkReader</label>
+        <link refid="classark_1_1ArkReader"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>object</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>ark.ArkReader</label>
+        <link refid="classark_1_1ArkReader"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" line="24" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/io/ark.py" bodystart="24" bodyend="119"/>
+    <listofallmembers>
+      <member refid="classark_1_1ArkReader_1a9b333d9c59866b69134a024632d6b1ae" prot="public" virt="non-virtual"><scope>ark::ArkReader</scope><name>__init__</name></member>
+      <member refid="classark_1_1ArkReader_1a183e69aa240621eee9200f17783460e5" prot="public" virt="non-virtual"><scope>ark::ArkReader</scope><name>read_next_scp</name></member>
+      <member refid="classark_1_1ArkReader_1a3acea90e00f29e30659b330d7d94bbc7" prot="public" virt="non-virtual"><scope>ark::ArkReader</scope><name>read_next_utt</name></member>
+      <member refid="classark_1_1ArkReader_1ae0ec1f9846c6a4ae7221a80a345a2eaa" prot="public" virt="non-virtual"><scope>ark::ArkReader</scope><name>read_previous_scp</name></member>
+      <member refid="classark_1_1ArkReader_1ad733f1cc66a886ef44bd14aaaede8dbd" prot="public" virt="non-virtual"><scope>ark::ArkReader</scope><name>read_utt</name></member>
+      <member refid="classark_1_1ArkReader_1ad0a4a553d7e071b7ecc363f92c6f8659" prot="public" virt="non-virtual"><scope>ark::ArkReader</scope><name>read_utt_data</name></member>
+      <member refid="classark_1_1ArkReader_1ad35450c56a79a6c7a95db6fc13e3ddc8" prot="public" virt="non-virtual"><scope>ark::ArkReader</scope><name>scp_data</name></member>
+      <member refid="classark_1_1ArkReader_1aaa3a3af73e31cae8619a4f9c8b119e6c" prot="public" virt="non-virtual"><scope>ark::ArkReader</scope><name>scp_position</name></member>
+      <member refid="classark_1_1ArkReader_1abca9f5851edb7e7a8eed29b0978b7f46" prot="public" virt="non-virtual"><scope>ark::ArkReader</scope><name>split</name></member>
+      <member refid="classark_1_1ArkReader_1aaeaaec3d3e04d8d14071b980b804b130" prot="public" virt="non-virtual"><scope>ark::ArkReader</scope><name>utt_ids</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

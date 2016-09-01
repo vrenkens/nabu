@@ -1,0 +1,139 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="classkaldiGMM_1_1TriGmm" kind="class" prot="public">
+    <compoundname>kaldiGMM::TriGmm</compoundname>
+    <basecompoundref refid="classkaldiGMM_1_1KaldiGMM" prot="public" virt="non-virtual">kaldiGMM.KaldiGMM</basecompoundref>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classkaldiGMM_1_1TriGmm_1a98c301e5577972b01814d0be9b4af3d3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def kaldiGMM.TriGmm.name</definition>
+        <argsstring></argsstring>
+        <name>name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="123" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="123" bodyend="125"/>
+      </memberdef>
+      <memberdef kind="function" id="classkaldiGMM_1_1TriGmm_1ab34ab773d0ce12800697380e85fe4105" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def kaldiGMM.TriGmm.trainscript</definition>
+        <argsstring></argsstring>
+        <name>trainscript</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="127" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="127" bodyend="129"/>
+      </memberdef>
+      <memberdef kind="function" id="classkaldiGMM_1_1TriGmm_1a299b883f13d8d99db1ef40c9f9bb16da" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def kaldiGMM.TriGmm.confFile</definition>
+        <argsstring></argsstring>
+        <name>confFile</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="131" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="131" bodyend="133"/>
+      </memberdef>
+      <memberdef kind="function" id="classkaldiGMM_1_1TriGmm_1a48f2a9f2ee9373a526a34928df328f4b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def kaldiGMM.TriGmm.parentGmmLocation</definition>
+        <argsstring></argsstring>
+        <name>parentGmmLocation</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="135" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="135" bodyend="137"/>
+      </memberdef>
+      <memberdef kind="function" id="classkaldiGMM_1_1TriGmm_1a232620ccf8fe4a903f231556e9ab3c65" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def kaldiGMM.TriGmm.trainops</definition>
+        <argsstring></argsstring>
+        <name>trainops</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="139" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="139" bodyend="141"/>
+      </memberdef>
+      <memberdef kind="function" id="classkaldiGMM_1_1TriGmm_1a8b4da75b5628c79165906977b7ef6dbe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def kaldiGMM.TriGmm.graphopts</definition>
+        <argsstring></argsstring>
+        <name>graphopts</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="143" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="143" bodyend="145"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>a class for the triphone GMM </para>    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="62">
+        <label>kaldiGMM.TriGmm</label>
+        <link refid="classkaldiGMM_1_1TriGmm"/>
+        <childnode refid="63" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="63">
+        <label>kaldiGMM.KaldiGMM</label>
+        <link refid="classkaldiGMM_1_1KaldiGMM"/>
+        <childnode refid="64" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="64">
+        <label>object</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="65">
+        <label>kaldiGMM.TriGmm</label>
+        <link refid="classkaldiGMM_1_1TriGmm"/>
+        <childnode refid="66" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="66">
+        <label>kaldiGMM.KaldiGMM</label>
+        <link refid="classkaldiGMM_1_1KaldiGMM"/>
+        <childnode refid="67" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="67">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="121" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="121" bodyend="146"/>
+    <listofallmembers>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1aac592e636898867e7c21a216d5371e86" prot="public" virt="non-virtual"><scope>kaldiGMM::TriGmm</scope><name>__init__</name></member>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1a2f2f0ae48fcc3ae49ccbf5e073055e61" prot="public" virt="non-virtual"><scope>kaldiGMM::TriGmm</scope><name>align</name></member>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1a20fd8bbc45fc1c46d0aa9fb593e87381" prot="public" virt="non-virtual"><scope>kaldiGMM::TriGmm</scope><name>conf</name></member>
+      <member refid="classkaldiGMM_1_1TriGmm_1a299b883f13d8d99db1ef40c9f9bb16da" prot="public" virt="non-virtual"><scope>kaldiGMM::TriGmm</scope><name>confFile</name></member>
+      <member refid="classkaldiGMM_1_1TriGmm_1a8b4da75b5628c79165906977b7ef6dbe" prot="public" virt="non-virtual"><scope>kaldiGMM::TriGmm</scope><name>graphopts</name></member>
+      <member refid="classkaldiGMM_1_1TriGmm_1a98c301e5577972b01814d0be9b4af3d3" prot="public" virt="non-virtual"><scope>kaldiGMM::TriGmm</scope><name>name</name></member>
+      <member refid="classkaldiGMM_1_1TriGmm_1a48f2a9f2ee9373a526a34928df328f4b" prot="public" virt="non-virtual"><scope>kaldiGMM::TriGmm</scope><name>parentGmmLocation</name></member>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1a357b7e183e05c0e84e1f8c8a8d18f04d" prot="public" virt="non-virtual"><scope>kaldiGMM::TriGmm</scope><name>test</name></member>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1aef522e153e8dc4d54ac53492ab5c6d6d" prot="public" virt="non-virtual"><scope>kaldiGMM::TriGmm</scope><name>train</name></member>
+      <member refid="classkaldiGMM_1_1TriGmm_1a232620ccf8fe4a903f231556e9ab3c65" prot="public" virt="non-virtual"><scope>kaldiGMM::TriGmm</scope><name>trainops</name></member>
+      <member refid="classkaldiGMM_1_1TriGmm_1ab34ab773d0ce12800697380e85fe4105" prot="public" virt="non-virtual"><scope>kaldiGMM::TriGmm</scope><name>trainscript</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

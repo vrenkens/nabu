@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="sigproc_8py" kind="file">
+    <compoundname>sigproc.py</compoundname>
+    <innernamespace refid="namespacesigproc">sigproc</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">#The<sp/>MIT<sp/>License<sp/>(MIT)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="comment">#Copyright<sp/>(c)<sp/>2013<sp/>James<sp/>Lyons</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="comment">#Permission<sp/>is<sp/>hereby<sp/>granted,<sp/>free<sp/>of<sp/>charge,<sp/>to<sp/>any<sp/>person<sp/>obtaining<sp/>a<sp/>copy<sp/>of</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="comment">#this<sp/>software<sp/>and<sp/>associated<sp/>documentation<sp/>files<sp/>(the<sp/>&quot;Software&quot;),<sp/>to<sp/>deal<sp/>in</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="comment">#the<sp/>Software<sp/>without<sp/>restriction,<sp/>including<sp/>without<sp/>limitation<sp/>the<sp/>rights<sp/>to</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="comment">#use,<sp/>copy,<sp/>modify,<sp/>merge,<sp/>publish,<sp/>distribute,<sp/>sublicense,<sp/>and/or<sp/>sell<sp/>copies<sp/>of</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="comment">#the<sp/>Software,<sp/>and<sp/>to<sp/>permit<sp/>persons<sp/>to<sp/>whom<sp/>the<sp/>Software<sp/>is<sp/>furnished<sp/>to<sp/>do<sp/>so,</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="comment">#subject<sp/>to<sp/>the<sp/>following<sp/>conditions:</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="comment">#The<sp/>above<sp/>copyright<sp/>notice<sp/>and<sp/>this<sp/>permission<sp/>notice<sp/>shall<sp/>be<sp/>included<sp/>in<sp/>all</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="comment">#copies<sp/>or<sp/>substantial<sp/>portions<sp/>of<sp/>the<sp/>Software.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="comment">#THE<sp/>SOFTWARE<sp/>IS<sp/>PROVIDED<sp/>&quot;AS<sp/>IS&quot;,<sp/>WITHOUT<sp/>WARRANTY<sp/>OF<sp/>ANY<sp/>KIND,<sp/>EXPRESS<sp/>OR</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="comment">#IMPLIED,<sp/>INCLUDING<sp/>BUT<sp/>NOT<sp/>LIMITED<sp/>TO<sp/>THE<sp/>WARRANTIES<sp/>OF<sp/>MERCHANTABILITY,<sp/>FITNESS</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="comment">#FOR<sp/>A<sp/>PARTICULAR<sp/>PURPOSE<sp/>AND<sp/>NONINFRINGEMENT.<sp/>IN<sp/>NO<sp/>EVENT<sp/>SHALL<sp/>THE<sp/>AUTHORS<sp/>OR</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="comment">#COPYRIGHT<sp/>HOLDERS<sp/>BE<sp/>LIABLE<sp/>FOR<sp/>ANY<sp/>CLAIM,<sp/>DAMAGES<sp/>OR<sp/>OTHER<sp/>LIABILITY,<sp/>WHETHER</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="comment">#IN<sp/>AN<sp/>ACTION<sp/>OF<sp/>CONTRACT,<sp/>TORT<sp/>OR<sp/>OTHERWISE,<sp/>ARISING<sp/>FROM,<sp/>OUT<sp/>OF<sp/>OR<sp/>IN</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="comment">#CONNECTION<sp/>WITH<sp/>THE<sp/>SOFTWARE<sp/>OR<sp/>THE<sp/>USE<sp/>OR<sp/>OTHER<sp/>DEALINGS<sp/>IN<sp/>THE<sp/>SOFTWARE.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="comment">#<sp/>This<sp/>file<sp/>includes<sp/>routines<sp/>for<sp/>basic<sp/>signal<sp/>processing<sp/>including<sp/>framing<sp/>and<sp/>computing<sp/>power<sp/>spectra.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight><highlight class="comment">#<sp/>Author:<sp/>James<sp/>Lyons<sp/>2012</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>numpy</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>math</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="comment">##Frame<sp/>a<sp/>signal<sp/>into<sp/>overlapping<sp/>frames.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>sig<sp/>the<sp/>audio<sp/>signal<sp/>to<sp/>frame.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>frame_len<sp/>length<sp/>of<sp/>each<sp/>frame<sp/>measured<sp/>in<sp/>samples.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>frame_step<sp/>number<sp/>of<sp/>samples<sp/>after<sp/>the<sp/>start<sp/>of<sp/>the<sp/>previous<sp/>frame<sp/>that<sp/>the<sp/>next<sp/>frame<sp/>should<sp/>begin.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>winfunc<sp/>the<sp/>analysis<sp/>window<sp/>to<sp/>apply<sp/>to<sp/>each<sp/>frame.<sp/>By<sp/>default<sp/>no<sp/>window<sp/>is<sp/>applied.<sp/><sp/><sp/><sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight><highlight class="comment">#@return<sp/>an<sp/>array<sp/>of<sp/>frames.<sp/>Size<sp/>is<sp/>NUMFRAMES<sp/>by<sp/>frame_len.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="36"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal">framesig(sig,frame_len,frame_step,winfunc=lambda<sp/>x:numpy.ones((x,))):</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/>slen<sp/>=<sp/>len(sig)</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/>frame_len<sp/>=<sp/>int(round(frame_len))</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/>frame_step<sp/>=<sp/>int(round(frame_step))</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>slen<sp/>&lt;=<sp/>frame_len:<sp/></highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>numframes<sp/>=<sp/>1</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>numframes<sp/>=<sp/>1<sp/>+<sp/>int(math.ceil((1.0*slen<sp/>-<sp/>frame_len)/frame_step))</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/>padlen<sp/>=<sp/>int((numframes-1)*frame_step<sp/>+<sp/>frame_len)</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/>zeros<sp/>=<sp/>numpy.zeros((padlen<sp/>-<sp/>slen,))</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/>padsignal<sp/>=<sp/>numpy.concatenate((sig,zeros))</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/>indices<sp/>=<sp/>numpy.tile(numpy.arange(0,frame_len),(numframes,1))<sp/>+<sp/>numpy.tile(numpy.arange(0,numframes*frame_step,frame_step),(frame_len,1)).T</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/>indices<sp/>=<sp/>numpy.array(indices,dtype=numpy.int32)</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/>frames<sp/>=<sp/>padsignal[indices]</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/>win<sp/>=<sp/>numpy.tile(winfunc(frame_len),(numframes,1))</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>frames*win</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="56"><highlight class="normal"></highlight><highlight class="comment">##Does<sp/>overlap-add<sp/>procedure<sp/>to<sp/>undo<sp/>the<sp/>action<sp/>of<sp/>framesig.<sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="57"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="58"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>frames<sp/>the<sp/>array<sp/>of<sp/>frames.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="59"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>siglen<sp/>the<sp/>length<sp/>of<sp/>the<sp/>desired<sp/>signal,<sp/>use<sp/>0<sp/>if<sp/>unknown.<sp/>Output<sp/>will<sp/>be<sp/>truncated<sp/>to<sp/>siglen<sp/>samples.<sp/><sp/><sp/><sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="60"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>frame_len<sp/>length<sp/>of<sp/>each<sp/>frame<sp/>measured<sp/>in<sp/>samples.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="61"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>frame_step<sp/>number<sp/>of<sp/>samples<sp/>after<sp/>the<sp/>start<sp/>of<sp/>the<sp/>previous<sp/>frame<sp/>that<sp/>the<sp/>next<sp/>frame<sp/>should<sp/>begin.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="62"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>winfunc<sp/>the<sp/>analysis<sp/>window<sp/>to<sp/>apply<sp/>to<sp/>each<sp/>frame.<sp/>By<sp/>default<sp/>no<sp/>window<sp/>is<sp/>applied.<sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="63"><highlight class="normal"></highlight><highlight class="comment">#<sp/><sp/><sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="64"><highlight class="normal"></highlight><highlight class="comment">#@return<sp/>a<sp/>1-D<sp/>signal.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="65"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal">deframesig(frames,siglen,frame_len,frame_step,winfunc=lambda<sp/>x:numpy.ones((x,))):</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/>frame_len<sp/>=<sp/>round(frame_len)</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/>frame_step<sp/>=<sp/>round(frame_step)</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/>numframes<sp/>=<sp/>numpy.shape(frames)[0]</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">assert</highlight><highlight class="normal"><sp/>numpy.shape(frames)[1]<sp/>==<sp/>frame_len,<sp/></highlight><highlight class="stringliteral">&apos;&quot;frames&quot;<sp/>matrix<sp/>is<sp/>wrong<sp/>size,<sp/>2nd<sp/>dim<sp/>is<sp/>not<sp/>equal<sp/>to<sp/>frame_len&apos;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/></highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/>indices<sp/>=<sp/>numpy.tile(numpy.arange(0,frame_len),(numframes,1))<sp/>+<sp/>numpy.tile(numpy.arange(0,numframes*frame_step,frame_step),(frame_len,1)).T</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/><sp/><sp/>indices<sp/>=<sp/>numpy.array(indices,dtype=numpy.int32)</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/>padlen<sp/>=<sp/>(numframes-1)*frame_step<sp/>+<sp/>frame_len<sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="75"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>siglen<sp/>&lt;=<sp/>0:<sp/>siglen<sp/>=<sp/>padlen</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="77"><highlight class="normal"><sp/><sp/><sp/><sp/>rec_signal<sp/>=<sp/>numpy.zeros((padlen,))</highlight></codeline>
+<codeline lineno="78"><highlight class="normal"><sp/><sp/><sp/><sp/>window_correction<sp/>=<sp/>numpy.zeros((padlen,))</highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><sp/><sp/><sp/><sp/>win<sp/>=<sp/>winfunc(frame_len)</highlight></codeline>
+<codeline lineno="80"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>i<sp/></highlight><highlight class="keywordflow">in</highlight><highlight class="normal"><sp/>range(0,numframes):</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>window_correction[indices[i,:]]<sp/>=<sp/>window_correction[indices[i,:]]<sp/>+<sp/>win<sp/>+<sp/>1e-15<sp/></highlight><highlight class="comment">#add<sp/>a<sp/>little<sp/>bit<sp/>so<sp/>it<sp/>is<sp/>never<sp/>zero</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="83"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>rec_signal[indices[i,:]]<sp/>=<sp/>rec_signal[indices[i,:]]<sp/>+<sp/>frames[i,:]</highlight></codeline>
+<codeline lineno="84"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="85"><highlight class="normal"><sp/><sp/><sp/><sp/>rec_signal<sp/>=<sp/>rec_signal/window_correction</highlight></codeline>
+<codeline lineno="86"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>rec_signal[0:siglen]</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="88"><highlight class="normal"></highlight><highlight class="comment">##Compute<sp/>the<sp/>magnitude<sp/>spectrum<sp/>of<sp/>each<sp/>frame<sp/>in<sp/>frames.<sp/>If<sp/>frames<sp/>is<sp/>an<sp/>NxD<sp/>matrix,<sp/>output<sp/>will<sp/>be<sp/>NxNFFT.<sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="89"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="90"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>frames<sp/>the<sp/>array<sp/>of<sp/>frames.<sp/>Each<sp/>row<sp/>is<sp/>a<sp/>frame.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="91"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>NFFT<sp/>the<sp/>FFT<sp/>length<sp/>to<sp/>use.<sp/>If<sp/>NFFT<sp/>&gt;<sp/>frame_len,<sp/>the<sp/>frames<sp/>are<sp/>zero-padded.<sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="92"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="93"><highlight class="normal"></highlight><highlight class="comment">#@return<sp/>If<sp/>frames<sp/>is<sp/>an<sp/>NxD<sp/>matrix,<sp/>output<sp/>will<sp/>be<sp/>NxNFFT.<sp/>Each<sp/>row<sp/>will<sp/>be<sp/>the<sp/>magnitude<sp/>spectrum<sp/>of<sp/>the<sp/>corresponding<sp/>frame.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="94"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal">magspec(frames,NFFT):</highlight></codeline>
+<codeline lineno="95"><highlight class="normal"><sp/><sp/><sp/><sp/>complex_spec<sp/>=<sp/>numpy.fft.rfft(frames,NFFT)</highlight></codeline>
+<codeline lineno="96"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>numpy.absolute(complex_spec)</highlight></codeline>
+<codeline lineno="97"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="98"><highlight class="normal"></highlight><highlight class="comment">##Compute<sp/>the<sp/>power<sp/>spectrum<sp/>of<sp/>each<sp/>frame<sp/>in<sp/>frames.<sp/>If<sp/>frames<sp/>is<sp/>an<sp/>NxD<sp/>matrix,<sp/>output<sp/>will<sp/>be<sp/>NxNFFT.<sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="99"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="100"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>frames<sp/>the<sp/>array<sp/>of<sp/>frames.<sp/>Each<sp/>row<sp/>is<sp/>a<sp/>frame.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="101"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>NFFT<sp/>the<sp/>FFT<sp/>length<sp/>to<sp/>use.<sp/>If<sp/>NFFT<sp/>&gt;<sp/>frame_len,<sp/>the<sp/>frames<sp/>are<sp/>zero-padded.<sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="102"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="103"><highlight class="normal"></highlight><highlight class="comment">#@return<sp/>If<sp/>frames<sp/>is<sp/>an<sp/>NxD<sp/>matrix,<sp/>output<sp/>will<sp/>be<sp/>NxNFFT.<sp/>Each<sp/>row<sp/>will<sp/>be<sp/>the<sp/>power<sp/>spectrum<sp/>of<sp/>the<sp/>corresponding<sp/>frame.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="104"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal">powspec(frames,NFFT):<sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="105"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1.0/NFFT<sp/>*<sp/>numpy.square(magspec(frames,NFFT))</highlight></codeline>
+<codeline lineno="106"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="107"><highlight class="normal"></highlight><highlight class="comment">##Compute<sp/>the<sp/>log<sp/>power<sp/>spectrum<sp/>of<sp/>each<sp/>frame<sp/>in<sp/>frames.<sp/>If<sp/>frames<sp/>is<sp/>an<sp/>NxD<sp/>matrix,<sp/>output<sp/>will<sp/>be<sp/>NxNFFT.<sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="108"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="109"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>frames<sp/>the<sp/>array<sp/>of<sp/>frames.<sp/>Each<sp/>row<sp/>is<sp/>a<sp/>frame.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="110"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>NFFT<sp/>the<sp/>FFT<sp/>length<sp/>to<sp/>use.<sp/>If<sp/>NFFT<sp/>&gt;<sp/>frame_len,<sp/>the<sp/>frames<sp/>are<sp/>zero-padded.<sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="111"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>norm<sp/>If<sp/>norm=1,<sp/>the<sp/>log<sp/>power<sp/>spectrum<sp/>is<sp/>normalised<sp/>so<sp/>that<sp/>the<sp/>max<sp/>value<sp/>(across<sp/>all<sp/>frames)<sp/>is<sp/>1.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="112"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="113"><highlight class="normal"></highlight><highlight class="comment">#@return<sp/>If<sp/>frames<sp/>is<sp/>an<sp/>NxD<sp/>matrix,<sp/>output<sp/>will<sp/>be<sp/>NxNFFT.<sp/>Each<sp/>row<sp/>will<sp/>be<sp/>the<sp/>log<sp/>power<sp/>spectrum<sp/>of<sp/>the<sp/>corresponding<sp/>frame.<sp/><sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="114"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal">logpowspec(frames,NFFT,norm=1):<sp/></highlight></codeline>
+<codeline lineno="115"><highlight class="normal"><sp/><sp/><sp/><sp/>ps<sp/>=<sp/>powspec(frames,NFFT);</highlight></codeline>
+<codeline lineno="116"><highlight class="normal"><sp/><sp/><sp/><sp/>ps[ps&lt;=1e-30]<sp/>=<sp/>1e-30</highlight></codeline>
+<codeline lineno="117"><highlight class="normal"><sp/><sp/><sp/><sp/>lps<sp/>=<sp/>10*numpy.log10(ps)</highlight></codeline>
+<codeline lineno="118"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>norm:</highlight></codeline>
+<codeline lineno="119"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>lps<sp/>-<sp/>numpy.max(lps)</highlight></codeline>
+<codeline lineno="120"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="121"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>lps</highlight></codeline>
+<codeline lineno="122"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="123"><highlight class="normal"></highlight><highlight class="comment">##perform<sp/>preemphasis<sp/>on<sp/>the<sp/>input<sp/>signal.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="124"><highlight class="normal"></highlight><highlight class="comment">#<sp/><sp/><sp/><sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="125"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>signal<sp/>The<sp/>signal<sp/>to<sp/>filter.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="126"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>coeff<sp/>The<sp/>preemphasis<sp/>coefficient.<sp/>0<sp/>is<sp/>no<sp/>filter,<sp/>default<sp/>is<sp/>0.95.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="127"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="128"><highlight class="normal"></highlight><highlight class="comment">#@return<sp/>the<sp/>filtered<sp/>signal.<sp/><sp/><sp/><sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="129"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal">preemphasis(signal,coeff=0.95):</highlight></codeline>
+<codeline lineno="130"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>numpy.append(signal[0],signal[1:]-coeff*signal[:-1])</highlight></codeline>
+<codeline lineno="131"><highlight class="normal"></highlight></codeline>
+<codeline lineno="132"><highlight class="normal"></highlight></codeline>
+<codeline lineno="133"><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/features/sigproc.py"/>
+  </compounddef>
+</doxygen>

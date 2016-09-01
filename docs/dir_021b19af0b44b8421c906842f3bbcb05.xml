@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="dir_021b19af0b44b8421c906842f3bbcb05" kind="dir">
+    <compoundname>neuralNetworks</compoundname>
+    <innerfile refid="nnet_8py">nnet.py</innerfile>
+    <innerfile refid="nnetgraph_8py">nnetgraph.py</innerfile>
+    <innerfile refid="nnetlayer_8py">nnetlayer.py</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="namespaceprepare__data" kind="namespace">
+    <compoundname>prepare_data</compoundname>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="namespaceprepare__data_1a169aebef4dcc8dcba0414c2a740b7019" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def prepare_data.prepare_data</definition>
+        <argsstring></argsstring>
+        <name>prepare_data</name>
+        <briefdescription>
+<para>This function will compute the features of all segments and save them on disk. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>datadir</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>directory where the kaldi data prep has been done </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>featdir</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>directory where the features will be put </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>conf</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>feature configuration </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>feat_type</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>type of features to be computed, options are mfcc, fbank and ssc </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/features/prepare_data.py" line="18" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/features/prepare_data.py" bodystart="18" bodyend="62"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceprepare__data_1acb984f79454c9c386a893ab205ded035" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def prepare_data.compute_cmvn</definition>
+        <argsstring></argsstring>
+        <name>compute_cmvn</name>
+        <briefdescription>
+<para>compute the cmvn statistics and save them </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>featdir</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the directory containing the features in feats.scp </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/features/prepare_data.py" line="66" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/features/prepare_data.py" bodystart="66" bodyend="100"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceprepare__data_1aa190aa928cdefd4773a7d28c06fc1be8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def prepare_data.shuffle_examples</definition>
+        <argsstring></argsstring>
+        <name>shuffle_examples</name>
+        <briefdescription>
+<para>shuffle the utterances and put them in feats_shuffled.scp </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>featdir</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the directory containing the features in feats.scp </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/features/prepare_data.py" line="104" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/features/prepare_data.py" bodystart="104" bodyend="115"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceprepare__data_1a41f85484bd982d67787bf09abbc634b0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def prepare_data.read_wav</definition>
+        <argsstring></argsstring>
+        <name>read_wav</name>
+        <briefdescription>
+<para>read a wav file formatted by kaldi </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>wavfile</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>a pair containing eiher the filaname or the command to read the wavfile and a boolean that determines if its a name or a command </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/features/prepare_data.py" line="119" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/features/prepare_data.py" bodystart="119" bodyend="139"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/features/prepare_data.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="classnnetgraph_1_1NnetDecoder" kind="class" prot="public">
+    <compoundname>nnetgraph::NnetDecoder</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetDecoder_1a0264f04b0edda1512a61320708e22dce" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetDecoder::graph</definition>
+        <argsstring></argsstring>
+        <name>graph</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="202" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="202" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetDecoder_1a1b67af250a03f7c0cbe0cc27b6850d23" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetDecoder::nnetGraph</definition>
+        <argsstring></argsstring>
+        <name>nnetGraph</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="203" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="203" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classnnetgraph_1_1NnetDecoder_1a5b0019a01c530f82d46ce492e717cfd4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetDecoder.__init__</definition>
+        <argsstring></argsstring>
+        <name>__init__</name>
+        <briefdescription>
+<para><ref refid="classnnetgraph_1_1NnetDecoder" kindref="compound">NnetDecoder</ref> constructor, creates the decoding graph. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>nnetgraph</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>an nnetgraph object for the neural net that will be used for decoding </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="200" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="200" bodyend="212"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetDecoder_1a916b8ffed8f8dcafb47ff9c61ba886d5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetDecoder.__call__</definition>
+        <argsstring></argsstring>
+        <name>__call__</name>
+        <briefdescription>
+<para>decode using the neural net </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>inputs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the inputs to the graph as a NxF numpy array where N is the number of frames and F is the input feature dimension</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>an NxO numpy array where N is the number of frames and O is the neural net output dimension </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="218" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="218" bodyend="220"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetDecoder_1a33ae73b18d9f6f353da08f4a9aadf686" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetDecoder.restore</definition>
+        <argsstring></argsstring>
+        <name>restore</name>
+        <briefdescription>
+<para>load the saved neural net </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>filename</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>location where the neural net is saved </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="224" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="224" bodyend="227"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>Class for the decoding environment for a neural net graph. </para>    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="49">
+        <label>nnetgraph.NnetDecoder</label>
+        <link refid="classnnetgraph_1_1NnetDecoder"/>
+        <childnode refid="50" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="50">
+        <label>object</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="51">
+        <label>nnetgraph.NnetDecoder</label>
+        <link refid="classnnetgraph_1_1NnetDecoder"/>
+        <childnode refid="52" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="52">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="196" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="196" bodyend="228"/>
+    <listofallmembers>
+      <member refid="classnnetgraph_1_1NnetDecoder_1a916b8ffed8f8dcafb47ff9c61ba886d5" prot="public" virt="non-virtual"><scope>nnetgraph::NnetDecoder</scope><name>__call__</name></member>
+      <member refid="classnnetgraph_1_1NnetDecoder_1a5b0019a01c530f82d46ce492e717cfd4" prot="public" virt="non-virtual"><scope>nnetgraph::NnetDecoder</scope><name>__init__</name></member>
+      <member refid="classnnetgraph_1_1NnetDecoder_1a0264f04b0edda1512a61320708e22dce" prot="public" virt="non-virtual"><scope>nnetgraph::NnetDecoder</scope><name>graph</name></member>
+      <member refid="classnnetgraph_1_1NnetDecoder_1a1b67af250a03f7c0cbe0cc27b6850d23" prot="public" virt="non-virtual"><scope>nnetgraph::NnetDecoder</scope><name>nnetGraph</name></member>
+      <member refid="classnnetgraph_1_1NnetDecoder_1a33ae73b18d9f6f353da08f4a9aadf686" prot="public" virt="non-virtual"><scope>nnetgraph::NnetDecoder</scope><name>restore</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

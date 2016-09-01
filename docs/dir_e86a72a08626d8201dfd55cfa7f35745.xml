@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="dir_e86a72a08626d8201dfd55cfa7f35745" kind="dir">
+    <compoundname>kaldi</compoundname>
+    <innerfile refid="kaldiGMM_8py">kaldiGMM.py</innerfile>
+    <innerfile refid="kaldiInterface_8py">kaldiInterface.py</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="namespacennet" kind="namespace">
+    <compoundname>nnet</compoundname>
+    <innerclass refid="classnnet_1_1Nnet" prot="public">nnet::Nnet</innerclass>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnet.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

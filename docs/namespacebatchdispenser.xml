@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="namespacebatchdispenser" kind="namespace">
+    <compoundname>batchdispenser</compoundname>
+    <innerclass refid="classbatchdispenser_1_1FeatureReader" prot="public">batchdispenser::FeatureReader</innerclass>
+    <innerclass refid="classbatchdispenser_1_1Batchdispenser" prot="public">batchdispenser::Batchdispenser</innerclass>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="namespacebatchdispenser_1a4aad8b4f2716ded4611d87f11fe0bc8c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def batchdispenser.apply_cmvn</definition>
+        <argsstring></argsstring>
+        <name>apply_cmvn</name>
+        <briefdescription>
+<para>apply mean and variance normalisation based on the previously computed statistics </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>utt</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the utterance feature numpy matrix </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>stats</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>a numpy array containing the mean and variance statistics. The first row contains the sum of all the fautures and as a last element the total numbe of features. The second row contains the squared sum of the features and a zero at the end</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>a numpy array containing the mean and variance normalized features </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/io/batchdispenser.py" line="164" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/io/batchdispenser.py" bodystart="164" bodyend="174"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacebatchdispenser_1ac0dbac686667c5b2db70c392c2778494" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def batchdispenser.splice</definition>
+        <argsstring></argsstring>
+        <name>splice</name>
+        <briefdescription>
+<para>splice the utterance </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>utt</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>numpy matrix containing the utterance features to be spliced </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>context</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>width how many frames to the left and right should be concatenated</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>a numpy array containing the spliced features </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/io/batchdispenser.py" line="181" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/io/batchdispenser.py" bodystart="181" bodyend="198"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/io/batchdispenser.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

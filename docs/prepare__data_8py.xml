@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="prepare__data_8py" kind="file">
+    <compoundname>prepare_data.py</compoundname>
+    <innernamespace refid="namespaceprepare__data">prepare_data</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="keyword">import</highlight><highlight class="normal"><sp/>numpy<sp/></highlight><highlight class="keyword">as</highlight><highlight class="normal"><sp/>np</highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>gzip</highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>scipy.io.wavfile<sp/></highlight><highlight class="keyword">as</highlight><highlight class="normal"><sp/>wav</highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>os</highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>shutil<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>copyfile</highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>random<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>shuffle</highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>ark</highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>feat</highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>kaldiInterface</highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="comment">##This<sp/>function<sp/>will<sp/>compute<sp/>the<sp/>features<sp/>of<sp/>all<sp/>segments<sp/>and<sp/>save<sp/>them<sp/>on<sp/>disk</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>datadir<sp/>directory<sp/>where<sp/>the<sp/>kaldi<sp/>data<sp/>prep<sp/>has<sp/>been<sp/>done</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>featdir<sp/>directory<sp/>where<sp/>the<sp/>features<sp/>will<sp/>be<sp/>put</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>conf<sp/>feature<sp/>configuration</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>feat_type<sp/>type<sp/>of<sp/>features<sp/>to<sp/>be<sp/>computed,<sp/>options<sp/>are<sp/>mfcc,<sp/>fbank<sp/>and<sp/>ssc</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal"><ref refid="namespaceprepare__data" kindref="compound">prepare_data</ref>(datadir,<sp/>featdir,<sp/>conf,<sp/>feat_type):</highlight></codeline>
+<codeline lineno="19"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">not</highlight><highlight class="normal"><sp/>os.path.exists(featdir):</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>os.makedirs(featdir)</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#read<sp/>the<sp/>segments</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>os.path.isfile(datadir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/segments&apos;</highlight><highlight class="normal">):</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>segments<sp/>=<sp/><ref refid="namespacekaldiInterface_1ab2738bd9a1d9cdce8c9b2b7b70107338" kindref="member">kaldiInterface.read_segments</ref>(datadir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/segments&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>found_segments<sp/>=<sp/></highlight><highlight class="keyword">True</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>print(</highlight><highlight class="stringliteral">&apos;WARNING:<sp/>no<sp/>segments<sp/>file<sp/>found,<sp/>assuming<sp/>each<sp/>wav<sp/>file<sp/>is<sp/>seperate<sp/>utterance&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>found_segments<sp/>=<sp/></highlight><highlight class="keyword">False</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#read<sp/>the<sp/>wavfiles</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/>wavfiles<sp/>=<sp/><ref refid="namespacekaldiInterface_1adc63eda6f84534117f3056a7665afe1d" kindref="member">kaldiInterface.read_wavfiles</ref>(datadir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/wav.scp&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#create<sp/>ark<sp/>writer</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/>writer<sp/>=<sp/><ref refid="classark_1_1ArkWriter" kindref="compound">ark.ArkWriter</ref>(featdir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/feats.scp&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>os.path.isfile(featdir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/feats.ark&apos;</highlight><highlight class="normal">):</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>os.remove(featdir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/feats.ark&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#read<sp/>all<sp/>the<sp/>wav<sp/>files</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/>RateUtt<sp/>=<sp/>{utt:<sp/>read_wav(wavfiles[utt])<sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>utt<sp/></highlight><highlight class="keywordflow">in</highlight><highlight class="normal"><sp/>wavfiles}</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#create<sp/>a<sp/>featureComputer</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/>comp<sp/>=<sp/><ref refid="classfeat_1_1FeatureComputer" kindref="compound">feat.FeatureComputer</ref>(feat_type,<sp/>conf)</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#compute<sp/>all<sp/>the<sp/>features</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>utt<sp/></highlight><highlight class="keywordflow">in</highlight><highlight class="normal"><sp/>wavfiles:</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>found_segments:</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>seg<sp/></highlight><highlight class="keywordflow">in</highlight><highlight class="normal"><sp/>segments[utt]:</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>features<sp/>=<sp/>comp(RateUtt[utt][1][int(seg[1]*RateUtt[utt][0]):int(seg[2]*RateUtt[utt][0])],<sp/>RateUtt[utt][0])</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>writer.write_next_utt(featdir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/feats.ark&apos;</highlight><highlight class="normal">,<sp/>seg[0],<sp/>features)</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>features<sp/>=<sp/>comp(RateUtt[utt][1],<sp/>RateUtt[utt][0])</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>writer.write_next_utt(featdir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/feats.ark&apos;</highlight><highlight class="normal">,<sp/>utt,<sp/>features)</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"></highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/><sp/>writer.close()</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#copy<sp/>some<sp/>kaldi<sp/>files<sp/>to<sp/>features<sp/>dir</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/><sp/><sp/>copyfile(datadir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/utt2spk&apos;</highlight><highlight class="normal">,<sp/>featdir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/utt2spk&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"><sp/><sp/><sp/><sp/>copyfile(datadir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/spk2utt&apos;</highlight><highlight class="normal">,<sp/>featdir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/spk2utt&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/><sp/><sp/>copyfile(datadir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/text&apos;</highlight><highlight class="normal">,<sp/>featdir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/text&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/><sp/><sp/>copyfile(datadir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/wav.scp&apos;</highlight><highlight class="normal">,<sp/>featdir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/wav.scp&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="63"><highlight class="normal"></highlight><highlight class="comment">##<sp/>compute<sp/>the<sp/>cmvn<sp/>statistics<sp/>and<sp/>save<sp/>them</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="64"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="65"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>featdir<sp/>the<sp/>directory<sp/>containing<sp/>the<sp/>features<sp/>in<sp/>feats.scp</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="66"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal">compute_cmvn(featdir):</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#read<sp/>the<sp/>spk2utt<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/>spk2utt<sp/>=<sp/>open(featdir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/spk2utt&apos;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&apos;</highlight><highlight class="stringliteral">r&apos;)</highlight></codeline>
+<codeline lineno="69"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="70"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#create<sp/>feature<sp/>reader</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/>reader<sp/>=<sp/><ref refid="classark_1_1ArkReader" kindref="compound">ark.ArkReader</ref>(featdir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/feats.scp&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#create<sp/>writer<sp/>for<sp/>cmvn<sp/>stats</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/>writer<sp/>=<sp/><ref refid="classark_1_1ArkWriter" kindref="compound">ark.ArkWriter</ref>(featdir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/cmvn.scp&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="76"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#loop<sp/>over<sp/>speakers</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="77"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>line<sp/></highlight><highlight class="keywordflow">in</highlight><highlight class="normal"><sp/>spk2utt:</highlight></codeline>
+<codeline lineno="78"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#cut<sp/>off<sp/>end<sp/>of<sp/>line<sp/>character</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>line<sp/>=<sp/>line[0:len(line)-1]<sp/></highlight></codeline>
+<codeline lineno="80"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>split<sp/>=<sp/>line.split(</highlight><highlight class="stringliteral">&apos;<sp/>&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="83"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#get<sp/>first<sp/>speaker<sp/>utterance</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="84"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spk_data<sp/>=<sp/>reader.read_utt(split[1])</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="86"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#get<sp/>the<sp/>rest<sp/>of<sp/>the<sp/>utterances</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="87"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>utt_id<sp/></highlight><highlight class="keywordflow">in</highlight><highlight class="normal"><sp/>split[2:len(split)]:</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>spk_data<sp/>=<sp/>np.append(spk_data,<sp/>reader.read_utt(utt_id),<sp/>axis=0)</highlight></codeline>
+<codeline lineno="89"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="90"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#compute<sp/>mean<sp/>and<sp/>variance</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="91"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>stats<sp/>=<sp/>np.zeros([2,spk_data.shape[1]+1])</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>stats[0,0:spk_data.shape[1]]<sp/>=<sp/>np.sum(spk_data,<sp/>0)</highlight></codeline>
+<codeline lineno="93"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>stats[1,0:spk_data.shape[1]]<sp/>=<sp/>np.sum(np.square(spk_data),0)</highlight></codeline>
+<codeline lineno="94"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>stats[0,<sp/>spk_data.shape[1]]<sp/>=<sp/>spk_data.shape[0]</highlight></codeline>
+<codeline lineno="95"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="96"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#write<sp/>stats<sp/>to<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="97"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>writer.write_next_utt(featdir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/cmvn.ark&apos;</highlight><highlight class="normal">,<sp/>split[0],<sp/>stats)</highlight></codeline>
+<codeline lineno="98"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="99"><highlight class="normal"><sp/><sp/><sp/><sp/>writer.close()</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="101"><highlight class="normal"></highlight><highlight class="comment">##<sp/>shuffle<sp/>the<sp/>utterances<sp/>and<sp/>put<sp/>them<sp/>in<sp/>feats_shuffled.scp</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="102"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="103"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>featdir<sp/>the<sp/>directory<sp/>containing<sp/>the<sp/>features<sp/>in<sp/>feats.scp</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="104"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal">shuffle_examples(featdir):</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#read<sp/>feats.scp</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="106"><highlight class="normal"><sp/><sp/><sp/><sp/>featsfile<sp/>=<sp/>open(featdir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/feats.scp&apos;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&apos;</highlight><highlight class="stringliteral">r&apos;)</highlight></codeline>
+<codeline lineno="107"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>feats<sp/>=<sp/>featsfile.readlines()</highlight></codeline>
+<codeline lineno="108"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="109"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#shuffle<sp/>feats<sp/>randomly</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="110"><highlight class="normal"><sp/><sp/><sp/><sp/>shuffle(feats)</highlight></codeline>
+<codeline lineno="111"><highlight class="normal"></highlight></codeline>
+<codeline lineno="112"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#wite<sp/>them<sp/>to<sp/>feats_shuffled.scp</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="113"><highlight class="normal"><sp/><sp/><sp/><sp/>feats_shuffledfile<sp/>=<sp/>open(featdir<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;/feats_shuffled.scp&apos;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&apos;w&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="114"><highlight class="normal"><sp/><sp/><sp/><sp/>feats_shuffledfile.writelines(feats)</highlight></codeline>
+<codeline lineno="115"><highlight class="normal"></highlight></codeline>
+<codeline lineno="116"><highlight class="normal"></highlight><highlight class="comment">##<sp/>read<sp/>a<sp/>wav<sp/>file<sp/>formatted<sp/>by<sp/>kaldi</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="117"><highlight class="normal"></highlight><highlight class="comment">#</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="118"><highlight class="normal"></highlight><highlight class="comment">#@param<sp/>wavfile<sp/>a<sp/>pair<sp/>containing<sp/>eiher<sp/>the<sp/>filaname<sp/>or<sp/>the<sp/>command<sp/>to<sp/>read<sp/>the<sp/>wavfile<sp/>and<sp/>a<sp/>boolean<sp/>that<sp/>determines<sp/>if<sp/>its<sp/>a<sp/>name<sp/>or<sp/>a<sp/>command</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="119"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal">read_wav(wavfile):</highlight></codeline>
+<codeline lineno="120"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>wavfile[1]:</highlight></codeline>
+<codeline lineno="121"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#read<sp/>the<sp/>audio<sp/>file<sp/>and<sp/>temporarily<sp/>copy<sp/>it<sp/>to<sp/>tmp<sp/>(and<sp/>duplicate,<sp/>I<sp/>don&apos;t<sp/>know<sp/>how<sp/>to<sp/>avoid<sp/>this)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="122"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>os.system(wavfile[0]<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;<sp/>tee<sp/>tmp.wav<sp/>&gt;<sp/>duplicate.wav&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="123"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#read<sp/>the<sp/>created<sp/>wav<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="124"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(rate,utterance)<sp/>=<sp/>wav.read(</highlight><highlight class="stringliteral">&apos;tmp.wav&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="125"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#delete<sp/>the<sp/>create<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="126"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>os.remove(</highlight><highlight class="stringliteral">&apos;tmp.wav&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="127"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>os.remove(</highlight><highlight class="stringliteral">&apos;duplicate.wav&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="128"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="129"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(rate,utterance)<sp/>=<sp/>wav.read(wavfile[0])</highlight></codeline>
+<codeline lineno="130"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="131"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>rate,<sp/>utterance</highlight></codeline>
+<codeline lineno="132"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="133"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="134"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="135"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="136"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="137"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="138"><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/features/prepare_data.py"/>
+  </compounddef>
+</doxygen>

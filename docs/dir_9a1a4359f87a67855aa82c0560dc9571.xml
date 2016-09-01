@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="dir_9a1a4359f87a67855aa82c0560dc9571" kind="dir">
+    <compoundname>features</compoundname>
+    <innerfile refid="base_8py">base.py</innerfile>
+    <innerfile refid="feat_8py">feat.py</innerfile>
+    <innerfile refid="prepare__data_8py">prepare_data.py</innerfile>
+    <innerfile refid="sigproc_8py">sigproc.py</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/features/"/>
+  </compounddef>
+</doxygen>

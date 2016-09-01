@@ -1,0 +1,296 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="namespacebase" kind="namespace">
+    <compoundname>base</compoundname>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="namespacebase_1aa11c9f1a606b402d1dfe88ab5ddd73fe" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>base.xrange</definition>
+        <argsstring></argsstring>
+        <name>xrange</name>
+        <initializer>= range</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/features/base.py" line="32" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/features/base.py" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="namespacebase_1a22fa086ac81d94aa4a688c5d7be66758" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def base.mfcc</definition>
+        <argsstring></argsstring>
+        <name>mfcc</name>
+        <briefdescription>
+<para>Compute MFCC features from an audio signal. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>signal</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the audio signal from which to compute features. Should be an N*1 array </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>samplerate</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the samplerate of the signal we are working with. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>conf</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>feature configuration</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A numpy array of size (NUMFRAMES by numcep) containing features. Each row holds 1 feature vector, a numpy vector containing the signal log-energy </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/features/base.py" line="41" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/features/base.py" bodystart="41" bodyend="48"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacebase_1a0848c32918887678213777fd854c30c9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def base.fbank</definition>
+        <argsstring></argsstring>
+        <name>fbank</name>
+        <briefdescription>
+<para>Compute fbank features from an audio signal. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>signal</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the audio signal from which to compute features. Should be an N*1 array </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>samplerate</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the samplerate of the signal we are working with. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>conf</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>feature configuration</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A numpy array of size (NUMFRAMES by nfilt) containing features, a numpy vector containing the signal energy </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/features/base.py" line="56" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/features/base.py" bodystart="56" bodyend="73"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacebase_1ad05b7e73e73448053d088e321228b81a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def base.logfbank</definition>
+        <argsstring></argsstring>
+        <name>logfbank</name>
+        <briefdescription>
+<para>Compute log-fbank features from an audio signal. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>signal</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the audio signal from which to compute features. Should be an N*1 array </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>samplerate</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the samplerate of the signal we are working with. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>conf</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>feature configuration</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A numpy array of size (NUMFRAMES by nfilt) containing features, a numpy vector containing the signal log-energy </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/features/base.py" line="81" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/features/base.py" bodystart="81" bodyend="84"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacebase_1a2cee178a496e523fc00c15e7f3974dc1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def base.ssc</definition>
+        <argsstring></argsstring>
+        <name>ssc</name>
+        <briefdescription>
+<para>Compute ssc features from an audio signal. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>signal</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the audio signal from which to compute features. Should be an N*1 array </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>samplerate</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the samplerate of the signal we are working with. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>conf</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>feature configuration</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A numpy array of size (NUMFRAMES by nfilt) containing features, a numpy vector containing the signal log-energy </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/features/base.py" line="92" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/features/base.py" bodystart="92" bodyend="108"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacebase_1a9ef7b39c519344afcdace7f951b7f0dc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def base.hz2mel</definition>
+        <argsstring></argsstring>
+        <name>hz2mel</name>
+        <briefdescription>
+<para>Convert a value in Hertz to Mels. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>hz</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>a value in Hz. This can also be a numpy array, conversion proceeds element-wise.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>a value in Mels. If an array was passed in, an identical sized array is returned. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/features/base.py" line="114" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/features/base.py" bodystart="114" bodyend="116"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacebase_1a464fef0bcd5d8d0351fb372a3c3f1ec0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def base.mel2hz</definition>
+        <argsstring></argsstring>
+        <name>mel2hz</name>
+        <briefdescription>
+<para>Convert a value in Mels to Hertz. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>mel</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>a value in Mels. This can also be a numpy array, conversion proceeds element-wise.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>a value in Hertz. If an array was passed in, an identical sized array is returned. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/features/base.py" line="122" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/features/base.py" bodystart="122" bodyend="124"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacebase_1a1cfc65aa1a9562ee61492cc47e06e8cc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def base.get_filterbanks</definition>
+        <argsstring></argsstring>
+        <name>get_filterbanks</name>
+        <briefdescription>
+<para>Compute a Mel-filterbank. </para>        </briefdescription>
+        <detaileddescription>
+<para>The filters are stored in the rows, the columns correspond to fft bins. The filters are returned as an array of size nfilt * (nfft/2 + 1)</para><para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>nfilt</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the number of filters in the filterbank, default 20. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>nfft</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the FFT size. Default is 512. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>samplerate</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the samplerate of the signal we are working with. Affects mel spacing. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>lowfreq</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>lowest band edge of mel filters, default 0 Hz </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>highfreq</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>highest band edge of mel filters, default samplerate/2</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A numpy array of size nfilt * (nfft/2 + 1) containing filterbank. Each row holds 1 filter. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/features/base.py" line="134" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/features/base.py" bodystart="134" bodyend="154"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacebase_1a30e5662710748f1e53813cd1549815e6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def base.lifter</definition>
+        <argsstring></argsstring>
+        <name>lifter</name>
+        <briefdescription>
+<para>Apply a cepstral lifter the the matrix of cepstra. </para>        </briefdescription>
+        <detaileddescription>
+<para>This has the effect of increasing the magnitude of the high frequency DCT coeffs.</para><para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>cepstra</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the matrix of mel-cepstra, will be numframes * numcep in size. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>L</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the liftering coefficient to use. Default is 22. L &lt;= 0 disables lifter.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>the lifted cepstra </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/features/base.py" line="161" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/features/base.py" bodystart="161" bodyend="171"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/features/base.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="namespacennetlayer" kind="namespace">
+    <compoundname>nnetlayer</compoundname>
+    <innerclass refid="classnnetlayer_1_1FFLayer" prot="public">nnetlayer::FFLayer</innerclass>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="namespacennetlayer_1a7119c36028e846acf89787e775cc9d4e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetlayer.transferFunction</definition>
+        <argsstring></argsstring>
+        <name>transferFunction</name>
+        <briefdescription>
+<para>Apply the transfer function. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>inputs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the inputs to the transfer function </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the name of the function, current options are: relu, sigmoid, tanh, linear or l2_norm</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>the output to the transfer function </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetlayer.py" line="59" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetlayer.py" bodystart="59" bodyend="73"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetlayer.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

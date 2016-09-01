@@ -1,0 +1,240 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="classkaldiGMM_1_1KaldiGMM" kind="class" prot="public">
+    <compoundname>kaldiGMM::KaldiGMM</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+    <derivedcompoundref refid="classkaldiGMM_1_1LdaGmm" prot="public" virt="non-virtual">kaldiGMM.LdaGmm</derivedcompoundref>
+    <derivedcompoundref refid="classkaldiGMM_1_1MonoGmm" prot="public" virt="non-virtual">kaldiGMM.MonoGmm</derivedcompoundref>
+    <derivedcompoundref refid="classkaldiGMM_1_1TriGmm" prot="public" virt="non-virtual">kaldiGMM.TriGmm</derivedcompoundref>
+      <sectiondef kind="private-static-attrib">
+      <memberdef kind="variable" id="classkaldiGMM_1_1KaldiGMM_1afd603df1882d6f345bca45b05d600dc4" prot="private" static="yes" mutable="no">
+        <type></type>
+        <definition>kaldiGMM.KaldiGMM::__metaclass__</definition>
+        <argsstring></argsstring>
+        <name>__metaclass__</name>
+        <initializer>= ABCMeta</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="6" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="6" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classkaldiGMM_1_1KaldiGMM_1a20fd8bbc45fc1c46d0aa9fb593e87381" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>kaldiGMM.KaldiGMM::conf</definition>
+        <argsstring></argsstring>
+        <name>conf</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="13" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classkaldiGMM_1_1KaldiGMM_1aac592e636898867e7c21a216d5371e86" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def kaldiGMM.KaldiGMM.__init__</definition>
+        <argsstring></argsstring>
+        <name>__init__</name>
+        <briefdescription>
+<para><ref refid="classkaldiGMM_1_1KaldiGMM" kindref="compound">KaldiGMM</ref> constructor. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>conf</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the general configurations </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="11" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="11" bodyend="14"/>
+      </memberdef>
+      <memberdef kind="function" id="classkaldiGMM_1_1KaldiGMM_1aef522e153e8dc4d54ac53492ab5c6d6d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def kaldiGMM.KaldiGMM.train</definition>
+        <argsstring></argsstring>
+        <name>train</name>
+        <briefdescription>
+<para>train the GMM </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="16" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="16" bodyend="32"/>
+      </memberdef>
+      <memberdef kind="function" id="classkaldiGMM_1_1KaldiGMM_1a2f2f0ae48fcc3ae49ccbf5e073055e61" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def kaldiGMM.KaldiGMM.align</definition>
+        <argsstring></argsstring>
+        <name>align</name>
+        <briefdescription>
+<para>use the GMM to align the training utterances </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="34" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="34" bodyend="50"/>
+      </memberdef>
+      <memberdef kind="function" id="classkaldiGMM_1_1KaldiGMM_1a357b7e183e05c0e84e1f8c8a8d18f04d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def kaldiGMM.KaldiGMM.test</definition>
+        <argsstring></argsstring>
+        <name>test</name>
+        <briefdescription>
+<para>test the GMM on the testing set </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="52" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="52" bodyend="63"/>
+      </memberdef>
+      <memberdef kind="function" id="classkaldiGMM_1_1KaldiGMM_1a3f492f295eb532de7b2032e86d852fd3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def kaldiGMM.KaldiGMM.name</definition>
+        <argsstring></argsstring>
+        <name>name</name>
+        <briefdescription>
+<para>the name of the GMM </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="66" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="66" bodyend="68"/>
+      </memberdef>
+      <memberdef kind="function" id="classkaldiGMM_1_1KaldiGMM_1ab12b3efd630a44e470a9c44a496ac185" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def kaldiGMM.KaldiGMM.trainscript</definition>
+        <argsstring></argsstring>
+        <name>trainscript</name>
+        <briefdescription>
+<para>the script used for training the GMM </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="71" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="71" bodyend="73"/>
+      </memberdef>
+      <memberdef kind="function" id="classkaldiGMM_1_1KaldiGMM_1ae372e472e1181a9051d2a2881fd2636e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def kaldiGMM.KaldiGMM.confFile</definition>
+        <argsstring></argsstring>
+        <name>confFile</name>
+        <briefdescription>
+<para>the configuration file for this GMM </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="76" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="76" bodyend="78"/>
+      </memberdef>
+      <memberdef kind="function" id="classkaldiGMM_1_1KaldiGMM_1ae32b41daecea5ac0e59078f9a8be3e52" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def kaldiGMM.KaldiGMM.parentGmmLocation</definition>
+        <argsstring></argsstring>
+        <name>parentGmmLocation</name>
+        <briefdescription>
+<para>the path to the parent GMM model (empty for monophone GMM) </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="81" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="81" bodyend="83"/>
+      </memberdef>
+      <memberdef kind="function" id="classkaldiGMM_1_1KaldiGMM_1a03f9b65e9173e334318f54038ffc99a6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def kaldiGMM.KaldiGMM.trainops</definition>
+        <argsstring></argsstring>
+        <name>trainops</name>
+        <briefdescription>
+<para>the extra options for GMM training </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="86" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="86" bodyend="88"/>
+      </memberdef>
+      <memberdef kind="function" id="classkaldiGMM_1_1KaldiGMM_1a276a2f44cee300970fcf8140cd2b5d2f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def kaldiGMM.KaldiGMM.graphopts</definition>
+        <argsstring></argsstring>
+        <name>graphopts</name>
+        <briefdescription>
+<para>the extra options for the decoding graph creation </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="91" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="91" bodyend="93"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>an abstract class for a kaldi GMM </para>    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="30">
+        <label>kaldiGMM.LdaGmm</label>
+        <link refid="classkaldiGMM_1_1LdaGmm"/>
+        <childnode refid="28" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="32">
+        <label>kaldiGMM.TriGmm</label>
+        <link refid="classkaldiGMM_1_1TriGmm"/>
+        <childnode refid="28" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="28">
+        <label>kaldiGMM.KaldiGMM</label>
+        <link refid="classkaldiGMM_1_1KaldiGMM"/>
+        <childnode refid="29" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="29">
+        <label>object</label>
+      </node>
+      <node id="31">
+        <label>kaldiGMM.MonoGmm</label>
+        <link refid="classkaldiGMM_1_1MonoGmm"/>
+        <childnode refid="28" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="33">
+        <label>kaldiGMM.KaldiGMM</label>
+        <link refid="classkaldiGMM_1_1KaldiGMM"/>
+        <childnode refid="34" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="34">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" line="5" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/kaldi/kaldiGMM.py" bodystart="5" bodyend="94"/>
+    <listofallmembers>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1aac592e636898867e7c21a216d5371e86" prot="public" virt="non-virtual"><scope>kaldiGMM::KaldiGMM</scope><name>__init__</name></member>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1afd603df1882d6f345bca45b05d600dc4" prot="private" virt="non-virtual"><scope>kaldiGMM::KaldiGMM</scope><name>__metaclass__</name></member>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1a2f2f0ae48fcc3ae49ccbf5e073055e61" prot="public" virt="non-virtual"><scope>kaldiGMM::KaldiGMM</scope><name>align</name></member>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1a20fd8bbc45fc1c46d0aa9fb593e87381" prot="public" virt="non-virtual"><scope>kaldiGMM::KaldiGMM</scope><name>conf</name></member>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1ae372e472e1181a9051d2a2881fd2636e" prot="public" virt="non-virtual"><scope>kaldiGMM::KaldiGMM</scope><name>confFile</name></member>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1a276a2f44cee300970fcf8140cd2b5d2f" prot="public" virt="non-virtual"><scope>kaldiGMM::KaldiGMM</scope><name>graphopts</name></member>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1a3f492f295eb532de7b2032e86d852fd3" prot="public" virt="non-virtual"><scope>kaldiGMM::KaldiGMM</scope><name>name</name></member>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1ae32b41daecea5ac0e59078f9a8be3e52" prot="public" virt="non-virtual"><scope>kaldiGMM::KaldiGMM</scope><name>parentGmmLocation</name></member>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1a357b7e183e05c0e84e1f8c8a8d18f04d" prot="public" virt="non-virtual"><scope>kaldiGMM::KaldiGMM</scope><name>test</name></member>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1aef522e153e8dc4d54ac53492ab5c6d6d" prot="public" virt="non-virtual"><scope>kaldiGMM::KaldiGMM</scope><name>train</name></member>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1a03f9b65e9173e334318f54038ffc99a6" prot="public" virt="non-virtual"><scope>kaldiGMM::KaldiGMM</scope><name>trainops</name></member>
+      <member refid="classkaldiGMM_1_1KaldiGMM_1ab12b3efd630a44e470a9c44a496ac185" prot="public" virt="non-virtual"><scope>kaldiGMM::KaldiGMM</scope><name>trainscript</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

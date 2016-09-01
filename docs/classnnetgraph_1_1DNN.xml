@@ -1,0 +1,268 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="classnnetgraph_1_1DNN" kind="class" prot="public">
+    <compoundname>nnetgraph::DNN</compoundname>
+    <basecompoundref refid="classnnetgraph_1_1NnetGraph" prot="public" virt="non-virtual">nnetgraph.NnetGraph</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classnnetgraph_1_1DNN_1a2e78a1e255ddd7cb146aad694cf3b2a1" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.DNN::inputs</definition>
+        <argsstring></argsstring>
+        <name>inputs</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="108" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="108" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1DNN_1a0f32397414fff2f739513ed92b63174e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.DNN::prior</definition>
+        <argsstring></argsstring>
+        <name>prior</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="111" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="111" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1DNN_1a2e754c90a59f470db6035aff1adf424b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.DNN::applydropout</definition>
+        <argsstring></argsstring>
+        <name>applydropout</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="115" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="115" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1DNN_1a6e6163b9726ed15d24aa1cb5a2a39168" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.DNN::addLayerOp</definition>
+        <argsstring></argsstring>
+        <name>addLayerOp</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="124" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="124" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1DNN_1a4168866b75b244c010a3cdb9c1340eab" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.DNN::setPriorOp</definition>
+        <argsstring></argsstring>
+        <name>setPriorOp</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="127" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="127" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1DNN_1a1f8ba580cbb24bad9d0166f296b524b1" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.DNN::initLastLayerOp</definition>
+        <argsstring></argsstring>
+        <name>initLastLayerOp</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="143" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="143" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1DNN_1ac4075e7063abdc28971340fb7f4c2340" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.DNN::trainlogits</definition>
+        <argsstring></argsstring>
+        <name>trainlogits</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="154" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="154" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1DNN_1a6a03d2a8afd75ede3b9949679cc92200" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.DNN::testlogits</definition>
+        <argsstring></argsstring>
+        <name>testlogits</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="167" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="167" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1DNN_1a7049bad6c0f97c992794499499a771b1" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.DNN::outputs</definition>
+        <argsstring></argsstring>
+        <name>outputs</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="172" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="172" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1DNN_1a887babe5c6099bbb5bdf9e7db2177c28" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.DNN::saver</definition>
+        <argsstring></argsstring>
+        <name>saver</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="175" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="175" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classnnetgraph_1_1DNN_1a6e498be1780113ea9c76d73190cfd836" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.DNN.extendGraph</definition>
+        <argsstring></argsstring>
+        <name>extendGraph</name>
+        <briefdescription>
+<para>Extend the graph with the <ref refid="classnnetgraph_1_1DNN" kindref="compound">DNN</ref>. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="103" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="103" bodyend="176"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1DNN_1ab842f9cba9196a99709302e19938ce1f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.DNN.setPrior</definition>
+        <argsstring></argsstring>
+        <name>setPrior</name>
+        <briefdescription>
+<para>set the prior in the graph </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>prior</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the state prior probabilities </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="180" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="180" bodyend="182"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1DNN_1a72399cd0f0574558ebe7982694ca4038" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.DNN.addLayer</definition>
+        <argsstring></argsstring>
+        <name>addLayer</name>
+        <briefdescription>
+<para>Add a layer to the network. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="184" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="184" bodyend="190"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1DNN_1ab77e75f2dafd505577ce29e5150e5e50" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.DNN.fieldnames</definition>
+        <argsstring></argsstring>
+        <name>fieldnames</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="192" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="192" bodyend="194"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>This class is a graph for feedforward fully connected neural nets. </para>    </briefdescription>
+    <detaileddescription>
+<para>It is initialised as folows: DNN(name, input_dim, output_dim, num_hidden_layers, num_hidden_units, transfername, l2_norm, dropout) name: name of the <ref refid="classnnetgraph_1_1DNN" kindref="compound">DNN</ref> input_dim: the input dimension output_dim: the output dimension num_hidden_layers: number of hiden layers in the <ref refid="classnnetgraph_1_1DNN" kindref="compound">DNN</ref> layer_wise_init: Boolean that is true if layerwhise initialisation should be done num_hidden_units: number of hidden units in every layer transfername: name of the transfer function that is used l2_norm: boolean that determines of l2_normalisation is used after every layer dropout: the chance that a hidden unit is propagated to the next layer </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="13">
+        <label>nnetgraph.NnetGraph</label>
+        <link refid="classnnetgraph_1_1NnetGraph"/>
+        <childnode refid="14" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="14">
+        <label>object</label>
+      </node>
+      <node id="12">
+        <label>nnetgraph.DNN</label>
+        <link refid="classnnetgraph_1_1DNN"/>
+        <childnode refid="13" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="16">
+        <label>nnetgraph.NnetGraph</label>
+        <link refid="classnnetgraph_1_1NnetGraph"/>
+        <childnode refid="17" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="17">
+        <label>object</label>
+      </node>
+      <node id="15">
+        <label>nnetgraph.DNN</label>
+        <link refid="classnnetgraph_1_1DNN"/>
+        <childnode refid="16" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="100" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="100" bodyend="195"/>
+    <listofallmembers>
+      <member refid="classnnetgraph_1_1NnetGraph_1a577e7223d32195828eecacca5e7fe22f" prot="public" virt="non-virtual"><scope>nnetgraph::DNN</scope><name>__init__</name></member>
+      <member refid="classnnetgraph_1_1DNN_1a72399cd0f0574558ebe7982694ca4038" prot="public" virt="non-virtual"><scope>nnetgraph::DNN</scope><name>addLayer</name></member>
+      <member refid="classnnetgraph_1_1DNN_1a6e6163b9726ed15d24aa1cb5a2a39168" prot="public" virt="non-virtual"><scope>nnetgraph::DNN</scope><name>addLayerOp</name></member>
+      <member refid="classnnetgraph_1_1DNN_1a2e754c90a59f470db6035aff1adf424b" prot="public" virt="non-virtual"><scope>nnetgraph::DNN</scope><name>applydropout</name></member>
+      <member refid="classnnetgraph_1_1DNN_1a6e498be1780113ea9c76d73190cfd836" prot="public" virt="non-virtual"><scope>nnetgraph::DNN</scope><name>extendGraph</name></member>
+      <member refid="classnnetgraph_1_1DNN_1ab77e75f2dafd505577ce29e5150e5e50" prot="public" virt="non-virtual"><scope>nnetgraph::DNN</scope><name>fieldnames</name></member>
+      <member refid="classnnetgraph_1_1DNN_1a1f8ba580cbb24bad9d0166f296b524b1" prot="public" virt="non-virtual"><scope>nnetgraph::DNN</scope><name>initLastLayerOp</name></member>
+      <member refid="classnnetgraph_1_1DNN_1a2e78a1e255ddd7cb146aad694cf3b2a1" prot="public" virt="non-virtual"><scope>nnetgraph::DNN</scope><name>inputs</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a5fb27655f740d4b9c2e99cf3bcb78547" prot="public" virt="non-virtual" ambiguityscope="nnetgraph::NnetGraph."><scope>nnetgraph::DNN</scope><name>inputs</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a5fb27655f740d4b9c2e99cf3bcb78547" prot="public" virt="non-virtual" ambiguityscope="nnetgraph::NnetGraph."><scope>nnetgraph::DNN</scope><name>inputs</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a64645c360c6ebfc12489ce179f470053" prot="public" virt="non-virtual"><scope>nnetgraph::DNN</scope><name>name</name></member>
+      <member refid="classnnetgraph_1_1DNN_1a7049bad6c0f97c992794499499a771b1" prot="public" virt="non-virtual"><scope>nnetgraph::DNN</scope><name>outputs</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1aeba1946cfab246f3475bd251c083dbf6" prot="public" virt="non-virtual" ambiguityscope="nnetgraph::NnetGraph."><scope>nnetgraph::DNN</scope><name>outputs</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1aeba1946cfab246f3475bd251c083dbf6" prot="public" virt="non-virtual" ambiguityscope="nnetgraph::NnetGraph."><scope>nnetgraph::DNN</scope><name>outputs</name></member>
+      <member refid="classnnetgraph_1_1DNN_1a0f32397414fff2f739513ed92b63174e" prot="public" virt="non-virtual"><scope>nnetgraph::DNN</scope><name>prior</name></member>
+      <member refid="classnnetgraph_1_1DNN_1a887babe5c6099bbb5bdf9e7db2177c28" prot="public" virt="non-virtual"><scope>nnetgraph::DNN</scope><name>saver</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1afea62c57c4cd3f95909c2c82e5348618" prot="public" virt="non-virtual" ambiguityscope="nnetgraph::NnetGraph."><scope>nnetgraph::DNN</scope><name>saver</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1afea62c57c4cd3f95909c2c82e5348618" prot="public" virt="non-virtual" ambiguityscope="nnetgraph::NnetGraph."><scope>nnetgraph::DNN</scope><name>saver</name></member>
+      <member refid="classnnetgraph_1_1DNN_1ab842f9cba9196a99709302e19938ce1f" prot="public" virt="non-virtual"><scope>nnetgraph::DNN</scope><name>setPrior</name></member>
+      <member refid="classnnetgraph_1_1DNN_1a4168866b75b244c010a3cdb9c1340eab" prot="public" virt="non-virtual"><scope>nnetgraph::DNN</scope><name>setPriorOp</name></member>
+      <member refid="classnnetgraph_1_1DNN_1a6a03d2a8afd75ede3b9949679cc92200" prot="public" virt="non-virtual"><scope>nnetgraph::DNN</scope><name>testlogits</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1add4a8797de4c8b8a8236f75379fcba2d" prot="public" virt="non-virtual" ambiguityscope="nnetgraph::NnetGraph."><scope>nnetgraph::DNN</scope><name>testlogits</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1add4a8797de4c8b8a8236f75379fcba2d" prot="public" virt="non-virtual" ambiguityscope="nnetgraph::NnetGraph."><scope>nnetgraph::DNN</scope><name>testlogits</name></member>
+      <member refid="classnnetgraph_1_1DNN_1ac4075e7063abdc28971340fb7f4c2340" prot="public" virt="non-virtual"><scope>nnetgraph::DNN</scope><name>trainlogits</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a7e52824ec329ad67a1f3c46e2167e784" prot="public" virt="non-virtual" ambiguityscope="nnetgraph::NnetGraph."><scope>nnetgraph::DNN</scope><name>trainlogits</name></member>
+      <member refid="classnnetgraph_1_1NnetGraph_1a7e52824ec329ad67a1f3c46e2167e784" prot="public" virt="non-virtual" ambiguityscope="nnetgraph::NnetGraph."><scope>nnetgraph::DNN</scope><name>trainlogits</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

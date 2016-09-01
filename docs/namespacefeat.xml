@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="namespacefeat" kind="namespace">
+    <compoundname>feat</compoundname>
+    <innerclass refid="classfeat_1_1FeatureComputer" prot="public">feat::FeatureComputer</innerclass>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="namespacefeat_1a8bf587a932ddd78ee89436de0527030a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def feat.snip</definition>
+        <argsstring></argsstring>
+        <name>snip</name>
+        <briefdescription>
+<para>snip the edges of the utterance to fit the sliding window </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>sig</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>audio signal </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>rate</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>sampling rate </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>winlen</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>length of the sliding window [s] </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>winstep</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>stepsize of the sliding window [s]</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>the snipped signal </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/features/feat.py" line="57" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/features/feat.py" bodystart="57" bodyend="64"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/features/feat.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

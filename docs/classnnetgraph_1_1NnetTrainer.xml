@@ -1,0 +1,562 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.5">
+  <compounddef id="classnnetgraph_1_1NnetTrainer" kind="class" prot="public">
+    <compoundname>nnetgraph::NnetTrainer</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1a206fa47fd1d8fbf5d723811b1bbc0bee" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::numframes_per_batch</definition>
+        <argsstring></argsstring>
+        <name>numframes_per_batch</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="240" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="240" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1af0b8647b2d0c3b6977d0c8ce3825864a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::nnetGraph</definition>
+        <argsstring></argsstring>
+        <name>nnetGraph</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="241" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="241" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1a04443a9dcee9bc5be8687d261e1170d5" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::graph</definition>
+        <argsstring></argsstring>
+        <name>graph</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="244" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="244" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1a5b7207158a2a66c947912adeb23a8559" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::targets</definition>
+        <argsstring></argsstring>
+        <name>targets</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="253" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="253" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1abb8e4f89811de6b61fbec9a428f3bb21" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::num_frames</definition>
+        <argsstring></argsstring>
+        <name>num_frames</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="256" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="256" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1a065207f0782e739c51e459b4c0053f2e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::loss</definition>
+        <argsstring></argsstring>
+        <name>loss</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="264" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="264" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1ae968321ba2af8c85ae935bf10a3fe2f0" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::validLoss</definition>
+        <argsstring></argsstring>
+        <name>validLoss</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="267" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="267" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1aeaed9bbaaff5c0b85fff266fcd1e6c98" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::updateValidLoss</definition>
+        <argsstring></argsstring>
+        <name>updateValidLoss</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="276" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="276" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1a5cc20718f43b067f465c00c0bab41c94" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::global_step</definition>
+        <argsstring></argsstring>
+        <name>global_step</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="281" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="281" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1a42fab19fcc0c84dac53bebeff065bf4b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::halveLearningRateOp</definition>
+        <argsstring></argsstring>
+        <name>halveLearningRateOp</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="298" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="298" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1af06f5c79d095b45246157608128a0e8f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::initgrads</definition>
+        <argsstring></argsstring>
+        <name>initgrads</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="301" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="301" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1af202c94295526b38014b758e41a69a2f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::initloss</definition>
+        <argsstring></argsstring>
+        <name>initloss</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="304" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="304" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1a969cd8fdf92472e1f1e2339c0299374e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::updateLoss</definition>
+        <argsstring></argsstring>
+        <name>updateLoss</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="310" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="310" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1ab7b76665bcaa7f95b12ff22f3b0d7333" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::updateGradientsOp</definition>
+        <argsstring></argsstring>
+        <name>updateGradientsOp</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="313" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="313" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1a4bcbddf26035f57c24c82e86e8ebb7b6" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::applyGradientsOp</definition>
+        <argsstring></argsstring>
+        <name>applyGradientsOp</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="316" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="316" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1a69244a57c16590c14bb855b8ce061b3f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::initop</definition>
+        <argsstring></argsstring>
+        <name>initop</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="319" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="319" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1a27e5a85e4128672feedf9920f43dac50" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::average_loss</definition>
+        <argsstring></argsstring>
+        <name>average_loss</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="322" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="322" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1ad593ba7c354bebc4532f29bc83ff0ab8" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::saver</definition>
+        <argsstring></argsstring>
+        <name>saver</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="325" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="325" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1aed8cbf0444c8341d305bc95341955759" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::summary</definition>
+        <argsstring></argsstring>
+        <name>summary</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="328" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="328" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classnnetgraph_1_1NnetTrainer_1ae5a2fd08bc29f191c9a0c71cd8a1e84b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>nnetgraph.NnetTrainer::summarywriter</definition>
+        <argsstring></argsstring>
+        <name>summarywriter</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="335" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="335" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classnnetgraph_1_1NnetTrainer_1a89d2f7cf6044fa42857f2ef864f76687" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetTrainer.__init__</definition>
+        <argsstring></argsstring>
+        <name>__init__</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="238" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="238" bodyend="336"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetTrainer_1af663b9f0a8ff41b9caa2d119deb41566" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetTrainer.computeLoss</definition>
+        <argsstring></argsstring>
+        <name>computeLoss</name>
+        <briefdescription>
+<para>Creates the operation to compute the cross-enthropy loss for every input frame (if you want to have a different loss function, overwrite this method) </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>targets</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>a NxO tensor containing the reference targets where N is the number of frames and O is the neural net output dimension </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>logits</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>a NxO tensor containing the neural network output logits where N is the number of frames and O is the neural net output dimension</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>an N-dimensional tensor containing the losses for all the input frames where N is the number of frames </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="343" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="343" bodyend="345"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetTrainer_1aed652d306480d80fd23e1f920f7b1545" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetTrainer.initialize</definition>
+        <argsstring></argsstring>
+        <name>initialize</name>
+        <briefdescription>
+<para>Initialize all the variables in the graph. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="347" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="347" bodyend="349"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetTrainer_1acd1fabc849c35363826dbb53a2cedf3a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetTrainer.startVisualization</definition>
+        <argsstring></argsstring>
+        <name>startVisualization</name>
+        <briefdescription>
+<para>open a summarywriter for visualisation and add the graph </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>logdir</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>directory where the summaries will be written </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="353" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="353" bodyend="355"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetTrainer_1aedfa8af303dab0f0ccc84f48f2d7b729" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetTrainer.update</definition>
+        <argsstring></argsstring>
+        <name>update</name>
+        <briefdescription>
+<para>update the neural model with a batch or training data </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>inputs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the inputs to the neural net, this should be a NxF numpy array where N is the number of frames in the batch and F is the feature dimension </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>targets</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the one-hot encoded targets for neural nnet, this should be an NxO matrix where O is the output dimension of the neural net</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>the loss at this step </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="362" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="362" bodyend="392"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetTrainer_1a452cd3c0bca96de8bb264e9881f27cb4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetTrainer.evaluate</definition>
+        <argsstring></argsstring>
+        <name>evaluate</name>
+        <briefdescription>
+<para>Evaluate the performance of the neural net. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>inputs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the inputs to the neural net, this should be a NxF numpy array where N is the number of frames in the batch and F is the feature dimension </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>targets</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the one-hot encoded targets for neural nnet, this should be an NxO matrix where O is the output dimension of the neural net</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>the loss of the batch </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="399" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="399" bodyend="424"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetTrainer_1a9b98444e79d8d5c58f619d9d9d651ddf" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetTrainer.halve_learning_rate</definition>
+        <argsstring></argsstring>
+        <name>halve_learning_rate</name>
+        <briefdescription>
+<para>halve the learning rate </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="426" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="426" bodyend="428"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetTrainer_1ac2f3d3cc6277614fea8b187994deb852" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetTrainer.saveModel</definition>
+        <argsstring></argsstring>
+        <name>saveModel</name>
+        <briefdescription>
+<para>Save the model. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>filename</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>path to the model file </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="432" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="432" bodyend="434"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetTrainer_1adf7d34bbbe5d6c719299317741b61ebe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetTrainer.restoreModel</definition>
+        <argsstring></argsstring>
+        <name>restoreModel</name>
+        <briefdescription>
+<para>Load the model. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>filename</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>path where the model will be saved </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="438" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="438" bodyend="440"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetTrainer_1a036c80b4b086ba19051ddee758ec95fe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetTrainer.saveTrainer</definition>
+        <argsstring></argsstring>
+        <name>saveTrainer</name>
+        <briefdescription>
+<para>Save the training progress (including the model) </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>filename</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>path where the model will be saved </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="444" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="444" bodyend="447"/>
+      </memberdef>
+      <memberdef kind="function" id="classnnetgraph_1_1NnetTrainer_1a4c78092dedea69777c802d951b463a69" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def nnetgraph.NnetTrainer.restoreTrainer</definition>
+        <argsstring></argsstring>
+        <name>restoreTrainer</name>
+        <briefdescription>
+<para>Load the training progress (including the model) </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>filename</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>path where the model will be saved </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="451" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="451" bodyend="454"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>Class for the training environment for a neural net graph. </para>    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="58">
+        <label>nnetgraph.NnetTrainer</label>
+        <link refid="classnnetgraph_1_1NnetTrainer"/>
+        <childnode refid="59" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="59">
+        <label>object</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="60">
+        <label>nnetgraph.NnetTrainer</label>
+        <link refid="classnnetgraph_1_1NnetTrainer"/>
+        <childnode refid="61" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="61">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" line="229" column="1" bodyfile="/users/spraak/vrenkens/code/tfkaldi/neuralNetworks/nnetgraph.py" bodystart="229" bodyend="455"/>
+    <listofallmembers>
+      <member refid="classnnetgraph_1_1NnetTrainer_1a89d2f7cf6044fa42857f2ef864f76687" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>__init__</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1a4bcbddf26035f57c24c82e86e8ebb7b6" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>applyGradientsOp</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1a27e5a85e4128672feedf9920f43dac50" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>average_loss</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1af663b9f0a8ff41b9caa2d119deb41566" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>computeLoss</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1a452cd3c0bca96de8bb264e9881f27cb4" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>evaluate</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1a5cc20718f43b067f465c00c0bab41c94" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>global_step</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1a04443a9dcee9bc5be8687d261e1170d5" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>graph</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1a9b98444e79d8d5c58f619d9d9d651ddf" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>halve_learning_rate</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1a42fab19fcc0c84dac53bebeff065bf4b" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>halveLearningRateOp</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1af06f5c79d095b45246157608128a0e8f" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>initgrads</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1aed652d306480d80fd23e1f920f7b1545" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>initialize</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1af202c94295526b38014b758e41a69a2f" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>initloss</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1a69244a57c16590c14bb855b8ce061b3f" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>initop</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1a065207f0782e739c51e459b4c0053f2e" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>loss</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1af0b8647b2d0c3b6977d0c8ce3825864a" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>nnetGraph</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1abb8e4f89811de6b61fbec9a428f3bb21" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>num_frames</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1a206fa47fd1d8fbf5d723811b1bbc0bee" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>numframes_per_batch</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1adf7d34bbbe5d6c719299317741b61ebe" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>restoreModel</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1a4c78092dedea69777c802d951b463a69" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>restoreTrainer</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1ac2f3d3cc6277614fea8b187994deb852" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>saveModel</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1ad593ba7c354bebc4532f29bc83ff0ab8" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>saver</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1a036c80b4b086ba19051ddee758ec95fe" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>saveTrainer</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1acd1fabc849c35363826dbb53a2cedf3a" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>startVisualization</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1aed8cbf0444c8341d305bc95341955759" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>summary</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1ae5a2fd08bc29f191c9a0c71cd8a1e84b" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>summarywriter</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1a5b7207158a2a66c947912adeb23a8559" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>targets</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1aedfa8af303dab0f0ccc84f48f2d7b729" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>update</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1ab7b76665bcaa7f95b12ff22f3b0d7333" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>updateGradientsOp</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1a969cd8fdf92472e1f1e2339c0299374e" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>updateLoss</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1aeaed9bbaaff5c0b85fff266fcd1e6c98" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>updateValidLoss</name></member>
+      <member refid="classnnetgraph_1_1NnetTrainer_1ae968321ba2af8c85ae935bf10a3fe2f0" prot="public" virt="non-virtual"><scope>nnetgraph::NnetTrainer</scope><name>validLoss</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
