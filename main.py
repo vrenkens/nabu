@@ -159,13 +159,14 @@ if TEST_NNET:
 	decodedir = savedir + '/decode'
 	if not os.path.isdir(decodedir):
 		os.mkdir(decodedir)
-	Nnet.decode(config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), decodedir)
+	#Nnet.decode(config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), decodedir)
 	
 	print('------- decoding testing sets ----------')
-	#copy the gmm model, graph and utterance to speaker mapping to the decoding dir
+	#copy the gmm model and some files to speaker mapping to the decoding dir
 	os.system('cp %s %s' %(config.get('directories','expdir') + '/' + config.get('nnet','gmm_name') + '/final.mdl', decodedir))
 	os.system('cp -r %s %s' %(config.get('directories','expdir') + '/' + config.get('nnet','gmm_name') + '/graph', decodedir))
 	os.system('cp %s %s' %(config.get('directories','test_features') + '/' +  config.get('dnn-features','name') + '/utt2spk', decodedir))
+	os.system('cp %s %s' %(config.get('directories','test_features') + '/' +  config.get('dnn-features','name') + '/text', decodedir))
 		
 	#change directory to kaldi egs
 	os.chdir(config.get('directories','kaldi_egs'))

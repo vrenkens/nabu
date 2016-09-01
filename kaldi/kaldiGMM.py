@@ -1,15 +1,18 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 import os
 
+## an abstract class for a kaldi GMM
 class KaldiGMM(object):
 	__metaclass__ = ABCMeta
 	
-	#create the kaldiGMM object
-	#	conf: self.confurations
+	##KaldiGMM constructor
+	#
+	# @param conf the general configurations
 	def __init__(self, conf):
 		
 		self.conf = conf
 		
+	##train the GMM
 	def train(self):
 		
 		#save the current dir
@@ -26,7 +29,8 @@ class KaldiGMM(object):
 		
 		#go back to working dir
 		os.chdir(current_dir)
-		
+	
+	##use the GMM to align the training utterances
 	def align(self):
 		#save the current dir
 		current_dir = os.getcwd()
@@ -44,6 +48,7 @@ class KaldiGMM(object):
 		#go back to working dir
 		os.chdir(current_dir)
 		
+	##test the GMM on the testing set
 	def test(self):
 		#save the current dir
 		current_dir = os.getcwd()
@@ -56,30 +61,37 @@ class KaldiGMM(object):
 		#go back to working dir
 		os.chdir(current_dir)
 		
+	##the name of the GMM
 	@abstractproperty
 	def name(self):
 		pass
-		
+	
+	##the script used for training the GMM
 	@abstractproperty
 	def trainscript(self):
 		pass
-		
+	
+	##the configuration file for this GMM
 	@abstractproperty
 	def confFile(self):
 		pass
 		
+	##the path to the parent GMM model (empty for monophone GMM)
 	@abstractproperty
 	def parentGmmLocation(self):
 		pass
 	
+	##the extra options for GMM training
 	@abstractproperty
 	def trainops(self):
 		pass
-		
+	
+	##the extra options for the decoding graph creation	
 	@abstractproperty
 	def graphopts(self):
 		pass
 
+## a class for the monophone GMM
 class MonoGmm(KaldiGMM):
 	@property
 	def name(self):
@@ -104,7 +116,8 @@ class MonoGmm(KaldiGMM):
 	@property
 	def graphopts(self):
 		return '--mono'
-		
+
+## a class for the triphone GMM		
 class TriGmm(KaldiGMM):
 	@property
 	def name(self):
@@ -129,7 +142,8 @@ class TriGmm(KaldiGMM):
 	@property
 	def graphopts(self):
 		return ''
-			
+
+## a class for the LDA+MLLT GMM			
 class LdaGmm(KaldiGMM):
 	@property
 	def name(self):

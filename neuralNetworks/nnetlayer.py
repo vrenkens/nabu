@@ -2,16 +2,18 @@ import tensorflow as tf
 import numpy as np
 from abc import ABCMeta, abstractmethod
 
-#this class defines a fully connected feed forward layer
+##This class defines a fully connected feed forward layer
 class FFLayer(object):
-	#create the layer object
-	#	input_dim: input dimension of the layer
-	#	output_dim: output dimension of the layer
-	#	weights_std: standart deviation of the weights initializer
-	#	name: name of the layer
-	#	transfername: name of the transfer function that is used
-	#	l2_norm: boolean that determines of l2_normalisation is used after every layer
-	#	dropout: the chance that a hidden unit is propagated to the next layer
+
+	##FFLayer constructor, defines the variables
+	#
+	#@param input_dim input dimension of the layer
+	#@param output_dim output dimension of the layer
+	#@param weights_std standart deviation of the weights initializer
+	#@param name name of the layer
+	#@param transfername name of the transfer function that is used
+	#@param l2_norm boolean that determines of l2_normalisation is used after every layer
+	#@param dropout the chance that a hidden unit is propagated to the next layer
 	def __init__(self, input_dim, output_dim, weights_std, name, transfername='linear', l2_norm=False, dropout=1):
 		
 		#create the model parameters in this layer
@@ -25,10 +27,13 @@ class FFLayer(object):
 		self.dropout = dropout
 		self.name = name
 		
-	#The call to the layer object does the forward computation
-	#	inputs: the input to the layer
-	#	returns: the output of the layer
-	def __call__(self, inputs):
+	##Do the forward computation
+	#
+	#@param inputs the input to the layer
+	#@param apply_dropout bool to determine if dropout is aplied
+	#
+	#@return the output of the layer without and with dropout
+	def __call__(self, inputs, apply_dropout = True):
 			
 		with tf.name_scope(self.name):
 			
@@ -40,15 +45,17 @@ class FFLayer(object):
 				outputs = transferFunction(outputs, 'l2_norm')
 		
 			#apply dropout	
-			if self.dropout<1:
+			if self.dropout<1 and apply_dropout:
 				outputs = tf.nn.dropout(outputs, self.dropout)
 
 		return outputs
 
-#this function applies the transfer function
-#	inputs: the inputs to the transfer function
-#	name: the name of the function, current options are: relu, sigmoid, tanh, linear or l2_norm
-#	returns: the output to the transfer function
+##Apply the transfer function
+#
+#@param inputs the inputs to the transfer function
+#@param name the name of the function, current options are: relu, sigmoid, tanh, linear or l2_norm
+#
+#@return the output to the transfer function
 def transferFunction(inputs, name):
 	if name == 'relu':
 		return tf.nn.relu(inputs)
@@ -61,5 +68,5 @@ def transferFunction(inputs, name):
 	elif name == 'l2_norm':
 		return tf.nn.l2_normalize(inputs,1)*np.sqrt(inputs.get_shape().as_list()[1])
 	else:
-		raise Exception('unknown transfer function')
+		raise Exception('unknown transfer function: %s' % name)
 	

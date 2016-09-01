@@ -11,11 +11,13 @@ import nnetgraph
 import batchdispenser
 import ark
 
+## a class for a neural network that can be used together with Kaldi
 class Nnet:
-	#create nnet and define the computational graph
-	#	conf: nnet configuration
-	#	input_dim: network input dimension
-	#	num_labels: number of target labels
+	#Nnet constructor
+	#
+	#@param conf nnet configuration
+	#@param input_dim network input dimension
+	#@param num_labels number of target labels
 	def __init__(self, conf, input_dim, num_labels):
 		
 		#get nnet structure configs
@@ -34,9 +36,10 @@ class Nnet:
 		#create a DNN
 		self.DNN = nnetgraph.DNN('DNN', input_dim, num_labels, int(self.conf['num_hidden_layers']), int(self.conf['add_layer_period'])>0, int(self.conf['num_hidden_units']), self.conf['nonlin'], self.conf['l2_norm']=='True', float(self.conf['dropout']))
 	
-	# Train the neural network with stochastic gradient descent 
-	#	featdir: directory where the features are located
-	#	alifile: the file containing the state alignments
+	## Train the neural network
+	#
+	#@param featdir directory where the training features are located (in feats.scp)
+	#@param alifile the file containing the state alignments
 	def train(self, featdir, alifile):
 		
 		#create a feature reader
@@ -56,7 +59,7 @@ class Nnet:
 			val_labels = None
 		
 		#compute the total number of steps
-		num_steps = int(dispenser.numUtt()/int(self.conf['batch_size'])*int(self.conf['num_epochs']))
+		num_steps = int(dispenser.numUtt/int(self.conf['batch_size'])*int(self.conf['num_epochs']))
 					
 		#set the step to the saving point that is closest to the starting step
 		step = int(self.conf['starting_step']) - int(self.conf['starting_step'])%int(self.conf['check_freq'])
@@ -78,7 +81,9 @@ class Nnet:
 			trainer.startVisualization(self.conf['savedir'] + '/logdir')
 		
 		#start a tensorflow session
-		with tf.Session(graph=trainer.graph) as session:
+		config = tf.ConfigProto()
+		config.gpu_options.allow_growth=True
+		with tf.Session(graph=trainer.graph, config=config) as session:
 			#initialise the trainer
 			trainer.initialize()
 			
@@ -165,9 +170,10 @@ class Nnet:
 				
 				
 
-	#compute pseudo likelihoods for a set of utterances
-	#	featdir: directory where the features are located
-	#	decodir: location where output should be stored
+	##compute pseudo likelihoods the testing set
+	#
+	#@param featdir directory where the features are located (in feats.scp)
+	#@param decodir location where output will be stored (in feats.scp), cannot be the same as featdir
 	def decode(self, featdir, decodedir):
 		#create a feature reader
 		reader = batchdispenser.FeatureReader(featdir + '/feats.scp', featdir + '/cmvn.scp', featdir + '/utt2spk', int(self.conf['context_width']))
@@ -183,7 +189,9 @@ class Nnet:
 		decoder = nnetgraph.NnetDecoder(self.DNN)
 	
 		#start tensorflow session
-		with tf.Session(graph=decoder.graph) as session:
+		config = tf.ConfigProto()
+		config.gpu_options.allow_growth=True
+		with tf.Session(graph=decoder.graph, config=config) as session:
 		
 			#load the model
 			decoder.restore(self.conf['savedir'] + '/final')

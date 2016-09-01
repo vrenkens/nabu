@@ -1,29 +1,34 @@
 import sys
 sys.path.append('features/python_speech_features')
-import features
+import base
 import scipy.io.wavfile as wav
 import numpy as np
 
+## A featurecomputer is used to compute a certain type of features
 class FeatureComputer(object):
-	#create the FeatureComputer object
-	#	featureType	type of features, current options are mfcc, fbank and ssc
-	#	conf: feature configuration
+
+	##FeatureComputer constructor
+	#
+	#@param featureType string containing the type of features, optione are 'fbank', 'mfcc' and 'ssc'
+	#@param conf the feature configuration
 	def __init__(self, featureType, conf):
 		if featureType == 'fbank':
-			self.compFeat = features.logfbank
+			self.compFeat = base.logfbank
 		elif featureType == 'mfcc':
-			self.compFeat = features.mfcc
+			self.compFeat = base.mfcc
 		elif featureType == 'ssc':
-			self.compFeat = features.ssc
+			self.compFeat = base.ssc
 		else:
 			raise Exception('unknown feature type')
 			
 		self.conf = conf
 			
-	#compute the features
-	#	sig: audio signal
-	#	rate: sampling rate
-	#	returns: the features
+	## compute the features
+	#
+	#@param sig audio signal
+	#@param rate sampling rate
+	#
+	#@return the features
 	def __call__(self, sig, rate):
 		
 		if self.conf['snip_edges'] == 'True':
@@ -41,11 +46,14 @@ class FeatureComputer(object):
 
 		
 
-#snip the edges of the utterance to fit the sliding window
-#	sig: audio signal
-#	rate: sampling rate
-#	winlen: length of the sliding window [s]
-#	winstep: stepsize of the sliding window [s]
+##snip the edges of the utterance to fit the sliding window
+#
+#@param sig audio signal
+#@param rate sampling rate
+#@param winlen length of the sliding window [s]
+#@param winstep stepsize of the sliding window [s]
+#
+#@return the snipped signal
 def snip(sig, rate, winlen, winstep):
 	# calculate the number of frames in the utterance as number of samples in the utterance / number of samples in the frame
 	num_frames = int((len(sig)-winlen*rate)/(winstep*rate)) 

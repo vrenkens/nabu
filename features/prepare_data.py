@@ -9,11 +9,12 @@ import ark
 import feat
 import kaldiInterface
 
-#This function will compute the features of all segments and save them on disk
-#	datadir: directory where the kaldi data prep has been done
-#	featdir: directory where the features will be put
-#	conf: feature configuration
-#	feat_type: type of features to be computed, current options are mfcc, fbank and ssc
+##This function will compute the features of all segments and save them on disk
+#
+#@param datadir directory where the kaldi data prep has been done
+#@param featdir directory where the features will be put
+#@param conf feature configuration
+#@param feat_type type of features to be computed, options are mfcc, fbank and ssc
 def prepare_data(datadir, featdir, conf, feat_type):
 	
 	if not os.path.exists(featdir):
@@ -59,6 +60,9 @@ def prepare_data(datadir, featdir, conf, feat_type):
 	copyfile(datadir + '/text', featdir + '/text')
 	copyfile(datadir + '/wav.scp', featdir + '/wav.scp')
 	
+## compute the cmvn statistics and save them
+#
+#@param featdir the directory containing the features in feats.scp
 def compute_cmvn(featdir):
 	#read the spk2utt file
 	spk2utt = open(featdir + '/spk2utt', 'r')
@@ -94,9 +98,9 @@ def compute_cmvn(featdir):
 	
 	writer.close()
 	
-#this function will shuffle the utterances
-#	featdir: directory where the features can be found
-#	valid_size: size of the validation set if it is chosen as part of the training set
+## shuffle the utterances and put them in feats_shuffled.scp
+#
+#@param featdir the directory containing the features in feats.scp
 def shuffle_examples(featdir):
 	#read feats.scp
 	featsfile = open(featdir + '/feats.scp', 'r')
@@ -108,11 +112,15 @@ def shuffle_examples(featdir):
 	#wite them to feats_shuffled.scp
 	feats_shuffledfile = open(featdir + '/feats_shuffled.scp', 'w')
 	feats_shuffledfile.writelines(feats)
-	
+
+## read a wav file formatted by kaldi
+#
+#@param featdir the directory containing the features in feats.scp
+#@param wavfile a pair containing eiher the filaname or the command to read the wavfile and a boolean that determines if its a name or a command
 def read_wav(featdir,wavfile):
 	if wavfile[1]:
 		#read the audio file and temporarily copy it to tmp (and duplicate, I don't know how to avoid this)
-		os.system(wavfile[0] + ('tee %s/tmp.wav > %s/duplicate.wav'%(featdir, featdir)))
+		os.system(wavfile[0] + ('tee tmp.wav > duplicate.wav'%(featdir, featdir)))
 		#read the created wav file
 		(rate,utterance) = wav.read(featdir + '/tmp.wav')
 		#delete the create file

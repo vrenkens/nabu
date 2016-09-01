@@ -54,4 +54,5 @@ neural networks/nnetgraph.py: creating tensorflow graph structures
 neural networks/nnetlayer.py: layers for a neural network
 - defines a feed forward fully connected layer
 
+If you have a question or remark about the code or if you would like to contribute please mail me at vincent.renkens@esat.kuleuven.be
 
