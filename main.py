@@ -5,7 +5,7 @@ import sys
 sys.path.append('features')
 sys.path.append('io')
 sys.path.append('kaldi')
-sys.path.append('neural networks')
+sys.path.append('neuralNetworks')
 
 import nnet
 import ark
@@ -14,7 +14,7 @@ import prepare_data
 import kaldiGMM
 
 #here you can set which steps should be executed. If a step has been executed in the past the result have been saved and the step does not have to be executed again (if nothing has changed)
-GMMTRAINFEATURES = False 	#required 
+GMMTRAINFEATURES = True 	#required 
 GMMTESTFEATURES = False	 	#required if the performance of a GMM is tested
 DNNTRAINFEATURES = False 	#required
 DNNTESTFEATURES = False	 	#required if the performance of the DNN is tested
@@ -28,7 +28,7 @@ TRAIN_LDA = False			#required if the LDA GMM is used for alignments
 ALIGN_LDA = False			#required if the LDA GMM is used for alignments
 TEST_LDA = False			#required if the performance of the LDA GMM is tested
 TRAIN_NNET = False			#required
-TEST_NNET = True			#required if the performance of the DNN is tested
+TEST_NNET = False			#required if the performance of the DNN is tested
 
 #read config file
 config = configparser.ConfigParser()

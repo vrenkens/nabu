@@ -37,7 +37,7 @@ def prepare_data(datadir, featdir, conf, feat_type):
 		os.remove(featdir + '/feats.ark')
 		
 	#read all the wav files
-	RateUtt = {utt: read_wav(featdir,wavfiles[utt]) for utt in wavfiles}
+	RateUtt = {utt: read_wav(wavfiles[utt]) for utt in wavfiles}
 		
 	#create a featureComputer
 	comp = feat.FeatureComputer(feat_type, conf)
@@ -115,17 +115,16 @@ def shuffle_examples(featdir):
 
 ## read a wav file formatted by kaldi
 #
-#@param featdir the directory containing the features in feats.scp
 #@param wavfile a pair containing eiher the filaname or the command to read the wavfile and a boolean that determines if its a name or a command
-def read_wav(featdir,wavfile):
+def read_wav(wavfile):
 	if wavfile[1]:
 		#read the audio file and temporarily copy it to tmp (and duplicate, I don't know how to avoid this)
-		os.system(wavfile[0] + ('tee tmp.wav > duplicate.wav'%(featdir, featdir)))
+		os.system(wavfile[0] + ' tee tmp.wav > duplicate.wav')
 		#read the created wav file
-		(rate,utterance) = wav.read(featdir + '/tmp.wav')
+		(rate,utterance) = wav.read('tmp.wav')
 		#delete the create file
-		os.remove(featdir + '/tmp.wav')
-		os.remove(featdir + '/duplicate.wav')
+		os.remove('tmp.wav')
+		os.remove('duplicate.wav')
 	else:
 		(rate,utterance) = wav.read(wavfile[0])
 		
