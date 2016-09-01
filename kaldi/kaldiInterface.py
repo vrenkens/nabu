@@ -1,3 +1,6 @@
+##@package kaldiInterface
+#contains the functionality to interface with Kaldi
+
 import numpy as np
 import gzip
 from collections import OrderedDict

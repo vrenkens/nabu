@@ -1,3 +1,6 @@
+##@package kaldiGMM
+#contains the functionality for Kaldi GMM training, aligning and testing
+
 from abc import ABCMeta, abstractmethod, abstractproperty
 import os
 

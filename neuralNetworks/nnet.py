@@ -1,3 +1,6 @@
+##@package nnet
+# contains the functionality for a Kaldi style neural network
+
 import numpy as np
 from six.moves import cPickle as pickle
 from six.moves import range

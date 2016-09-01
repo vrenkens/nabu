@@ -1,3 +1,6 @@
+##@package feat 
+#Contains the class for feature computation
+
 import sys
 sys.path.append('features/python_speech_features')
 import base

@@ -1,3 +1,6 @@
+##@file main.py
+# run this file to go through the neural net training procedure, look at the config files in the config directory to modify the settings
+
 from six.moves import configparser
 import os
 import sys

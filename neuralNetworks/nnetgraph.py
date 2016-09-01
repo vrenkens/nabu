@@ -1,3 +1,6 @@
+##@package nnetgraph
+# contains the functionality to create neural network graphs and train/test it
+
 import tensorflow as tf
 import numpy as np
 from abc import ABCMeta, abstractmethod, abstractproperty

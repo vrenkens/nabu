@@ -1,3 +1,6 @@
+##@package base
+# Contains the functions that compute the features
+
 #The MIT License (MIT)
 #
 #Copyright (c) 2013 James Lyons

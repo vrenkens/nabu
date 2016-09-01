@@ -1,3 +1,6 @@
+##@package ark 
+#contains the .ark io functionality
+
 # Copyright 2014    Yajie Miao    Carnegie Mellon University
 #           2015    Yun Wang      Carnegie Mellon University
 

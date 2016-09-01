@@ -1,3 +1,6 @@
+##@package prepare_data
+# contains the functions used to prepare the data for GMM and DNN training 
+
 import numpy as np
 import gzip
 import scipy.io.wavfile as wav

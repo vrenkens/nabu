@@ -1,3 +1,6 @@
+##@package batchdispenser
+# contain the functionality for read features and batches of features for neural network training and testing
+
 import numpy as np
 
 import ark

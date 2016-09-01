@@ -1,3 +1,6 @@
+##@package nnetlayer
+# contains neural network layers 
+
 import tensorflow as tf
 import numpy as np
 from abc import ABCMeta, abstractmethod
