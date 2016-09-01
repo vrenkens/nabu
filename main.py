@@ -28,7 +28,7 @@ TRAIN_TRI = True			#required if the triphone or LDA GMM is used for alignments
 ALIGN_TRI = False			#required if the triphone GMM is used for alignments
 TEST_TRI = False			#required if the performance of the triphone GMM is tested
 TRAIN_LDA = True			#required if the LDA GMM is used for alignments
-ALIGN_LDA = False			#required if the LDA GMM is used for alignments
+ALIGN_LDA = True			#required if the LDA GMM is used for alignments
 TEST_LDA = False			#required if the performance of the LDA GMM is tested
 TRAIN_NNET = True			#required
 TEST_NNET = True			#required if the performance of the DNN is tested
@@ -83,8 +83,8 @@ if DNNTESTFEATURES:
 	
 
 #use kaldi to train the monophone GMM
+MonoGmm = kaldiGMM.MonoGmm(config)
 if TRAIN_MONO:
-	MonoGmm = kaldiGMM.MonoGmm(config)
 	MonoGmm.train()
 
 #get alignments with the monophone GMM
@@ -96,8 +96,8 @@ if TEST_MONO:
 	MonoGmm.test()
 
 #use kaldi to train the triphone GMM
+TriGmm = kaldiGMM.TriGmm(config)
 if TRAIN_TRI:
-	TriGmm = kaldiGMM.TriGmm(config)
 	TriGmm.train()
 
 #get alignments with the triphone GMM
@@ -109,8 +109,8 @@ if TEST_TRI:
 	TriGmm.test()
 	
 #use kaldi to train the LDA+MLLT GMM
+LdaGmm = kaldiGMM.LdaGmm(config)
 if TRAIN_LDA:
-	LdaGmm = kaldiGMM.LdaGmm(config)
 	LdaGmm.train()
 
 #get alignments with the LDA+MLLT GMM
