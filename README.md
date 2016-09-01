@@ -4,6 +4,8 @@
 Kaldi with TensorFlow Neural Net
 ================================
 
+Please find the documentation page [here](http://vrenkens.github.io/tfkaldi)
+
 Installation
 --------------------------
 
