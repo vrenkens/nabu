@@ -36,7 +36,7 @@ class FeatureReader:
 		
 		#apply cmvn
 		cmvn_stats = self.reader_cmvn.read_utt(self.utt2spk[utt_id])
-		apply_cmvn(utt_mat, cmvn_stats)
+		utt_mat = apply_cmvn(utt_mat, cmvn_stats)
 		
 		#splice the utterance
 		utt_mat = splice(utt_mat,self.context_width)
@@ -167,10 +167,10 @@ class Batchdispenser:
 def apply_cmvn(utt, stats):
 	
 	#compute mean
-	mean = stats[0,0:stats.shape[1]-1]/stats[0,stats.shape[1]-1]
+	mean = stats[0,:-1]/stats[0,-1]
 	
 	#compute variance
-	variance = stats[1,0:stats.shape[1]-1]/stats[0,stats.shape[1]-1] - np.square(mean)
+	variance = stats[1,:-1]/stats[0,-1] - np.square(mean)
 	
 	#return mean and variance normalised utterance
 	return np.divide(np.subtract(utt, mean), np.sqrt(variance))

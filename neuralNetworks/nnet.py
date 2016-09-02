@@ -8,7 +8,6 @@ import tensorflow as tf
 import gzip
 import shutil
 import os
-import pdb
 
 import nnetgraph
 import batchdispenser
