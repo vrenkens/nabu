@@ -112,10 +112,6 @@ class DNN(NnetGraph):
 		
 			#placeholder to set the state prior
 			self.prior = tf.placeholder(tf.float32, shape = [self.output_dim], name = 'priorGate')
-			
-			#placeholder to set the state prior
-			if self.dropout < 1:
-				self.applydropout = tf.placeholder(tf.float32, shape = [self.output_dim], name = 'priorGate')
 		
 			#variable that holds the state prior
 			stateprior = tf.get_variable('prior', self.output_dim, initializer=tf.constant_initializer(0), trainable=False)
@@ -158,18 +154,22 @@ class DNN(NnetGraph):
 			else:
 				self.trainlogits = layers[-1](activations[-1])
 	 		
-	 		#do the forward computation without dropout
+	 		if self.dropout<1:
 	 		
-	 		activations = [None]*(len(layers)-1)
-			activations[0]= layers[0](self.inputs, False)
-			for l in range(1,len(activations)):
-				activations[l] = layers[l](activations[l-1], False)
-	 		
-	 		if self.layer_wise_init:
-				#compute the logits by selecting the activations at the layer that has last been added to the network, this is used for layer by layer initialisation
-				self.testlogits = layers[-1](tf.case([(tf.equal(initialisedlayers, tf.constant(l)), CallableTensor(activations[l])) for l in range(len(activations))], CallableTensor(activations[-1]),name = 'layerSelector'), False)
+		 		#do the forward computation without dropout
+		 		
+		 		activations = [None]*(len(layers)-1)
+				activations[0]= layers[0](self.inputs, False)
+				for l in range(1,len(activations)):
+					activations[l] = layers[l](activations[l-1], False)
+		 		
+		 		if self.layer_wise_init:
+					#compute the logits by selecting the activations at the layer that has last been added to the network, this is used for layer by layer initialisation
+					self.testlogits = layers[-1](tf.case([(tf.equal(initialisedlayers, tf.constant(l)), CallableTensor(activations[l])) for l in range(len(activations))], CallableTensor(activations[-1]),name = 'layerSelector'), False)
+				else:
+					self.testlogits = layers[-1](activations[-1], False)
 			else:
-				self.testlogits = layers[-1](activations[-1], False)
+				self.testlogits = self.trainlogits
 	 				
 			#define the output 
 			self.outputs = tf.nn.softmax(self.testlogits)/stateprior

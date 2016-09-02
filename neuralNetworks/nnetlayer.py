@@ -35,7 +35,7 @@ class FFLayer(object):
 	#@param inputs the input to the layer
 	#@param apply_dropout bool to determine if dropout is aplied
 	#
-	#@return the output of the layer without and with dropout
+	#@return the output of the layer
 	def __call__(self, inputs, apply_dropout = True):
 			
 		with tf.name_scope(self.name):

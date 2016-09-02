@@ -142,6 +142,7 @@ class Nnet:
 						else:
 							validation_loss=current_loss
 							validation_step = step
+							num_retries=0
 							trainer.saveTrainer(self.conf['savedir'] + '/training/validated')
 							
 				#add a layer if its required
