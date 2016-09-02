@@ -69,7 +69,15 @@ def transferFunction(inputs, name):
 	elif name == 'linear':
 		return inputs
 	elif name == 'l2_norm':
-		return tf.nn.l2_normalize(inputs,1)*np.sqrt(inputs.get_shape().as_list()[1])
+		with tf.name_scope('l2_norm'):
+			#compute the mean squared value
+			sig = tf.reduce_mean(tf.square(inputs), 1, keep_dims=True)
+			
+			#divide the input by the mean squared value
+			normalized = inputs/sig
+			
+			#if the mean squared value is larger then one select the normalized value otherwise select the unnormalised one
+			return tf.select(tf.greater(tf.reshape(sig, [-1]), 1), normalized, inputs)
 	else:
 		raise Exception('unknown transfer function: %s' % name)
 	
