@@ -162,7 +162,7 @@ if TEST_NNET:
 	decodedir = savedir + '/decode'
 	if not os.path.isdir(decodedir):
 		os.mkdir(decodedir)
-	#Nnet.decode(config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), decodedir)
+	Nnet.decode(config.get('directories','test_features') + '/' +  config.get('dnn-features','name'), decodedir)
 	
 	print('------- decoding testing sets ----------')
 	#copy the gmm model and some files to speaker mapping to the decoding dir
