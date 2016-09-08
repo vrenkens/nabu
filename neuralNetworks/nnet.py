@@ -123,11 +123,6 @@ class Nnet:
 					if self.conf['valid_adapt'] == 'True':
 						#if the loss increased, half the learning rate and go back to the previous validation step
 						if current_loss > validation_loss:
-							if num_retries == int(self.conf['valid_retries']):
-								print('the validation loss is worse, terminating training')
-								break
-								
-							print('the validation loss is worse, returning to the previously validated model with halved learning rate')
 						
 							#go back in the dispenser
 							for _ in range(step-validation_step):
@@ -137,6 +132,13 @@ class Nnet:
 							trainer.restoreTrainer(self.conf['savedir'] + '/training/validated')
 							trainer.halve_learning_rate()
 							step = validation_step
+							
+							if num_retries == int(self.conf['valid_retries']):
+								print('the validation loss is worse, terminating training')
+								break
+								
+							print('the validation loss is worse, returning to the previously validated model with halved learning rate')
+							
 							num_retries+=1
 						
 						else:
