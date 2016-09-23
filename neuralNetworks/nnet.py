@@ -94,11 +94,12 @@ class Nnet:
 				trainer.restoreTrainer(self.conf['savedir'] + '/training/step' + str(step))
 				
 			#do a validation step
-			validation_loss = trainer.evaluate(val_data, val_labels)
-			print('validation loss at step %d: %f' %(step, validation_loss ))
-			validation_step = step
-			trainer.saveTrainer(self.conf['savedir'] + '/training/validated')
-			num_retries = 0
+			val_data is not None:
+				validation_loss = trainer.evaluate(val_data, val_labels)
+				print('validation loss at step %d: %f' %(step, validation_loss ))
+				validation_step = step
+				trainer.saveTrainer(self.conf['savedir'] + '/training/validated')
+				num_retries = 0
 			
 			#start the training iteration
 			while step<num_steps:
