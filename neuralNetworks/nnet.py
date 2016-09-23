@@ -94,7 +94,7 @@ class Nnet:
 				trainer.restoreTrainer(self.conf['savedir'] + '/training/step' + str(step))
 				
 			#do a validation step
-			val_data is not None:
+			if val_data is not None:
 				validation_loss = trainer.evaluate(val_data, val_labels)
 				print('validation loss at step %d: %f' %(step, validation_loss ))
 				validation_step = step
