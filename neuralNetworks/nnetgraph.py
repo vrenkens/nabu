@@ -220,7 +220,7 @@ class NnetTrainer(object):
 				self.updateGradientsOp = tf.group(*([grads[p].assign_add(batchgrads[p]) for p in range(len(grads)) if batchgrads[p] is not None] + [self.updateLoss]), name='update_gradients')
 				
 				#create an operation to apply the gradients
-				meangrads = [tf.div(grad,self.num_frames,name=grad.name+'_mean') for grad in grads]
+				meangrads = [tf.div(grad,self.num_frames, name=grad.op.name) for grad in grads]
 				self.applyGradientsOp = optimizer.apply_gradients([(meangrads[p]/self.num_frames, params[p]) for p in range(len(meangrads))], global_step=self.global_step, name='apply_gradients')
 			
 			with tf.name_scope('valid'):
