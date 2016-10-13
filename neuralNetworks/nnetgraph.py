@@ -3,212 +3,119 @@
 
 import tensorflow as tf
 import numpy as np
-from abc import ABCMeta, abstractmethod, abstractproperty
-import itertools
-
-import nnetlayer
+from nnetlayer import FFLayer
 
 ##This an abstrace class defining a neural net
 class NnetGraph(object):
-	__metaclass__ = ABCMeta
 	
-	##NnetGraph constructor
+	##Add the neural net variables and operations to the graph
 	#
-	#@param name name of the neural network
-	#@param args arguments that will be used as properties of the neural net
-	#@param kwargs named arguments that will be used as properties of the neural net
-	def __init__(self, name, *args, **kwargs):
+	#@param inputs the inputs to the neural network
+	#@param scope the name scope 
+	#
+	#@return logits used for training, logits used for testing, a saver object and a dictionary of control operations (may be empty)
+	def __call__(self, inputs):
+		raise NotImplementedError("Abstract method")
 		
-		self.name = name
-		
-		if len(args) + len(kwargs) != len(self.fieldnames):
-			raise TypeError('%s() expects %d arguments (%d given)' %(type(self).__name__, len(self.fieldnames), len(args) + len(kwargs)))
-			
-		for a in range(len(args)):
-			exec('self.%s = args[a]' % self.fieldnames[a])
-			
-		for a in kwargs:
-			if a not in self.fieldnames:
-				raise TypeError('%s is an invalid keyword argument for %s()' % (a, type(self).__name__))
-			
-			exec('self.%s = kwargs[a]' % (a))
-	
-	##Extends the graph with the neural net graph, this method should define the attributes: inputs, outputs, logits and saver. 
-	@abstractmethod
-	def extendGraph(self):
-		pass			
-		
-	##A list of strings containing the fielnames of the __init__ function
-	@abstractproperty
-	def fieldnames(self):
-		pass	
-	
-	##Inputs placeholder
 	@property
-	def inputs(self):
-		return self._inputs
-		
-	##Outputs of the graph
-	@property
-	def outputs(self):
-		return self._outputs
-		
-	##Logits used for training
-	@property
-	def trainlogits(self):
-		return self._trainlogits
-		
-	##Logits used for evaluating (can be the same as training)
-	@property
-	def testlogits(self):
-		return self._testlogits
-		
-	##Saver of the model parameters
-	@property
-	def saver(self):
-		return self._saver
-		
-	@inputs.setter
-	def inputs(self, inputs):
-		self._inputs = inputs
-		
-	@outputs.setter
-	def outputs(self, outputs):
-		self._outputs = outputs
-		
-	@trainlogits.setter
-	def trainlogits(self, trainlogits):
-		self._trainlogits = trainlogits
-		
-	@testlogits.setter
-	def testlogits(self, testlogits):
-		self._testlogits = testlogits
-		
-	@saver.setter
-	def saver(self, saver):
-		self._saver = saver
+	def output_dim(self):
+		return self._output_dim
+
 		
 	
 		
-##This class is a graph for feedforward fully connected neural nets. It is initialised as folows: DNN(name, input_dim, output_dim, num_hidden_layers, num_hidden_units, transfername, l2_norm, dropout)
-#	name: name of the DNN
-# 	input_dim: the input dimension
-#	output_dim: the output dimension
-#	num_hidden_layers: number of hiden layers in the DNN
-#	layer_wise_init: Boolean that is true if layerwhise initialisation should be done
-#	num_hidden_units: number of hidden units in every layer
-#	transfername: name of the transfer function that is used
-#	l2_norm: boolean that determines of l2_normalisation is used after every layer
-#	dropout: the chance that a hidden unit is propagated to the next layer
+##This class is a graph for feedforward fully connected neural nets.
 class DNN(NnetGraph):
 	
-	##Extend the graph with the DNN
-	def extendGraph(self):
+	## DNN constructor
+	#
+	#@param output_dim the DNN output dimension
+	#@param num_layers number of hidden layers
+	#@param num_units number of hidden units
+	#@param activation the activation function
+	#@param trainactivation the activation function that will be used at train time (if not specified no seperate training operations will be created)
+	def __init__(self, output_dim, num_layers, num_units, activation, trainactivation = None):
+		
+		#save all the DNN properties
+		self._output_dim = output_dim
+		self.num_layers = num_layers
+		self.num_units = num_units
+		self.activation = activation
+		self.trainactivation = trainactivation
+	
+	##Add the DNN variables and operations to the graph
+	#
+	#@param inputs the inputs to the neural network
+	#@param scope the name scope 
+	#
+	#@return logits used for training, logits used for testing, a saver object and a list of control operations (add:add layer, init:initialise output layer)
+	def __call__(self, inputs, scope = None):
 			
-		with tf.variable_scope(self.name):
-			
-			#define the input data
-			self.inputs = tf.placeholder(tf.float32, shape = [None, self.input_dim], name = 'inputs')
+		with tf.variable_scope(scope or type(self).__name__):
 		
-			#placeholder to set the state prior
-			self.prior = tf.placeholder(tf.float32, shape = [self.output_dim], name = 'priorGate')
-		
-			#variable that holds the state prior
-			stateprior = tf.get_variable('prior', self.output_dim, initializer=tf.constant_initializer(0), trainable=False)
-		
-			#variable that holds the state prior
+			#variable that determines how many layers are initialised in the neural net
 			initialisedlayers = tf.get_variable('initialisedlayers', [], initializer=tf.constant_initializer(0), trainable=False, dtype=tf.int32)
 		
 			#operation to increment the number of layers
-			self.addLayerOp = initialisedlayers.assign_add(1).op
-		
-			#operation to set the state prior
-			self.setPriorOp = stateprior.assign(self.prior).op
+			addLayerOp = initialisedlayers.assign_add(1).op
 		
 			#create the layers
-			layers = [None]*(self.num_hidden_layers+1)
+			layers = [None]*(self.num_layers+1)
 		 	
 		 	#input layer
-		 	layers[0] = nnetlayer.FFLayer(self.input_dim, self.num_hidden_units, 1/np.sqrt(self.input_dim), 'layer0', self.transfername, self.l2_norm, self.dropout)
+		 	layers[0] = FFLayer(inputs.get_shape()[1], self.num_units, 1/int(inputs.get_shape()[1])**0.5, 'layer0', self.activation, self.trainactivation)
 		 	
 		 	#hidden layers
 		 	for k in range(1,len(layers)-1):
-		 		layers[k] = nnetlayer.FFLayer(self.num_hidden_units, self.num_hidden_units, 1/np.sqrt(self.num_hidden_units), 'layer' + str(k), self.transfername, self.l2_norm, self.dropout)
+		 		layers[k] = FFLayer(self.num_units, self.num_units, 1/self.num_units**0.5, 'layer' + str(k), self.activation, self.trainactivation)
 		 		
 	 		#output layer
-	 		layers[-1] = nnetlayer.FFLayer(self.num_hidden_units, self.output_dim, 0, 'layer' + str(len(layers)-1))
+	 		layers[-1] = FFLayer(self.num_units, self.output_dim, 0, 'layer' + str(len(layers)-1), lambda(x):x, lambda(x):x)
 	 		
 	 		#operation to initialise the final layer
-	 		self.initLastLayerOp = tf.initialize_variables([layers[-1].weights, layers[-1].biases])
+	 		initLastLayerOp = tf.initialize_variables([layers[-1].weights, layers[-1].biases])
 	 		
 			#do the forward computation with dropout
 	 		
+	 		trainactivations = [None]*(len(layers)-1)
 	 		activations = [None]*(len(layers)-1)
-			activations[0]= layers[0](self.inputs)
-			for l in range(1,len(activations)):
-				activations[l] = layers[l](activations[l-1])
+			activations[0], trainactivations[0] = layers[0](inputs, inputs)
+			for l in range(1,len(layers)-1):
+				activations[l], trainactivations[l] = layers[l](activations[l-1], trainactivations[l-1])
 	 		
-	 		if self.layer_wise_init:
-				#compute the logits by selecting the activations at the layer that has last been added to the network, this is used for layer by layer initialisation
-				self.trainlogits = layers[-1](tf.case([(tf.equal(initialisedlayers, tf.constant(l)), CallableTensor(activations[l])) for l in range(len(activations))], CallableTensor(activations[-1]),name = 'layerSelector'))
-			else:
-				self.trainlogits = layers[-1](activations[-1])
-	 		
-	 		if self.dropout<1:
-	 		
-		 		#do the forward computation without dropout
-		 		
-		 		activations = [None]*(len(layers)-1)
-				activations[0]= layers[0](self.inputs, False)
-				for l in range(1,len(activations)):
-					activations[l] = layers[l](activations[l-1], False)
-		 		
-		 		if self.layer_wise_init:
-					#compute the logits by selecting the activations at the layer that has last been added to the network, this is used for layer by layer initialisation
-					self.testlogits = layers[-1](tf.case([(tf.equal(initialisedlayers, tf.constant(l)), CallableTensor(activations[l])) for l in range(len(activations))], CallableTensor(activations[-1]),name = 'layerSelector'), False)
-				else:
-					self.testlogits = layers[-1](activations[-1], False)
-			else:
-				self.testlogits = self.trainlogits
-	 				
-			#define the output 
-			self.outputs = tf.nn.softmax(self.testlogits)/stateprior
+			#compute the logits by selecting the activations at the layer that has last been added to the network, this is used for layer by layer initialisation
+			logits = tf.case([(tf.equal(initialisedlayers, tf.constant(l)), CallableTensor(activations[l])) for l in range(len(activations))], CallableTensor(activations[-1]),name = 'layerSelector')
+			if self.trainactivation is not None:
+				trainlogits = tf.case([(tf.equal(initialisedlayers, tf.constant(l)), CallableTensor(trainactivations[l])) for l in range(len(trainactivations))], CallableTensor(trainactivations[-1]),name = 'layerSelector')
+			else: 
+				trainlogits = None
+			logits, trainlogits = layers[-1](logits, trainlogits)
 		
 			#create a saver 
-			self.saver = tf.train.Saver()
-	
-	##set the prior in the graph
-	#
-	#@param prior the state prior probabilities
-	def setPrior(self, prior):
-		self.setPriorOp.run(feed_dict={self.prior:prior})
-		
-	##Add a layer to the network
-	def addLayer(self):
-		#reinitialise the final layer
-		self.initLastLayerOp.run()
-		
-		#increment the number of layers
-		self.addLayerOp.run()
-		
-	@property
-	def fieldnames(self):
-		return ['input_dim', 'output_dim', 'num_hidden_layers',  'layer_wise_init', 'num_hidden_units', 'transfername', 'l2_norm', 'dropout']
+			saver = tf.train.Saver()
+			
+		return logits, trainlogits if trainlogits is not None else logits, saver, {'add':addLayerOp, 'init':initLastLayerOp}
 
 ##Class for the decoding environment for a neural net graph
 class NnetDecoder(object):
 	##NnetDecoder constructor, creates the decoding graph
 	#
-	#@param nnetgraph an nnetgraph object for the neural net that will be used for decoding
-	def __init__(self, nnetGraph):
+	#@param nnetGraph an nnetgraph object for the neural net that will be used for decoding
+	#@param input_dim the input dimension to the nnnetgraph
+	def __init__(self, nnetGraph, input_dim):
 
 		self.graph = tf.Graph()
-		self.nnetGraph = nnetGraph
 		
 		with self.graph.as_default():
 		
+			#create the inputs placeholder
+			self.inputs = tf.placeholder(tf.float32, shape = [None, self.input_dim], name = 'inputs')
+		
 			#create the decoding graph
-			self.nnetGraph.extendGraph()
+			logits, _, self.saver, _ = nnetGraph(self.inputs)
+			
+			#compute the outputs
+			outputs = tf.nn.softmax(logits)
 	
 		#specify that the graph can no longer be modified after this point
 		self.graph.finalize()
@@ -219,13 +126,13 @@ class NnetDecoder(object):
 	#
 	#@return an NxO numpy array where N is the number of frames and O is the neural net output dimension
 	def __call__(self, inputs):
-		return self.nnetGraph.outputs.eval(feed_dict = {self.nnetGraph.inputs:inputs})
+		return self.outputs.eval(feed_dict = {self.inputs:inputs})
 	
 	##load the saved neural net
 	#
 	#@param filename location where the neural net is saved
 	def restore(self, filename):
-		self.nnetGraph.saver.restore(tf.get_default_session(), filename)
+		self.saver.restore(tf.get_default_session(), filename)
 	
  					
 ##Class for the training environment for a neural net graph
@@ -234,14 +141,14 @@ class NnetTrainer(object):
 	#NnetTrainer constructor, creates the training graph
 	#
 	#@param nnetgraph an nnetgraph object for the neural net that will be used for decoding
+	#@param input_dim the input dimension to the nnnetgraph
 	#@param init_learning_rate the initial learning rate
 	#@param learning_rate_decay the parameter for exponential learning rate decay
 	#@param num_steps the total number of steps that will be taken
 	#@param numframes_per_batch determines how many frames are processed at a time to limit memory usage
-	def __init__(self, nnetGraph, init_learning_rate, learning_rate_decay, num_steps, numframes_per_batch):
+	def __init__(self, nnetGraph, input_dim, init_learning_rate, learning_rate_decay, num_steps, numframes_per_batch):
 	
 		self.numframes_per_batch = numframes_per_batch
-		self.nnetGraph = nnetGraph
 	
 		#create the graph
 		self.graph = tf.Graph()
@@ -249,34 +156,28 @@ class NnetTrainer(object):
 		#define the placeholders in the graph
 		with self.graph.as_default():
 			
-			#create the decoding graph
-			self.nnetGraph.extendGraph()
+			#create the inputs placeholder
+			self.inputs = tf.placeholder(tf.float32, shape = [None, input_dim], name = 'inputs')
 			
 			#reference labels
-			self.targets = tf.placeholder(tf.float32, shape = [None, self.nnetGraph.trainlogits.get_shape().as_list()[1]], name = 'targets')
+			self.targets = tf.placeholder(tf.float32, shape = [None, nnetGraph.output_dim], name = 'targets')
 			
 			#input for the total number of frames that are used in the batch
 			self.num_frames = tf.placeholder(tf.float32, shape = [], name = 'num_frames')
+			
+			#compute the outputs of the nnetgraph
+			logits, trainlogits, self.modelsaver, self.control_ops = nnetGraph(self.inputs)
 			
 			#get a list of trainable variables in the decoder graph
 			params = tf.trainable_variables()
 
 			#add the variables and operations to the graph that are used for training
 			
-			#compute the training loss
-			self.loss = tf.reduce_sum(self.computeLoss(self.targets, self.nnetGraph.trainlogits))
-			
-			#compute the validation loss
-			self.validLoss = tf.reduce_sum(self.computeLoss(self.targets, self.nnetGraph.testlogits))
-			
 			#total number of steps
 			Nsteps = tf.constant(num_steps, dtype = tf.int32, name = 'num_steps')
 			
 			#the total loss of the entire batch
 			batch_loss = tf.get_variable('batch_loss', [], dtype=tf.float32, initializer=tf.constant_initializer(0), trainable=False)
-			
-			#operation to update the validation loss
-			self.updateValidLoss = batch_loss.assign_add(self.validLoss).op
 			
 			with tf.variable_scope('train_variables'):	
 
@@ -297,6 +198,9 @@ class NnetTrainer(object):
 				grads = [tf.get_variable(param.op.name, param.get_shape().as_list(), initializer=tf.constant_initializer(0), trainable=False) for param in params]
 				
 			with tf.name_scope('train'):
+				#compute the training loss
+				loss = tf.reduce_sum(self.computeLoss(self.targets, trainlogits))
+			
 				#operation to half the learning rate
 				self.halveLearningRateOp = learning_rate_fact.assign(learning_rate_fact/2).op
 				
@@ -307,28 +211,36 @@ class NnetTrainer(object):
 				self.initloss = batch_loss.initializer
 				
 				#compute the gradients of the batch
-				batchgrads = tf.gradients(self.loss, params)
+				batchgrads = tf.gradients(loss, params)
 				
 				#create an operation to update the batch loss
-				self.updateLoss = batch_loss.assign_add(self.loss).op
+				self.updateLoss = batch_loss.assign_add(loss).op
 				
 				#create an operation to update the gradients and the batch_loss
 				self.updateGradientsOp = tf.group(*([grads[p].assign_add(batchgrads[p]) for p in range(len(grads)) if batchgrads[p] is not None] + [self.updateLoss]), name='update_gradients')
 				
 				#create an operation to apply the gradients
-				self.applyGradientsOp = optimizer.apply_gradients([(grads[p]/self.num_frames, params[p]) for p in range(len(grads))], global_step=self.global_step, name='apply_gradients')
-				
-				# add an operation to initialise all the variables in the graph
-				self.initop = tf.initialize_all_variables()
+				meangrads = [(grad/self.num_frames) for grad in grads]
+				self.applyGradientsOp = optimizer.apply_gradients([(meangrads[p]/self.num_frames, params[p]) for p in range(len(meangrads))], global_step=self.global_step, name='apply_gradients')
 			
-				#operation to compute the average loss in the batch
-				self.average_loss = batch_loss/self.num_frames
+			with tf.name_scope('valid'):
+				#compute the validation loss
+				validLoss = tf.reduce_sum(self.computeLoss(self.targets, logits))
+				
+				#operation to update the validation loss
+				self.updateValidLoss = batch_loss.assign_add(validLoss).op
+			
+			#operation to compute the average loss in the batch
+			self.average_loss = batch_loss/self.num_frames
+			
+			# add an operation to initialise all the variables in the graph
+			self.initop = tf.initialize_all_variables()
 			
 			#saver for the training variables
 			self.saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.VARIABLES, scope='train_variables'))
 			
 			#create the summaries for visualisation
-			self.summary = tf.merge_summary([tf.histogram_summary(val.name, val) for val in params+grads] + [tf.scalar_summary('loss', batch_loss)])
+			self.summary = tf.merge_summary([tf.histogram_summary(val.name, val) for val in params+meangrads] + [tf.scalar_summary('loss', self.average_loss)])
 			
 			
 		#specify that the graph can no longer be modified after this point
@@ -374,17 +286,15 @@ class NnetTrainer(object):
 		for k in range(int(inputs.shape[0]/numframes_per_batch) + int(inputs.shape[0]%numframes_per_batch > 0)):
 			batchInputs = inputs[k*numframes_per_batch:min((k+1)*numframes_per_batch, inputs.shape[0]), :]
 			batchTargets = targets[k*numframes_per_batch:min((k+1)*numframes_per_batch, inputs.shape[0]), :]
-			self.updateGradientsOp.run(feed_dict = {self.nnetGraph.inputs:batchInputs, self.targets:batchTargets})
+			self.updateGradientsOp.run(feed_dict = {self.inputs:batchInputs, self.targets:batchTargets})
 			
-		#apply the accumulated gradients to update the model parameters
-		self.applyGradientsOp.run(feed_dict = {self.num_frames:inputs.shape[0]})
-		
-		#get the loss at this step
-		loss = self.average_loss.eval(feed_dict = {self.num_frames:inputs.shape[0]})
-		
-		#if visualization has started add the summary
+		#apply the accumulated gradients to update the model parameters and evaluate the loss
 		if self.summarywriter is not None:
-			self.summarywriter.add_summary(self.summary.eval(), global_step=self.global_step.eval())
+			[loss, summary, _] = tf.get_default_session().run([self.average_loss, self.summary, self.applyGradientsOp], feed_dict = {self.num_frames:inputs.shape[0]})
+			self.summarywriter.add_summary(summary, global_step=self.global_step.eval())
+		else:
+			[loss, _] = tf.get_default_session().run([self.average_loss, self.applyGradientsOp], feed_dict = {self.num_frames:inputs.shape[0]})
+			
 		
 		#reinitialize the gradients and the loss
 		self.initgrads.run()
@@ -414,7 +324,7 @@ class NnetTrainer(object):
 		for k in range(int(inputs.shape[0]/self.numframes_per_batch) + int(inputs.shape[0]%self.numframes_per_batch > 0)):
 			batchInputs = inputs[k*self.numframes_per_batch:min((k+1)*self.numframes_per_batch, inputs.shape[0]), :]
 			batchTargets = targets[k*self.numframes_per_batch:min((k+1)*self.numframes_per_batch, inputs.shape[0]), :]
-			self.updateValidLoss.run(feed_dict = {self.nnetGraph.inputs:batchInputs, self.targets:batchTargets})
+			self.updateValidLoss.run(feed_dict = {self.inputs:batchInputs, self.targets:batchTargets})
 			
 		#get the loss
 		loss = self.average_loss.eval(feed_dict = {self.num_frames:inputs.shape[0]})
@@ -433,26 +343,26 @@ class NnetTrainer(object):
 	#
 	#@param filename path to the model file
 	def saveModel(self, filename):
-		self.nnetGraph.saver.save(tf.get_default_session(), filename)
+		self.modelsaver.save(tf.get_default_session(), filename)
 		
 	##Load the model
 	#
 	#@param filename path where the model will be saved
 	def restoreModel(self, filename):
-		self.nnetGraph.saver.restore(tf.get_default_session(), filename)
+		self.modelsaver.restore(tf.get_default_session(), filename)
 		
 	##Save the training progress (including the model)
 	#
 	#@param filename path where the model will be saved
 	def saveTrainer(self, filename):
-		self.nnetGraph.saver.save(tf.get_default_session(), filename)
+		self.modelsaver.save(tf.get_default_session(), filename)
 		self.saver.save(tf.get_default_session(), filename + '_trainvars')
 		
 	##Load the training progress (including the model)
 	#
 	#@param filename path where the model will be saved
 	def restoreTrainer(self, filename):
-		self.nnetGraph.saver.restore(tf.get_default_session(), filename)
+		self.modelsaver.restore(tf.get_default_session(), filename)
 		self.saver.restore(tf.get_default_session(), filename + '_trainvars')
 
 ##A class for a tensor that is callable		

@@ -2,8 +2,6 @@
 # contains neural network layers 
 
 import tensorflow as tf
-import numpy as np
-from abc import ABCMeta, abstractmethod
 
 ##This class defines a fully connected feed forward layer
 class FFLayer(object):
@@ -12,12 +10,11 @@ class FFLayer(object):
 	#
 	#@param input_dim input dimension of the layer
 	#@param output_dim output dimension of the layer
-	#@param weights_std standart deviation of the weights initializer
+	#@param weights_std the standart deviation of the weights
 	#@param name name of the layer
-	#@param transfername name of the transfer function that is used
-	#@param l2_norm boolean that determines of l2_normalisation is used after every layer
-	#@param dropout the chance that a hidden unit is propagated to the next layer
-	def __init__(self, input_dim, output_dim, weights_std, name, transfername='linear', l2_norm=False, dropout=1):
+	#@param activation the activation function used at train time
+	#@param trainactivation the activation function used at train time (if not specified no seperate training operations will be created)
+	def __init__(self, input_dim, output_dim, weights_std, name, activation, trainactivation = None):
 		
 		#create the model parameters in this layer
 		with tf.variable_scope(name + '_parameters'):
@@ -25,59 +22,37 @@ class FFLayer(object):
 			self.biases = tf.get_variable('biases',  [output_dim], initializer=tf.constant_initializer(0))
 				
 		#save the parameters
-		self.transfername = transfername
-		self.l2_norm = l2_norm
-		self.dropout = dropout
+		self.activation = activation
+		self.trainactivation = trainactivation
 		self.name = name
 		
 	##Do the forward computation
 	#
 	#@param inputs the input to the layer
-	#@param apply_dropout bool to determine if dropout is aplied
+	#@param traininputs the inputs used at train time (if not specified no seperate training operations will be created)
 	#
 	#@return the output of the layer
-	def __call__(self, inputs, apply_dropout = True):
+	def __call__(self, inputs, traininputs = None):
 			
 		with tf.name_scope(self.name):
 			
 			#apply weights and biases
-			outputs = transferFunction(tf.matmul(inputs, self.weights) + self.biases, self.transfername)
-		
-			#apply l2 normalisation
-			if self.l2_norm:
-				outputs = transferFunction(outputs, 'l2_norm')
-		
-			#apply dropout	
-			if self.dropout<1 and apply_dropout:
-				outputs = tf.nn.dropout(outputs, self.dropout)
+			with tf.name_scope('linear'):
+				linear = tf.matmul(inputs, self.weights) + self.biases
+				
+			#apply activation function	
+			with tf.name_scope('activation'):
+				outputs = self.activation(linear)
+				
+			#do the same for the traing inputs if thay have been specified
+			if traininputs is not None and self.trainactivation is not None:
+				with tf.name_scope('trainlinear'):
+					trainlinear = tf.matmul(traininputs, self.weights) + self.biases
+					
+				with tf.name_scope('trainactivation'):
+					trainoutputs = self.trainactivation(trainlinear)
+			else:
+				trainoutputs = None
 
-		return outputs
-
-##Apply the transfer function
-#
-#@param inputs the inputs to the transfer function
-#@param name the name of the function, current options are: relu, sigmoid, tanh, linear or l2_norm
-#
-#@return the output to the transfer function
-def transferFunction(inputs, name):
-	if name == 'relu':
-		return tf.nn.relu(inputs)
-	elif name== 'sigmoid':
-		return tf.nn.sigmoid(inputs)
-	elif name == 'tanh':
-		return tf.nn.tanh(inputs)
-	elif name == 'linear':
-		return inputs
-	elif name == 'l2_norm':
-		with tf.name_scope('l2_norm'):
-			#compute the mean squared value
-			sig = tf.reduce_mean(tf.square(inputs), 1, keep_dims=True)
-			
-			#divide the input by the mean squared value
-			normalized = inputs/sig
-			
-			#if the mean squared value is larger then one select the normalized value otherwise select the unnormalised one
-			return tf.select(tf.greater(tf.reshape(sig, [-1]), 1), normalized, inputs)
-	else:
-		raise Exception('unknown transfer function: %s' % name)
+		return outputs, trainoutputs
 	

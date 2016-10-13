@@ -10,6 +10,7 @@ import shutil
 import os
 
 import nnetgraph
+import nnetactivations
 import batchdispenser
 import ark
 
@@ -33,10 +34,30 @@ class Nnet:
 			os.mkdir(self.conf['savedir'] + '/training')
 			
 		#compute the input_dimension of the spliced features
-		input_dim = input_dim * (2*int(self.conf['context_width']) + 1)
+		self.input_dim = input_dim * (2*int(self.conf['context_width']) + 1)
+			
+		#create the activation function
+		if self.conf['nonlin'] == 'relu':
+			activation = tf.nn.relu
+		elif self.conf['nonlin'] == 'sigmoid':
+			activation = tf.nn.sigmoid
+		elif self.conf['nonlin'] == 'tanh':
+			activation = tf.nn.tanh
+		elif self.conf['nonlin'] == 'linear':
+			activation = lambda(x): x
+		else:
+			raise Exception('unkown nonlinearity')
+			
+		if self.conf['l2_norm']=='True':
+			activation = nnetactivations.L2_wrapper(activation)
+			
+		if float(self.conf['dropout']) < 1:
+			trainactivation = nnetactivations.Dropout_wrapper(activation, float(self.conf['dropout']))
+		else:
+			trainactivation = None
 			
 		#create a DNN
-		self.DNN = nnetgraph.DNN('DNN', input_dim, num_labels, int(self.conf['num_hidden_layers']), int(self.conf['add_layer_period'])>0, int(self.conf['num_hidden_units']), self.conf['nonlin'], self.conf['l2_norm']=='True', float(self.conf['dropout']))
+		self.DNN = nnetgraph.DNN(num_labels, int(self.conf['num_hidden_layers']), int(self.conf['num_hidden_units']), activation, trainactivation)
 	
 	## Train the neural network
 	#
@@ -73,7 +94,7 @@ class Nnet:
 		#create a visualisation of the DNN
 		
 		#put the DNN in a training environment
-		trainer = nnetgraph.NnetTrainer(self.DNN, float(self.conf['initial_learning_rate']), float(self.conf['learning_rate_decay']), num_steps, int(self.conf['numframes_per_batch']))
+		trainer = nnetgraph.NnetTrainer(self.DNN, self.input_dim, float(self.conf['initial_learning_rate']), float(self.conf['learning_rate_decay']), num_steps, int(self.conf['numframes_per_batch']))
 		
 		#start the visualization if it is requested
 		if self.conf['visualise'] == 'True':
@@ -153,7 +174,8 @@ class Nnet:
 					if step%int(self.conf['add_layer_period']) == 0 and step/int(self.conf['add_layer_period']) < int(self.conf['num_hidden_layers']):
 					
 						print('adding layer, the model now holds %d/%d layers' %(step/int(self.conf['add_layer_period']) + 1, int(self.conf['num_hidden_layers'])))
-						self.DNN.addLayer()
+						trainer.control_ops['add'].run()
+						trainer.control_ops['init'].run()
 					
 						#do a validation step
 						validation_loss = trainer.evaluate(val_data, val_labels)
@@ -167,8 +189,9 @@ class Nnet:
 					trainer.saveTrainer(self.conf['savedir'] + '/training/step' + str(step))
 					
 						
-			#compute the state prior and put it in the model
-			self.DNN.setPrior(dispenser.computePrior())
+			#compute the state prior and write it to the savedir
+			prior = dispenser.computePrior()
+			np.save(self.conf['savedir'] + '/prior', prior)
 						
 			#save the final model
 			trainer.saveModel(self.conf['savedir'] + '/final')
@@ -193,6 +216,9 @@ class Nnet:
 		
 		#create a decoder
 		decoder = nnetgraph.NnetDecoder(self.DNN)
+		
+		#read the prior
+		prior = np.load(self.conf['savedir'] + '/prior')
 	
 		#start tensorflow session
 		config = tf.ConfigProto()
@@ -211,6 +237,9 @@ class Nnet:
 			
 				#compute predictions
 				output = decoder(utt_mat)
+				
+				#get state likelihoods by dividing by the prior
+				output = output/prior
 				
 				#floor the values to avoid problems with log
 				np.where(output == 0,np.finfo(float).eps,output)
