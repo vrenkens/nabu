@@ -191,7 +191,7 @@ class Nnet:
 						
 			#compute the state prior and write it to the savedir
 			prior = dispenser.computePrior()
-			np.save(self.conf['savedir'] + '/prior', prior)
+			np.save(self.conf['savedir'] + '/prior.npy', prior)
 						
 			#save the final model
 			trainer.saveModel(self.conf['savedir'] + '/final')
@@ -215,10 +215,10 @@ class Nnet:
 		writer = ark.ArkWriter(decodedir + '/feats.scp')
 		
 		#create a decoder
-		decoder = nnetgraph.NnetDecoder(self.DNN)
+		decoder = nnetgraph.NnetDecoder(self.DNN, self.input_dim)
 		
 		#read the prior
-		prior = np.load(self.conf['savedir'] + '/prior')
+		prior = np.load(self.conf['savedir'] + '/prior.npy')
 	
 		#start tensorflow session
 		config = tf.ConfigProto()

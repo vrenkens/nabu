@@ -109,13 +109,13 @@ class NnetDecoder(object):
 		with self.graph.as_default():
 		
 			#create the inputs placeholder
-			self.inputs = tf.placeholder(tf.float32, shape = [None, self.input_dim], name = 'inputs')
+			self.inputs = tf.placeholder(tf.float32, shape = [None, input_dim], name = 'inputs')
 		
 			#create the decoding graph
 			logits, _, self.saver, _ = nnetGraph(self.inputs)
 			
 			#compute the outputs
-			outputs = tf.nn.softmax(logits)
+			self.outputs = tf.nn.softmax(logits)
 	
 		#specify that the graph can no longer be modified after this point
 		self.graph.finalize()

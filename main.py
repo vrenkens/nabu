@@ -30,7 +30,7 @@ TEST_TRI = False			#required if the performance of the triphone GMM is tested
 TRAIN_LDA = False			#required if the LDA GMM is used for alignments
 ALIGN_LDA = False			#required if the LDA GMM is used for alignments
 TEST_LDA = False			#required if the performance of the LDA GMM is tested
-TRAIN_NNET = True			#required
+TRAIN_NNET = False			#required
 TEST_NNET = True			#required if the performance of the DNN is tested
 
 #read config file
