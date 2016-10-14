@@ -58,38 +58,38 @@ class DNN(NnetGraph):
 		
 			#operation to increment the number of layers
 			addLayerOp = initialisedlayers.assign_add(1).op
-		
-			#create the layers
-			layers = [None]*(self.num_layers+1)
 		 	
 		 	#input layer
-		 	layers[0] = FFLayer(inputs.get_shape()[1], self.num_units, 1/int(inputs.get_shape()[1])**0.5, 'layer0', self.activation, self.trainactivation)
+		 	inlayer = FFLayer(self.num_units, self.activation, trainactivation = self.trainactivation)
 		 	
-		 	#hidden layers
-		 	for k in range(1,len(layers)-1):
-		 		layers[k] = FFLayer(self.num_units, self.num_units, 1/self.num_units**0.5, 'layer' + str(k), self.activation, self.trainactivation)
+		 	#hidden layer
+		 	hidlayer = FFLayer(self.num_units, self.activation, trainactivation = self.trainactivation)
 		 		
 	 		#output layer
-	 		layers[-1] = FFLayer(self.num_units, self.output_dim, 0, 'layer' + str(len(layers)-1), lambda(x):x, lambda(x):x)
-	 		
-	 		#operation to initialise the final layer
-	 		initLastLayerOp = tf.initialize_variables([layers[-1].weights, layers[-1].biases])
+	 		outlayer = FFLayer(self.output_dim, lambda(x):x, 0, lambda(x):x)
 	 		
 			#do the forward computation with dropout
 	 		
-	 		trainactivations = [None]*(len(layers)-1)
-	 		activations = [None]*(len(layers)-1)
-			activations[0], trainactivations[0] = layers[0](inputs, inputs)
-			for l in range(1,len(layers)-1):
-				activations[l], trainactivations[l] = layers[l](activations[l-1], trainactivations[l-1])
+	 		trainactivations = [None]*self.num_layers
+	 		activations = [None]*self.num_layers
+			activations[0], trainactivations[0] = inlayer(inputs, inputs, 'layer0')
+			for l in range(1,self.num_layers):
+				activations[l], trainactivations[l] = hidlayer(activations[l-1], trainactivations[l-1], 'layer' + str(l))
 	 		
 			#compute the logits by selecting the activations at the layer that has last been added to the network, this is used for layer by layer initialisation
-			logits = tf.case([(tf.equal(initialisedlayers, tf.constant(l)), CallableTensor(activations[l])) for l in range(len(activations))], CallableTensor(activations[-1]),name = 'layerSelector')
+			logits = tf.case([(tf.equal(initialisedlayers, tf.constant(l)), CallableTensor(activations[l])) for l in range(len(activations))], default=CallableTensor(activations[-1]),exclusive=True,name = 'layerSelector')
+			
+			logits.set_shape([None, self.num_units])
 			if self.trainactivation is not None:
-				trainlogits = tf.case([(tf.equal(initialisedlayers, tf.constant(l)), CallableTensor(trainactivations[l])) for l in range(len(trainactivations))], CallableTensor(trainactivations[-1]),name = 'layerSelector')
+				trainlogits = tf.case([(tf.equal(initialisedlayers, tf.constant(l)), CallableTensor(trainactivations[l])) for l in range(len(trainactivations))], default=CallableTensor(trainactivations[-1]),exclusive=True,name = 'layerSelector')
+				trainlogits.set_shape([None, self.num_units])
 			else: 
 				trainlogits = None
-			logits, trainlogits = layers[-1](logits, trainlogits)
+			
+			logits, trainlogits = outlayer(logits, trainlogits, 'layer' + str(self.num_layers))
+			
+	 		#operation to initialise the final layer
+	 		initLastLayerOp = tf.initialize_variables(tf.get_collection(tf.GraphKeys.VARIABLES, scope='layer' + str(self.num_layers)))
 		
 			#create a saver 
 			saver = tf.train.Saver()

@@ -162,6 +162,8 @@ class Nnet:
 							print('the validation loss is worse, returning to the previously validated model with halved learning rate')
 							
 							num_retries+=1
+							
+							continue
 						
 						else:
 							validation_loss=current_loss
