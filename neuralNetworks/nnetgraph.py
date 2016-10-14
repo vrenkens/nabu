@@ -5,6 +5,8 @@ import tensorflow as tf
 import numpy as np
 from nnetlayer import FFLayer
 
+import pdb
+
 ##This an abstrace class defining a neural net
 class NnetGraph(object):
 	
@@ -89,7 +91,7 @@ class DNN(NnetGraph):
 			logits, trainlogits = outlayer(logits, trainlogits, 'layer' + str(self.num_layers))
 			
 	 		#operation to initialise the final layer
-	 		initLastLayerOp = tf.initialize_variables(tf.get_collection(tf.GraphKeys.VARIABLES, scope='layer' + str(self.num_layers)))
+	 		initLastLayerOp = tf.initialize_variables(tf.get_collection(tf.GraphKeys.VARIABLES, scope=tf.get_variable_scope().name + '/layer' + str(self.num_layers)))
 		
 			#create a saver 
 			saver = tf.train.Saver()
