@@ -31,7 +31,7 @@ class FFLayer(object):
 			
 		with tf.variable_scope(scope or type(self).__name__):
 			with tf.variable_scope('parameters'):
-				weights = tf.get_variable('weights', [inputs.get_shape()[1], self.output_dim], initializer=tf.random_normal_initializer(stddev=self.weights_std or 1/int(inputs.get_shape()[1])**0.5))
+				weights = tf.get_variable('weights', [inputs.get_shape()[1], self.output_dim], initializer=tf.random_normal_initializer(stddev=self.weights_std if self.weights_std is not None else 1/int(inputs.get_shape()[1])**0.5))
 				biases = tf.get_variable('biases',  [self.output_dim], initializer=tf.constant_initializer(0))
 			
 			#apply weights and biases
