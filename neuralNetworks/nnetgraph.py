@@ -4,6 +4,7 @@
 import tensorflow as tf
 import numpy as np
 from nnetlayer import FFLayer
+import nnetactivations
 
 import pdb
 
@@ -35,68 +36,76 @@ class DNN(NnetGraph):
 	#@param num_layers number of hidden layers
 	#@param num_units number of hidden units
 	#@param activation the activation function
-	#@param trainactivation the activation function that will be used at train time (if not specified no seperate training operations will be created)
-	def __init__(self, output_dim, num_layers, num_units, activation, trainactivation = None):
+	#@param layerwise_init if True the layers will be added one by one, otherwise all layers will be added to the network in the beginning
+	def __init__(self, output_dim, num_layers, num_units, activation, layerwise_init = True):
 		
 		#save all the DNN properties
 		self._output_dim = output_dim
 		self.num_layers = num_layers
 		self.num_units = num_units
 		self.activation = activation
-		self.trainactivation = trainactivation
+		self.layerwise_init = layerwise_init
 	
 	##Add the DNN variables and operations to the graph
 	#
 	#@param inputs the inputs to the neural network
+	#@param is_training is_training whether or not the network is in training mode
+	#@param reuse wheter or not the variables in the network should be reused
 	#@param scope the name scope 
 	#
-	#@return logits used for training, logits used for testing, a saver object and a list of control operations (add:add layer, init:initialise output layer)
-	def __call__(self, inputs, scope = None):
+	#@return output logits, a saver object and a list of control operations (add:add layer, init:initialise output layer)
+	def __call__(self, inputs, is_training = False, reuse = False, scope = None):
 			
-		with tf.variable_scope(scope or type(self).__name__):
-		
-			#variable that determines how many layers are initialised in the neural net
-			initialisedlayers = tf.get_variable('initialisedlayers', [], initializer=tf.constant_initializer(0), trainable=False, dtype=tf.int32)
-		
-			#operation to increment the number of layers
-			addLayerOp = initialisedlayers.assign_add(1).op
-		 	
+		with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
+								
 		 	#input layer
-		 	inlayer = FFLayer(self.num_units, self.activation, trainactivation = self.trainactivation)
+		 	inlayer = FFLayer(self.num_units, self.activation)
 		 	
 		 	#hidden layer
-		 	hidlayer = FFLayer(self.num_units, self.activation, trainactivation = self.trainactivation)
+		 	hidlayer = FFLayer(self.num_units, self.activation)
 		 		
 	 		#output layer
-	 		outlayer = FFLayer(self.output_dim, lambda(x):x, 0, lambda(x):x)
+	 		outlayer = FFLayer(self.output_dim, nnetactivations.Tf_wrapper(None, lambda(x): x), 0)
 	 		
 			#do the forward computation with dropout
 	 		
 	 		trainactivations = [None]*self.num_layers
 	 		activations = [None]*self.num_layers
-			activations[0], trainactivations[0] = inlayer(inputs, inputs, 'layer0')
+			activations[0] = inlayer(inputs, is_training, reuse, 'layer0')
 			for l in range(1,self.num_layers):
-				activations[l], trainactivations[l] = hidlayer(activations[l-1], trainactivations[l-1], 'layer' + str(l))
+				activations[l] = hidlayer(activations[l-1], is_training, reuse, 'layer' + str(l))
 	 		
-			#compute the logits by selecting the activations at the layer that has last been added to the network, this is used for layer by layer initialisation
-			logits = tf.case([(tf.equal(initialisedlayers, tf.constant(l)), CallableTensor(activations[l])) for l in range(len(activations))], default=CallableTensor(activations[-1]),exclusive=True,name = 'layerSelector')
+	 		if self.layerwise_init:
+	 		
+	 			#variable that determines how many layers are initialised in the neural net
+				initialisedlayers = tf.get_variable('initialisedlayers', [], initializer=tf.constant_initializer(0), trainable=False, dtype=tf.int32)
+		
+				#operation to increment the number of layers
+				addLayerOp = initialisedlayers.assign_add(1).op
+	 		
+				#compute the logits by selecting the activations at the layer that has last been added to the network, this is used for layer by layer initialisation
+				logits = tf.case([(tf.equal(initialisedlayers, tf.constant(l)), CallableTensor(activations[l])) for l in range(len(activations))], default=CallableTensor(activations[-1]),exclusive=True,name = 'layerSelector')
 			
-			logits.set_shape([None, self.num_units])
-			if self.trainactivation is not None:
-				trainlogits = tf.case([(tf.equal(initialisedlayers, tf.constant(l)), CallableTensor(trainactivations[l])) for l in range(len(trainactivations))], default=CallableTensor(trainactivations[-1]),exclusive=True,name = 'layerSelector')
-				trainlogits.set_shape([None, self.num_units])
-			else: 
-				trainlogits = None
+				logits.set_shape([None, self.num_units])
+				
+			else:
+				logits = activations[-1]
+				
+			logits = outlayer(logits, is_training, reuse, 'layer' + str(self.num_layers))
 			
-			logits, trainlogits = outlayer(logits, trainlogits, 'layer' + str(self.num_layers))
 			
-	 		#operation to initialise the final layer
-	 		initLastLayerOp = tf.initialize_variables(tf.get_collection(tf.GraphKeys.VARIABLES, scope=tf.get_variable_scope().name + '/layer' + str(self.num_layers)))
+			if self.layerwise_init:
+		 		#operation to initialise the final layer
+		 		initLastLayerOp = tf.initialize_variables(tf.get_collection(tf.GraphKeys.VARIABLES, scope=tf.get_variable_scope().name + '/layer' + str(self.num_layers)))
+		 		
+		 		control_ops = {'add':addLayerOp, 'init':initLastLayerOp}
+	 		else:
+	 			control_ops = None
 		
 			#create a saver 
 			saver = tf.train.Saver()
 			
-		return logits, trainlogits if trainlogits is not None else logits, saver, {'add':addLayerOp, 'init':initLastLayerOp}
+		return logits, saver, control_ops
 
 ##Class for the decoding environment for a neural net graph
 class NnetDecoder(object):
@@ -114,7 +123,7 @@ class NnetDecoder(object):
 			self.inputs = tf.placeholder(tf.float32, shape = [None, input_dim], name = 'inputs')
 		
 			#create the decoding graph
-			logits, _, self.saver, _ = nnetGraph(self.inputs)
+			logits, _, self.saver, _ = nnetGraph(self.inputs, is_training = False, reuse = False)
 			
 			#compute the outputs
 			self.outputs = tf.nn.softmax(logits)
@@ -167,8 +176,11 @@ class NnetTrainer(object):
 			#input for the total number of frames that are used in the batch
 			self.num_frames = tf.placeholder(tf.float32, shape = [], name = 'num_frames')
 			
-			#compute the outputs of the nnetgraph
-			logits, trainlogits, self.modelsaver, self.control_ops = nnetGraph(self.inputs)
+			#compute the training outputs of the nnetgraph
+			trainlogits, self.modelsaver, self.control_ops = nnetGraph(self.inputs, is_training = True, reuse = False)
+			
+			#compute the validation output of the nnetgraph 
+			logits, _, _ = nnetGraph(self.inputs, is_training = False, reuse = True, scope = 'DNN')
 			
 			#get a list of trainable variables in the decoder graph
 			params = tf.trainable_variables()
@@ -218,8 +230,9 @@ class NnetTrainer(object):
 				#create an operation to update the batch loss
 				self.updateLoss = batch_loss.assign_add(loss).op
 				
-				#create an operation to update the gradients and the batch_loss
-				self.updateGradientsOp = tf.group(*([grads[p].assign_add(batchgrads[p]) for p in range(len(grads)) if batchgrads[p] is not None] + [self.updateLoss]), name='update_gradients')
+				#create an operation to update the gradients, the batch_loss and do all other update ops
+				update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+				self.updateGradientsOp = tf.group(*([grads[p].assign_add(batchgrads[p]) for p in range(len(grads)) if batchgrads[p] is not None] + [self.updateLoss] + update_ops), name='update_gradients')
 				
 				#create an operation to apply the gradients
 				meangrads = [tf.div(grad,self.num_frames, name=grad.op.name) for grad in grads]

@@ -36,15 +36,20 @@ class Nnet:
 		#compute the input_dimension of the spliced features
 		self.input_dim = input_dim * (2*int(self.conf['context_width']) + 1)
 			
+		if self.conf['batch_norm']=='True':
+			activation = nnetactivations.Batchnorm_wrapper(None)
+		else:
+			activation = None
+			
 		#create the activation function
 		if self.conf['nonlin'] == 'relu':
-			activation = tf.nn.relu
+			activation = nnetactivations.Tf_wrapper(activation, tf.nn.relu)
 		elif self.conf['nonlin'] == 'sigmoid':
-			activation = tf.nn.sigmoid
+			activation = nnetactivations.Tf_wrapper(activation, tf.nn.sigmoid)
 		elif self.conf['nonlin'] == 'tanh':
-			activation = tf.nn.tanh
+			activation = nnetactivations.Tf_wrapper(activation, tf.nn.tanh)
 		elif self.conf['nonlin'] == 'linear':
-			activation = lambda(x): x
+			activation = nnetactivations.Tf_wrapper(activation, lambda(x): x)
 		else:
 			raise Exception('unkown nonlinearity')
 			
@@ -52,12 +57,11 @@ class Nnet:
 			activation = nnetactivations.L2_wrapper(activation)
 			
 		if float(self.conf['dropout']) < 1:
-			trainactivation = nnetactivations.Dropout_wrapper(activation, float(self.conf['dropout']))
-		else:
-			trainactivation = None
+			activation = nnetactivations.Dropout_wrapper(activation, float(self.conf['dropout']))
+		
 			
 		#create a DNN
-		self.DNN = nnetgraph.DNN(num_labels, int(self.conf['num_hidden_layers']), int(self.conf['num_hidden_units']), activation, trainactivation)
+		self.DNN = nnetgraph.DNN(num_labels, int(self.conf['num_hidden_layers']), int(self.conf['num_hidden_units']), activation, int(self.conf['add_layer_period']) > 0)
 	
 	## Train the neural network
 	#
