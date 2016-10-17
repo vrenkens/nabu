@@ -59,10 +59,7 @@ class DNN(NnetGraph):
 		with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
 								
 		 	#input layer
-		 	inlayer = FFLayer(self.num_units, self.activation)
-		 	
-		 	#hidden layer
-		 	hidlayer = FFLayer(self.num_units, self.activation)
+		 	layer = FFLayer(self.num_units, self.activation)
 		 		
 	 		#output layer
 	 		outlayer = FFLayer(self.output_dim, nnetactivations.Tf_wrapper(None, lambda(x): x), 0)
@@ -71,9 +68,9 @@ class DNN(NnetGraph):
 	 		
 	 		trainactivations = [None]*self.num_layers
 	 		activations = [None]*self.num_layers
-			activations[0] = inlayer(inputs, is_training, reuse, 'layer0')
+			activations[0] = layer(inputs, is_training, reuse, 'layer0')
 			for l in range(1,self.num_layers):
-				activations[l] = hidlayer(activations[l-1], is_training, reuse, 'layer' + str(l))
+				activations[l] = layer(activations[l-1], is_training, reuse, 'layer' + str(l))
 	 		
 	 		if self.layerwise_init:
 	 		
@@ -123,7 +120,7 @@ class NnetDecoder(object):
 			self.inputs = tf.placeholder(tf.float32, shape = [None, input_dim], name = 'inputs')
 		
 			#create the decoding graph
-			logits, _, self.saver, _ = nnetGraph(self.inputs, is_training = False, reuse = False)
+			logits, self.saver, _ = nnetGraph(self.inputs, is_training = False, reuse = False)
 			
 			#compute the outputs
 			self.outputs = tf.nn.softmax(logits)
