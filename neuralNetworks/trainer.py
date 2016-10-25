@@ -163,6 +163,8 @@ class Trainer(object):
 
     def compute_loss(self, targets, logits): #pylint: disable=R0201
         '''
+        Compute the loss
+
         Creates the operation to compute the cross-enthropy loss for every input
         frame (if you want to have a different loss function, overwrite this
         method)

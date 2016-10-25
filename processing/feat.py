@@ -13,13 +13,9 @@ class FeatureComputer(object):
 
         Args:
             featureType: string containing the type of features, optione are:
-                - fbank
-                - mfcc
-                - ssc
+                fbank, mfcc and ssc.
             dynamic: the type of dynamic information added, options are:
-                - nodelta
-                - delta
-                - ddelta
+                nodelta, delta and ddelta.
             conf: the feature configuration
         '''
 

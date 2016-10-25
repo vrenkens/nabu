@@ -184,9 +184,10 @@ def mel2hz(mel):
 def get_filterbanks(nfilt=20, nfft=512, samplerate=16000, lowfreq=0,
                     highfreq=None):
     '''
-    Compute a Mel-filterbank. The filters are stored in the rows, the columns
-    correspond to fft bins. The filters are returned as an array of size
-    nfilt * (nfft/2 + 1)
+    Compute a Mel-filterbank.
+
+    The filters are stored in the rows, the columns correspond to fft bins.
+    The filters are returned as an array of size nfilt * (nfft/2 + 1)
 
     Args:
         nfilt: the number of filters in the filterbank, default 20.
@@ -223,8 +224,10 @@ def get_filterbanks(nfilt=20, nfft=512, samplerate=16000, lowfreq=0,
 
 def lifter(cepstra, liftering=22):
     '''
-    Apply a cepstral lifter the the matrix of cepstra. This has the effect of
-    increasing the magnitude of the high frequency DCT coeffs.
+    Apply a cepstral lifter the the matrix of cepstra.
+
+    This has the effect of increasing the magnitude of the high frequency DCT
+    coeffs.
 
     Args:
         cepstra: the matrix of mel-cepstra, will be numframes * numcep in size.

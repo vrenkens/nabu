@@ -38,9 +38,8 @@ class Batchdispenser(object):
 
         Returns:
             A pair containing:
-
-            -a batch of data
-            -the labels in one hot encoding
+                - a batch of data
+                - the labels in one hot encoding
         '''
 
         numutt = 0
@@ -75,7 +74,8 @@ class Batchdispenser(object):
         return (batch_data, batch_labels)
 
     def split(self):
-        '''split of the part that has allready been read by the batchdispenser,
+        '''split of the part that has allready been read by the batchdispenser
+
         this can be used to read a validation set and then split it of from the
         rest'''
 

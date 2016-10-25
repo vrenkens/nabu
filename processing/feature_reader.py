@@ -55,8 +55,9 @@ class FeatureReader(object):
 
     def next_id(self):
         '''
-        only gets the ID of the next utterance (also moves forward in the
-        reader)
+        only gets the ID of the next utterance
+
+        moves forward in the reader
 
         Returns:
             the ID of the uterance
@@ -66,8 +67,9 @@ class FeatureReader(object):
 
     def prev_id(self):
         '''
-        only gets the ID of the previous utterance (also moves backward in the
-        reader)
+        only gets the ID of the previous utterance
+
+        moves backward in the reader
 
         Returns:
             the ID of the uterance
@@ -82,8 +84,9 @@ class FeatureReader(object):
 
 def apply_cmvn(utt, stats):
     '''
-    apply mean and variance normalisation based on the previously computed
-    statistics
+    apply mean and variance normalisation
+
+    The mean and variance statistics are computed on previously seen data
 
     Args:
         utt: the utterance feature numpy matrix
@@ -111,8 +114,8 @@ def splice(utt, context_width):
 
     Args:
         utt: numpy matrix containing the utterance features to be spliced
-        context_width: how many frames to the left and right should be
-            concatenated
+        context_width: how many frames to the left and right should
+            be concatenated
 
     Returns:
         a numpy array containing the spliced features

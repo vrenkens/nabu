@@ -8,6 +8,8 @@ class Classifier(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, output_dim):
+        '''classifier constructor'''
+
         self.output_dim = output_dim
 
     @abstractmethod

@@ -118,8 +118,9 @@ def deframesig(frames, siglen, frame_len, frame_step,
 
 def magspec(frames, nfft):
     '''
-    Compute the magnitude spectrum of each frame in frames. If frames is an NxD
-    matrix, output will be NxNFFT.
+    Compute the magnitude spectrum of each frame in frames.
+
+    If frames is an NxD matrix, output will be NxNFFT.
 
     Args:
         frames: the array of frames. Each row is a frame.
@@ -136,8 +137,9 @@ def magspec(frames, nfft):
 
 def powspec(frames, nfft):
     '''
-    Compute the power spectrum of each frame in frames. If frames is an NxD
-    matrix, output will be NxNFFT.
+    Compute the power spectrum of each frame in frames.
+
+    If frames is an NxD matrix, output will be NxNFFT.
 
     Args:
         frames: the array of frames. Each row is a frame.
@@ -152,8 +154,9 @@ def powspec(frames, nfft):
 
 def logpowspec(frames, nfft, norm=1):
     '''
-    Compute the log power spectrum of each frame in frames. If frames is an NxD
-    matrix, output will be NxNFFT.
+    Compute the log power spectrum of each frame in frames.
+
+    If frames is an NxD matrix, output will be NxNFFT.
 
     Args:
         frames: the array of frames. Each row is a frame.

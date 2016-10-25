@@ -12,21 +12,16 @@ import ark
 
 def prepare_data(datadir, featdir, conf, feat_type, dynamic):
     '''
-    This function will compute the features of all segments and save them on
-    disk
+    compute the features of all segments and save them on disk
 
     Args:
         datadir: directory where the kaldi data prep has been done
         featdir: directory where the features will be put
         conf: feature configuration
-        feat_type: type of features to be computed, options are:
-            - mfcc
-            - fbank
-            - ssc
+        featureType: string containing the type of features, optione are:
+            fbank, mfcc and ssc.
         dynamic: the type of dynamic information added, options are:
-            - nodelta
-            - delta
-            - ddelta
+            nodelta, delta and ddelta.
     '''
 
     if not os.path.exists(featdir):
