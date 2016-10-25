@@ -1,5 +1,6 @@
 '''@file batchdispenser.py
-contains the functionality for read features and batches of features for neural network training and testing'''
+contains the functionality for read features and batches of features for neural
+network training and testing'''
 
 import numpy as np
 import readfiles
@@ -64,15 +65,19 @@ class Batchdispenser(object):
                 print 'WARNING no alignment for %s' % utt_id
 
         #reahape the batch data
-        batch_data = batch_data.reshape(batch_data.size/utt_mat.shape[1], utt_mat.shape[1])
+        batch_data = batch_data.reshape(batch_data.size/utt_mat.shape[1],
+                                        utt_mat.shape[1])
 
         #put labels in one hot encoding
-        batch_labels = (np.arange(self.num_labels) == batch_labels[:, np.newaxis]).astype(np.float32)
+        batch_labels = (np.arange(self.num_labels)
+                        == batch_labels[:, np.newaxis]).astype(np.float32)
 
         return (batch_data, batch_labels)
 
     def split(self):
-        '''split of the part that has allready been read by the batchdispenser, this can be used to read a validation set and then split it of from the rest'''
+        '''split of the part that has allready been read by the batchdispenser,
+        this can be used to read a validation set and then split it of from the
+        rest'''
 
         self.feature_reader.split()
 
@@ -112,7 +117,11 @@ class Batchdispenser(object):
             a numpy array containing the label prior probabilities
         '''
 
-        prior = np.array([(np.arange(self.num_labels) == alignment[:, np.newaxis]).astype(np.float32).sum(0) for alignment in self.alignments.values()]).sum(0)
+        prior = np.array([
+            (np.arange(self.num_labels)
+             == alignment[:, np.newaxis]).astype(np.float32).sum(0)
+            for alignment in self.alignments.values()]).sum(0)
+
         return prior/prior.sum()
 
     @property

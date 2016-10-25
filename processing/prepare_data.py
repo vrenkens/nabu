@@ -12,14 +12,21 @@ import ark
 
 def prepare_data(datadir, featdir, conf, feat_type, dynamic):
     '''
-    This function will compute the features of all segments and save them on disk
+    This function will compute the features of all segments and save them on
+    disk
 
     Args:
         datadir: directory where the kaldi data prep has been done
         featdir: directory where the features will be put
         conf: feature configuration
-        feat_type: type of features to be computed, options are mfcc, fbank and ssc
-        dynamic: the type of dynamic information added, options are nodelta, delta and ddelta
+        feat_type: type of features to be computed, options are:
+            - mfcc
+            - fbank
+            - ssc
+        dynamic: the type of dynamic information added, options are:
+            - nodelta
+            - delta
+            - ddelta
     '''
 
     if not os.path.exists(featdir):
@@ -30,7 +37,8 @@ def prepare_data(datadir, featdir, conf, feat_type, dynamic):
         segments = readfiles.read_segments(datadir + '/segments')
         found_segments = True
     else:
-        print 'WARNING: no segments file found, assuming each wav file is seperate utterance'
+        print '''WARNING: no segments file found, assuming each wav file is
+            seperate utterance'''
         found_segments = False
 
     #create ark writer
@@ -51,7 +59,11 @@ def prepare_data(datadir, featdir, conf, feat_type, dynamic):
     for utt in wavfiles:
         if found_segments:
             for seg in segments[utt]:
-                features = comp(rate_utt[utt][1][int(seg[1]*rate_utt[utt][0]):int(seg[2]*rate_utt[utt][0])], rate_utt[utt][0])
+                features = comp(
+                    rate_utt[utt][1][int(seg[1]*rate_utt[utt][0]):
+                                     int(seg[2]*rate_utt[utt][0])],
+                    rate_utt[utt][0])
+
                 writer.write_next_utt(featdir + '/feats.ark', seg[0], features)
         else:
             features = comp(rate_utt[utt][1], rate_utt[utt][0])
@@ -112,7 +124,7 @@ def shuffle_examples(featdir):
     shuffle the utterances and put them in feats_shuffled.scp
 
     Args:
-        featdir the directory containing the features in feats.scp
+        featdir: the directory containing the features in feats.scp
     '''
 
     #read feats.scp
@@ -131,11 +143,13 @@ def read_wav(wavfile):
     read a wav file formatted by kaldi
 
     Args:
-        wavfile a pair containing eiher the filaname or the command to read the wavfile and a boolean that determines if its a name or a command
+        wavfile: a pair containing eiher the filaname or the command to read the
+            wavfile and a boolean that determines if its a name or a command
     '''
 
     if wavfile[1]:
-        #read the audio file and temporarily copy it to tmp (and duplicate, I don't know how to avoid this)
+        #read the audio file and temporarily copy it to tmp (and duplicate, I
+        #don't know how to avoid this)
         os.system(wavfile[0] + ' tee tmp.wav > duplicate.wav')
         #read the created wav file
         (rate, utterance) = wav.read('tmp.wav')

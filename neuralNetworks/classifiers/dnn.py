@@ -9,7 +9,8 @@ from activation import TfActivation
 class DNN(Classifier):
     '''This class is a graph for feedforward fully connected neural nets.'''
 
-    def __init__(self, output_dim, num_layers, num_units, activation, layerwise_init=True):
+    def __init__(self, output_dim, num_layers, num_units, activation,
+                 layerwise_init=True):
         '''
         DNN constructor
 
@@ -18,7 +19,9 @@ class DNN(Classifier):
             num_layers: number of hidden layers
             num_units: number of hidden units
             activation: the activation function
-            layerwise_init: if True the layers will be added one by one, otherwise all layers will be added to the network in the beginning
+            layerwise_init: if True the layers will be added one by one,
+                otherwise all layers will be added to the network in the
+                beginning
         '''
 
         #super constructor
@@ -55,37 +58,56 @@ class DNN(Classifier):
             layer = FFLayer(self.num_units, self.activation)
 
             #output layer
-            outlayer = FFLayer(self.output_dim, TfActivation(None, lambda(x): x), 0)
+            outlayer = FFLayer(self.output_dim,
+                               TfActivation(None, lambda(x): x), 0)
 
             #do the forward computation with dropout
 
             activations = [None]*self.num_layers
             activations[0] = layer(inputs, is_training, reuse, 'layer0')
             for l in range(1, self.num_layers):
-                activations[l] = layer(activations[l-1], is_training, reuse, 'layer' + str(l))
+                activations[l] = layer(activations[l-1], is_training, reuse,
+                                       'layer' + str(l))
 
             if self.layerwise_init:
 
-                #variable that determines how many layers are initialised in the neural net
-                initialisedlayers = tf.get_variable('initialisedlayers', [], initializer=tf.constant_initializer(0), trainable=False, dtype=tf.int32)
+                #variable that determines how many layers are initialised
+                #in the neural net
+                initialisedlayers = tf.get_variable(
+                    'initialisedlayers', [],
+                    initializer=tf.constant_initializer(0),
+                    trainable=False,
+                    dtype=tf.int32)
 
                 #operation to increment the number of layers
                 add_layer_op = initialisedlayers.assign(initialisedlayers+1).op
 
-                #compute the logits by selecting the activations at the layer that has last been added to the network, this is used for layer by layer initialisation
-                logits = tf.case([(tf.equal(initialisedlayers, tf.constant(l)), CallableTensor(activations[l])) for l in range(len(activations))], default=CallableTensor(activations[-1]), exclusive=True, name='layerSelector')
+                #compute the logits by selecting the activations at the layer
+                #that has last been added to the network, this is used for layer
+                #by layer initialisation
+                logits = tf.case(
+                    [(tf.equal(initialisedlayers, tf.constant(l)),
+                      CallableTensor(activations[l]))
+                     for l in range(len(activations))],
+                    default=CallableTensor(activations[-1]),
+                    exclusive=True, name='layerSelector')
 
                 logits.set_shape([None, self.num_units])
 
             else:
                 logits = activations[-1]
 
-            logits = outlayer(logits, is_training, reuse, 'layer' + str(self.num_layers))
+            logits = outlayer(logits, is_training, reuse,
+                              'layer' + str(self.num_layers))
 
 
             if self.layerwise_init:
                 #operation to initialise the final layer
-                init_last_layer_op = tf.initialize_variables(tf.get_collection(tf.GraphKeys.VARIABLES, scope=tf.get_variable_scope().name + '/layer' + str(self.num_layers)))
+                init_last_layer_op = tf.initialize_variables(
+                    tf.get_collection(
+                        tf.GraphKeys.VARIABLES,
+                        scope=(tf.get_variable_scope().name + '/layer'
+                               + str(self.num_layers))))
 
                 control_ops = {'add':add_layer_op, 'init':init_last_layer_op}
             else:

@@ -22,7 +22,8 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-This file includes routines for basic signal processing including framing and computing power spectra.
+This file includes routines for basic signal processing including framing and
+computing power spectra.
 Author: James Lyons 2012
 '''
 
@@ -36,8 +37,10 @@ def framesig(sig, frame_len, frame_step, winfunc=lambda x: numpy.ones((x, ))):
     Args:
         sig: the audio signal to frame.
         frame_len: length of each frame measured in samples.
-        frame_step: number of samples after the start of the previous frame that the next frame should begin.
-        winfunc: the analysis window to apply to each frame. By default no window is applied.
+        frame_step: number of samples after the start of the previous frame that
+            the next frame should begin.
+        winfunc: the analysis window to apply to each frame. By default no
+            window is applied.
 
     Returns:
         an array of frames. Size is NUMFRAMES by frame_len.
@@ -56,22 +59,28 @@ def framesig(sig, frame_len, frame_step, winfunc=lambda x: numpy.ones((x, ))):
     zeros = numpy.zeros((padlen - slen,))
     padsignal = numpy.concatenate((sig, zeros))
 
-    indices = numpy.tile(numpy.arange(0, frame_len), (numframes, 1)) + numpy.tile(numpy.arange(0, numframes*frame_step, frame_step), (frame_len, 1)).T
+    indices = (numpy.tile(numpy.arange(0, frame_len), (numframes, 1))
+               + numpy.tile(numpy.arange(0, numframes*frame_step, frame_step),
+                            (frame_len, 1)).T)
     indices = numpy.array(indices, dtype=numpy.int32)
     frames = padsignal[indices]
     win = numpy.tile(winfunc(frame_len), (numframes, 1))
     return frames*win
 
-def deframesig(frames, siglen, frame_len, frame_step, winfunc=lambda x: numpy.ones((x, ))):
+def deframesig(frames, siglen, frame_len, frame_step,
+               winfunc=lambda x: numpy.ones((x, ))):
     '''
     Does overlap-add procedure to undo the action of framesig.
 
     Args:
         frames the: array of frames.
-        siglen the: length of the desired signal, use 0 if unknown. Output will be truncated to siglen samples.
+        siglen the: length of the desired signal, use 0 if unknown. Output will
+            be truncated to siglen samples.
         frame_len: length of each frame measured in samples.
-        frame_step: number of samples after the start of the previous frame that the next frame should begin.
-        winfunc: the analysis window to apply to each frame. By default no window is applied.
+        frame_step: number of samples after the start of the previous frame that
+            the next frame should begin.
+        winfunc: the analysis window to apply to each frame. By default no
+            window is applied.
 
     Returns:
         a 1-D signal.
@@ -80,9 +89,13 @@ def deframesig(frames, siglen, frame_len, frame_step, winfunc=lambda x: numpy.on
     frame_len = round(frame_len)
     frame_step = round(frame_step)
     numframes = numpy.shape(frames)[0]
-    assert numpy.shape(frames)[1] == frame_len, '"frames" matrix is wrong size, 2nd dim is not equal to frame_len'
+    assert numpy.shape(frames)[1] == frame_len, '''"frames" matrix is wrong
+        size, 2nd dim is not equal to frame_len'''
 
-    indices = numpy.tile(numpy.arange(0, frame_len), (numframes, 1)) + numpy.tile(numpy.arange(0, numframes*frame_step, frame_step), (frame_len, 1)).T
+    indices = (numpy.tile(numpy.arange(0, frame_len), (numframes, 1))
+               + numpy.tile(numpy.arange(0, numframes*frame_step, frame_step),
+                            (frame_len, 1)).T)
+
     indices = numpy.array(indices, dtype=numpy.int32)
     padlen = (numframes-1)*frame_step + frame_len
 
@@ -94,7 +107,10 @@ def deframesig(frames, siglen, frame_len, frame_step, winfunc=lambda x: numpy.on
     win = winfunc(frame_len)
 
     for i in range(0, numframes):
-        window_correction[indices[i, :]] = window_correction[indices[i, :]] + win + 1e-15 #add a little bit so it is never zero
+        #add a little bit so it is never zero
+        window_correction[indices[i, :]] = (window_correction[indices[i, :]]
+                                            + win + 1e-15)
+
         rec_signal[indices[i, :]] = rec_signal[indices[i, :]] + frames[i, :]
 
     rec_signal = rec_signal/window_correction
@@ -102,14 +118,17 @@ def deframesig(frames, siglen, frame_len, frame_step, winfunc=lambda x: numpy.on
 
 def magspec(frames, nfft):
     '''
-    Compute the magnitude spectrum of each frame in frames. If frames is an NxD matrix, output will be NxNFFT.
+    Compute the magnitude spectrum of each frame in frames. If frames is an NxD
+    matrix, output will be NxNFFT.
 
     Args:
         frames: the array of frames. Each row is a frame.
-        nfft: the FFT length to use. If NFFT > frame_len, the frames are zero-padded.
+        nfft: the FFT length to use. If NFFT > frame_len, the frames are
+            zero-padded.
 
     Returns:
-        If frames is an NxD matrix, output will be NxNFFT. Each row will be the magnitude spectrum of the corresponding frame.
+        If frames is an NxD matrix, output will be NxNFFT. Each row will be the
+        magnitude spectrum of the corresponding frame.
     '''
 
     complex_spec = numpy.fft.rfft(frames, nfft)
@@ -117,28 +136,35 @@ def magspec(frames, nfft):
 
 def powspec(frames, nfft):
     '''
-    Compute the power spectrum of each frame in frames. If frames is an NxD matrix, output will be NxNFFT.
+    Compute the power spectrum of each frame in frames. If frames is an NxD
+    matrix, output will be NxNFFT.
 
     Args:
         frames: the array of frames. Each row is a frame.
-        nfft: the FFT length to use. If NFFT > frame_len, the frames are zero-padded.
+        nfft: the FFT length to use. If NFFT > frame_len, the frames are
+            zero-padded.
 
     Returns:
-        If frames is an NxD matrix, output will be NxNFFT. Each row will be the power spectrum of the corresponding frame.
+        If frames is an NxD matrix, output will be NxNFFT. Each row will be the
+        power spectrum of the corresponding frame.
     '''
     return 1.0/nfft * numpy.square(magspec(frames, nfft))
 
 def logpowspec(frames, nfft, norm=1):
     '''
-    Compute the log power spectrum of each frame in frames. If frames is an NxD matrix, output will be NxNFFT.
+    Compute the log power spectrum of each frame in frames. If frames is an NxD
+    matrix, output will be NxNFFT.
 
     Args:
         frames: the array of frames. Each row is a frame.
-        nfft: the FFT length to use. If NFFT > frame_len, the frames are zero-padded.
-        norm: If norm=1, the log power spectrum is normalised so that the max value (across all frames) is 1.
+        nfft: the FFT length to use. If NFFT > frame_len, the frames are
+            zero-padded.
+        norm: If norm=1, the log power spectrum is normalised so that the max
+            value (across all frames) is 1.
 
     Returns:
-        If frames is an NxD matrix, output will be NxNFFT. Each row will be the log power spectrum of the corresponding frame.
+        If frames is an NxD matrix, output will be NxNFFT. Each row will be the
+        log power spectrum of the corresponding frame.
     '''
     ps = powspec(frames, nfft)
     ps[ps <= 1e-30] = 1e-30

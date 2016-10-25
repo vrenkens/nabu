@@ -28,7 +28,9 @@ class Nnet(object):
         self.conf = dict(conf.items('nnet'))
 
         #define location to save neural nets
-        self.conf['savedir'] = conf.get('directories', 'expdir') + '/' + self.conf['name']
+        self.conf['savedir'] = (conf.get('directories', 'expdir')
+                                + '/' + self.conf['name'])
+
         if not os.path.isdir(self.conf['savedir']):
             os.mkdir(self.conf['savedir'])
         if not os.path.isdir(self.conf['savedir'] + '/training'):
@@ -44,13 +46,21 @@ class Nnet(object):
 
         #create the activation function
         if self.conf['nonlin'] == 'relu':
-            activation = classifiers.activation.TfActivation(activation, tf.nn.relu) #pylint: disable=R0204
+            activation = classifiers.activation.TfActivation(activation,
+                                                             tf.nn.relu)
+
         elif self.conf['nonlin'] == 'sigmoid':
-            activation = classifiers.activation.TfActivation(activation, tf.nn.sigmoid)
+            activation = classifiers.activation.TfActivation(activation,
+                                                             tf.nn.sigmoid)
+
         elif self.conf['nonlin'] == 'tanh':
-            activation = classifiers.activation.TfActivation(activation, tf.nn.tanh)
+            activation = classifiers.activation.TfActivation(activation,
+                                                             tf.nn.tanh)
+
         elif self.conf['nonlin'] == 'linear':
-            activation = classifiers.activation.TfActivation(activation, lambda(x): x)
+            activation = classifiers.activation.TfActivation(activation,
+                                                             lambda(x): x)
+
         else:
             raise Exception('unkown nonlinearity')
 
@@ -58,11 +68,14 @@ class Nnet(object):
             activation = classifiers.activation.L2Norm(activation)
 
         if float(self.conf['dropout']) < 1:
-            activation = classifiers.activation.Dropout(activation, float(self.conf['dropout']))
-
+            activation = classifiers.activation.Dropout(
+                activation, float(self.conf['dropout']))
 
         #create a DNN
-        self.dnn = DNN(num_labels, int(self.conf['num_hidden_layers']), int(self.conf['num_hidden_units']), activation, int(self.conf['add_layer_period']) > 0)
+        self.dnn = DNN(
+            num_labels, int(self.conf['num_hidden_layers']),
+            int(self.conf['num_hidden_units']), activation,
+            int(self.conf['add_layer_period']) > 0)
 
     def train(self, dispenser):
         '''
@@ -73,20 +86,30 @@ class Nnet(object):
         '''
 
         #get the validation set
-        valid_batches = [dispenser.get_batch() for _ in range(int(self.conf['valid_batches']))]
+        valid_batches = [dispenser.get_batch()
+                         for _ in range(int(self.conf['valid_batches']))]
+
         dispenser.split()
         if len(valid_batches) > 0:
-            val_data = np.concatenate([val_batch[0] for val_batch in valid_batches])
-            val_labels = np.concatenate([val_batch[1] for val_batch in valid_batches])
+            val_data = np.concatenate([val_batch[0]
+                                       for val_batch in valid_batches])
+
+            val_labels = np.concatenate([val_batch[1]
+                                         for val_batch in valid_batches])
+
         else:
             val_data = None
             val_labels = None
 
         #compute the total number of steps
-        num_steps = int(dispenser.num_utt/int(self.conf['batch_size'])*int(self.conf['num_epochs']))
+        num_steps = int(dispenser.num_utt
+                        /int(self.conf['batch_size'])
+                        *int(self.conf['num_epochs']))
 
         #set the step to the saving point that is closest to the starting step
-        step = int(self.conf['starting_step']) - int(self.conf['starting_step'])%int(self.conf['check_freq'])
+        step = (int(self.conf['starting_step'])
+                - int(self.conf['starting_step'])
+                % int(self.conf['check_freq']))
 
         #go to the point in the database where the training was at checkpoint
         for _ in range(step):
@@ -95,7 +118,10 @@ class Nnet(object):
         #create a visualisation of the DNN
 
         #put the DNN in a training environment
-        trainer = Trainer(self.dnn, self.input_dim, float(self.conf['initial_learning_rate']), float(self.conf['learning_rate_decay']), num_steps, int(self.conf['numframes_per_batch']))
+        trainer = Trainer(
+            self.dnn, self.input_dim, float(self.conf['initial_learning_rate']),
+            float(self.conf['learning_rate_decay']),
+            num_steps, int(self.conf['numframes_per_batch']))
 
         #start the visualization if it is requested
         if self.conf['visualise'] == 'True':
@@ -113,14 +139,16 @@ class Nnet(object):
 
             #load the neural net if the starting step is not 0
             if step > 0:
-                trainer.restore_trainer(self.conf['savedir'] + '/training/step' + str(step))
+                trainer.restore_trainer(self.conf['savedir']
+                                        + '/training/step' + str(step))
 
             #do a validation step
             if val_data is not None:
                 validation_loss = trainer.evaluate(val_data, val_labels)
                 print 'validation loss at step %d: %f' % (step, validation_loss)
                 validation_step = step
-                trainer.save_trainer(self.conf['savedir'] + '/training/validated')
+                trainer.save_trainer(self.conf['savedir']
+                                     + '/training/validated')
                 num_retries = 0
 
             #start the training iteration
@@ -139,12 +167,15 @@ class Nnet(object):
                 step += 1
 
                 #validate the model if required
-                if step%int(self.conf['valid_frequency']) == 0 and val_data is not None:
+                if (step%int(self.conf['valid_frequency']) == 0
+                        and val_data is not None):
+
                     current_loss = trainer.evaluate(val_data, val_labels)
                     print 'validation loss at step %d: %f' %(step, current_loss)
 
                     if self.conf['valid_adapt'] == 'True':
-                        #if the loss increased, half the learning rate and go back to the previous validation step
+                        #if the loss increased, half the learning rate and go
+                        #back to the previous validation step
                         if current_loss > validation_loss:
 
                             #go back in the dispenser
@@ -152,15 +183,19 @@ class Nnet(object):
                                 dispenser.return_batch()
 
                             #load the validated model
-                            trainer.restore_trainer(self.conf['savedir'] + '/training/validated')
+                            trainer.restore_trainer(self.conf['savedir']
+                                                    + '/training/validated')
                             trainer.halve_learning_rate()
                             step = validation_step
 
                             if num_retries == int(self.conf['valid_retries']):
-                                print 'the validation loss is worse, terminating training'
+                                print '''the validation loss is worse,
+                                         terminating training'''
                                 break
 
-                            print 'the validation loss is worse, returning to the previously validated model with halved learning rate'
+                            print '''the validation loss is worse, returning to
+                                     the previously validated model with halved
+                                     learning rate'''
 
                             num_retries += 1
 
@@ -170,26 +205,35 @@ class Nnet(object):
                             validation_loss = current_loss
                             validation_step = step
                             num_retries = 0
-                            trainer.save_trainer(self.conf['savedir'] + '/training/validated')
+                            trainer.save_trainer(self.conf['savedir']
+                                                 + '/training/validated')
 
                 #add a layer if its required
                 if int(self.conf['add_layer_period']) > 0:
-                    if step%int(self.conf['add_layer_period']) == 0 and step/int(self.conf['add_layer_period']) < int(self.conf['num_hidden_layers']):
+                    if (step%int(self.conf['add_layer_period']) == 0
+                            and (step/int(self.conf['add_layer_period'])
+                                 < int(self.conf['num_hidden_layers']))):
 
-                        print 'adding layer, the model now holds %d/%d layers' %(step/int(self.conf['add_layer_period']) + 1, int(self.conf['num_hidden_layers']))
+                        print 'adding layer, the model now holds %d/%d layers'%(
+                            step/int(self.conf['add_layer_period']) + 1,
+                            int(self.conf['num_hidden_layers']))
+
                         trainer.control_ops['add'].run()
                         trainer.control_ops['init'].run()
 
                         #do a validation step
                         validation_loss = trainer.evaluate(val_data, val_labels)
-                        print 'validation loss at step %d: %f' %(step, validation_loss)
+                        print 'validation loss at step %d: %f' % (
+                            step, validation_loss)
                         validation_step = step
-                        trainer.save_trainer(self.conf['savedir'] + '/training/validated')
+                        trainer.save_trainer(self.conf['savedir']
+                                             + '/training/validated')
                         num_retries = 0
 
                 #save the model if at checkpoint
                 if step%int(self.conf['check_freq']) == 0:
-                    trainer.save_trainer(self.conf['savedir'] + '/training/step' + str(step))
+                    trainer.save_trainer(self.conf['savedir'] + '/training/step'
+                                         + str(step))
 
 
             #compute the state prior and write it to the savedir

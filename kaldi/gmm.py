@@ -28,10 +28,20 @@ class GMM(object):
         os.chdir(self.conf.get('directories', 'kaldi_egs'))
 
         #train the GMM
-        os.system('%s --cmd %s --config %s/config/%s %s %s %s %s %s' % (self.trainscript, self.conf.get('general', 'cmd'), current_dir, self.conf_file, self.trainops, self.conf.get('directories', 'train_features') + '/' + self.conf.get('gmm-features', 'name'), self.conf.get('directories', 'language'), self.parent_gmm_alignments, self.conf.get('directories', 'expdir') + '/' + self.name))
+        os.system('%s --cmd %s --config %s/config/%s %s %s %s %s %s' %(
+            self.trainscript, self.conf.get('general', 'cmd'), current_dir,
+            self.conf_file, self.trainops,
+            self.conf.get('directories', 'train_features')
+            + '/' + self.conf.get('gmm-features', 'name'),
+            self.conf.get('directories', 'language'),
+            self.parent_gmm_alignments,
+            self.conf.get('directories', 'expdir') + '/' + self.name))
 
         #build the decoding graphs
-        os.system('utils/mkgraph.sh %s %s %s %s/graph' % (self.graphopts, self.conf.get('directories', 'language_test'), self.conf.get('directories', 'expdir') + '/' + self.name, self.conf.get('directories', 'expdir') + '/' + self.name))
+        os.system('utils/mkgraph.sh %s %s %s %s/graph' % (
+            self.graphopts, self.conf.get('directories', 'language_test'),
+            self.conf.get('directories', 'expdir') + '/' + self.name,
+            self.conf.get('directories', 'expdir') + '/' + self.name))
 
         #go back to working dir
         os.chdir(current_dir)
@@ -46,11 +56,24 @@ class GMM(object):
         os.chdir(self.conf.get('directories', 'kaldi_egs'))
 
         #do the alignment
-        os.system('steps/align_si.sh --nj %s --cmd %s --config %s/config/ali_%s %s %s %s %s/ali' % (self.conf.get('general', 'num_jobs'), self.conf.get('general', 'cmd'), current_dir, self.conf_file, self.conf.get('directories', 'train_features') + '/' + self.conf.get('gmm-features', 'name'), self.conf.get('directories', 'language'), self.conf.get('directories', 'expdir') + '/' + self.name, self.conf.get('directories', 'expdir') + '/' + self.name))
+        os.system('''steps/align_si.sh --nj %s --cmd %s
+            --config %s/config/ali_%s %s %s %s %s/ali''' % (
+                self.conf.get('general', 'num_jobs'),
+                self.conf.get('general', 'cmd'), current_dir, self.conf_file,
+                self.conf.get('directories', 'train_features') + '/'
+                + self.conf.get('gmm-features', 'name'),
+                self.conf.get('directories', 'language'),
+                self.conf.get('directories', 'expdir') + '/' + self.name,
+                self.conf.get('directories', 'expdir') + '/' + self.name))
 
         #convert alignments (transition-ids) to pdf-ids
         for i in range(int(self.conf.get('general', 'num_jobs'))):
-            os.system('gunzip -c %s/ali/ali.%d.gz | ali-to-pdf %s/ali/final.mdl ark:- ark,t:- | gzip >  %s/ali/pdf.%d.gz' % (self.conf.get('directories', 'expdir') + '/' + self.name, i+1, self.conf.get('directories', 'expdir') + '/' + self.name, self.conf.get('directories', 'expdir') + '/' + self.name, i+1))
+            os.system('''gunzip -c %s/ali/ali.%d.gz | ali-to-pdf
+                %s/ali/final.mdl ark:- ark,t:- | gzip >  %s/ali/pdf.%d.gz''' % (
+                    self.conf.get('directories', 'expdir') + '/' + self.name,
+                    i+1, self.conf.get('directories', 'expdir') + '/'
+                    + self.name, self.conf.get('directories', 'expdir')
+                    + '/' + self.name, i+1))
 
         #go back to working dir
         os.chdir(current_dir)
@@ -64,7 +87,15 @@ class GMM(object):
         #go to kaldi egs dir
         os.chdir(self.conf.get('directories', 'kaldi_egs'))
 
-        os.system('steps/decode.sh --cmd %s --nj %s %s/graph %s %s/decode | tee %s/decode.log || exit 1;' % (self.conf.get('general', 'cmd'), self.conf.get('general', 'num_jobs'), self.conf.get('directories', 'expdir') + '/' + self.name, self.conf.get('directories', 'test_features') + '/' + self.conf.get('gmm-features', 'name'), self.conf.get('directories', 'expdir') + '/' + self.name, self.conf.get('directories', 'expdir') + '/'  + self.name))
+        os.system('''steps/decode.sh --cmd %s --nj %s %s/graph %s %s/decode
+        | tee %s/decode.log || exit 1;''' % (
+            self.conf.get('general', 'cmd'),
+            self.conf.get('general', 'num_jobs'),
+            self.conf.get('directories', 'expdir') + '/' + self.name,
+            self.conf.get('directories', 'test_features') + '/'
+            + self.conf.get('gmm-features', 'name'),
+            self.conf.get('directories', 'expdir') + '/' + self.name,
+            self.conf.get('directories', 'expdir') + '/'  + self.name))
 
         #go back to working dir
         os.chdir(current_dir)
@@ -143,11 +174,13 @@ class TriGmm(GMM):
 
     @property
     def parent_gmm_alignments(self):
-        return self.conf.get('directories', 'expdir') + '/' + self.conf.get('mono_gmm', 'name') + '/ali'
+        return (self.conf.get('directories', 'expdir') + '/'
+                + self.conf.get('mono_gmm', 'name') + '/ali')
 
     @property
     def trainops(self):
-        return self.conf.get('tri_gmm', 'num_leaves') + ' ' + self.conf.get('tri_gmm', 'tot_gauss')
+        return (self.conf.get('tri_gmm', 'num_leaves') + ' '
+                + self.conf.get('tri_gmm', 'tot_gauss'))
 
     @property
     def graphopts(self):
@@ -170,11 +203,15 @@ class LdaGmm(GMM):
 
     @property
     def parent_gmm_alignments(self):
-        return self.conf.get('directories', 'expdir') + '/' + self.conf.get('tri_gmm', 'name') + '/ali'
+        return (self.conf.get('directories', 'expdir') + '/'
+                + self.conf.get('tri_gmm', 'name') + '/ali')
 
     @property
     def trainops(self):
-        return '--context-opts "--context_width=%s"'%self.conf.get('lda_mllt', 'context_width') + ' ' +  self.conf.get('lda_mllt', 'num_leaves') + ' ' + self.conf.get('lda_mllt', 'tot_gauss')
+        return '--context-opts "--context_width=%s"'% (
+            self.conf.get('lda_mllt', 'context_width') + ' '
+            +  self.conf.get('lda_mllt', 'num_leaves') + ' '
+            + self.conf.get('lda_mllt', 'tot_gauss'))
 
     @property
     def graphopts(self):

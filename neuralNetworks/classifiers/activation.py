@@ -14,7 +14,8 @@ class Activation(object):
         Activation constructor
 
         Args:
-            activation: the activation function being wrapped, if None, no activation will be wrapped
+            activation: the activation function being wrapped,
+                if None, no activation will be wrapped
         '''
 
         self.activation = activation
@@ -60,7 +61,8 @@ class Activation(object):
         raise NotImplementedError("Abstract method")
 
 class TfActivation(Activation):
-    '''a wrapper for an activation function that will add a tf activation function (e.g. relu, sigmoid, ...)'''
+    '''a wrapper for an activation function that will add a tf activation
+        function (e.g. relu, sigmoid, ...)'''
 
     def __init__(self, activation, tfActivation):
         '''
@@ -113,8 +115,10 @@ class L2Norm(Activation):
             #divide the input by the mean squared value
             normalized = activations/sig
 
-            #if the mean squared value is larger then one select the normalized value otherwise select the unnormalised one
-            return tf.select(tf.greater(tf.reshape(sig, [-1]), 1), normalized, activations)
+            #if the mean squared value is larger then one select the normalized
+            #value otherwise select the unnormalised one
+            return tf.select(tf.greater(tf.reshape(sig, [-1]), 1),
+                             normalized, activations)
 
 class Dropout(Activation):
     '''a wrapper for an activation function that will add dropout'''
@@ -167,4 +171,6 @@ class Batchnorm(Activation): # pylint: disable=too-few-public-methods
             the output to the activation function
         '''
 
-        return tf.contrib.layers.batch_norm(activations, is_training=is_training, reuse=reuse, scope='batch_norm')
+        return tf.contrib.layers.batch_norm(activations,
+                                            is_training=is_training,
+                                            reuse=reuse, scope='batch_norm')

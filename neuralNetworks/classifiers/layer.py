@@ -13,7 +13,8 @@ class FFLayer(object):
         Args:
             output_dim: output dimension of the layer
             activation: the activation function
-            weights_std: the standart deviation of the weights by default the inverse square root of the input dimension is taken
+            weights_std: the standart deviation of the weights by default the
+                inverse square root of the input dimension is taken
         '''
 
         #save the parameters
@@ -37,9 +38,17 @@ class FFLayer(object):
 
         with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
             with tf.variable_scope('parameters', reuse=reuse):
-                stddev = self.weights_std if self.weights_std is not None else 1/int(inputs.get_shape()[1])**0.5
-                weights = tf.get_variable('weights', [inputs.get_shape()[1], self.output_dim], initializer=tf.random_normal_initializer(stddev=stddev))
-                biases = tf.get_variable('biases', [self.output_dim], initializer=tf.constant_initializer(0))
+
+                stddev = (self.weights_std if self.weights_std is not None
+                          else 1/int(inputs.get_shape()[1])**0.5)
+
+                weights = tf.get_variable(
+                    'weights', [inputs.get_shape()[1], self.output_dim],
+                    initializer=tf.random_normal_initializer(stddev=stddev))
+
+                biases = tf.get_variable(
+                    'biases', [self.output_dim],
+                    initializer=tf.constant_initializer(0))
 
             #apply weights and biases
             with tf.variable_scope('linear', reuse=reuse):

@@ -23,7 +23,8 @@ def read_alignments(filename):
         alignments = {}
         for line in fid:
             data = line.replace(' \n', '').split(' ')
-            alignments[data[0]] = np.asarray(map(int, data[1:len(data)])) #segment:alignment
+            #segment:alignment
+            alignments[data[0]] = np.asarray(map(int, data[1:len(data)]))
     return alignments
 
 def read_segments(filename):
@@ -51,7 +52,8 @@ def read_segments(filename):
                 #utt: [(seg , begin, end)]
                 segments[data[1]] = [(data[0], float(data[2]), float(data[3]))]
             else:
-                segments[data[1]].append((data[0], float(data[2]), float(data[3])))
+                segments[data[1]].append((data[0], float(data[2]),
+                                          float(data[3])))
     return segments
 
 def read_wavfiles(filename):
@@ -66,7 +68,8 @@ def read_wavfiles(filename):
             - key: the utterance ID
             - value: a pair containing
                 - the filenames
-                - bool wheter or not the filename is extended (with a read command)
+                - bool wheter or not the filename is extended (with a
+                    read command)
     '''
 
     with open(filename) as fid:

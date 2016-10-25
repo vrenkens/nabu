@@ -20,10 +20,12 @@ class Decoder(object):
         with self.graph.as_default():
 
             #create the inputs placeholder
-            self.inputs = tf.placeholder(tf.float32, shape=[None, input_dim], name='inputs')
+            self.inputs = tf.placeholder(tf.float32, shape=[None, input_dim],
+                                         name='inputs')
 
             #create the decoding graph
-            logits, self.saver, _ = classifier(self.inputs, is_training=False, reuse=False)
+            logits, self.saver, _ = classifier(self.inputs, is_training=False,
+                                               reuse=False)
 
             #compute the outputs
             self.outputs = tf.nn.softmax(logits)
@@ -35,13 +37,16 @@ class Decoder(object):
         '''decode using the neural net
 
         Args:
-            inputs: the inputs to the graph as a NxF numpy array where N is the number of frames and F is the input feature dimension
+            inputs: the inputs to the graph as a NxF numpy array where N is the
+                number of frames and F is the input feature dimension
 
         Returns:
-            an NxO numpy array where N is the number of frames and O is the neural net output dimension
+            an NxO numpy array where N is the number of frames and O is the
+                neural net output dimension
         '''
 
-        return self.outputs.eval(feed_dict={self.inputs:inputs}) #pylint: disable=E1101
+        #pylint: disable=E1101
+        return self.outputs.eval(feed_dict={self.inputs:inputs})
 
     def restore(self, filename):
         '''

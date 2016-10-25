@@ -6,7 +6,8 @@ import numpy as np
 import readfiles
 
 class FeatureReader(object):
-    '''Class that can read features from a Kaldi archive and process them (cmvn and splicing)'''
+    '''Class that can read features from a Kaldi archive and process
+    them (cmvn and splicing)'''
 
     def __init__(self, scpfile, cmvnfile, utt2spkfile, context_width):
         '''
@@ -15,7 +16,8 @@ class FeatureReader(object):
         Args:
             scpfile: path to the features .scp file
             cmvnfile: path to the cmvn file
-            utt2spkfile:path to the file containing the mapping from utterance ID to speaker ID
+            utt2spkfile:path to the file containing the mapping from utterance
+                ID to speaker ID
             context_width: context width for splicing the features
         '''
 
@@ -53,7 +55,8 @@ class FeatureReader(object):
 
     def next_id(self):
         '''
-        only gets the ID of the next utterance (also moves forward in the reader)
+        only gets the ID of the next utterance (also moves forward in the
+        reader)
 
         Returns:
             the ID of the uterance
@@ -63,7 +66,8 @@ class FeatureReader(object):
 
     def prev_id(self):
         '''
-        only gets the ID of the previous utterance (also moves backward in the reader)
+        only gets the ID of the previous utterance (also moves backward in the
+        reader)
 
         Returns:
             the ID of the uterance
@@ -78,11 +82,15 @@ class FeatureReader(object):
 
 def apply_cmvn(utt, stats):
     '''
-    apply mean and variance normalisation based on the previously computed statistics
+    apply mean and variance normalisation based on the previously computed
+    statistics
 
     Args:
         utt: the utterance feature numpy matrix
-        stats: a numpy array containing the mean and variance statistics. The first row contains the sum of all the fautures and as a last element the total numbe of features. The second row contains the squared sum of the features and a zero at the end
+        stats: a numpy array containing the mean and variance statistics. The
+            first row contains the sum of all the fautures and as a last element
+            the total number of features. The second row contains the squared
+            sum of the features and a zero at the end
 
     Returns:
         a numpy array containing the mean and variance normalized features
@@ -103,24 +111,32 @@ def splice(utt, context_width):
 
     Args:
         utt: numpy matrix containing the utterance features to be spliced
-        context_width: how many frames to the left and right should be concatenated
+        context_width: how many frames to the left and right should be
+            concatenated
 
     Returns:
         a numpy array containing the spliced features
     '''
 
     #create spliced utterance holder
-    utt_spliced = np.zeros(shape=[utt.shape[0], utt.shape[1]*(1+2*context_width)], dtype=np.float32)
+    utt_spliced = np.zeros(
+        shape=[utt.shape[0], utt.shape[1]*(1+2*context_width)],
+        dtype=np.float32)
 
     #middle part is just the uttarnce
-    utt_spliced[:, context_width*utt.shape[1]:(context_width+1)*utt.shape[1]] = utt
+    utt_spliced[:, context_width*utt.shape[1]:
+                (context_width+1)*utt.shape[1]] = utt
 
     for i in range(context_width):
 
         #add left context
-        utt_spliced[i+1:utt_spliced.shape[0], (context_width-i-1)*utt.shape[1]:(context_width-i)*utt.shape[1]] = utt[0:utt.shape[0]-i-1, :]
+        utt_spliced[i+1:utt_spliced.shape[0],
+                    (context_width-i-1)*utt.shape[1]:
+                    (context_width-i)*utt.shape[1]] = utt[0:utt.shape[0]-i-1, :]
 
          #add right context
-        utt_spliced[0:utt_spliced.shape[0]-i-1, (context_width+i+1)*utt.shape[1]:(context_width+i+2)*utt.shape[1]] = utt[i+1:utt.shape[0], :]
+        utt_spliced[0:utt_spliced.shape[0]-i-1,
+                    (context_width+i+1)*utt.shape[1]:
+                    (context_width+i+2)*utt.shape[1]] = utt[i+1:utt.shape[0], :]
 
     return utt_spliced

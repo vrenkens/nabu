@@ -12,8 +12,14 @@ class FeatureComputer(object):
         FeatureComputer constructor
 
         Args:
-            featureType: string containing the type of features, optione are 'fbank', 'mfcc' and 'ssc'
-            dynamic: the type of dynamic information added, options are nodelta, delta and ddelta
+            featureType: string containing the type of features, optione are:
+                - fbank
+                - mfcc
+                - ssc
+            dynamic: the type of dynamic information added, options are:
+                - nodelta
+                - delta
+                - ddelta
             conf: the feature configuration
         '''
 
@@ -51,7 +57,8 @@ class FeatureComputer(object):
 
         if self.conf['snip_edges'] == 'True':
             #snip the edges
-            sig = snip(sig, rate, float(self.conf['winlen']), float(self.conf['winstep']))
+            sig = snip(sig, rate, float(self.conf['winlen']),
+                       float(self.conf['winstep']))
 
         #compute the features and energy
         feat, energy = self.comp_feat(sig, rate, self.conf)
@@ -78,7 +85,8 @@ def snip(sig, rate, winlen, winstep):
     Returns:
         the snipped signal
     '''
-    # calculate the number of frames in the utterance as number of samples in the utterance / number of samples in the frame
+    # calculate the number of frames in the utterance as number of samples in
+    #the utterance / number of samples in the frame
     num_frames = int((len(sig)-winlen*rate)/(winstep*rate))
     # cut of the edges to fit the number of frames
     sig = sig[0:int(num_frames*winstep*rate + winlen*rate)]

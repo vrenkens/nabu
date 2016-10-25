@@ -27,11 +27,11 @@ np.set_printoptions(linewidth=np.nan)
 
 class ArkReader(object):
     '''
-    Class to read Kaldi ark format.
-    Each time, it reads one line of the .scp file and reads in the corresponding features into a numpy matrix.
-    It only supports binary-formatted .ark files.
-    Text and compressed .ark files are not supported.
-    The inspiration for this class came from pdnn toolkit (see licence at the top of this file) (https://github.com/yajiemiao/pdnn)
+    Class to read Kaldi ark format. Each time, it reads one line of the .scp
+    file and reads in the corresponding features into a numpy matrix. It only
+    supports binary-formatted .ark files. Text and compressed .ark files are not
+    supported. The inspiration for this class came from pdnn toolkit (see
+    licence at the top of this file) (https://github.com/yajiemiao/pdnn)
     '''
 
     def __init__(self, scp_path):
@@ -81,9 +81,11 @@ class ArkReader(object):
         _, cols = struct.unpack('<bi', ark_read_buffer.read(5))
 
         if header[1] == "F":
-            tmp_mat = np.frombuffer(ark_read_buffer.read(rows * cols * 4), dtype=np.float32)
+            tmp_mat = np.frombuffer(ark_read_buffer.read(rows * cols * 4),
+                                    dtype=np.float32)
         elif header[1] == "D":
-            tmp_mat = np.frombuffer(ark_read_buffer.read(rows * cols * 8), dtype=np.float64)
+            tmp_mat = np.frombuffer(ark_read_buffer.read(rows * cols * 8),
+                                    dtype=np.float64)
 
         utt_mat = np.reshape(tmp_mat, (rows, cols))
 
@@ -96,7 +98,8 @@ class ArkReader(object):
         read the next utterance in the scp file
 
         Returns:
-            the utterance ID of the utterance that was read, the utterance data, bool that is true if the reader looped back to the beginning
+            the utterance ID of the utterance that was read, the utterance data,
+            bool that is true if the reader looped back to the beginning
         '''
 
         if len(self.scp_data) == 0:
@@ -111,7 +114,8 @@ class ArkReader(object):
 
         self.scp_position += 1
 
-        return self.utt_ids[self.scp_position-1], self.read_utt_data(self.scp_position-1), looped
+        return (self.utt_ids[self.scp_position-1],
+                self.read_utt_data(self.scp_position-1), looped)
 
     def read_next_scp(self):
         '''
@@ -121,7 +125,8 @@ class ArkReader(object):
             the utterance ID of the utterance that was read
         '''
 
-        if self.scp_position >= len(self.scp_data): #if at end of file loop around
+        #if at end of file loop around
+        if self.scp_position >= len(self.scp_data):
             self.scp_position = 0
 
         self.scp_position += 1
@@ -161,9 +166,11 @@ class ArkReader(object):
 
 class ArkWriter(object):
     '''
-    Class to write numpy matrices into Kaldi .ark file and create the corresponding .scp file.
-    It only supports binary-formatted .ark files. Text and compressed .ark files are not supported.
-    The inspiration for this class came from pdnn toolkit (see licence at the top of this file)(https://github.com/yajiemiao/pdnn)
+    Class to write numpy matrices into Kaldi .ark file and create the
+    corresponding .scp file. It only supports binary-formatted .ark files. Text
+    and compressed .ark files are not supported. The inspiration for this class
+    came from pdnn toolkit (see licence at the top of this file)
+    (https://github.com/yajiemiao/pdnn)
     '''
 
     def __init__(self, scp_path, default_ark):
@@ -172,7 +179,8 @@ class ArkWriter(object):
 
         Args:
             scp_path: path to the .scp file that will be written
-            default_ark: the name of the default ark file (used when not specified)
+            default_ark: the name of the default ark file (used when not
+                specified)
         '''
 
         self.scp_path = scp_path
