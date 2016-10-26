@@ -12,7 +12,6 @@ class Activation(object):
     def __init__(self, activation=None):
         '''
         Activation constructor
-
         Args:
             activation: the activation function being wrapped,
                 if None, no activation will be wrapped
@@ -23,12 +22,10 @@ class Activation(object):
     def __call__(self, inputs, is_training=False, reuse=False):
         '''
         apply the activation function
-
         Args:
             inputs: the inputs to the activation function
             is_training: whether or not the network is in training mode
             reuse: wheter or not the variables in the network should be reused
-
         Returns:
             the output to the activation function
         '''
@@ -48,12 +45,10 @@ class Activation(object):
     def _apply_func(self, activations, is_training, reuse):
         '''
         apply own functionality
-
         Args:
             activations: the ioutputs to the wrapped activation function
             is_training: whether or not the network is in training mode
             reuse: wheter or not the variables in the network should be reused
-
         Returns:
             the output to the activation function
         '''
@@ -67,7 +62,6 @@ class TfActivation(Activation):
     def __init__(self, activation, tfActivation):
         '''
         the Tf_wrapper constructor
-
         Args:
             activation: the activation function being wrapped
             tfActivation: the tensorflow activation function that is wrapping
@@ -79,12 +73,10 @@ class TfActivation(Activation):
     def _apply_func(self, activations, is_training, reuse):
         '''
         apply own functionality
-
         Args:
             activations: the ioutputs to the wrapped activation function
             is_training: whether or not the network is in training mode
             reuse: wheter or not the variables in the network should be reused
-
         Returns:
             the output to the activation function
         '''
@@ -98,12 +90,10 @@ class L2Norm(Activation):
     def _apply_func(self, activations, is_training, reuse):
         '''
         apply own functionality
-
         Args:
             activations: the ioutputs to the wrapped activation function
             is_training: whether or not the network is in training mode
             reuse: wheter or not the variables in the network should be reused
-
         Returns:
             the output to the activation function
         '''
@@ -126,7 +116,6 @@ class Dropout(Activation):
     def __init__(self, activation, dropout):
         '''
         the Dropout_wrapper constructor
-
         Args:
             activation: the activation function being wrapped
             dropout: the dropout rate, has to be a value in (0:1]
@@ -140,12 +129,10 @@ class Dropout(Activation):
     def _apply_func(self, activations, is_training, reuse):
         '''
         apply own functionality
-
         Args:
             activations: the ioutputs to the wrapped activation function
             is_training: whether or not the network is in training mode
             reuse: wheter or not the variables in the network should be reused
-
         Returns:
             the output to the activation function
         '''
@@ -161,12 +148,10 @@ class Batchnorm(Activation): # pylint: disable=too-few-public-methods
     def _apply_func(self, activations, is_training, reuse):
         '''
         apply own functionality
-
         Args:
             activations: the ioutputs to the wrapped activation function
             is_training: whether or not the network is in training mode
             reuse: wheter or not the variables in the network should be reused
-
         Returns:
             the output to the activation function
         '''

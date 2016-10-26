@@ -9,7 +9,6 @@ class FFLayer(object):
     def __init__(self, output_dim, activation, weights_std=None):
         '''
         FFLayer constructor, defines the variables
-
         Args:
             output_dim: output dimension of the layer
             activation: the activation function
@@ -25,13 +24,11 @@ class FFLayer(object):
     def __call__(self, inputs, is_training=False, reuse=False, scope=None):
         '''
         Do the forward computation
-
         Args:
             inputs: the input to the layer
             is_training: whether or not the network is in training mode
             reuse: wheter or not the variables in the network should be reused
             scope: the variable scope of the layer
-
         Returns:
             The output of the layer
         '''

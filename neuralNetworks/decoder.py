@@ -11,7 +11,7 @@ class Decoder(object):
         NnetDecoder constructor, creates the decoding graph
 
         Args:
-            classifier: teh classifier that will be used for decoding
+            classifier: the classifier that will be used for decoding
             input_dim: the input dimension to the nnnetgraph
         '''
 
@@ -23,9 +23,15 @@ class Decoder(object):
             self.inputs = tf.placeholder(tf.float32, shape=[None, input_dim],
                                          name='inputs')
 
+            split_inputs = tf.unpack(tf.reshape(self.inputs,
+                                                [-1, 1, input_dim]))
+
             #create the decoding graph
-            logits, self.saver, _ = classifier(self.inputs, is_training=False,
-                                               reuse=False)
+            logits, self.saver, _ = classifier(split_inputs, None,
+                                               is_training=False, reuse=False,
+                                               scope='Classifier')
+
+            logits = tf.reshape(tf.pack(logits), [-1, classifier.output_dim])
 
             #compute the outputs
             self.outputs = tf.nn.softmax(logits)

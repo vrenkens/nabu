@@ -142,8 +142,10 @@ if TRAIN_NNET:
 
     #create a batch dispenser for training the neural net
     featdir = config.get('directories', 'train_features') + '/' +  config.get('dnn-features', 'name')
+    with open(featdir + '/maxlength', 'r') as fid:
+        max_length = int(fid.read())
     featreader = feature_reader.FeatureReader(featdir + '/feats_shuffled.scp', featdir + '/cmvn.scp', featdir + '/utt2spk', int(config.get('nnet', 'context_width')))
-    dispenser = batchdispenser.Batchdispenser(featreader, int(config.get('nnet', 'batch_size')), alifile, num_labels)
+    dispenser = batchdispenser.Batchdispenser(featreader, int(config.get('nnet', 'batch_size')), alifile, num_labels, max_length)
 
     #train the neural net
     print '------- training neural net ----------'

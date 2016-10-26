@@ -3,11 +3,11 @@ contains the functionality for a Kaldi style neural network'''
 
 import shutil
 import os
+import itertools
 import numpy as np
 import tensorflow as tf
 import classifiers.activation
 from classifiers.dnn import DNN
-from six.moves import range
 from trainer import Trainer
 from decoder import Decoder
 
@@ -86,20 +86,14 @@ class Nnet(object):
         '''
 
         #get the validation set
-        valid_batches = [dispenser.get_batch()
-                         for _ in range(int(self.conf['valid_batches']))]
+        val_data, val_labels = zip(
+            *[dispenser.get_batch()
+              for _ in range(int(self.conf['valid_batches']))])
+
+        val_data = list(itertools.chain.from_iterable(val_data))
+        val_labels = list(itertools.chain.from_iterable(val_labels))
 
         dispenser.split()
-        if len(valid_batches) > 0:
-            val_data = np.concatenate([val_batch[0]
-                                       for val_batch in valid_batches])
-
-            val_labels = np.concatenate([val_batch[1]
-                                         for val_batch in valid_batches])
-
-        else:
-            val_data = None
-            val_labels = None
 
         #compute the total number of steps
         num_steps = int(dispenser.num_utt
@@ -115,13 +109,18 @@ class Nnet(object):
         for _ in range(step):
             dispenser.skip_batch()
 
-        #create a visualisation of the DNN
+        if self.conf['numutterances_per_minibatch'] == '-1':
+            numutterances_per_minibatch = dispenser.size
+        else:
+            numutterances_per_minibatch = int(
+                self.conf['numutterances_per_minibatch'])
 
         #put the DNN in a training environment
         trainer = Trainer(
-            self.dnn, self.input_dim, float(self.conf['initial_learning_rate']),
+            self.dnn, self.input_dim, dispenser.max_length,
+            float(self.conf['initial_learning_rate']),
             float(self.conf['learning_rate_decay']),
-            num_steps, int(self.conf['numframes_per_batch']))
+            num_steps, numutterances_per_minibatch)
 
         #start the visualization if it is requested
         if self.conf['visualise'] == 'True':

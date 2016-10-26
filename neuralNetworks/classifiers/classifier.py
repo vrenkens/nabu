@@ -13,12 +13,16 @@ class Classifier(object):
         self.output_dim = output_dim
 
     @abstractmethod
-    def __call__(self, inputs, is_training=False, reuse=False, scope=None):
+    def __call__(self, inputs, seq_length, is_training=False, reuse=False,
+                 scope=None):
         '''
         Add the neural net variables and operations to the graph
 
         Args:
-            inputs: the inputs to the neural network
+            inputs: the inputs to the neural network, this is a list containing
+                a [batch_size, input_dim] tensor for each time step
+            seq_length: The sequence lengths of the input utterances, if None
+                the maximal sequence length will be taken
             is_training: whether or not the network is in training mode
             reuse: wheter or not the variables in the network should be reused
             scope: the name scope

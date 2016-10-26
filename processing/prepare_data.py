@@ -51,6 +51,7 @@ def prepare_data(datadir, featdir, conf, feat_type, dynamic):
     comp = feat.FeatureComputer(feat_type, dynamic, conf)
 
     #compute all the features
+    max_length = 0
     for utt in wavfiles:
         if found_segments:
             for seg in segments[utt]:
@@ -60,9 +61,11 @@ def prepare_data(datadir, featdir, conf, feat_type, dynamic):
                     rate_utt[utt][0])
 
                 writer.write_next_utt(featdir + '/feats.ark', seg[0], features)
+                max_length = max(max_length, features.shape[0])
         else:
             features = comp(rate_utt[utt][1], rate_utt[utt][0])
             writer.write_next_utt(utt, features)
+            max_length = max(max_length, features.shape[0])
 
     writer.close()
 
@@ -71,6 +74,10 @@ def prepare_data(datadir, featdir, conf, feat_type, dynamic):
     copyfile(datadir + '/spk2utt', featdir + '/spk2utt')
     copyfile(datadir + '/text', featdir + '/text')
     copyfile(datadir + '/wav.scp', featdir + '/wav.scp')
+
+    #write the maximum length in a file
+    with open(featdir + '/maxlength', 'w') as fid:
+        fid.write(str(max_length))
 
 def compute_cmvn(featdir):
     '''

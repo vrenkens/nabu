@@ -1,6 +1,7 @@
 '''@file dnn.py
 The DNN neural network classifier'''
 
+import seq_convertors
 import tensorflow as tf
 from classifier import Classifier
 from layer import FFLayer
@@ -33,12 +34,16 @@ class DNN(Classifier):
         self.activation = activation
         self.layerwise_init = layerwise_init
 
-    def __call__(self, inputs, is_training=False, reuse=False, scope=None):
+    def __call__(self, inputs, seq_length, is_training=False, reuse=False,
+                 scope=None):
         '''
         Add the DNN variables and operations to the graph
 
         Args:
-            inputs: the inputs to the neural network
+            inputs: the inputs to the neural network, this is a list containing
+                a [batch_size, input_dim] tensor for each time step
+            seq_length: The sequence lengths of the input utterances, if None
+                the maximal sequence length will be taken
             is_training: whether or not the network is in training mode
             reuse: wheter or not the variables in the network should be reused
             scope: the name scope
@@ -61,10 +66,13 @@ class DNN(Classifier):
             outlayer = FFLayer(self.output_dim,
                                TfActivation(None, lambda(x): x), 0)
 
-            #do the forward computation with dropout
+            #do the forward computation
+
+            #convert the sequential data to non sequential data
+            nonseq_inputs = seq_convertors.seq2nonseq(inputs, seq_length)
 
             activations = [None]*self.num_layers
-            activations[0] = layer(inputs, is_training, reuse, 'layer0')
+            activations[0] = layer(nonseq_inputs, is_training, reuse, 'layer0')
             for l in range(1, self.num_layers):
                 activations[l] = layer(activations[l-1], is_training, reuse,
                                        'layer' + str(l))
@@ -87,13 +95,12 @@ class DNN(Classifier):
                 #by layer initialisation
                 logits = tf.case(
                     [(tf.equal(initialisedlayers, tf.constant(l)),
-                      CallableTensor(activations[l]))
+                      Callable(activations[l]))
                      for l in range(len(activations))],
-                    default=CallableTensor(activations[-1]),
+                    default=Callable(activations[-1]),
                     exclusive=True, name='layerSelector')
 
                 logits.set_shape([None, self.num_units])
-
             else:
                 logits = activations[-1]
 
@@ -113,30 +120,34 @@ class DNN(Classifier):
             else:
                 control_ops = None
 
+            #convert the logits to sequence logits to match expected output
+            seq_logits = seq_convertors.nonseq2seq(logits, seq_length,
+                                                   len(inputs))
+
             #create a saver
             saver = tf.train.Saver()
 
-        return logits, saver, control_ops
+        return seq_logits, saver, control_ops
 
-class CallableTensor(object):
-    '''A class for a tensor that is callable'''
+class Callable(object):
+    '''A class for an object that is callable'''
 
-    def __init__(self, tensor):
+    def __init__(self, value):
         '''
-        CallableTensor constructor
+        Callable constructor
 
         Args:
             tensor: a tensor
         '''
 
-        self.tensor = tensor
+        self.value = value
 
     def __call__(self):
         '''
-        get the tensor
+        get the object
 
         Returns:
-            the tensor
+            the object
         '''
 
-        return self.tensor
+        return self.value

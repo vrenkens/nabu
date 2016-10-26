@@ -8,16 +8,17 @@ import readfiles
 class Batchdispenser(object):
     '''Class that dispenses batches of data for mini-batch training'''
 
-    def __init__(self, feature_reader, size, alifile, num_labels):
+    def __init__(self, feature_reader, size, alifile, num_labels, max_length):
         '''
         Batchdispenser constructor
 
         Args:
             feature_reader: a feature reader object
-            size: the batch size
+            size: the batch size in number of utterances
             scpfile: the path to the features .scp file
             alifile: the path to the file containing the alignments
             num_labels: total number of labels
+            max_length: the maximum length of all the utterances
         '''
 
         #store the feature reader
@@ -32,21 +33,23 @@ class Batchdispenser(object):
         #store the batch size
         self.size = size
 
+        #store the max_length
+        self.max_length = max_length
+
     def get_batch(self):
         '''
         get a batch of features and alignments in one-hot encoding
 
         Returns:
             A pair containing:
-                - a batch of data
+                - a batch of data which is a list of feature matrices
                 - the labels in one hot encoding
         '''
 
-        numutt = 0
-        batch_data = np.empty(0)
-        batch_labels = np.empty(0)
+        batch_data = []
+        batch_labels = []
 
-        while numutt < self.size:
+        while len(batch_data) < self.size:
 
             #read utterance
             utt_id, utt_mat, _ = self.feature_reader.get_utt()
@@ -55,21 +58,16 @@ class Batchdispenser(object):
             if utt_id in self.alignments:
 
                 #add the features and alignments to the batch
-                batch_data = np.append(batch_data, utt_mat)
-                batch_labels = np.append(batch_labels, self.alignments[utt_id])
+                batch_data.append(utt_mat)
+                batch_labels.append(self.alignments[utt_id])
 
-                #update number of utterances in the batch
-                numutt += 1
             else:
                 print 'WARNING no alignment for %s' % utt_id
 
-        #reahape the batch data
-        batch_data = batch_data.reshape(batch_data.size/utt_mat.shape[1],
-                                        utt_mat.shape[1])
-
         #put labels in one hot encoding
-        batch_labels = (np.arange(self.num_labels)
-                        == batch_labels[:, np.newaxis]).astype(np.float32)
+        batch_labels = [(np.arange(self.num_labels)
+                         == labels[:, np.newaxis]).astype(np.float32)
+                        for labels in batch_labels]
 
         return (batch_data, batch_labels)
 
