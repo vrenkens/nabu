@@ -9,7 +9,8 @@ class FeatureReader(object):
     '''Class that can read features from a Kaldi archive and process
     them (cmvn and splicing)'''
 
-    def __init__(self, scpfile, cmvnfile, utt2spkfile, context_width):
+    def __init__(self, scpfile, cmvnfile, utt2spkfile,
+                 context_width, max_length):
         '''
         create a FeatureReader object
 
@@ -19,6 +20,7 @@ class FeatureReader(object):
             utt2spkfile:path to the file containing the mapping from utterance
                 ID to speaker ID
             context_width: context width for splicing the features
+            max_length: the maximum length of all the utterances in the scp file
         '''
 
         #create the feature reader
@@ -32,6 +34,9 @@ class FeatureReader(object):
 
         #store the context width
         self.context_width = context_width
+
+        #store the max length
+        self.max_length = max_length
 
     def get_utt(self):
         '''

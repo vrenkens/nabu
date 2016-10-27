@@ -21,8 +21,7 @@ class Classifier(object):
         Args:
             inputs: the inputs to the neural network, this is a list containing
                 a [batch_size, input_dim] tensor for each time step
-            seq_length: The sequence lengths of the input utterances, if None
-                the maximal sequence length will be taken
+            seq_length: The sequence lengths of the input utterances
             is_training: whether or not the network is in training mode
             reuse: wheter or not the variables in the network should be reused
             scope: the name scope

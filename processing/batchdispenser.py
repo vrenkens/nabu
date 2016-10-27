@@ -8,7 +8,7 @@ import readfiles
 class Batchdispenser(object):
     '''Class that dispenses batches of data for mini-batch training'''
 
-    def __init__(self, feature_reader, size, alifile, num_labels, max_length):
+    def __init__(self, feature_reader, size, alifile, num_labels, ):
         '''
         Batchdispenser constructor
 
@@ -18,7 +18,6 @@ class Batchdispenser(object):
             scpfile: the path to the features .scp file
             alifile: the path to the file containing the alignments
             num_labels: total number of labels
-            max_length: the maximum length of all the utterances
         '''
 
         #store the feature reader
@@ -32,9 +31,6 @@ class Batchdispenser(object):
 
         #store the batch size
         self.size = size
-
-        #store the max_length
-        self.max_length = max_length
 
     def get_batch(self):
         '''
@@ -127,3 +123,8 @@ class Batchdispenser(object):
         '''the number of utterances'''
 
         return len(self.alignments)
+
+    @property
+    def max_length(self):
+        '''maximum length of all the utterances in the feature reader'''
+        return self.feature_reader.max_length

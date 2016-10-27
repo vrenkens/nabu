@@ -11,7 +11,7 @@ from kaldi import gmm
 GMMTRAINFEATURES = False     #required
 GMMTESTFEATURES = False         #required if the performance of a GMM is tested
 DNNTRAINFEATURES = False     #required
-DNNTESTFEATURES = False         #required if the performance of the DNN is tested
+DNNTESTFEATURES = True         #required if the performance of the DNN is tested
 TRAIN_MONO = False             #required
 ALIGN_MONO = False            #required
 TEST_MONO = False             #required if the performance of the monphone GMM is tested
@@ -21,7 +21,7 @@ TEST_TRI = False            #required if the performance of the triphone GMM is 
 TRAIN_LDA = False            #required if the LDA GMM is used for alignments
 ALIGN_LDA = False            #required if the LDA GMM is used for alignments
 TEST_LDA = False            #required if the performance of the LDA GMM is tested
-TRAIN_NNET = True            #required
+TRAIN_NNET = False            #required
 TEST_NNET = True            #required if the performance of the DNN is tested
 
 #read config file
@@ -144,8 +144,8 @@ if TRAIN_NNET:
     featdir = config.get('directories', 'train_features') + '/' +  config.get('dnn-features', 'name')
     with open(featdir + '/maxlength', 'r') as fid:
         max_length = int(fid.read())
-    featreader = feature_reader.FeatureReader(featdir + '/feats_shuffled.scp', featdir + '/cmvn.scp', featdir + '/utt2spk', int(config.get('nnet', 'context_width')))
-    dispenser = batchdispenser.Batchdispenser(featreader, int(config.get('nnet', 'batch_size')), alifile, num_labels, max_length)
+    featreader = feature_reader.FeatureReader(featdir + '/feats_shuffled.scp', featdir + '/cmvn.scp', featdir + '/utt2spk', int(config.get('nnet', 'context_width')), max_length)
+    dispenser = batchdispenser.Batchdispenser(featreader, int(config.get('nnet', 'batch_size')), alifile, num_labels)
 
     #train the neural net
     print '------- training neural net ----------'
@@ -160,7 +160,19 @@ if TEST_NNET:
     decodedir = savedir + '/decode'
     if not os.path.isdir(decodedir):
         os.mkdir(decodedir)
-    nnet.decode(config.get('directories', 'test_features') + '/' +  config.get('dnn-features', 'name'), decodedir)
+
+    featdir = config.get('directories', 'test_features') + '/' +  config.get('dnn-features', 'name')
+
+    #create a feature reader
+    with open(featdir + '/maxlength', 'r') as fid:
+        max_length = int(fid.read())
+    featreader = feature_reader.FeatureReader(featdir + '/feats.scp', featdir + '/cmvn.scp', featdir + '/utt2spk', int(config.get('nnet', 'context_width')), max_length)
+
+    #create an ark writer for the likelihoods
+    writer = ark.ArkWriter(decodedir + 'likelihoods.scp', decodedir + 'likelihoods.ark')
+
+    #decode with te neural net
+    nnet.decode(featreader, writer)
 
     print '------- decoding testing sets ----------'
     #copy the gmm model and some files to speaker mapping to the decoding dir

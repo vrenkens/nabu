@@ -252,7 +252,7 @@ class Nnet(object):
         '''
 
         #create a decoder
-        decoder = Decoder(self.dnn, self.input_dim)
+        decoder = Decoder(self.dnn, self.input_dim, reader.max_length)
 
         #read the prior
         prior = np.load(self.conf['savedir'] + '/prior.npy')

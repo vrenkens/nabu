@@ -45,13 +45,13 @@ model=$srcdir/$iter.mdl
 
 sdata=$data/split$nj;
 thread_string=
-[ $num_threads -gt 1 ] && thread_string="-parallel --num-threads=$num_threads" 
+[ $num_threads -gt 1 ] && thread_string="-parallel --num-threads=$num_threads"
 
 mkdir -p $dir/log
-[[ -d $sdata && $data/feats.scp -ot $sdata ]] || split_data.sh $data $nj || exit 1;
+[[ -d $sdata && $data/likelihoods.scp -ot $sdata ]] || split_data.sh $data $nj || exit 1;
 echo $nj > $dir/num_jobs
 
-loglikes="ark,s,cs:copy-feats scp:$sdata/JOB/feats.scp ark:- |"
+loglikes="ark,s,cs:copy-feats scp:$sdata/JOB/likelihoods.scp ark:- |"
 
 if [ $stage -le 1 ]; then
   $cmd --num-threads $num_threads JOB=1:$nj $dir/log/decode.JOB.log \
@@ -62,7 +62,7 @@ if [ $stage -le 1 ]; then
      $graphdir/HCLG.fst "$loglikes" "ark:|gzip -c > $dir/lat.JOB.gz" || exit 1;
 fi
 
-# The output of this script is the files "lat.*.gz"-- we'll rescore this at 
+# The output of this script is the files "lat.*.gz"-- we'll rescore this at
 # different acoustic scales to get the final output.
 
 
