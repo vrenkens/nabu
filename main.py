@@ -21,7 +21,7 @@ TEST_TRI = False            #required if the performance of the triphone GMM is 
 TRAIN_LDA = False            #required if the LDA GMM is used for alignments
 ALIGN_LDA = False            #required if the LDA GMM is used for alignments
 TEST_LDA = False            #required if the performance of the LDA GMM is tested
-TRAIN_NNET = False            #required
+TRAIN_NNET = True            #required
 TEST_NNET = True            #required if the performance of the DNN is tested
 
 #read config file
@@ -169,7 +169,9 @@ if TEST_NNET:
     featreader = feature_reader.FeatureReader(featdir + '/feats.scp', featdir + '/cmvn.scp', featdir + '/utt2spk', int(config.get('nnet', 'context_width')), max_length)
 
     #create an ark writer for the likelihoods
-    writer = ark.ArkWriter(decodedir + 'likelihoods.scp', decodedir + 'likelihoods.ark')
+    if os.path.isfile(decodedir + '/likelihoods.ark'):
+        os.remove(decodedir + '/likelihoods.ark')
+    writer = ark.ArkWriter(decodedir + '/feats.scp', decodedir + '/likelihoods.ark')
 
     #decode with te neural net
     nnet.decode(featreader, writer)

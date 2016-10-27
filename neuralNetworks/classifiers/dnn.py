@@ -51,6 +51,7 @@ class DNN(Classifier):
         Returns:
             A triple containing:
                 - output logits
+                - the output logits sequence lengths as a vector
                 - a saver object
                 - a dictionary of control operations:
                     -add: add a layer to the network
@@ -127,7 +128,7 @@ class DNN(Classifier):
             #create a saver
             saver = tf.train.Saver()
 
-        return seq_logits, saver, control_ops
+        return seq_logits, seq_length, saver, control_ops
 
 class Callable(object):
     '''A class for an object that is callable'''

@@ -34,7 +34,7 @@ class Batchdispenser(object):
 
     def get_batch(self):
         '''
-        get a batch of features and alignments in one-hot encoding
+        get a batch of features and alignments
 
         Returns:
             A pair containing:
@@ -59,11 +59,6 @@ class Batchdispenser(object):
 
             else:
                 print 'WARNING no alignment for %s' % utt_id
-
-        #put labels in one hot encoding
-        batch_labels = [(np.arange(self.num_labels)
-                         == labels[:, np.newaxis]).astype(np.float32)
-                        for labels in batch_labels]
 
         return (batch_data, batch_labels)
 

@@ -8,7 +8,7 @@ import numpy as np
 import tensorflow as tf
 import classifiers.activation
 from classifiers.dnn import DNN
-from trainer import Trainer
+from trainer import CrossEnthropyTrainer
 from decoder import Decoder
 
 class Nnet(object):
@@ -116,9 +116,9 @@ class Nnet(object):
                 self.conf['numutterances_per_minibatch'])
 
         #put the DNN in a training environment
-        trainer = Trainer(
-            self.dnn, self.input_dim, dispenser.max_length,
-            float(self.conf['initial_learning_rate']),
+        trainer = CrossEnthropyTrainer(
+            self.dnn, self.input_dim, dispenser.max_length, dispenser.max_length
+            , float(self.conf['initial_learning_rate']),
             float(self.conf['learning_rate_decay']),
             num_steps, numutterances_per_minibatch)
 

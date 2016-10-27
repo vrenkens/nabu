@@ -48,10 +48,10 @@ thread_string=
 [ $num_threads -gt 1 ] && thread_string="-parallel --num-threads=$num_threads"
 
 mkdir -p $dir/log
-[[ -d $sdata && $data/likelihoods.scp -ot $sdata ]] || split_data.sh $data $nj || exit 1;
+[[ -d $sdata && $data/feats.scp -ot $sdata ]] || split_data.sh $data $nj || exit 1;
 echo $nj > $dir/num_jobs
 
-loglikes="ark,s,cs:copy-feats scp:$sdata/JOB/likelihoods.scp ark:- |"
+loglikes="ark,s,cs:copy-feats scp:$sdata/JOB/feats.scp ark:- |"
 
 if [ $stage -le 1 ]; then
   $cmd --num-threads $num_threads JOB=1:$nj $dir/log/decode.JOB.log \

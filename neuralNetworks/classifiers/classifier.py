@@ -29,6 +29,7 @@ class Classifier(object):
         Returns:
             A triple containing:
                 - output logits
+                - the output logits sequence lengths as a vector
                 - a saver object
                 - a dictionary of control operations (may be empty)
         '''
