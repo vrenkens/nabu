@@ -117,6 +117,7 @@ class Trainer(object):
                     initializer=tf.constant_initializer(0), trainable=False)
 
                 #operation to update num_frames
+                #pylint: disable=E1101
                 update_num_frames = num_frames.assign_add(
                     tf.reduce_sum(self.seq_length))
 
@@ -260,11 +261,12 @@ class Trainer(object):
         added_inputs = (inputs + (len(inputs)%self.numutterances_per_minibatch)
                         *[np.zeros([self.max_length, inputs[0].shape[1]])])
 
-        added_targets = (targets + (len(targets)%self.numutterances_per_minibatch)
-                         *[np.zeros([self.max_length, targets[0].shape[1]])])
+        added_targets = (
+            targets + (len(targets)%self.numutterances_per_minibatch)
+            *[np.zeros([self.max_length, targets[0].shape[1]])])
 
-        seq_length = (seq_length + ((len(targets)%self.numutterances_per_minibatch))
-                      *[0])
+        seq_length = (seq_length
+                      + ((len(targets)%self.numutterances_per_minibatch))*[0])
 
         #pad all the inputs qnd tqrgets to the max_length and put them in
         #one array
@@ -282,13 +284,16 @@ class Trainer(object):
         #feed in the batches one by one and accumulate the gradients and loss
         for k in range(len(added_inputs)/self.numutterances_per_minibatch):
             batch_inputs = padded_inputs[:, k*self.numutterances_per_minibatch:
-                                         (k+1)*self.numutterances_per_minibatch, :]
+                                         (k+1)*self.numutterances_per_minibatch,
+                                         :]
 
-            batch_targets = padded_targets[:, k*self.numutterances_per_minibatch:
-                                           (k+1)*self.numutterances_per_minibatch, :]
+            batch_targets = padded_targets[
+                :, k*self.numutterances_per_minibatch:
+                (k+1)*self.numutterances_per_minibatch, :]
 
-            batch_seq_length = seq_length[k*self.numutterances_per_minibatch:
-                                          (k+1)*self.numutterances_per_minibatch]
+            batch_seq_length = seq_length[
+                k*self.numutterances_per_minibatch:
+                (k+1)*self.numutterances_per_minibatch]
             #pylint: disable=E1101
             self.update_gradients_op.run(
                 feed_dict={self.inputs:batch_inputs, self.targets:batch_targets,
@@ -342,11 +347,12 @@ class Trainer(object):
         added_inputs = (inputs + (len(inputs)%self.numutterances_per_minibatch)
                         *[np.zeros([self.max_length, inputs[0].shape[1]])])
 
-        added_targets = (targets + (len(targets)%self.numutterances_per_minibatch)
-                         *[np.zeros([self.max_length, targets[0].shape[1]])])
+        added_targets = (
+            targets + (len(targets)%self.numutterances_per_minibatch)
+            *[np.zeros([self.max_length, targets[0].shape[1]])])
 
-        seq_length = (seq_length + ((len(targets)%self.numutterances_per_minibatch))
-                      *[0])
+        seq_length = (seq_length
+                      + ((len(targets)%self.numutterances_per_minibatch))*[0])
 
         #pad all the inputs qnd tqrgets to the max_length and put them in
         #one array
@@ -364,13 +370,16 @@ class Trainer(object):
         #feed in the batches one by one and accumulate the gradients and loss
         for k in range(len(added_inputs)/self.numutterances_per_minibatch):
             batch_inputs = padded_inputs[:, k*self.numutterances_per_minibatch:
-                                         (k+1)*self.numutterances_per_minibatch, :]
+                                         (k+1)*self.numutterances_per_minibatch,
+                                         :]
 
-            batch_targets = padded_targets[:, k*self.numutterances_per_minibatch:
-                                           (k+1)*self.numutterances_per_minibatch, :]
+            batch_targets = padded_targets[
+                :, k*self.numutterances_per_minibatch:
+                (k+1)*self.numutterances_per_minibatch, :]
 
-            batch_seq_length = seq_length[k*self.numutterances_per_minibatch:
-                                          (k+1)*self.numutterances_per_minibatch]
+            batch_seq_length = seq_length[
+                k*self.numutterances_per_minibatch:
+                (k+1)*self.numutterances_per_minibatch]
 
             #pylint: disable=E1101
             self.update_valid_loss.run(

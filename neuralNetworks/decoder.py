@@ -2,6 +2,7 @@
 neural network decoder environment'''
 
 import tensorflow as tf
+import numpy as np
 from classifiers import seq_convertors
 
 class Decoder(object):
@@ -17,6 +18,7 @@ class Decoder(object):
         '''
 
         self.graph = tf.Graph()
+        self.max_length = max_length
 
         with self.graph.as_default():
 
@@ -56,8 +58,17 @@ class Decoder(object):
                 neural net output dimension
         '''
 
+        #get the sequence length
+        seq_length = [inputs.shape[0]]
+
+        #pad the inputs
+        inputs = np.append(
+            inputs, np.zeros([self.max_length-inputs.shape[0], inputs.shape[1]])
+            , 0)
+
         #pylint: disable=E1101
-        return self.outputs.eval(feed_dict={self.inputs:inputs})
+        return self.outputs.eval(feed_dict={self.inputs:inputs,
+                                            self.seq_length:seq_length})
 
     def restore(self, filename):
         '''

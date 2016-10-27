@@ -11,7 +11,7 @@ from kaldi import gmm
 GMMTRAINFEATURES = False     #required
 GMMTESTFEATURES = False         #required if the performance of a GMM is tested
 DNNTRAINFEATURES = False     #required
-DNNTESTFEATURES = True         #required if the performance of the DNN is tested
+DNNTESTFEATURES = False         #required if the performance of the DNN is tested
 TRAIN_MONO = False             #required
 ALIGN_MONO = False            #required
 TEST_MONO = False             #required if the performance of the monphone GMM is tested
