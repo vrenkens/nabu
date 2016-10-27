@@ -157,8 +157,16 @@ class Trainer(object):
                     name='update_gradients')
 
                 #create an operation to apply the gradients
+
+                #average the gradients
                 meangrads = [tf.div(grad, tf.cast(num_frames, tf.float32),
                                     name=grad.op.name) for grad in grads]
+
+                #clip the gradients
+                meangrads = [tf.clip_by_value(grad, -1., 1.)
+                             for grad in meangrads]
+
+                #apply the gradients
                 self.apply_gradients_op = optimizer.apply_gradients(
                     [(meangrads[p], params[p]) for p in range(len(meangrads))],
                     global_step=self.global_step, name='apply_gradients')
