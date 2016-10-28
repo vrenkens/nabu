@@ -33,7 +33,7 @@ class Decoder(object):
             split_inputs = tf.unpack(tf.expand_dims(self.inputs, 1))
 
             #create the decoding graph
-            logits, self.saver, _ = classifier(split_inputs, self.seq_length,
+            logits, _, self.saver, _ = classifier(split_inputs, self.seq_length,
                                                is_training=False, reuse=False,
                                                scope='Classifier')
 

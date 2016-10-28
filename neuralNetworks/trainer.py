@@ -227,11 +227,10 @@ class Trainer(object):
         trainer
 
         Args:
-            targets: a NoxBx1 tensor containing the reference targets where No
-                is the maximum number of output frames and B is the batch size
-            logits: a NixBxO tensor containing the output logits where Ni
-                is the maximum number of logit frames, B is the batch size and
-                O is the output simension
+            targets: a list that contains a Bx1 tensor containing the targets
+                for eacht time step where B is the batch size
+            logits: a list that contains a BxO tensor containing the output
+                logits for eacht time step where O is the output dimension
             logit_seq_length: the length of all the input sequences as a vector
             target_seq_length: the length of all the output sequences as a
                 vector
@@ -500,31 +499,72 @@ class CrossEnthropyTrainer(Trainer):
         method)
 
         Args:
-            targets: a NxBx1 tensor containing the reference targets where N is
-                the maximum number of frames and B is the batch size
-            logits: a NxBxO tensor containing the reference targets where O is
-                the output dimension
+            targets: a list that contains a Bx1 tensor containing the targets
+                for eacht time step where B is the batch size
+            logits: a list that contains a BxO tensor containing the output
+                logits for eacht time step where O is the output dimension
             logit_seq_length: the length of all the input sequences as a vector
             target_seq_length: the length of all the target sequences as a
                 vector
-            output_dim: the number of output labels
 
         Returns:
-            a acalar value containing the loss
+            a scalar value containing the loss
         '''
 
-        #convert to non sequential data
-        nonseq_targets = seq_convertors.seq2nonseq(targets, target_seq_length)
-        nonseq_logits = seq_convertors.seq2nonseq(logits, logit_seq_length)
+        with tf.name_scope('cross_enthropy_loss'):
 
-        #make a vector out of the targets
-        nonseq_targets = tf.reshape(nonseq_targets, [-1])
+            #convert to non sequential data
+            nonseq_targets = seq_convertors.seq2nonseq(targets,
+                                                       target_seq_length)
+            nonseq_logits = seq_convertors.seq2nonseq(logits, logit_seq_length)
 
-        #one hot encode the targets
-        #pylint: disable=E1101
-        nonseq_targets = tf.one_hot(nonseq_targets,
-                                    int(nonseq_logits.get_shape()[1]))
+            #make a vector out of the targets
+            nonseq_targets = tf.reshape(nonseq_targets, [-1])
 
-        #compute the cross-enthropy loss
-        return tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(
-            nonseq_logits, nonseq_targets))
+            #one hot encode the targets
+            #pylint: disable=E1101
+            nonseq_targets = tf.one_hot(nonseq_targets,
+                                        int(nonseq_logits.get_shape()[1]))
+
+            #compute the cross-enthropy loss
+            return tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(
+                nonseq_logits, nonseq_targets))
+
+class CTCTrainer(Trainer):
+    '''A trainer that minimises the CTC loss, the output sequences'''
+
+    def compute_loss(self, targets, logits, logit_seq_length,
+                     target_seq_length):
+        '''
+        Compute the loss
+
+        Creates the operation to compute the CTC loss for every input
+        frame (if you want to have a different loss function, overwrite this
+        method)
+
+        Args:
+            targets: a list that contains a Bx1 tensor containing the targets
+                for eacht time step where B is the batch size
+            logits: a list that contains a BxO tensor containing the output
+                logits for eacht time step where O is the output dimension
+            logit_seq_length: the length of all the input sequences as a vector
+            target_seq_length: the length of all the target sequences as a
+                vector
+
+        Returns:
+            a scalar value containing the loss
+        '''
+
+        #get the batch size
+        batch_size = int(target_seq_length.get_shape()[0])
+
+        #convert the targets into a sparse tensor representation
+        indices = tf.concat(0, [tf.concat(1, [tf.tile([s], target_seq_length[s])
+                                              , tf.range(target_seq_length[s])])
+                                for s in range(len(batch_size))])
+        values = tf.reshape(seq_convertors.seq2nonseq(logits, logit_seq_length),
+                            [-1])
+        shape = [batch_size, len(targets)]
+        sparse_targets = tf.SparseTensor(indices, values, shape)
+
+        tf.nn.ctc_loss(tf.pack(logits), sparse_targets, logit_seq_length)

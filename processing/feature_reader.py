@@ -10,7 +10,7 @@ class FeatureReader(object):
     them (cmvn and splicing)'''
 
     def __init__(self, scpfile, cmvnfile, utt2spkfile,
-                 context_width, max_length):
+                 context_width, max_input_length):
         '''
         create a FeatureReader object
 
@@ -20,7 +20,8 @@ class FeatureReader(object):
             utt2spkfile:path to the file containing the mapping from utterance
                 ID to speaker ID
             context_width: context width for splicing the features
-            max_length: the maximum length of all the utterances in the scp file
+            max_input_length: the maximum length of all the utterances in the
+                scp file
         '''
 
         #create the feature reader
@@ -36,7 +37,7 @@ class FeatureReader(object):
         self.context_width = context_width
 
         #store the max length
-        self.max_length = max_length
+        self.max_input_length = max_input_length
 
     def get_utt(self):
         '''

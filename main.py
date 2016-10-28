@@ -4,7 +4,7 @@ run this file to go through the neural net training procedure, look at the confi
 import os
 from six.moves import configparser
 from neuralNetworks import nnet
-from processing import ark, prepare_data, feature_reader, batchdispenser
+from processing import ark, prepare_data, feature_reader, batchdispenser, target_coder
 from kaldi import gmm
 
 #here you can set which steps should be executed. If a step has been executed in the past the result have been saved and the step does not have to be executed again (if nothing has changed)
@@ -140,12 +140,16 @@ if TRAIN_NNET:
     alifile = config.get('directories', 'expdir') + '/' + config.get('nnet', 'gmm_name') + '/ali/pdf.all'
     os.system('cat %s > %s' % (' '.join(alifiles), alifile))
 
-    #create a batch dispenser for training the neural net
+    #create a feature reader
     featdir = config.get('directories', 'train_features') + '/' +  config.get('dnn-features', 'name')
     with open(featdir + '/maxlength', 'r') as fid:
-        max_length = int(fid.read())
-    featreader = feature_reader.FeatureReader(featdir + '/feats_shuffled.scp', featdir + '/cmvn.scp', featdir + '/utt2spk', int(config.get('nnet', 'context_width')), max_length)
-    dispenser = batchdispenser.Batchdispenser(featreader, int(config.get('nnet', 'batch_size')), alifile, num_labels)
+        max_input_length = int(fid.read())
+    featreader = feature_reader.FeatureReader(featdir + '/feats_shuffled.scp', featdir + '/cmvn.scp', featdir + '/utt2spk', int(config.get('nnet', 'context_width')), max_input_length)
+
+    #create a target coder
+    coder = target_coder.AlignmentCoder(lambda x, y: x, num_labels)
+
+    dispenser = batchdispenser.AlignmentBatchDispenser(featreader, coder, int(config.get('nnet', 'batch_size')), alifile)
 
     #train the neural net
     print '------- training neural net ----------'

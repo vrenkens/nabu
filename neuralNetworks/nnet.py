@@ -96,9 +96,7 @@ class Nnet(object):
         dispenser.split()
 
         #compute the total number of steps
-        num_steps = int(dispenser.num_utt
-                        /int(self.conf['batch_size'])
-                        *int(self.conf['num_epochs']))
+        num_steps = int(dispenser.num_batches *int(self.conf['num_epochs']))
 
         #set the step to the saving point that is closest to the starting step
         step = (int(self.conf['starting_step'])
@@ -117,8 +115,9 @@ class Nnet(object):
 
         #put the DNN in a training environment
         trainer = CrossEnthropyTrainer(
-            self.dnn, self.input_dim, dispenser.max_length, dispenser.max_length
-            , float(self.conf['initial_learning_rate']),
+            self.dnn, self.input_dim, dispenser.max_input_length,
+            dispenser.max_target_length,
+            float(self.conf['initial_learning_rate']),
             float(self.conf['learning_rate_decay']),
             num_steps, numutterances_per_minibatch)
 
@@ -236,7 +235,9 @@ class Nnet(object):
 
 
             #compute the state prior and write it to the savedir
-            prior = dispenser.compute_prior()
+            prior = dispenser.compute_target_count()
+            prior = prior/prior.sum()
+
             np.save(self.conf['savedir'] + '/prior.npy', prior)
 
             #save the final model
