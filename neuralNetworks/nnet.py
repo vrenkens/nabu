@@ -77,7 +77,8 @@ class Nnet(object):
             numutterances_per_minibatch = int(
                 self.conf['numutterances_per_minibatch'])
 
-        #put the DNN in a training environment
+        #put the DBLSTM in a CTC training environment
+        print 'building the training graph'
         trainer = CTCTrainer(
             self.dblstm, self.input_dim, dispenser.max_input_length,
             dispenser.max_target_length,
@@ -194,6 +195,7 @@ class Nnet(object):
         '''
 
         #create a decoder
+        print 'building the decoding graph'
         decoder = CTCDecoder(self.dblstm, self.input_dim, reader.max_length,
                              int(self.conf['beam_width']))
 

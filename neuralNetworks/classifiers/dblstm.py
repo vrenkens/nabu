@@ -5,6 +5,7 @@ import tensorflow as tf
 from classifier import Classifier
 from layer import FFLayer, BLSTMLayer
 from activation import TfActivation
+import seq_convertors
 
 
 class DBLSTM(Classifier):
@@ -24,7 +25,7 @@ class DBLSTM(Classifier):
         self.num_layers = num_layers
         self.num_units = num_units
 
-    def __call__(self, inputs, seq_length, is_training=False, reuse=False,
+    def __call__(self, inputs, input_seq_length, is_training=False, reuse=False,
                  scope=None):
         '''
         Add the neural net variables and operations to the graph
@@ -32,7 +33,7 @@ class DBLSTM(Classifier):
         Args:
             inputs: the inputs to the neural network, this is a list containing
                 a [batch_size, input_dim] tensor for each time step
-            seq_length: The sequence lengths of the input utterances
+            input_seq_length: The sequence lengths of the input utterances
             is_training: whether or not the network is in training mode
             reuse: wheter or not the variables in the network should be reused
             scope: the name scope
@@ -57,12 +58,18 @@ class DBLSTM(Classifier):
             #do the forward computation
             logits = inputs
 
-            for layer in self.num_layers:
-                logits = blstm(logits, is_training, reuse, 'layer' + str(layer))
+            for layer in range(self.num_layers):
+                logits = blstm(logits, input_seq_length,
+                               is_training, reuse, 'layer' + str(layer))
+
+            logits = seq_convertors.seq2nonseq(logits, input_seq_length)
 
             logits = outlayer(logits, is_training, reuse, 'outlayer')
+
+            logits = seq_convertors.nonseq2seq(logits, input_seq_length,
+                                               len(inputs))
 
             #create a saver
             saver = tf.train.Saver()
 
-        return logits, seq_length, saver, None
+        return logits, input_seq_length, saver, None

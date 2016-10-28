@@ -70,9 +70,7 @@ if TRAIN:
 
     #create a batch dispenser
     dispenser = batchdispenser.TextBatchDispenser(featreader, coder, int(config.get('nnet', 'batch_size')), textfile)
-
-    pdb.set_trace()
-
+    
     #train the neural net
     print '------- training neural net ----------'
     nnet.train(dispenser)

@@ -79,7 +79,7 @@ class BLSTMLayer(object):
         self.num_units = num_units
 
     def __call__(self, inputs, sequence_length, is_training=False,
-                 reuse=None, scope=None):
+                 reuse=False, scope=None):
         """
         Create the variables and do the forward computation
 
@@ -99,18 +99,15 @@ class BLSTMLayer(object):
 
         with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
 
-            #create the forward and backward cells
-            with tf.variable_scope('forward'):
-                forward_lstm_block = rnn_cell.LSTMCell(self.num_units,
-                                                       use_peepholes=True)
-            with tf.variable_scope('backward'):
-                backward_lstm_block = rnn_cell.LSTMCell(self.num_units,
-                                                        use_peepholes=True)
+            #create the lstm cell that will be used for the forward and backward
+            #pass
+            lstm_cell = rnn_cell.LSTMCell(self.num_units,
+                                          state_is_tuple=True,
+                                          use_peepholes=True)
 
             #do the forward computation
-            outputs, _, _ = bidirectional_rnn(forward_lstm_block,
-                                              backward_lstm_block,
-                                              inputs,
+            outputs, _, _ = bidirectional_rnn(lstm_cell, lstm_cell, inputs,
+                                              dtype = tf.float32,
                                               sequence_length=sequence_length)
 
             return outputs

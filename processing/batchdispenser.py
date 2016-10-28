@@ -30,7 +30,7 @@ class BatchDispenser(object):
 
     def __init__(self, feature_reader, target_coder, size, target_path):
         '''
-        batchDispenser constructor
+        batchDispenser constructor TODO: move encoding to the constructor
 
         Args:
             feature_reader: Kaldi ark-file feature reader instance.
