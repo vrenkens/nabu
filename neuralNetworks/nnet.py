@@ -6,13 +6,12 @@ import os
 import itertools
 import numpy as np
 import tensorflow as tf
-import classifiers.activation
-from classifiers.dnn import DNN
-from trainer import CrossEnthropyTrainer
+from classifiers.dblstm import DBLSTM
+from trainer import CTCTrainer
 from decoder import Decoder
 
 class Nnet(object):
-    '''a class for a neural network that can be used together with Kaldi'''
+    '''a class for using a DBLTSM with CTC for ASR'''
 
     def __init__(self, conf, input_dim, num_labels):
         '''
@@ -36,46 +35,12 @@ class Nnet(object):
         if not os.path.isdir(self.conf['savedir'] + '/training'):
             os.mkdir(self.conf['savedir'] + '/training')
 
-        #compute the input_dimension of the spliced features
-        self.input_dim = input_dim * (2*int(self.conf['context_width']) + 1)
+        #save the input dim
+        self.input_dim = input_dim
 
-        if self.conf['batch_norm'] == 'True':
-            activation = classifiers.activation.Batchnorm(None)
-        else:
-            activation = None
-
-        #create the activation function
-        if self.conf['nonlin'] == 'relu':
-            activation = classifiers.activation.TfActivation(activation,
-                                                             tf.nn.relu)
-
-        elif self.conf['nonlin'] == 'sigmoid':
-            activation = classifiers.activation.TfActivation(activation,
-                                                             tf.nn.sigmoid)
-
-        elif self.conf['nonlin'] == 'tanh':
-            activation = classifiers.activation.TfActivation(activation,
-                                                             tf.nn.tanh)
-
-        elif self.conf['nonlin'] == 'linear':
-            activation = classifiers.activation.TfActivation(activation,
-                                                             lambda(x): x)
-
-        else:
-            raise Exception('unkown nonlinearity')
-
-        if self.conf['l2_norm'] == 'True':
-            activation = classifiers.activation.L2Norm(activation)
-
-        if float(self.conf['dropout']) < 1:
-            activation = classifiers.activation.Dropout(
-                activation, float(self.conf['dropout']))
-
-        #create a DNN
-        self.dnn = DNN(
-            num_labels, int(self.conf['num_hidden_layers']),
-            int(self.conf['num_hidden_units']), activation,
-            int(self.conf['add_layer_period']) > 0)
+        #create a DBLSTM
+        self.dblstm = DBLSTM(num_labels, int(self.conf['num_layers']),
+                             int(self.conf['num_units']))
 
     def train(self, dispenser):
         '''
@@ -114,8 +79,8 @@ class Nnet(object):
                 self.conf['numutterances_per_minibatch'])
 
         #put the DNN in a training environment
-        trainer = CrossEnthropyTrainer(
-            self.dnn, self.input_dim, dispenser.max_input_length,
+        trainer = CTCTrainer(
+            self.dblstm, self.input_dim, dispenser.max_input_length,
             dispenser.max_target_length,
             float(self.conf['initial_learning_rate']),
             float(self.conf['learning_rate_decay']),
@@ -206,39 +171,10 @@ class Nnet(object):
                             trainer.save_trainer(self.conf['savedir']
                                                  + '/training/validated')
 
-                #add a layer if its required
-                if int(self.conf['add_layer_period']) > 0:
-                    if (step%int(self.conf['add_layer_period']) == 0
-                            and (step/int(self.conf['add_layer_period'])
-                                 < int(self.conf['num_hidden_layers']))):
-
-                        print 'adding layer, the model now holds %d/%d layers'%(
-                            step/int(self.conf['add_layer_period']) + 1,
-                            int(self.conf['num_hidden_layers']))
-
-                        trainer.control_ops['add'].run()
-                        trainer.control_ops['init'].run()
-
-                        #do a validation step
-                        validation_loss = trainer.evaluate(val_data, val_labels)
-                        print 'validation loss at step %d: %f' % (
-                            step, validation_loss)
-                        validation_step = step
-                        trainer.save_trainer(self.conf['savedir']
-                                             + '/training/validated')
-                        num_retries = 0
-
                 #save the model if at checkpoint
                 if step%int(self.conf['check_freq']) == 0:
                     trainer.save_trainer(self.conf['savedir'] + '/training/step'
                                          + str(step))
-
-
-            #compute the state prior and write it to the savedir
-            prior = dispenser.compute_target_count()
-            prior = prior/prior.sum()
-
-            np.save(self.conf['savedir'] + '/prior.npy', prior)
 
             #save the final model
             trainer.save_model(self.conf['savedir'] + '/final')
@@ -253,7 +189,7 @@ class Nnet(object):
         '''
 
         #create a decoder
-        decoder = Decoder(self.dnn, self.input_dim, reader.max_length)
+        decoder = CTCDecoder(self.dnn, self.input_dim, reader.max_length)
 
         #read the prior
         prior = np.load(self.conf['savedir'] + '/prior.npy')

@@ -55,7 +55,8 @@ class FeatureReader(object):
         utt_mat = apply_cmvn(utt_mat, cmvn_stats)
 
         #splice the utterance
-        utt_mat = splice(utt_mat, self.context_width)
+        if self.context_width > 0:
+            utt_mat = splice(utt_mat, self.context_width)
 
         return utt_id, utt_mat, looped
 
