@@ -4,11 +4,10 @@ contains the functionality for a Kaldi style neural network'''
 import shutil
 import os
 import itertools
-import numpy as np
 import tensorflow as tf
 from classifiers.dblstm import DBLSTM
 from trainer import CTCTrainer
-from decoder import Decoder
+from decoder import CTCDecoder
 
 class Nnet(object):
     '''a class for using a DBLTSM with CTC for ASR'''
@@ -179,24 +178,32 @@ class Nnet(object):
             #save the final model
             trainer.save_model(self.conf['savedir'] + '/final')
 
-    def decode(self, reader, writer):
+    def decode(self, reader, target_coder):
         '''
         compute pseudo likelihoods the testing set
 
         Args:
             reader: a feature reader object to read features to decode
-            writer: a writer object to write likelihoods
+            target_coder: target coder object to decode the target sequences
+
+        Returns:
+            a list of triples containing:
+                - the utterance ID
+                - a list of hypothesis strings
+                - a numpy array of log probabilities for the hypotheses
         '''
 
         #create a decoder
-        decoder = CTCDecoder(self.dnn, self.input_dim, reader.max_length)
+        decoder = CTCDecoder(self.dblstm, self.input_dim, reader.max_length,
+                             int(self.conf['beam_width']))
 
-        #read the prior
-        prior = np.load(self.conf['savedir'] + '/prior.npy')
 
         #start tensorflow session
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True #pylint: disable=E1101
+
+        nbests = []
+
         with tf.Session(graph=decoder.graph, config=config):
 
             #load the model
@@ -210,16 +217,13 @@ class Nnet(object):
                     break
 
                 #compute predictions
-                output = decoder(utt_mat)
+                encoded_hypotheses, logprobs = decoder(utt_mat)
 
-                #get state likelihoods by dividing by the prior
-                output = output/prior
+                #decode the hypotheses
+                hypotheses = [target_coder.decode(h)
+                              for h in encoded_hypotheses]
 
-                #floor the values to avoid problems with log
-                np.where(output == 0, np.finfo(float).eps, output)
+                nbests.append((utt_id, hypotheses, logprobs))
 
-                #write the pseudo-likelihoods in kaldi feature format
-                writer.write_next_utt(utt_id, np.log(output))
 
-        #close the writer
-        writer.close()
+        return nbests

@@ -3,6 +3,7 @@ a file containing the target coders which can be used to encode and decode text,
 alignments etc. '''
 
 from abc import ABCMeta, abstractmethod
+from collections import OrderedDict
 import numpy as np
 
 class TargetCoder(object):
@@ -26,8 +27,8 @@ class TargetCoder(object):
         alphabet = self.create_alphabet()
 
         #create a lookup dictionary for fast encoding
-        self.lookup = {character:index for index, character
-                       in enumerate(alphabet)}
+        self.lookup = OrderedDict([(character, index) for index, character
+                                   in enumerate(alphabet)])
 
     @abstractmethod
     def create_alphabet(self):
@@ -52,7 +53,7 @@ class TargetCoder(object):
         for target in normalized_targets.split(' '):
             encoded_targets.append(self.lookup[target])
 
-        return np.array(encoded_targets, dtype=np.uint8)
+        return np.array(encoded_targets, dtype=np.uint32)
 
     def decode(self, encoded_targets):
         '''
