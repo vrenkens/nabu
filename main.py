@@ -3,7 +3,7 @@ run this file to go through the neural net training procedure, look at the confi
 
 import os
 from six.moves import configparser
-from neuralNetworks import nnet
+from neuralnetworks import nnet
 from processing import ark, prepare_data, feature_reader, batchdispenser, target_coder, target_normalizers
 
 #here you can set which steps should be executed. If a step has been executed in the past the result have been saved and the step does not have to be executed again (if nothing has changed)
@@ -70,7 +70,7 @@ if TRAIN:
 
     #create a batch dispenser
     dispenser = batchdispenser.TextBatchDispenser(featreader, coder, int(config.get('nnet', 'batch_size')), textfile)
-    
+
     #train the neural net
     print '------- training neural net ----------'
     nnet.train(dispenser)
