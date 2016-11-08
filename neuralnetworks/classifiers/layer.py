@@ -31,7 +31,7 @@ class FFLayer(object):
             inputs: the input to the layer
             is_training: whether or not the network is in training mode
             reuse: wheter or not the variables in the network should be reused
-            scope: the variable scope of the layer\
+            scope: the variable scope of the layer
 
         Returns:
             The output of the layer
@@ -108,7 +108,7 @@ class BLSTMLayer(object):
 
             #do the forward computation
             outputs_tupple, _ = bidirectional_dynamic_rnn(
-                lstm_cell, lstm_cell, inputs, dtype = tf.float32,
+                lstm_cell, lstm_cell, inputs, dtype=tf.float32,
                 sequence_length=sequence_length)
 
             outputs = tf.concat(2, outputs_tupple)

@@ -499,7 +499,7 @@ class CTCTrainer(Trainer):
             values = tf.reshape(
                 seq_convertors.seq2nonseq(targets, target_seq_length), [-1])
 
-            shape = [batch_size, targets.get_shape()[1]]
+            shape = [batch_size, int(targets.get_shape()[1])]
 
             sparse_targets = tf.SparseTensor(tf.cast(indices, tf.int64), values,
                                              shape)
@@ -583,14 +583,14 @@ def split_batch(inputs, targets, input_seq_length, output_seq_length,
     #create the minibatches
     minibatches = []
 
-    for k in range(inputs.shape[0]/numutterances_per_minibatch):
+    for k in range(len(added_inputs)/numutterances_per_minibatch):
 
         minibatch_inputs = np.array(
             added_inputs[k*numutterances_per_minibatch:
                          (k+1)*numutterances_per_minibatch])
 
         minibatch_targets = np.array(
-            added_targets[numutterances_per_minibatch:
+            added_targets[k*numutterances_per_minibatch:
                           (k+1)*numutterances_per_minibatch])
 
         minibatch_input_seq_length = np.array(added_input_seq_length[
@@ -601,7 +601,7 @@ def split_batch(inputs, targets, input_seq_length, output_seq_length,
             k*numutterances_per_minibatch:
             (k+1)*numutterances_per_minibatch])
 
-        minibatches.append((minibatch_inputs, minibatch_targets,
+        minibatches.append((minibatch_inputs, minibatch_targets[:,:,np.newaxis],
                             minibatch_input_seq_length,
                             minibatch_output_seq_length))
 

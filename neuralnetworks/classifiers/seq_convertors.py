@@ -72,7 +72,7 @@ def nonseq2seq(tensor, seq_length, length, name=None):
         for seq in sequences:
             seq.set_shape([length, int(tensor.get_shape()[1])])
 
-        #convert the list for eqch sequence to a list for eqch time step
+        #pack the sequences into a tensor
         sequential = tf.pack(sequences)
 
     return sequential
