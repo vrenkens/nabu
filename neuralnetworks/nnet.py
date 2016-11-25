@@ -7,7 +7,6 @@ import itertools
 import classifiers.activation as act
 import tensorflow as tf
 from classifiers.dblstm import DBLSTM
-from classifiers.dnn import DNN
 from trainer import CTCTrainer
 from decoder import CTCDecoder
 
@@ -45,9 +44,6 @@ class Nnet(object):
         #create a DBLSTM
         self.dblstm = DBLSTM(num_labels + 1, int(self.conf['num_layers']),
                              int(self.conf['num_units']), activation)
-
-        #activation = act.TfActivation(act.Batchnorm(None), tf.nn.relu)
-        #self.dblstm = DNN(num_labels+1, 5, 2048, activation, False)
 
     def train(self, dispenser):
         '''

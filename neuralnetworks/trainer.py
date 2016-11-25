@@ -653,61 +653,6 @@ class CTCTrainer(Trainer):
 
         return ler
 
-class CTCTrainerTest(CTCTrainer):
-    '''A trainer that minimises the CTC loss'''
-
-    def compute_loss(self, targets, logits, logit_seq_length,
-                     target_seq_length):
-        '''
-        Compute the loss
-
-        Creates the operation to compute the CTC loss for every input
-        frame (if you want to have a different loss function, overwrite this
-        method)
-
-        Args:
-            targets: a [batch_size, max_target_length, 1] tensor containing the
-                targets
-            logits: a [batch_size, max_input_length, dim] tensor containing the
-                inputs
-            logit_seq_length: the length of all the input sequences as a vector
-            target_seq_length: the length of all the target sequences as a
-                vector
-
-        Returns:
-            a scalar value containing the loss
-        '''
-
-        #compute the CTC loss
-        loss = super(CTCTrainerTest, self).compute_loss(
-            targets, logits, logit_seq_length, target_seq_length)
-
-        #add the sequence length loss
-
-        with tf.variable_scope('sequence_length_loss'):
-
-            #compute the expected sequence length of the network
-            nonseq_logits = seq_convertors.seq2nonseq(logits, logit_seq_length)
-            blankprobs = seq_convertors.nonseq2seq(
-                tf.nn.softmax(nonseq_logits), logit_seq_length,
-                int(logits.get_shape()[1]))[:, :, -1]
-
-            #compute the number of output blanks
-            num_blanks = tf.reduce_sum(blankprobs, 1)
-
-            #compute the output sequence lengths
-            output_seq_length = (
-                tf.cast(logit_seq_length, tf.float32) - num_blanks)
-
-            #compute the sequence length loss
-            float_target_length = tf.cast(target_seq_length, tf.float32)
-            seq_loss = tf.reduce_sum(
-                float_target_length*tf.log(float_target_length
-                                           /output_seq_length)
-                + output_seq_length - float_target_length)
-
-        return loss + 100*seq_loss
-
 def padd_batch(inputs, targets, input_length, target_length):
     '''
     Pad the inputs and targets so they have the maximum length
