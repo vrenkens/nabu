@@ -585,8 +585,7 @@ class CTCTrainer(Trainer):
 
             loss = tf.reduce_sum(tf.nn.ctc_loss(logits, sparse_targets,
                                                 logit_seq_length,
-                                                time_major=False,
-                                                ctc_merge_repeated=False))
+                                                time_major=False))
 
         return loss
 
@@ -651,14 +650,6 @@ class CTCTrainer(Trainer):
             errors += error_matrix[-1, -1]
 
         ler = errors/sum([target.size for target in targets])
-
-        output_length = [out.size for out in trimmed_outputs]
-        mean_output_length = float(sum(output_length))/len(output_length)
-        target_length = [target.size for target in targets]
-        mean_target_length = float(sum(target_length))/len(target_length)
-
-        print('average output sequence length: %f, average target length: %f' %
-              (mean_output_length, mean_target_length))
 
         return ler
 

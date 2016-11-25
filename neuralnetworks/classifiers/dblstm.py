@@ -11,7 +11,7 @@ import seq_convertors
 class DBLSTM(Classifier):
     '''A deep bidirectional LSTM classifier'''
 
-    def __init__(self, output_dim, num_layers, num_units):
+    def __init__(self, output_dim, num_layers, num_units, activation):
         '''
         DBLSTM constructor
 
@@ -19,11 +19,14 @@ class DBLSTM(Classifier):
             output_dim: the output dimension
             num_layers: number of BLSTM layers
             num_units: number of units in the LSTM cells
+            activation: the activation function that will be used between
+                the layers
         '''
 
         super(DBLSTM, self).__init__(output_dim)
         self.num_layers = num_layers
         self.num_units = num_units
+        self.activation = activation
 
     def __call__(self, inputs, input_seq_length, targets=None,
                  target_seq_length=None, is_training=False, reuse=False,
@@ -68,6 +71,8 @@ class DBLSTM(Classifier):
             for layer in range(self.num_layers):
                 logits = blstm(logits, input_seq_length,
                                is_training, reuse, 'layer' + str(layer))
+
+                logits = self.activation(logits, is_training, reuse)
 
             logits = seq_convertors.seq2nonseq(logits, input_seq_length)
 

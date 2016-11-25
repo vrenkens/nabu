@@ -8,7 +8,7 @@ import classifiers.activation as act
 import tensorflow as tf
 from classifiers.dblstm import DBLSTM
 from classifiers.dnn import DNN
-from trainer import CTCTrainerTest
+from trainer import CTCTrainer
 from decoder import CTCDecoder
 
 class Nnet(object):
@@ -39,9 +39,12 @@ class Nnet(object):
         #save the input dim
         self.input_dim = input_dim
 
+        #create an activation function
+        activation = act.Dropout(None, 0.5)
+
         #create a DBLSTM
         self.dblstm = DBLSTM(num_labels + 1, int(self.conf['num_layers']),
-                             int(self.conf['num_units']))
+                             int(self.conf['num_units']), activation)
 
         #activation = act.TfActivation(act.Batchnorm(None), tf.nn.relu)
         #self.dblstm = DNN(num_labels+1, 5, 2048, activation, False)
@@ -84,7 +87,7 @@ class Nnet(object):
 
         #put the DBLSTM in a CTC training environment
         print 'building the training graph'
-        trainer = CTCTrainerTest(
+        trainer = CTCTrainer(
             self.dblstm, self.input_dim, dispenser.max_input_length,
             dispenser.max_target_length,
             float(self.conf['initial_learning_rate']),
