@@ -80,20 +80,34 @@ class Trainer(object):
             #get a list of trainable variables in the decoder graph
             params = tf.trainable_variables()
 
-            #add the variables and operations to the graph that are used for
-            #training
+            #for every parameter create a variable that holds its gradients
+            with tf.variable_scope('batch_variables'):
 
-            #total number of steps
-            nsteps = tf.constant(num_steps, dtype=tf.int32, name='num_steps')
+                with tf.variable_scope('gradients'):
+                    #the gradients for the entire batch
+                    grads = [tf.get_variable(
+                        param.op.name, param.get_shape().as_list(),
+                        initializer=tf.constant_initializer(0),
+                        trainable=False) for param in params]
 
-            #the total loss of the entire batch
-            batch_loss = tf.get_variable(
-                'batch_loss', [], dtype=tf.float32,
-                initializer=tf.constant_initializer(0), trainable=False)
+                #the total loss of the entire batch
+                batch_loss = tf.get_variable(
+                    'batch_loss', [], dtype=tf.float32,
+                    initializer=tf.constant_initializer(0), trainable=False)
 
-            with tf.variable_scope('train_variables'):
+                #the total number of utterances that are used in the batch
+                num_frames = tf.get_variable(
+                    name='num_frames', shape=[], dtype=tf.int32,
+                    initializer=tf.constant_initializer(0), trainable=False)
 
-                #the amount of steps already taken
+                #create an operation to initialise the batch variables
+                self.init_batch = tf.initialize_variables(
+                    grads + [num_frames, batch_loss])
+
+
+            with tf.variable_scope('train'):
+
+                #a variable to hold the amount of steps already taken
                 self.global_step = tf.get_variable(
                     'global_step', [], dtype=tf.int32,
                     initializer=tf.constant_initializer(0), trainable=False)
@@ -106,30 +120,27 @@ class Trainer(object):
 
                 #compute the learning rate with exponential decay and scale with
                 #the learning rate factor
-                learning_rate = tf.train.exponential_decay(
-                    init_learning_rate, self.global_step, nsteps,
+                self.learning_rate = tf.train.exponential_decay(
+                    init_learning_rate, self.global_step, num_steps,
                     learning_rate_decay) * learning_rate_fact
 
                 #create the optimizer
-                optimizer = tf.train.AdamOptimizer(learning_rate)
+                optimizer = tf.train.AdamOptimizer(self.learning_rate)
 
-            #for every parameter create a variable that holds its gradients
-            with tf.variable_scope('gradients'):
-                grads = [tf.get_variable(
-                    param.op.name, param.get_shape().as_list(),
-                    initializer=tf.constant_initializer(0),
-                    trainable=False) for param in params]
+                #average the gradients
+                meangrads = [tf.div(grad, tf.cast(num_frames, tf.float32),
+                                    name=grad.op.name) for grad in grads]
 
-            with tf.name_scope('train'):
-                #the total number of frames that are used in the batch
-                num_frames = tf.get_variable(
-                    name='num_frames', shape=[], dtype=tf.int32,
-                    initializer=tf.constant_initializer(0), trainable=False)
+                with tf.variable_scope('clip'):
+                    #clip the gradients
+                    meangrads = [tf.clip_by_value(grad, -1., 1.,
+                                                  name=grad.op.name)
+                                 for grad in meangrads]
 
-                #operation to update num_frames
-                #pylint: disable=E1101
-                update_num_frames = num_frames.assign_add(
-                    tf.reduce_sum(self.target_seq_length))
+                #opperation to apply the gradients
+                self.apply_gradients_op = optimizer.apply_gradients(
+                    [(meangrads[p], params[p]) for p in range(len(meangrads))],
+                    global_step=self.global_step, name='apply_gradients')
 
                 #compute the training loss
                 loss = self.compute_loss(
@@ -140,68 +151,47 @@ class Trainer(object):
                 self.halve_learningrate_op = learning_rate_fact.assign(
                     learning_rate_fact/2).op
 
-                #create an operation to initialise the gradients
-                self.init_grads = tf.initialize_variables(grads)
-
-                #the operation to initialise the batch loss
-                 #pylint: disable=E1101
-                self.init_loss = batch_loss.initializer
-
-                #the operation to initialize the num_frames
-                #pylint: disable=E1101
-                self.init_num_frames = num_frames.initializer
-
                 #compute the gradients of the batch
                 batchgrads = tf.gradients(loss, params)
 
-                #create an operation to update the batch loss
+                #operation to update the batch loss
                 #pylint: disable=E1101
-                self.update_loss = batch_loss.assign_add(loss)
+                update_loss = batch_loss.assign_add(loss)
+
+                #operation to update num_frames
+                #pylint: disable=E1101
+                update_num_frames = num_frames.assign_add(
+                    numutterances_per_minibatch)
+
+                #operation to update the gradients
+                update_gradients = [
+                    grads[p].assign_add(batchgrads[p])
+                    for p in range(len(grads)) if batchgrads[p] is not None]
+
+                #all remaining operations with the UPDATE_OPS GraphKeys
+                update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
                 #create an operation to update the gradients, the batch_loss
                 #and do all other update ops
                 #pylint: disable=E1101
-                update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-                self.update_gradients_op = tf.group(
-                    *([grads[p].assign_add(batchgrads[p])
-                       for p in range(len(grads)) if batchgrads[p] is not None]
-                      + [self.update_loss] + update_ops + [update_num_frames]),
+                self.update_op = tf.group(
+                    *(update_gradients + [update_loss] + update_ops
+                      + [update_num_frames]),
                     name='update_gradients')
 
-                #create an operation to apply the gradients
-                #average the gradients
-                meangrads = [tf.div(grad, tf.cast(num_frames, tf.float32),
-                                    name=grad.op.name) for grad in grads]
+                #operation to compute the average loss in the batch
+                self.average_loss = batch_loss/tf.cast(num_frames, tf.float32)
 
-                #clip the gradients
-                meangrads = [tf.clip_by_value(grad, -1., 1.)
-                             for grad in meangrads]
-
-                #apply the gradients
-                self.apply_gradients_op = optimizer.apply_gradients(
-                    [(meangrads[p], params[p]) for p in range(len(meangrads))],
-                    global_step=self.global_step, name='apply_gradients')
+                #saver for the training variables
+                self.saver = tf.train.Saver(tf.get_collection(
+                    tf.GraphKeys.VARIABLES, scope='train'))
 
             with tf.name_scope('valid'):
-                #compute the validation loss
-                valid_loss = self.compute_loss(
-                    self.targets, logits, logit_seq_length,
-                    self.target_seq_length)
-
-                #operation to update the validation loss
-                #pylint: disable=E1101
-                self.update_valid_loss = tf.group(
-                    *([batch_loss.assign_add(valid_loss), update_num_frames]))
-
-            #operation to compute the average loss in the batch
-            self.average_loss = batch_loss/tf.cast(num_frames, tf.float32)
+                #compute the outputs that will be used for validation
+                self.outputs = self.validation(logits, logit_seq_length)
 
             # add an operation to initialise all the variables in the graph
             self.init_op = tf.initialize_all_variables()
-
-            #saver for the training variables
-            self.saver = tf.train.Saver(tf.get_collection(
-                tf.GraphKeys.VARIABLES, scope='train_variables'))
 
             #create the summaries for visualisation
             self.summary = tf.merge_summary(
@@ -240,6 +230,38 @@ class Trainer(object):
 
         raise NotImplementedError('Abstract method')
 
+    @abstractmethod
+    def validation(self, logits, logit_seq_length):
+        '''
+        compute the outputs that will be used for validation
+
+        Args:
+            logits: the classifier output logits
+            logit_seq_length: the sequence lengths of the logits
+
+        Returns:
+            The validation outputs
+        '''
+
+        raise NotImplementedError('Abstract method')
+
+    @abstractmethod
+    def validation_metric(self, outputs, targets):
+        '''
+        compute the metric that will be used for validation
+
+        The metric can be e.g. an error rate or a loss
+
+        Args:
+            outputs: the validation outputs
+            targets: the ground truth labels
+
+        Returns:
+            The validation outputs
+        '''
+
+        raise NotImplementedError('Abstract method')
+
     def initialize(self):
         '''Initialize all the variables in the graph'''
 
@@ -269,7 +291,9 @@ class Trainer(object):
                 a list containing an N-dimensional vector for each utterance
 
         Returns:
-            the loss at this step
+            a pair containing:
+                - the loss at this step
+                - the learning rate used at this step
         '''
 
         #get a list of sequence lengths
@@ -290,7 +314,7 @@ class Trainer(object):
         for minibatch in minibatches:
 
             #pylint: disable=E1101
-            self.update_gradients_op.run(
+            self.update_op.run(
                 feed_dict={self.inputs:minibatch[0],
                            self.targets:minibatch[1],
                            self.input_seq_length:minibatch[2],
@@ -299,25 +323,25 @@ class Trainer(object):
         #apply the accumulated gradients to update the model parameters and
         #evaluate the loss
         if self.summarywriter is not None:
-            [loss, summary, _] = tf.get_default_session().run(
-                [self.average_loss, self.summary, self.apply_gradients_op])
+            [loss, summary, lr, _] = tf.get_default_session().run(
+                [self.average_loss, self.summary, self.learning_rate,
+                 self.apply_gradients_op])
 
             #pylint: disable=E1101
             self.summarywriter.add_summary(summary,
                                            global_step=self.global_step.eval())
 
         else:
-            [loss, _] = tf.get_default_session().run(
-                [self.average_loss, self.apply_gradients_op])
+            [loss, _, lr] = tf.get_default_session().run(
+                [self.average_loss, self.learning_rate,
+                 self.apply_gradients_op])
 
 
-        #reinitialize the gradients and the loss
+        #reinitialize the batch variables
         #pylint: disable=E1101
-        self.init_grads.run()
-        self.init_loss.run()
-        self.init_num_frames.run()
+        self.init_batch.run()
 
-        return loss
+        return loss, lr
 
     def evaluate(self, inputs, targets):
         '''
@@ -351,24 +375,19 @@ class Trainer(object):
             padded_inputs, padded_targets, input_seq_length, output_seq_length,
             self.numutterances_per_minibatch)
 
-        #feed in the minibatches one by one and accumulate the loss
+        #feed in the minibatches one by one and get the validation outputs
+        outputs = []
         for minibatch in minibatches:
 
             #pylint: disable=E1101
-            self.update_valid_loss.run(
+            outputs += list(self.outputs.eval(
                 feed_dict={self.inputs:minibatch[0],
-                           self.targets:minibatch[1],
-                           self.input_seq_length:minibatch[2],
-                           self.target_seq_length:minibatch[3]})
+                           self.input_seq_length:minibatch[2]}))
 
-        #get the loss
-        loss = self.average_loss.eval()
+        #compute the validation error
+        error = self.validation_metric(outputs[:len(targets)], targets)
 
-        #reinitialize the loss
-        self.init_loss.run()
-        self.init_num_frames.run()
-
-        return loss
+        return error
 
     def halve_learning_rate(self):
         '''halve the learning rate'''
@@ -460,8 +479,68 @@ class CrossEnthropyTrainer(Trainer):
 
         return loss
 
+    def validation(self, logits, logit_seq_length):
+        '''
+        apply a softmax to the logits so the cross-enthropy can be computed
+
+        Args:
+            logits: a [batch_size, max_input_length, dim] tensor containing the
+                logits
+            logit_seq_length: the length of all the input sequences as a vector
+
+        Returns:
+            a tensor with the same shape as logits with the label probabilities
+        '''
+
+        return tf.nn.softmax(logits)
+
+    def validation_metric(self, outputs, targets):
+        '''the cross-enthropy
+
+        Args:
+            outputs: the validation output, which is a matrix containing the
+                label probabilities of size [batch_size, max_input_length, dim].
+            targets: a list containing the ground truth target labels
+        '''
+
+        cross_enthropy = 0
+        num_frames = 0
+
+        for utt in range(outputs.shape[0]):
+            num_frames += targets[utt].size
+
+            cross_enthropy += -np.log(
+                outputs[utt, np.arange(targets[utt].size), targets[utt]]).sum()
+
+        return cross_enthropy/num_frames
+
 class CTCTrainer(Trainer):
     '''A trainer that minimises the CTC loss, the output sequences'''
+    def __init__(self, classifier, input_dim, max_input_length,
+                 max_target_length, init_learning_rate, learning_rate_decay,
+                 num_steps, numutterances_per_minibatch, beam_width):
+        '''
+        NnetTrainer constructor, creates the training graph
+
+        Args:
+            classifier: the neural net classifier that will be trained
+            input_dim: the input dimension to the nnnetgraph
+            max_input_length: the maximal length of the input sequences
+            max_target_length: the maximal length of the target sequences
+            init_learning_rate: the initial learning rate
+            learning_rate_decay: the parameter for exponential learning rate
+                decay
+            num_steps: the total number of steps that will be taken
+            numutterances_per_minibatch: determines how many utterances are
+                processed at a time to limit memory usage
+            beam_width: the width of the beam used for validation
+        '''
+
+        self.beam_width = beam_width
+        super(CTCTrainer, self).__init__(
+            classifier, input_dim, max_input_length, max_target_length,
+            init_learning_rate, learning_rate_decay, num_steps, \
+              numutterances_per_minibatch)
 
     def compute_loss(self, targets, logits, logit_seq_length,
                      target_seq_length):
@@ -506,9 +585,137 @@ class CTCTrainer(Trainer):
 
             loss = tf.reduce_sum(tf.nn.ctc_loss(logits, sparse_targets,
                                                 logit_seq_length,
-                                                time_major=False))
+                                                time_major=False,
+                                                ctc_merge_repeated=False))
 
         return loss
+
+    def validation(self, logits, logit_seq_length):
+        '''
+        decode the validation set with CTC beam search
+
+        Args:
+            logits: a [batch_size, max_input_length, dim] tensor containing the
+                inputs
+            logit_seq_length: the length of all the input sequences as a vector
+
+        Returns:
+            a matrix containing the decoded labels with size
+            [batch_size, max_decoded_length]
+        '''
+
+        #Convert logits to time major
+        tm_logits = tf.transpose(logits, [1, 0, 2])
+
+        #do the CTC beam search
+        sparse_output, _ = tf.nn.ctc_beam_search_decoder(
+            tf.pack(tm_logits), logit_seq_length, self.beam_width)
+
+        #convert the output to dense tensors with -1 as default values
+        dense_output = tf.sparse_tensor_to_dense(sparse_output[0],
+                                                 default_value=-1)
+
+        return dense_output
+
+
+    def validation_metric(self, outputs, targets):
+        '''the Label Error Rate for the decoded labels
+
+        Args:
+            outputs: the validation output, which is a matrix containing the
+                decoded labels of size [batch_size, max_decoded_length]. the
+                output sequences are padded with -1
+            targets: a list containing the ground truth target labels
+        '''
+
+        #remove the padding from the outputs
+        trimmed_outputs = [o[np.where(o != -1)] for o in outputs]
+
+        errors = 0
+
+        for k, target in enumerate(targets):
+
+            error_matrix = np.zeros([target.size + 1,
+                                     trimmed_outputs[k].size + 1])
+
+            error_matrix[:, 0] = np.arange(target.size + 1)
+            error_matrix[0, :] = np.arange(trimmed_outputs[k].size + 1)
+
+            for x in range(1, target.size + 1):
+                for y in range(1, trimmed_outputs[k].size + 1):
+                    error_matrix[x, y] = min([
+                        error_matrix[x-1, y] + 1, error_matrix[x, y-1] + 1,
+                        error_matrix[x-1, y-1] + (target[x-1] !=
+                                                  trimmed_outputs[k][y-1])])
+
+            errors += error_matrix[-1, -1]
+
+        ler = errors/sum([target.size for target in targets])
+
+        output_length = [out.size for out in trimmed_outputs]
+        mean_output_length = float(sum(output_length))/len(output_length)
+        target_length = [target.size for target in targets]
+        mean_target_length = float(sum(target_length))/len(target_length)
+
+        print('average output sequence length: %f, average target length: %f' %
+              (mean_output_length, mean_target_length))
+
+        return ler
+
+class CTCTrainerTest(CTCTrainer):
+    '''A trainer that minimises the CTC loss'''
+
+    def compute_loss(self, targets, logits, logit_seq_length,
+                     target_seq_length):
+        '''
+        Compute the loss
+
+        Creates the operation to compute the CTC loss for every input
+        frame (if you want to have a different loss function, overwrite this
+        method)
+
+        Args:
+            targets: a [batch_size, max_target_length, 1] tensor containing the
+                targets
+            logits: a [batch_size, max_input_length, dim] tensor containing the
+                inputs
+            logit_seq_length: the length of all the input sequences as a vector
+            target_seq_length: the length of all the target sequences as a
+                vector
+
+        Returns:
+            a scalar value containing the loss
+        '''
+
+        #compute the CTC loss
+        loss = super(CTCTrainerTest, self).compute_loss(
+            targets, logits, logit_seq_length, target_seq_length)
+
+        #add the sequence length loss
+
+        with tf.variable_scope('sequence_length_loss'):
+
+            #compute the expected sequence length of the network
+            nonseq_logits = seq_convertors.seq2nonseq(logits, logit_seq_length)
+            blankprobs = seq_convertors.nonseq2seq(
+                tf.nn.softmax(nonseq_logits), logit_seq_length,
+                int(logits.get_shape()[1]))[:, :, -1]
+
+            #compute the number of output blanks
+            num_blanks = tf.reduce_sum(blankprobs, 1)
+
+            #compute the output sequence lengths
+            output_seq_length = (
+                tf.cast(logit_seq_length, tf.float32) - num_blanks)
+
+            #compute the sequence length loss
+            float_target_length = tf.cast(target_seq_length, tf.float32)
+            seq_loss = tf.reduce_sum(
+                float_target_length*tf.log(float_target_length
+                                           /output_seq_length)
+                + output_seq_length - float_target_length)
+
+        return loss + 100*seq_loss
 
 def padd_batch(inputs, targets, input_length, target_length):
     '''
@@ -601,7 +808,8 @@ def split_batch(inputs, targets, input_seq_length, output_seq_length,
             k*numutterances_per_minibatch:
             (k+1)*numutterances_per_minibatch])
 
-        minibatches.append((minibatch_inputs, minibatch_targets[:,:,np.newaxis],
+        minibatches.append((minibatch_inputs,
+                            minibatch_targets[:, :, np.newaxis],
                             minibatch_input_seq_length,
                             minibatch_output_seq_length))
 

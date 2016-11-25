@@ -127,7 +127,7 @@ class DNN(Classifier):
 
             #convert the logits to sequence logits to match expected output
             seq_logits = seq_convertors.nonseq2seq(logits, input_seq_length,
-                                                   len(inputs))
+                                                   int(inputs.get_shape()[1]))
 
             #create a saver
             saver = tf.train.Saver()

@@ -141,3 +141,19 @@ class AlignmentCoder(TargetCoder):
         alphabet = [str(target) for target in range(self.num_targets)]
 
         return alphabet
+
+class PhonemeEncoder(TargetCoder):
+    """ Sets up a 39 element foldet phoneme alphabet."""
+
+    def create_alphabet(self):
+        """
+        Create an alphabet of folded phonemes, according to
+        "Speaker-Independent Phone Recognition Using Hidden Markov Models."
+        """
+
+        alphabet = ['sil', 'aa', 'ae', 'ah', 'aw', 'ay', 'b', 'ch', 'd', 'dh',
+                    'dx', 'eh', 'er', 'ey', 'f', 'g', 'hh', 'ih', 'iy', 'jh',
+                    'k', 'l', 'm', 'n', 'ng', 'ow', 'oy', 'p', 'r', 's', 'sh',
+                    't', 'th', 'uh', 'uw', 'v', 'w', 'y', 'z']
+
+        return alphabet

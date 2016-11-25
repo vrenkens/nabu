@@ -4,9 +4,11 @@ contains the functionality for a Kaldi style neural network'''
 import shutil
 import os
 import itertools
+import classifiers.activation as act
 import tensorflow as tf
 from classifiers.dblstm import DBLSTM
-from trainer import CTCTrainer
+from classifiers.dnn import DNN
+from trainer import CTCTrainerTest
 from decoder import CTCDecoder
 
 class Nnet(object):
@@ -29,17 +31,20 @@ class Nnet(object):
         self.conf['savedir'] = (conf.get('directories', 'expdir')
                                 + '/' + self.conf['name'])
 
-        if not os.path.isdir(self.conf['savedir']):
-            os.mkdir(self.conf['savedir'])
         if not os.path.isdir(self.conf['savedir'] + '/training'):
-            os.mkdir(self.conf['savedir'] + '/training')
+            os.makedirs(self.conf['savedir'] + '/training')
+        if not os.path.isdir(self.conf['savedir'] + '/validation'):
+            os.makedirs(self.conf['savedir'] + '/validation')
 
         #save the input dim
         self.input_dim = input_dim
 
         #create a DBLSTM
-        self.dblstm = DBLSTM(num_labels, int(self.conf['num_layers']),
+        self.dblstm = DBLSTM(num_labels + 1, int(self.conf['num_layers']),
                              int(self.conf['num_units']))
+
+        #activation = act.TfActivation(act.Batchnorm(None), tf.nn.relu)
+        #self.dblstm = DNN(num_labels+1, 5, 2048, activation, False)
 
     def train(self, dispenser):
         '''
@@ -79,12 +84,13 @@ class Nnet(object):
 
         #put the DBLSTM in a CTC training environment
         print 'building the training graph'
-        trainer = CTCTrainer(
+        trainer = CTCTrainerTest(
             self.dblstm, self.input_dim, dispenser.max_input_length,
             dispenser.max_target_length,
             float(self.conf['initial_learning_rate']),
             float(self.conf['learning_rate_decay']),
-            num_steps, numutterances_per_minibatch)
+            num_steps, numutterances_per_minibatch,
+            int(self.conf['beam_width']))
 
         #start the visualization if it is requested
         if self.conf['visualise'] == 'True':
@@ -111,7 +117,7 @@ class Nnet(object):
                 print 'validation loss at step %d: %f' % (step, validation_loss)
                 validation_step = step
                 trainer.save_trainer(self.conf['savedir']
-                                     + '/training/validated')
+                                     + '/validation/validated')
                 num_retries = 0
 
             #start the training iteration
@@ -121,10 +127,11 @@ class Nnet(object):
                 batch_data, batch_labels = dispenser.get_batch()
 
                 #update the model
-                loss = trainer.update(batch_data, batch_labels)
+                loss, lr = trainer.update(batch_data, batch_labels)
 
                 #print the progress
-                print 'step %d/%d loss: %f' %(step, num_steps, loss)
+                print ('step %d/%d loss: %f, learning rate: %f'
+                       %(step, num_steps, loss, lr))
 
                 #increment the step
                 step += 1
@@ -147,8 +154,15 @@ class Nnet(object):
 
                             #load the validated model
                             trainer.restore_trainer(self.conf['savedir']
-                                                    + '/training/validated')
+                                                    + '/validation/validated')
+
+                            #halve the learning rate
                             trainer.halve_learning_rate()
+
+                            #save the model to store the new learning rate
+                            trainer.save_trainer(self.conf['savedir']
+                                                 + '/validation/validated')
+
                             step = validation_step
 
                             if num_retries == int(self.conf['valid_retries']):
@@ -169,7 +183,7 @@ class Nnet(object):
                             validation_step = step
                             num_retries = 0
                             trainer.save_trainer(self.conf['savedir']
-                                                 + '/training/validated')
+                                                 + '/validation/validated')
 
                 #save the model if at checkpoint
                 if step%int(self.conf['check_freq']) == 0:
@@ -188,15 +202,16 @@ class Nnet(object):
             target_coder: target coder object to decode the target sequences
 
         Returns:
-            a list of triples containing:
-                - the utterance ID
+            a dictionary with the utterance id as key and a pair as Value
+            containing:
                 - a list of hypothesis strings
                 - a numpy array of log probabilities for the hypotheses
         '''
 
         #create a decoder
         print 'building the decoding graph'
-        decoder = CTCDecoder(self.dblstm, self.input_dim, reader.max_length,
+        decoder = CTCDecoder(self.dblstm, self.input_dim,
+                             reader.max_input_length,
                              int(self.conf['beam_width']))
 
 
@@ -204,7 +219,7 @@ class Nnet(object):
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True #pylint: disable=E1101
 
-        nbests = []
+        nbests = dict()
 
         with tf.Session(graph=decoder.graph, config=config):
 
@@ -225,7 +240,7 @@ class Nnet(object):
                 hypotheses = [target_coder.decode(h)
                               for h in encoded_hypotheses]
 
-                nbests.append((utt_id, hypotheses, logprobs))
+                nbests[utt_id] = (hypotheses, logprobs)
 
 
         return nbests

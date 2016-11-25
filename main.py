@@ -10,7 +10,7 @@ from processing import ark, prepare_data, feature_reader, batchdispenser, target
 TRAINFEATURES = False
 TESTFEATURES = False
 TRAIN = True
-TEST = False
+TEST = True
 
 #read config file
 config = configparser.ConfigParser()
@@ -19,25 +19,23 @@ current_dir = os.getcwd()
 
 #compute the features of the training set for DNN training if they are different then the GMM features
 if TRAINFEATURES:
-    if config.get('dnn-features', 'name') != config.get('gmm-features', 'name'):
-        feat_cfg = dict(config.items('dnn-features'))
+    feat_cfg = dict(config.items('dnn-features'))
 
-        print '------- computing DNN training features ----------'
-        prepare_data.prepare_data(config.get('directories', 'train_data'), config.get('directories', 'train_features') + '/' + feat_cfg['name'], feat_cfg, feat_cfg['type'], feat_cfg['dynamic'])
+    print '------- computing DNN training features ----------'
+    prepare_data.prepare_data(config.get('directories', 'train_data'), config.get('directories', 'train_features') + '/' + feat_cfg['name'], feat_cfg, feat_cfg['type'], feat_cfg['dynamic'])
 
-        print '------- computing cmvn stats ----------'
-        prepare_data.compute_cmvn(config.get('directories', 'train_features') + '/' + feat_cfg['name'])
+    print '------- computing cmvn stats ----------'
+    prepare_data.compute_cmvn(config.get('directories', 'train_features') + '/' + feat_cfg['name'])
 
 #compute the features of the training set for DNN testing if they are different then the GMM features
 if TESTFEATURES:
-    if config.get('dnn-features', 'name') != config.get('gmm-features', 'name'):
-        feat_cfg = dict(config.items('dnn-features'))
+    feat_cfg = dict(config.items('dnn-features'))
 
-        print '------- computing DNN testing features ----------'
-        prepare_data.prepare_data(config.get('directories', 'test_data'), config.get('directories', 'test_features') + '/' + feat_cfg['name'], feat_cfg, feat_cfg['type'], feat_cfg['dynamic'])
+    print '------- computing DNN testing features ----------'
+    prepare_data.prepare_data(config.get('directories', 'test_data'), config.get('directories', 'test_features') + '/' + feat_cfg['name'], feat_cfg, feat_cfg['type'], feat_cfg['dynamic'])
 
-        print '------- computing cmvn stats ----------'
-        prepare_data.compute_cmvn(config.get('directories', 'test_features') + '/' + feat_cfg['name'])
+    print '------- computing cmvn stats ----------'
+    prepare_data.compute_cmvn(config.get('directories', 'test_features') + '/' + feat_cfg['name'])
 
 #get the feature input dim
 reader = ark.ArkReader(config.get('directories', 'train_features') + '/' + config.get('dnn-features', 'name') + '/feats.scp')
@@ -93,4 +91,5 @@ if TEST:
     featreader = feature_reader.FeatureReader(featdir + '/feats.scp', featdir + '/cmvn.scp', featdir + '/utt2spk', 0, max_input_length)
 
     #decode with te neural net
+    resultsfolder = savedir + '/decode'
     nnet.decode(featreader, coder)

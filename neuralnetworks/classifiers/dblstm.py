@@ -59,7 +59,7 @@ class DBLSTM(Classifier):
             blstm = BLSTMLayer(self.num_units)
 
             #the linear output layer
-            outlayer = FFLayer(self.output_dim+1,
+            outlayer = FFLayer(self.output_dim,
                                TfActivation(None, lambda(x): x), 0)
 
             #do the forward computation

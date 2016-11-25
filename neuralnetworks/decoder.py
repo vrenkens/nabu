@@ -6,7 +6,6 @@ import tensorflow as tf
 import numpy as np
 from classifiers import seq_convertors
 
-
 class Decoder(object):
     '''the abstract class for a decoder'''
 
@@ -37,7 +36,7 @@ class Decoder(object):
                 tf.int32, shape=[1], name='seq_length')
 
             #create the decoding graph
-            logits, _, self.saver, logits_seq_length =\
+            logits, logits_seq_length, self.saver, _ =\
                 classifier(
                     self.inputs, self.input_seq_length, targets=None,
                     target_seq_length=None, is_training=True,
@@ -89,7 +88,7 @@ class Decoder(object):
         '''
 
         #get the sequence length
-        inputs_seq_length = [inputs.shape[0]]
+        input_seq_length = [inputs.shape[0]]
 
         #pad the inputs
         inputs = np.append(
@@ -97,11 +96,14 @@ class Decoder(object):
                               inputs.shape[1]]), 0)
 
         #pylint: disable=E1101
-        decoded = self.outputs.eval(
+        decoded = tf.get_default_session().run(
+            self.outputs,
             feed_dict={self.inputs:inputs[np.newaxis, :, :],
-                       self.inputs_seq_length:inputs_seq_length})
+                       self.input_seq_length:input_seq_length})
 
-        return self.process_decoded(decoded)
+        decoded = self.process_decoded(decoded)
+
+        return decoded
 
     def restore(self, filename):
         '''
@@ -181,6 +183,9 @@ class CTCDecoder(Decoder):
                 - a W dimensional vector containing the log probabilities
         '''
 
+        #Convert logits to time major
+        logits = tf.pack(tf.unpack(logits, axis=1))
+
         #do the CTC beam search
         sparse_outputs, logprobs = tf.nn.ctc_beam_search_decoder(
             tf.pack(logits), logits_seq_length, self.beam_width,
@@ -188,10 +193,10 @@ class CTCDecoder(Decoder):
 
         #convert the outputs to dense tensors
         dense_outputs = [
-            tf.reshape(tf.sparse_tensor_to_dense(o, default_value=-1), [-1])
+            tf.reshape(tf.sparse_tensor_to_dense(o), [-1])
             for o in sparse_outputs]
 
-        return tf.tuple([tf.tuple(dense_outputs), tf.reshape(logprobs,[-1])])
+        return dense_outputs + [tf.reshape(logprobs, [-1])]
 
     def process_decoded(self, decoded):
         '''
@@ -204,14 +209,11 @@ class CTCDecoder(Decoder):
 
         Returns:
             decoded: a pair containing:
-                - a list of output sequences with the padding removed
+                - a list of output sequences
                 - a W dimensional vector containing the log probabilities
         '''
 
-        target_sequences = decoded[0]
-        logprobs = decoded[1]
-
-        #remove the padding of -1 values from the target sequences
-        target_sequences = [s[np.where(s != -1)] for s in target_sequences]
+        target_sequences = decoded[:-1]
+        logprobs = decoded[-1]
 
         return target_sequences, logprobs

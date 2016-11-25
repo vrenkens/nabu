@@ -56,3 +56,9 @@ def aurora4_normalizer(transcription, alphabet):
                   for character in normalized]
 
     return ' '.join(normalized)
+
+def timit_phone_norm(transcription, _):
+    """ Transorfm the transcitopn string into a list. We are expected foldet inputs in the
+        text files we are loading. In the future the folding could be implemented here
+        manually."""
+    return transcription
