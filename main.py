@@ -4,7 +4,7 @@ run this file to go through the neural net training procedure, look at the confi
 import os
 from six.moves import configparser
 from neuralnetworks import nnet
-from processing import ark, prepare_data, feature_reader, batchdispenser, target_coder, target_normalizers
+from processing import ark, prepare_data, feature_reader, batchdispenser, target_coder, target_normalizers, score
 
 #here you can set which steps should be executed. If a step has been executed in the past the result have been saved and the step does not have to be executed again (if nothing has changed)
 TRAINFEATURES = False
@@ -92,4 +92,22 @@ if TEST:
 
     #decode with te neural net
     resultsfolder = savedir + '/decode'
-    nnet.decode(featreader, coder)
+    nbests = nnet.decode(featreader, coder)
+
+    #the path to the text file
+    textfile = config.get('directories', 'test_data') + '/text'
+
+    #read all the reference transcriptions
+    with open(textfile) as fid:
+        lines = fid.readlines()
+
+    references = dict()
+    for line in lines:
+        splitline = line.strip().split(' ')
+        references[splitline[0]] = target_normalizers.timit_phone_norm(
+            ' '.join(splitline[1:]), None)
+
+    #compute the character error rate
+    CER = score.CER(nbests, references)
+
+    print 'character error rate: %f' % CER

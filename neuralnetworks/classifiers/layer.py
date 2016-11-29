@@ -114,3 +114,127 @@ class BLSTMLayer(object):
             outputs = tf.concat(2, outputs_tupple)
 
             return outputs
+
+class GatedDilatedConvolution(object):
+    '''A gated dilated convolution layer'''
+    def __init__(self, kernel_size):
+        '''constructor
+
+        Args:
+            kernel_size: size of the filters
+        '''
+
+        self.kernel_size = kernel_size
+
+    def __call__(self, inputs, dilation_rate, is_training=False, reuse=False,
+                 scope=None):
+        '''
+        Create the variables and do the forward computation
+
+        Args:
+            inputs: the input to the layer as a
+                [batch_size, max_length, dim] tensor
+            dilation_rate: the rate of dilation
+            is_training: whether or not the network is in training mode
+            reuse: Setting this value to true will cause tensorflow to look
+                      for variables with the same name in the graph and reuse
+                      these instead of creating new variables.
+            scope: The variable scope sets the namespace under which
+                      the variables created during this call will be stored.
+
+        Returns:
+            a pair containing:
+                - The residual output
+                - the skip connections
+        '''
+
+        with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
+
+            num_units = int(inputs.get_shape()[2])
+            stddev = 1/self.kernel_size**0.5
+
+            #create the data filters
+            wd = tf.get_variable(
+                'data_filter', [1, self.kernel_size, num_units, num_units],
+                initializer=tf.random_normal_initializer(stddev=stddev))
+
+            #create the gate filters
+            wg = tf.get_variable(
+                'gate_filter', [1, self.kernel_size, num_units, num_units],
+                initializer=tf.random_normal_initializer(stddev=stddev))
+
+            #the weights of the linear layer
+            wl = tf.get_variable(
+                'linear', [1, num_units, num_units],
+                initializer=tf.random_normal_initializer(stddev=stddev))
+
+            #apply the dilated convolution
+            out = tf.expand_dims(inputs, 1)
+            out = tf.nn.tanh(tf.nn.atrous_conv2d(
+                out, wd, dilation_rate, padding='SAME'))
+            out = out[:,0,:,:]
+
+            #compute the gate values
+            gate = tf.expand_dims(inputs, 1)
+            gate = tf.nn.sigmoid(tf.nn.atrous_conv2d(
+                gate, wg, dilation_rate, padding='SAME'))
+            gate = gate[:,0,:,:]
+
+            #compute the gated output
+            out = out*gate
+
+            #compute the final output
+            out = tf.nn.tanh(tf.nn.conv1d(out, wl, 1, padding='SAME'))
+
+            #return the residual and the skip
+            return inputs + out, out
+
+class Conv1dlayer(object):
+    '''a 1-D convolutional layer'''
+
+    def __init__(self, num_units, kernel_size, stride):
+        '''constructor
+
+        Args:
+            num_units: the number of filters
+            kernel_size: the size of the filters
+            stride: the stride of the convolution
+        '''
+
+        self.num_units = num_units
+        self.kernel_size = kernel_size
+        self.stride = stride
+
+    def __call__(self, inputs, is_training=False, reuse=False, scope=None):
+        '''
+        Create the variables and do the forward computation
+
+        Args:
+            inputs: the input to the layer as a
+                [batch_size, max_length, dim] tensor
+            is_training: whether or not the network is in training mode
+            reuse: Setting this value to true will cause tensorflow to look
+                      for variables with the same name in the graph and reuse
+                      these instead of creating new variables.
+            scope: The variable scope sets the namespace under which
+                      the variables created during this call will be stored.
+
+        Returns:
+            the outputs which is a [batch_size, max_length/stride, num_units]
+        '''
+
+        with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
+
+            stddev = 1/self.kernel_size**0.5
+            input_dim = int(inputs.get_shape()[2])
+
+            #the filte parameters
+            w = tf.get_variable(
+                'filter',
+                [self.kernel_size, input_dim, self.num_units],
+                initializer=tf.random_normal_initializer(stddev=stddev))
+
+            #do the convolution
+            out = tf.nn.conv1d(inputs, w, self.stride, padding = 'SAME')
+
+        return out

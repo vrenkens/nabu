@@ -5,8 +5,9 @@ import shutil
 import os
 import itertools
 import classifiers.activation as act
-import tensorflow as tf
 from classifiers.dblstm import DBLSTM
+from classifiers.wavenet import Wavenet
+import tensorflow as tf
 from trainer import CTCTrainer
 from decoder import CTCDecoder
 
@@ -39,11 +40,16 @@ class Nnet(object):
         self.input_dim = input_dim
 
         #create an activation function
-        activation = act.Dropout(None, 0.5)
+        activation = act.TfActivation(None, lambda x: x)
 
         #create a DBLSTM
-        self.dblstm = DBLSTM(num_labels + 1, int(self.conf['num_layers']),
+        self.classifier = DBLSTM(num_labels + 1, int(self.conf['num_layers']),
                              int(self.conf['num_units']), activation)
+
+        #create the wavenet
+        #self.classifier = Wavenet(num_labels + 1, int(self.conf['num_layers']),
+        #                          2, int(self.conf['num_units']), 7)
+
 
     def train(self, dispenser):
         '''
@@ -54,22 +60,25 @@ class Nnet(object):
         '''
 
         #get the validation set
-        val_data, val_labels = zip(
-            *[dispenser.get_batch()
-              for _ in range(int(self.conf['valid_batches']))])
+        if int(self.conf['valid_batches']) > 0:
+            val_data, val_labels = zip(
+                *[dispenser.get_batch()
+                  for _ in range(int(self.conf['valid_batches']))])
 
-        val_data = list(itertools.chain.from_iterable(val_data))
-        val_labels = list(itertools.chain.from_iterable(val_labels))
+            val_data = list(itertools.chain.from_iterable(val_data))
+            val_labels = list(itertools.chain.from_iterable(val_labels))
+        else:
+            val_data = None
+            val_labels = None
 
         dispenser.split()
 
         #compute the total number of steps
         num_steps = int(dispenser.num_batches *int(self.conf['num_epochs']))
 
-        #set the step to the saving point that is closest to the starting step
-        step = (int(self.conf['starting_step'])
-                - int(self.conf['starting_step'])
-                % int(self.conf['check_freq']))
+        #set the step to the starting step
+        step = int(self.conf['starting_step'])
+
 
         #go to the point in the database where the training was at checkpoint
         for _ in range(step):
@@ -84,7 +93,7 @@ class Nnet(object):
         #put the DBLSTM in a CTC training environment
         print 'building the training graph'
         trainer = CTCTrainer(
-            self.dblstm, self.input_dim, dispenser.max_input_length,
+            self.classifier, self.input_dim, dispenser.max_input_length,
             dispenser.max_target_length,
             float(self.conf['initial_learning_rate']),
             float(self.conf['learning_rate_decay']),
@@ -209,7 +218,7 @@ class Nnet(object):
 
         #create a decoder
         print 'building the decoding graph'
-        decoder = CTCDecoder(self.dblstm, self.input_dim,
+        decoder = CTCDecoder(self.classifier, self.input_dim,
                              reader.max_input_length,
                              int(self.conf['beam_width']))
 

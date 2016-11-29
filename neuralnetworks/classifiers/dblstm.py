@@ -66,7 +66,12 @@ class DBLSTM(Classifier):
                                TfActivation(None, lambda(x): x), 0)
 
             #do the forward computation
-            logits = inputs
+
+            #add gaussian noise to the inputs
+            if is_training:
+                logits = inputs + tf.random_normal(inputs.get_shape(), stddev=0.6)
+            else:
+                logits = inputs
 
             for layer in range(self.num_layers):
                 logits = blstm(logits, input_seq_length,
