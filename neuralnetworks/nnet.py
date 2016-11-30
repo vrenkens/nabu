@@ -43,12 +43,12 @@ class Nnet(object):
         activation = act.TfActivation(None, lambda x: x)
 
         #create a DBLSTM
-        self.classifier = DBLSTM(num_labels + 1, int(self.conf['num_layers']),
-                             int(self.conf['num_units']), activation)
+        #self.classifier = DBLSTM(num_labels + 1, int(self.conf['num_layers']),
+        #                     int(self.conf['num_units']), activation)
 
         #create the wavenet
-        #self.classifier = Wavenet(num_labels + 1, int(self.conf['num_layers']),
-        #                          2, int(self.conf['num_units']), 7)
+        self.classifier = Wavenet(num_labels + 1, int(self.conf['num_layers']),
+                                  3, int(self.conf['num_units']), 7)
 
 
     def train(self, dispenser):

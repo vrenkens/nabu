@@ -2,25 +2,26 @@
 Neural network layers '''
 
 import tensorflow as tf
+import seq_convertors
 from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn
 
 class FFLayer(object):
     '''This class defines a fully connected feed forward layer'''
 
-    def __init__(self, output_dim, activation, weights_std=None):
+    def __init__(self, output_dim, act, weights_std=None):
         '''
         FFLayer constructor, defines the variables
         Args:
             output_dim: output dimension of the layer
-            activation: the activation function
+            act: the activation function
             weights_std: the standart deviation of the weights by default the
                 inverse square root of the input dimension is taken
         '''
 
         #save the parameters
         self.output_dim = output_dim
-        self.activation = activation
+        self.activation = act
         self.weights_std = weights_std
 
     def __call__(self, inputs, is_training=False, reuse=False, scope=None):
@@ -126,14 +127,15 @@ class GatedDilatedConvolution(object):
 
         self.kernel_size = kernel_size
 
-    def __call__(self, inputs, dilation_rate, is_training=False, reuse=False,
-                 scope=None):
+    def __call__(self, inputs, seq_length, dilation_rate,
+                 is_training=False, reuse=False, scope=None):
         '''
         Create the variables and do the forward computation
 
         Args:
             inputs: the input to the layer as a
                 [batch_size, max_length, dim] tensor
+            seq_length: the length of the input sequences
             dilation_rate: the rate of dilation
             is_training: whether or not the network is in training mode
             reuse: Setting this value to true will cause tensorflow to look
@@ -151,40 +153,28 @@ class GatedDilatedConvolution(object):
         with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
 
             num_units = int(inputs.get_shape()[2])
-            stddev = 1/self.kernel_size**0.5
 
-            #create the data filters
-            wd = tf.get_variable(
-                'data_filter', [1, self.kernel_size, num_units, num_units],
-                initializer=tf.random_normal_initializer(stddev=stddev))
+            #the dilated convolution layer
+            dconv = AConv1dlayer(num_units, self.kernel_size,
+                                 dilation_rate)
 
-            #create the gate filters
-            wg = tf.get_variable(
-                'gate_filter', [1, self.kernel_size, num_units, num_units],
-                initializer=tf.random_normal_initializer(stddev=stddev))
+            #the one by one convolution
+            onebyone = Conv1dlayer(num_units, 1, 1)
 
-            #the weights of the linear layer
-            wl = tf.get_variable(
-                'linear', [1, num_units, num_units],
-                initializer=tf.random_normal_initializer(stddev=stddev))
+            #compute the data
+            out = dconv(inputs, seq_length, is_training, reuse, 'data_dconv')
+            out = tf.nn.tanh(out)
 
-            #apply the dilated convolution
-            out = tf.expand_dims(inputs, 1)
-            out = tf.nn.tanh(tf.nn.atrous_conv2d(
-                out, wd, dilation_rate, padding='SAME'))
-            out = out[:,0,:,:]
-
-            #compute the gate values
-            gate = tf.expand_dims(inputs, 1)
-            gate = tf.nn.sigmoid(tf.nn.atrous_conv2d(
-                gate, wg, dilation_rate, padding='SAME'))
-            gate = gate[:,0,:,:]
+            #compute the gate
+            gate = dconv(inputs, seq_length, is_training, reuse, 'gate_dconv')
+            gate = tf.nn.sigmoid(gate)
 
             #compute the gated output
             out = out*gate
 
             #compute the final output
-            out = tf.nn.tanh(tf.nn.conv1d(out, wl, 1, padding='SAME'))
+            out = onebyone(inputs, seq_length, is_training, reuse, '1x1')
+            out = tf.nn.tanh(out)
 
             #return the residual and the skip
             return inputs + out, out
@@ -205,13 +195,15 @@ class Conv1dlayer(object):
         self.kernel_size = kernel_size
         self.stride = stride
 
-    def __call__(self, inputs, is_training=False, reuse=False, scope=None):
+    def __call__(self, inputs, seq_length, is_training=False, reuse=False,
+                 scope=None):
         '''
         Create the variables and do the forward computation
 
         Args:
             inputs: the input to the layer as a
                 [batch_size, max_length, dim] tensor
+            seq_length: the length of the input sequences
             is_training: whether or not the network is in training mode
             reuse: Setting this value to true will cause tensorflow to look
                       for variables with the same name in the graph and reuse
@@ -225,16 +217,91 @@ class Conv1dlayer(object):
 
         with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
 
-            stddev = 1/self.kernel_size**0.5
             input_dim = int(inputs.get_shape()[2])
+            stddev = 1/input_dim**0.5
 
             #the filte parameters
             w = tf.get_variable(
-                'filter',
-                [self.kernel_size, input_dim, self.num_units],
+                'filter', [self.kernel_size, input_dim, self.num_units],
+                initializer=tf.random_normal_initializer(stddev=stddev))
+
+            #the bias parameters
+            b = tf.get_variable(
+                'bias', [self.num_units],
                 initializer=tf.random_normal_initializer(stddev=stddev))
 
             #do the convolution
-            out = tf.nn.conv1d(inputs, w, self.stride, padding = 'SAME')
+            out = tf.nn.conv1d(inputs, w, self.stride, padding='SAME')
+
+            #add the bias
+            out = seq_convertors.seq2nonseq(out, seq_length)
+            out += b
+            out = seq_convertors.nonseq2seq(out, seq_length,
+                                            int(inputs.get_shape()[1]))
+
+        return out
+
+class AConv1dlayer(object):
+    '''a 1-D atrous convolutional layer'''
+
+    def __init__(self, num_units, kernel_size, dilation_rate):
+        '''constructor
+
+        Args:
+            num_units: the number of filters
+            kernel_size: the size of the filters
+            dilation_rate: the rate of dilation
+        '''
+
+        self.num_units = num_units
+        self.kernel_size = kernel_size
+        self.dilation_rate = dilation_rate
+
+    def __call__(self, inputs, seq_length, is_training=False, reuse=False,
+                 scope=None):
+        '''
+        Create the variables and do the forward computation
+
+        Args:
+            inputs: the input to the layer as a
+                [batch_size, max_length, dim] tensor
+            seq_length: the length of the input sequences
+            is_training: whether or not the network is in training mode
+            reuse: Setting this value to true will cause tensorflow to look
+                      for variables with the same name in the graph and reuse
+                      these instead of creating new variables.
+            scope: The variable scope sets the namespace under which
+                      the variables created during this call will be stored.
+
+        Returns:
+            the outputs which is a [batch_size, max_length/stride, num_units]
+        '''
+
+        with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
+
+            input_dim = int(inputs.get_shape()[2])
+            stddev = 1/input_dim**0.5
+
+            #the filter parameters
+            w = tf.get_variable(
+                'filter', [1, self.kernel_size, input_dim, self.num_units],
+                initializer=tf.random_normal_initializer(stddev=stddev))
+
+            #the bias parameters
+            b = tf.get_variable(
+                'bias', [self.num_units],
+                initializer=tf.random_normal_initializer(stddev=stddev))
+
+            #do the arous convolution
+            out = tf.expand_dims(inputs, 1)
+            out = tf.nn.atrous_conv2d(out, w, self.dilation_rate,
+                                      padding='SAME')
+            out = out[:, 0, :, :]
+
+            #add the bias
+            out = seq_convertors.seq2nonseq(out, seq_length)
+            out += b
+            out = seq_convertors.nonseq2seq(out, seq_length,
+                                            int(inputs.get_shape()[1]))
 
         return out
