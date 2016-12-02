@@ -22,7 +22,7 @@ def read_alignments(filename):
     with gzip.open(filename, 'rb') as fid:
         alignments = {}
         for line in fid:
-            data = line.replace(' \n', '').split(' ')
+            data = line.strip().split(' ')
             #segment:alignment
             alignments[data[0]] = np.asarray(map(int, data[1:len(data)]))
     return alignments
@@ -47,7 +47,7 @@ def read_segments(filename):
         segments = OrderedDict()
         for line in fid:
             #seg utt begin end
-            data = line.replace('\n', '').split(' ')
+            data = line.strip().split(' ')
             if data[1] not in segments:
                 #utt: [(seg , begin, end)]
                 segments[data[1]] = [(data[0], float(data[2]), float(data[3]))]
@@ -75,7 +75,7 @@ def read_wavfiles(filename):
     with open(filename) as fid:
         wavfiles = OrderedDict()
         for line in fid:
-            data = line.replace('\n', '').split(' ')
+            data = line.strip().split(' ')
             #wav.scp contains filenames
             if len(data) == 2:
                 #utterance:(filename, not extended)
@@ -100,6 +100,6 @@ def read_utt2spk(filename):
     with open(filename) as fid:
         utt2spk = {}
         for line in fid:
-            data = line.replace('\n', '').split(' ')
+            data = line.strip().split(' ')
             utt2spk[data[0]] = data[1]
     return utt2spk
