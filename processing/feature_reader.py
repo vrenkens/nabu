@@ -2,6 +2,7 @@
 reading features and applying cmvn and splicing them'''
 
 import ark
+import copy
 import numpy as np
 import readfiles
 
@@ -84,10 +85,23 @@ class FeatureReader(object):
 
         return self.reader.read_previous_scp()
 
-    def split(self):
-        '''split of the features that have been read so far'''
+    def split(self, num_utt):
+        '''take a number of utterances from the feature reader to make a new one
 
-        self.reader.split()
+        Args:
+            num_utt: the number of utterances in the new feature reader
+
+        Returns:
+            a feature reader with the requested number of utterances'''
+        #create a copy of self
+        reader = copy.deepcopy(self)
+
+        #split of a part of the ark reader
+        reader.reader = self.reader.split(num_utt)
+
+        return reader
+
+
 
 def apply_cmvn(utt, stats):
     '''

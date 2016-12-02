@@ -3,10 +3,8 @@ contains the functionality for a Kaldi style neural network'''
 
 import shutil
 import os
-import itertools
 import classifiers.activation as act
 from classifiers.dblstm import DBLSTM
-from classifiers.wavenet import Wavenet
 import tensorflow as tf
 from trainer import CTCTrainer
 from decoder import CTCDecoder
@@ -43,35 +41,25 @@ class Nnet(object):
         activation = act.TfActivation(None, lambda x: x)
 
         #create a DBLSTM
-        #self.classifier = DBLSTM(num_labels + 1, int(self.conf['num_layers']),
-        #                     int(self.conf['num_units']), activation)
-
-        #create the wavenet
-        self.classifier = Wavenet(num_labels + 1, int(self.conf['num_layers']),
-                                  3, int(self.conf['num_units']), 7)
+        self.classifier = DBLSTM(num_labels + 1, int(self.conf['num_layers']),
+                                 int(self.conf['num_units']), activation)
 
 
-    def train(self, dispenser):
+    def train(self, dispenser, val_dispenser):
         '''
         Train the neural network
 
         Args:
             dispenser: a batchdispenser for training
+            val_dispenser: a batchdispenser used for validation
         '''
 
         #get the validation set
-        if int(self.conf['valid_batches']) > 0:
-            val_data, val_labels = zip(
-                *[dispenser.get_batch()
-                  for _ in range(int(self.conf['valid_batches']))])
-
-            val_data = list(itertools.chain.from_iterable(val_data))
-            val_labels = list(itertools.chain.from_iterable(val_labels))
+        if val_dispenser is not None:
+            val_data, val_labels = val_dispenser.get_all_data()
         else:
             val_data = None
             val_labels = None
-
-        dispenser.split()
 
         #compute the total number of steps
         num_steps = int(dispenser.num_batches *int(self.conf['num_epochs']))

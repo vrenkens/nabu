@@ -6,6 +6,7 @@
 
 from abc import ABCMeta, abstractmethod
 import gzip
+import copy
 import numpy as np
 
 ## Class that dispenses batches of data for mini-batch training
@@ -87,15 +88,64 @@ class BatchDispenser(object):
 
         return batch_inputs, batch_targets
 
+    def get_all_data(self):
+        '''read all data in a single batch
 
-    def split(self):
-        '''
-        split off the part that has allready been read by the batchdispenser
+        Returns:
+            A pair containing:
+                - The features: a list of feature matrices
+                - The targets: a list of target vectors'''
 
-        this can be used to read a validation set and then split it off from
-        the rest
-        '''
-        self.feature_reader.split()
+        #set up the data lists.
+        batch_inputs = []
+        batch_targets = []
+
+        while True:
+            
+            #read utterance
+            utt_id, utt_mat, looped = self.feature_reader.get_utt()
+
+            if looped:
+                break
+
+            #get transcription
+            if utt_id in self.target_dict:
+                targets = self.target_dict[utt_id]
+                encoded_targets = self.target_coder.encode(targets)
+
+                batch_inputs.append(utt_mat)
+                batch_targets.append(encoded_targets)
+            else:
+                print 'WARNING no targets for %s' % utt_id
+
+        return batch_inputs, batch_targets
+
+
+    def split(self, num_utt):
+        '''take a number of utterances from the batchdispenser to make a new one
+
+        Args:
+            num_utt: the number of utterances in the new batchdispenser
+
+        Returns:
+            a batch dispenser with the requested number of utterances'''
+
+        #create a copy of self
+        dispenser = copy.deepcopy(self)
+
+        #split of a part of the feature reader
+        dispenser.feature_reader = self.feature_reader.split(num_utt)
+
+        #get a list of keys in the featutre readers
+        dispenser_ids = dispenser.feature_reader.reader.utt_ids
+        self_ids = self.feature_reader.reader.utt_ids
+
+        #split the target dicts
+        dispenser.target_dict = {key: dispenser.target_dict[key] for key in
+                                 dispenser_ids}
+        self.target_dict = {key: self.target_dict[key] for key in self_ids}
+
+        return dispenser
 
     def skip_batch(self):
         '''skip a batch'''

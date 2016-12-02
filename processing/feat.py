@@ -25,6 +25,8 @@ class FeatureComputer(object):
             self.comp_feat = base.mfcc
         elif featureType == 'ssc':
             self.comp_feat = base.ssc
+        elif featureType == 'raw':
+            self.comp_feat = base.raw
         else:
             raise Exception('unknown feature type')
 
@@ -60,7 +62,7 @@ class FeatureComputer(object):
         feat, energy = self.comp_feat(sig, rate, self.conf)
 
         #append the energy if requested
-        if self.conf['include_energy'] == 'True':
+        if self.conf['include_energy'] == 'True' and energy is not None:
             feat = np.append(feat, energy[:, np.newaxis], 1)
 
         #add the dynamic information

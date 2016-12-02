@@ -34,6 +34,26 @@ import sigproc
 from scipy.fftpack import dct
 from scipy.ndimage import convolve1d
 
+def raw(signal, samplerate, conf):
+    '''
+    compute the raw audio signal with limited range
+
+    Args:
+        signal: the audio signal from which to compute features. Should be an
+            N*1 array
+        samplerate: the samplerate of the signal we are working with.
+        conf: feature configuration
+
+    Returns:
+        A numpy array of size (N by 1) containing the raw audio and None for
+        the energy
+    '''
+    feat = signal.astype(numpy.float32)/numpy.max(numpy.abs(signal))
+
+    return feat[:,numpy.newaxis], None
+
+
+
 def mfcc(signal, samplerate, conf):
     '''
     Compute MFCC features from an audio signal.

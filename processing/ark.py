@@ -21,6 +21,7 @@ limitations under the License.
 
 import struct
 import numpy as np
+import copy
 
 np.set_printoptions(threshold=np.nan)
 np.set_printoptions(linewidth=np.nan)
@@ -158,11 +159,22 @@ class ArkReader(object):
 
         return self.read_utt_data(self.utt_ids.index(utt_id))
 
-    def split(self):
-        '''Split of the data that was read so far'''
+    def split(self, num_utt):
+        '''take a number of utterances from the ark reader to make a new one
 
-        self.scp_data = self.scp_data[self.scp_position:-1]
-        self.utt_ids = self.utt_ids[self.scp_position:-1]
+        Args:
+            num_utt: the number of utterances in the new ark reader
+
+        Returns:
+            an ark reader with the requested number of utterances'''
+
+        reader = copy.deepcopy(self)
+        reader.scp_data = reader.scp_data[:num_utt]
+        reader.utt_ids = reader.utt_ids[:num_utt]
+        self.scp_data = self.scp_data[num_utt:]
+        self.utt_ids = self.utt_ids[num_utt:]
+
+        return reader
 
 class ArkWriter(object):
     '''

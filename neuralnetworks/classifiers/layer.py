@@ -3,6 +3,7 @@ Neural network layers '''
 
 import tensorflow as tf
 import seq_convertors
+import ops
 from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn
 
@@ -116,8 +117,8 @@ class BLSTMLayer(object):
 
             return outputs
 
-class GatedDilatedConvolution(object):
-    '''A gated dilated convolution layer'''
+class GatedAConv1d(object):
+    '''A gated atrous convolution block'''
     def __init__(self, kernel_size):
         '''constructor
 
@@ -127,7 +128,7 @@ class GatedDilatedConvolution(object):
 
         self.kernel_size = kernel_size
 
-    def __call__(self, inputs, seq_length, dilation_rate,
+    def __call__(self, inputs, seq_length, causal=False, dilation_rate=1,
                  is_training=False, reuse=False, scope=None):
         '''
         Create the variables and do the forward computation
@@ -136,6 +137,8 @@ class GatedDilatedConvolution(object):
             inputs: the input to the layer as a
                 [batch_size, max_length, dim] tensor
             seq_length: the length of the input sequences
+            causal: flag for causality, if true every output will only be
+                affected by previous inputs
             dilation_rate: the rate of dilation
             is_training: whether or not the network is in training mode
             reuse: Setting this value to true will cause tensorflow to look
@@ -155,31 +158,36 @@ class GatedDilatedConvolution(object):
             num_units = int(inputs.get_shape()[2])
 
             #the dilated convolution layer
-            dconv = AConv1dlayer(num_units, self.kernel_size,
+            dconv = AConv1dLayer(num_units, self.kernel_size,
                                  dilation_rate)
 
             #the one by one convolution
-            onebyone = Conv1dlayer(num_units, 1, 1)
+            onebyone = Conv1dLayer(num_units, 1, 1)
 
             #compute the data
-            out = dconv(inputs, seq_length, is_training, reuse, 'data_dconv')
-            out = tf.nn.tanh(out)
+            data = dconv(inputs, seq_length, causal, is_training, reuse,
+                         'data_dconv')
+            data = tf.nn.tanh(data)
 
             #compute the gate
-            gate = dconv(inputs, seq_length, is_training, reuse, 'gate_dconv')
+            gate = dconv(inputs, seq_length, causal, is_training, reuse,
+                         'gate_dconv')
             gate = tf.nn.sigmoid(gate)
 
             #compute the gated output
-            out = out*gate
+            gated = data*gate
 
             #compute the final output
-            out = onebyone(inputs, seq_length, is_training, reuse, '1x1')
+            out = onebyone(gated, seq_length, is_training, reuse, '1x1_res')
             out = tf.nn.tanh(out)
 
-            #return the residual and the skip
-            return inputs + out, out
+            #compute the skip
+            skip = onebyone(gated, seq_length, is_training, reuse, '1x1_skip')
 
-class Conv1dlayer(object):
+            #return the residual and the skip
+            return inputs + out, skip
+
+class Conv1dLayer(object):
     '''a 1-D convolutional layer'''
 
     def __init__(self, num_units, kernel_size, stride):
@@ -241,7 +249,7 @@ class Conv1dlayer(object):
 
         return out
 
-class AConv1dlayer(object):
+class AConv1dLayer(object):
     '''a 1-D atrous convolutional layer'''
 
     def __init__(self, num_units, kernel_size, dilation_rate):
@@ -257,8 +265,8 @@ class AConv1dlayer(object):
         self.kernel_size = kernel_size
         self.dilation_rate = dilation_rate
 
-    def __call__(self, inputs, seq_length, is_training=False, reuse=False,
-                 scope=None):
+    def __call__(self, inputs, seq_length, causal=False,
+                 is_training=False, reuse=False, scope=None):
         '''
         Create the variables and do the forward computation
 
@@ -266,12 +274,14 @@ class AConv1dlayer(object):
             inputs: the input to the layer as a
                 [batch_size, max_length, dim] tensor
             seq_length: the length of the input sequences
+            causal: flag for causality, if true every output will only be
+                affected by previous inputs
             is_training: whether or not the network is in training mode
             reuse: Setting this value to true will cause tensorflow to look
-                      for variables with the same name in the graph and reuse
-                      these instead of creating new variables.
+                for variables with the same name in the graph and reuse
+                these instead of creating new variables.
             scope: The variable scope sets the namespace under which
-                      the variables created during this call will be stored.
+                the variables created during this call will be stored.
 
         Returns:
             the outputs which is a [batch_size, max_length/stride, num_units]
@@ -284,7 +294,7 @@ class AConv1dlayer(object):
 
             #the filter parameters
             w = tf.get_variable(
-                'filter', [1, self.kernel_size, input_dim, self.num_units],
+                'filter', [self.kernel_size, input_dim, self.num_units],
                 initializer=tf.random_normal_initializer(stddev=stddev))
 
             #the bias parameters
@@ -293,10 +303,11 @@ class AConv1dlayer(object):
                 initializer=tf.random_normal_initializer(stddev=stddev))
 
             #do the arous convolution
-            out = tf.expand_dims(inputs, 1)
-            out = tf.nn.atrous_conv2d(out, w, self.dilation_rate,
-                                      padding='SAME')
-            out = out[:, 0, :, :]
+            if causal:
+                out = ops.causal_aconv1d(inputs, w, self.dilation_rate)
+            else:
+                out = ops.aconv1d(inputs, w, self.dilation_rate)
+
 
             #add the bias
             out = seq_convertors.seq2nonseq(out, seq_length)
