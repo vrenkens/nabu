@@ -9,16 +9,16 @@ from processing import ark, prepare_data, feature_reader, batchdispenser, target
 import pdb
 
 #here you can set which steps should be executed. If a step has been executed in the past the result have been saved and the step does not have to be executed again (if nothing has changed)
-TRAINFEATURES = True
-DEVFEATURES = True
-TESTFEATURES = True
+TRAINFEATURES = False
+DEVFEATURES = False
+TESTFEATURES = False
 TRAIN = True
 TEST = True
 
 #pointers to the config files
 database_cfg_file = 'config/databases/TIMIT.cfg'
 feat_cfg_file = 'config/features/fbank.cfg'
-nnet_cfg_file = 'config/nnet/DBLSTM_CTC.cfg'
+nnet_cfg_file = 'config/nnet/wavenet.cfg'
 
 #set the CUDA GPU that Tensorflow should use
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'

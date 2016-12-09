@@ -8,28 +8,6 @@ from layer import GatedAConv1d, Conv1dLayer
 class Wavenet(Classifier):
     ''''a wavenet classifier'''
 
-    def __init__(self, output_dim, num_layers, num_blocks, num_units,
-                 kernel_size, causal):
-        '''
-        Wavenet constructor
-
-        Args:
-            output_dim: the output dimension
-            num_layers: number of dilated convolution layers per block
-            num_blocks: number of dilated convolution blocks
-            num_units: number of filters
-            causal: flag for causality, if true every output will only be
-                affected by previous inputs
-        '''
-
-        super(Wavenet, self).__init__(output_dim)
-        self.output_dim = output_dim
-        self.num_layers = num_layers
-        self.num_blocks = num_blocks
-        self.num_units = num_units
-        self.kernel_size = kernel_size
-        self.causal = causal
-
     def __call__(self, inputs, input_seq_length, targets=None,
                  target_seq_length=None, is_training=False, reuse=False,
                  scope=None):
@@ -61,13 +39,13 @@ class Wavenet(Classifier):
         with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
 
             #create the gated convolutional layers
-            dconv = GatedAConv1d(self.kernel_size)
+            dconv = GatedAConv1d(int(self.conf['kernel_size']))
 
             #create the one by one convolution layer
-            onebyone = Conv1dLayer(self.num_units, 1, 1)
+            onebyone = Conv1dLayer(int(self.conf['num_units']), 1, 1)
 
             #create the output layer
-            outlayer = Conv1dLayer(self.output_dim, 1, 1)
+            outlayer = Conv1dLayer(int(self.conf['num_units']), 1, 1)
 
             #add gaussian noise to the inputs
             if is_training:
@@ -82,11 +60,11 @@ class Wavenet(Classifier):
             forward = tf.nn.tanh(forward)
 
             #apply the the blocks of dilated convolutions layers
-            for b in range(self.num_blocks):
-                for l in range(self.num_layers):
+            for b in range(int(self.conf['num_blocks'])):
+                for l in range(int(self.conf['num_layers'])):
                     forward, highway = dconv(
-                        forward, input_seq_length, self.causal, 2**l,
-                        is_training, reuse, 'dconv%d-%d' % (b, l))
+                        forward, input_seq_length, self.conf['causal'] == 'True'
+                        , 2**l, is_training, reuse, 'dconv%d-%d' % (b, l))
                     logits += highway
 
             #apply the relu

@@ -3,8 +3,7 @@ contains the functionality for a Kaldi style neural network'''
 
 import shutil
 import os
-import classifiers.activation as act
-from classifiers.dblstm import DBLSTM
+from classifiers import *
 import tensorflow as tf
 from trainer import CTCTrainer
 from decoder import CTCDecoder
@@ -23,7 +22,7 @@ class Nnet(object):
             num_labels: number of target labels
         '''
 
-        #get nnet structure configs
+        #save the conf
         self.conf = conf
 
         #define location to save neural nets
@@ -37,12 +36,9 @@ class Nnet(object):
         #save the input dim
         self.input_dim = input_dim
 
-        #create an activation function
-        activation = act.TfActivation(None, lambda x: x)
-
         #create a DBLSTM
-        self.classifier = DBLSTM(num_labels + 1, int(conf['num_layers']),
-                                 int(conf['num_units']), activation)
+        class_name = '%s.%s' % (conf['module'], conf['class'])
+        self.classifier = eval(class_name)(conf, num_labels + 1)
 
 
     def train(self, dispenser, val_dispenser):

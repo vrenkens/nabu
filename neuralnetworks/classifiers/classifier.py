@@ -7,9 +7,10 @@ class Classifier(object):
     '''This an abstract class defining a neural net classifier'''
     __metaclass__ = ABCMeta
 
-    def __init__(self, output_dim):
+    def __init__(self, conf, output_dim):
         '''classifier constructor'''
 
+        self.conf = conf
         self.output_dim = output_dim
 
     @abstractmethod

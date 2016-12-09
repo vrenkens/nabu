@@ -4,3 +4,4 @@ The neural network functionality:
 - trainer: the training environment for the classifiers
 - decoder: the decoding environment for the classifiers
 '''
+__all__ = ['decoder', 'trainer', 'nnet']
