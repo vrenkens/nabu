@@ -12,27 +12,27 @@ from decoder import CTCDecoder
 class Nnet(object):
     '''a class for using a DBLTSM with CTC for ASR'''
 
-    def __init__(self, conf, input_dim, num_labels):
+    def __init__(self, conf, savedir, input_dim, num_labels):
         '''
         Nnet constructor
 
         Args:
             conf: nnet configuration
+            savedir: the directory where everything will be saved
             input_dim: network input dimension
             num_labels: number of target labels
         '''
 
         #get nnet structure configs
-        self.conf = dict(conf.items('nnet'))
+        self.conf = conf
 
         #define location to save neural nets
-        self.conf['savedir'] = (conf.get('directories', 'expdir')
-                                + '/' + self.conf['name'])
+        self.savedir = savedir
 
-        if not os.path.isdir(self.conf['savedir'] + '/training'):
-            os.makedirs(self.conf['savedir'] + '/training')
-        if not os.path.isdir(self.conf['savedir'] + '/validation'):
-            os.makedirs(self.conf['savedir'] + '/validation')
+        if not os.path.isdir(savedir + '/training'):
+            os.makedirs(savedir + '/training')
+        if not os.path.isdir(savedir + '/validation'):
+            os.makedirs(savedir + '/validation')
 
         #save the input dim
         self.input_dim = input_dim
@@ -41,8 +41,8 @@ class Nnet(object):
         activation = act.TfActivation(None, lambda x: x)
 
         #create a DBLSTM
-        self.classifier = DBLSTM(num_labels + 1, int(self.conf['num_layers']),
-                                 int(self.conf['num_units']), activation)
+        self.classifier = DBLSTM(num_labels + 1, int(conf['num_layers']),
+                                 int(conf['num_units']), activation)
 
 
     def train(self, dispenser, val_dispenser):
@@ -90,10 +90,10 @@ class Nnet(object):
 
         #start the visualization if it is requested
         if self.conf['visualise'] == 'True':
-            if os.path.isdir(self.conf['savedir'] + '/logdir'):
-                shutil.rmtree(self.conf['savedir'] + '/logdir')
+            if os.path.isdir(self.savedir + '/logdir'):
+                shutil.rmtree(self.savedir + '/logdir')
 
-            trainer.start_visualization(self.conf['savedir'] + '/logdir')
+            trainer.start_visualization(self.savedir + '/logdir')
 
         #start a tensorflow session
         config = tf.ConfigProto()
@@ -104,7 +104,7 @@ class Nnet(object):
 
             #load the neural net if the starting step is not 0
             if step > 0:
-                trainer.restore_trainer(self.conf['savedir']
+                trainer.restore_trainer(self.savedir
                                         + '/training/step' + str(step))
 
             #do a validation step
@@ -112,7 +112,7 @@ class Nnet(object):
                 validation_loss = trainer.evaluate(val_data, val_labels)
                 print 'validation loss at step %d: %f' % (step, validation_loss)
                 validation_step = step
-                trainer.save_trainer(self.conf['savedir']
+                trainer.save_trainer(self.savedir
                                      + '/validation/validated')
                 num_retries = 0
 
@@ -149,14 +149,14 @@ class Nnet(object):
                                 dispenser.return_batch()
 
                             #load the validated model
-                            trainer.restore_trainer(self.conf['savedir']
+                            trainer.restore_trainer(self.savedir
                                                     + '/validation/validated')
 
                             #halve the learning rate
                             trainer.halve_learning_rate()
 
                             #save the model to store the new learning rate
-                            trainer.save_trainer(self.conf['savedir']
+                            trainer.save_trainer(self.savedir
                                                  + '/validation/validated')
 
                             step = validation_step
@@ -178,16 +178,16 @@ class Nnet(object):
                             validation_loss = current_loss
                             validation_step = step
                             num_retries = 0
-                            trainer.save_trainer(self.conf['savedir']
+                            trainer.save_trainer(self.savedir
                                                  + '/validation/validated')
 
                 #save the model if at checkpoint
                 if step%int(self.conf['check_freq']) == 0:
-                    trainer.save_trainer(self.conf['savedir'] + '/training/step'
+                    trainer.save_trainer(self.savedir + '/training/step'
                                          + str(step))
 
             #save the final model
-            trainer.save_model(self.conf['savedir'] + '/final')
+            trainer.save_model(self.savedir + '/final')
 
     def decode(self, reader, target_coder):
         '''
@@ -220,7 +220,7 @@ class Nnet(object):
         with tf.Session(graph=decoder.graph, config=config):
 
             #load the model
-            decoder.restore(self.conf['savedir'] + '/final')
+            decoder.restore(self.savedir + '/final')
 
             #feed the utterances one by one to the neural net
             while True:

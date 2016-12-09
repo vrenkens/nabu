@@ -46,7 +46,7 @@ class TargetCoder(object):
         '''
 
         #normalize the targets
-        normalized_targets = self.target_normalizer(targets, self.lookup.keys())
+        normalized_targets = self.normalize(targets)
 
         encoded_targets = []
 
@@ -70,6 +70,21 @@ class TargetCoder(object):
                    for encoded_target in encoded_targets]
 
         return ' '.join(targets)
+
+    def normalize(self, targets):
+        '''
+        normalize a target sequence
+
+        Args:
+            targets: a string containing the target sequence
+
+        Returns:
+            A string containing the normalized targets
+        '''
+
+        normalized_targets = self.target_normalizer(targets, self.lookup.keys())
+
+        return normalized_targets
 
     @property
     def num_labels(self):

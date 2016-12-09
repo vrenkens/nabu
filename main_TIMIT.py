@@ -93,7 +93,7 @@ if TRAIN:
         val_dispenser = batchdispenser.TextBatchDispenser(val_featreader, coder, int(config.get('nnet', 'batch_size')), val_textfile)
 
     else:
-        if int(config.get('nnet','valid_batches')) > 0:
+        if int(config.get('nnet','valid_utt')) > 0:
             val_dispenser = dispenser.split(int(config.get('nnet','valid_utt')))
         else:
             val_dispenser = None

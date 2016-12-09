@@ -707,21 +707,21 @@ def split_batch(inputs, targets, input_seq_length, output_seq_length,
 
     #fill the inputs to have a round number of minibatches
     added_inputs = (inputs
-                    + (len(inputs)%numutterances_per_minibatch)
+                    + (-(len(inputs))%numutterances_per_minibatch)
                     *[np.zeros([inputs[0].shape[0],
                                 inputs[0].shape[1]])])
 
     added_targets = (targets
-                     + (len(targets)%numutterances_per_minibatch)
+                     + ((-len(targets))%numutterances_per_minibatch)
                      *[np.zeros(targets[0].size)])
 
     added_input_seq_length = \
         (input_seq_length
-         + ((len(input_seq_length)%numutterances_per_minibatch))*[0])
+         + (((-len(input_seq_length))%numutterances_per_minibatch))*[0])
 
     added_output_seq_length = \
         (output_seq_length
-         + ((len(output_seq_length)%numutterances_per_minibatch))*[0])
+         + (((-len(output_seq_length))%numutterances_per_minibatch))*[0])
 
     #create the minibatches
     minibatches = []
