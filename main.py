@@ -144,7 +144,7 @@ if TEST:
 
     references = dict()
     for line in lines:
-        splitline = line.strip().split('')
+        splitline = line.strip().split(' ')
         references[splitline[0]] = coder.normalize(splitline[1:])
 
     #compute the character error rate
