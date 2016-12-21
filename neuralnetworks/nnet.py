@@ -50,29 +50,15 @@ class Nnet(object):
             val_dispenser: a batchdispenser used for validation
         '''
 
-        #get the validation set
-        if val_dispenser is not None:
-            val_data, val_labels = val_dispenser.get_all_data()
-        else:
-            val_data = None
-            val_labels = None
-
         #compute the total number of steps
         num_steps = int(dispenser.num_batches *int(self.conf['num_epochs']))
 
         #set the step to the starting step
         step = int(self.conf['starting_step'])
 
-
         #go to the point in the database where the training was at checkpoint
         for _ in range(step):
             dispenser.skip_batch()
-
-        if self.conf['numutterances_per_minibatch'] == '-1':
-            numutterances_per_minibatch = dispenser.size
-        else:
-            numutterances_per_minibatch = int(
-                self.conf['numutterances_per_minibatch'])
 
         #put the DBLSTM in a CTC training environment
         print 'building the training graph'
@@ -81,7 +67,8 @@ class Nnet(object):
             dispenser.max_target_length,
             float(self.conf['initial_learning_rate']),
             float(self.conf['learning_rate_decay']),
-            num_steps, numutterances_per_minibatch,
+            num_steps, int(self.conf['batch_size']),
+            int(self.conf['numbatches_to_aggregate']),
             int(self.conf['beam_width']))
 
         #start the visualization if it is requested

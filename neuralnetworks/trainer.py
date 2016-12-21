@@ -12,7 +12,7 @@ class Trainer(object):
 
     def __init__(self, classifier, input_dim, max_input_length,
                  max_target_length, init_learning_rate, learning_rate_decay,
-                 num_steps, numutterances_per_minibatch):
+                 num_steps, batch_size, numbatches_to_aggregate):
         '''
         NnetTrainer constructor, creates the training graph
 
@@ -25,11 +25,13 @@ class Trainer(object):
             learning_rate_decay: the parameter for exponential learning rate
                 decay
             num_steps: the total number of steps that will be taken
-            numutterances_per_minibatch: determines how many utterances are
+            batch_size: determines how many utterances are
                 processed at a time to limit memory usage
+            numbatches_to_aggregate: number of batches that are aggragated
+                before the gradients are applied
         '''
 
-        self.numutterances_per_minibatch = numutterances_per_minibatch
+        self.batch_size = batch_size
         self.max_input_length = max_input_length
         self.max_target_length = max_target_length
 
@@ -41,28 +43,22 @@ class Trainer(object):
 
             #create the inputs placeholder
             self.inputs = tf.placeholder(
-                tf.float32, shape=[numutterances_per_minibatch,
-                                   max_input_length,
-                                   input_dim],
+                tf.float32, shape=[batch_size, max_input_length, input_dim],
                 name='inputs')
 
             #reference labels
             self.targets = tf.placeholder(
-                tf.int32, shape=[numutterances_per_minibatch,
-                                 max_target_length,
-                                 1],
+                tf.int32, shape=[batch_size, max_target_length, 1],
                 name='targets')
 
 
             #the length of all the input sequences
             self.input_seq_length = tf.placeholder(
-                tf.int32, shape=[numutterances_per_minibatch],
-                name='input_seq_length')
+                tf.int32, shape=[batch_size], name='input_seq_length')
 
             #the length of all the output sequences
             self.target_seq_length = tf.placeholder(
-                tf.int32, shape=[numutterances_per_minibatch],
-                name='output_seq_length')
+                tf.int32, shape=[batch_size], name='output_seq_length')
 
             #compute the training outputs of the classifier
             trainlogits, logit_seq_length, self.modelsaver, self.control_ops =\
@@ -76,33 +72,6 @@ class Trainer(object):
                 self.inputs, self.input_seq_length, targets=self.targets,
                 target_seq_length=self.target_seq_length, is_training=False,
                 reuse=True, scope='Classifier')
-
-            #get a list of trainable variables in the decoder graph
-            params = tf.trainable_variables()
-
-            #for every parameter create a variable that holds its gradients
-            with tf.variable_scope('batch_variables'):
-
-                with tf.variable_scope('gradients'):
-                    #the gradients for the entire batch
-                    grads = [tf.get_variable(
-                        param.op.name, param.get_shape().as_list(),
-                        initializer=tf.constant_initializer(0),
-                        trainable=False) for param in params]
-
-                #the total loss of the entire batch
-                batch_loss = tf.get_variable(
-                    'batch_loss', [], dtype=tf.float32,
-                    initializer=tf.constant_initializer(0), trainable=False)
-
-                #the total number of utterances that are used in the batch
-                num_frames = tf.get_variable(
-                    name='num_frames', shape=[], dtype=tf.int32,
-                    initializer=tf.constant_initializer(0), trainable=False)
-
-                #create an operation to initialise the batch variables
-                self.init_batch = tf.initialize_variables(
-                    grads + [num_frames, batch_loss])
 
 
             with tf.variable_scope('train'):
@@ -118,6 +87,10 @@ class Trainer(object):
                     'learning_rate_fact', [],
                     initializer=tf.constant_initializer(1.0), trainable=False)
 
+                #operation to half the learning rate
+                self.halve_learningrate_op = learning_rate_fact.assign(
+                    learning_rate_fact/2).op
+
                 #compute the learning rate with exponential decay and scale with
                 #the learning rate factor
                 self.learning_rate = tf.train.exponential_decay(
@@ -127,46 +100,26 @@ class Trainer(object):
                 #create the optimizer
                 optimizer = tf.train.AdamOptimizer(self.learning_rate)
 
-                #average the gradients
-                meangrads = [tf.div(grad, tf.cast(num_frames, tf.float32),
-                                    name=grad.op.name) for grad in grads]
+                #create an optimizer that aggregates gradients
+                optimizer = tf.SyncReplicasOptimizerV2(optimizer,
+                                                       numbatches_to_aggregate)
 
-                with tf.variable_scope('clip'):
-                    #clip the gradients
-                    meangrads = [tf.clip_by_value(grad, -1., 1.,
-                                                  name=grad.op.name)
-                                 for grad in meangrads]
-
-                #opperation to apply the gradients
-                self.apply_gradients_op = optimizer.apply_gradients(
-                    [(meangrads[p], params[p]) for p in range(len(meangrads))],
-                    global_step=self.global_step, name='apply_gradients')
-
-                #compute the training loss
-                loss = self.compute_loss(
+                #compute the loss
+                self.loss = self.compute_loss(
                     self.targets, trainlogits, logit_seq_length,
                     self.target_seq_length)
 
-                #operation to half the learning rate
-                self.halve_learningrate_op = learning_rate_fact.assign(
-                    learning_rate_fact/2).op
+                #compute the gradients
+                grads = optimizer.compute_gradients(self.loss)
 
-                #compute the gradients of the batch
-                batchgrads = tf.gradients(loss, params)
+                with tf.variable_scope('clip'):
+                    #clip the gradients
+                    grads = [(tf.clip_by_value(grad, -1., 1.), var)
+                             for grad, var in grads]
 
-                #operation to update the batch loss
-                #pylint: disable=E1101
-                update_loss = batch_loss.assign_add(loss)
-
-                #operation to update num_frames
-                #pylint: disable=E1101
-                update_num_frames = num_frames.assign_add(
-                    numutterances_per_minibatch)
-
-                #operation to update the gradients
-                update_gradients = [
-                    grads[p].assign_add(batchgrads[p])
-                    for p in range(len(grads)) if batchgrads[p] is not None]
+                #opperation to apply the gradients
+                apply_gradients_op = optimizer.apply_gradients(
+                    grads, global_step=self.global_step, name='apply_gradients')
 
                 #all remaining operations with the UPDATE_OPS GraphKeys
                 update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -174,13 +127,8 @@ class Trainer(object):
                 #create an operation to update the gradients, the batch_loss
                 #and do all other update ops
                 #pylint: disable=E1101
-                self.update_op = tf.group(
-                    *(update_gradients + [update_loss] + update_ops
-                      + [update_num_frames]),
-                    name='update_gradients')
-
-                #operation to compute the average loss in the batch
-                self.average_loss = batch_loss/tf.cast(num_frames, tf.float32)
+                self.update_op = tf.group(*([apply_gradients_op] + update_ops),
+                                          name='update')
 
                 #saver for the training variables
                 self.saver = tf.train.Saver(tf.get_collection(
@@ -194,10 +142,9 @@ class Trainer(object):
             self.init_op = tf.initialize_all_variables()
 
             #create the summaries for visualisation
-            self.summary = tf.merge_summary(
-                [tf.histogram_summary(val.name, val)
-                 for val in params+meangrads]
-                + [tf.scalar_summary('loss', self.average_loss)])
+            tf.summary.scalar('loss', self.loss)
+
+            self.summary = tf.merge_all()
 
 
         #specify that the graph can no longer be modified after this point
@@ -298,48 +245,25 @@ class Trainer(object):
 
         #get a list of sequence lengths
         input_seq_length = [i.shape[0] for i in inputs]
-        output_seq_length = [t.shape[0] for t in targets]
+        target_seq_length = [t.shape[0] for t in targets]
 
         #pad the inputs and targets till the maximum lengths
-        padded_inputs, padded_targets = padd_batch(
-            inputs, targets, self.max_input_length, self.max_target_length)
+        padded_inputs = pad(inputs, self.max_input_length)
+        padded_targets = pad(targets, self.max_target_length)
 
-        #divide the batch into minibatches
-        minibatches = split_batch(
-            padded_inputs, padded_targets, input_seq_length, output_seq_length,
-            self.numutterances_per_minibatch)
+        #pylint: disable=E1101
+        _, loss, summary, lr = tf.get_default_session().run(
+            [self.update_op, self.loss, self.summary, self.learning_rate],
+            feed_dict={self.inputs:padded_inputs,
+                       self.targets:padded_targets,
+                       self.input_seq_length:input_seq_length,
+                       self.target_seq_length:target_seq_length})
 
-        #feed in the minibatches one by one and accumulate the gradients and
-        #loss
-        for minibatch in minibatches:
-
-            #pylint: disable=E1101
-            self.update_op.run(
-                feed_dict={self.inputs:minibatch[0],
-                           self.targets:minibatch[1],
-                           self.input_seq_length:minibatch[2],
-                           self.target_seq_length:minibatch[3]})
-
-        #apply the accumulated gradients to update the model parameters and
-        #evaluate the loss
+        #add the summary is visualisation was started
         if self.summarywriter is not None:
-            [loss, summary, lr, _] = tf.get_default_session().run(
-                [self.average_loss, self.summary, self.learning_rate,
-                 self.apply_gradients_op])
-
             #pylint: disable=E1101
             self.summarywriter.add_summary(summary,
                                            global_step=self.global_step.eval())
-
-        else:
-            [loss, _, lr] = tf.get_default_session().run(
-                [self.average_loss, self.learning_rate,
-                 self.apply_gradients_op])
-
-
-        #reinitialize the batch variables
-        #pylint: disable=E1101
-        self.init_batch.run()
 
         return loss, lr
 
@@ -356,7 +280,7 @@ class Trainer(object):
                 the output dimension of the neural net
 
         Returns:
-            the loss of the batch
+            a numpy array containing the loss of each utterance in the batch
         '''
 
         if inputs is None or targets is None:
@@ -364,25 +288,14 @@ class Trainer(object):
 
         #get a list of sequence lengths
         input_seq_length = [i.shape[0] for i in inputs]
-        output_seq_length = [t.shape[0] for t in targets]
 
         #pad the inputs and targets till the maximum lengths
-        padded_inputs, padded_targets = padd_batch(
-            inputs, targets, self.max_input_length, self.max_target_length)
+        padded_inputs = pad(inputs, self.max_input_length)
 
-        #divide the batch into minibatches
-        minibatches = split_batch(
-            padded_inputs, padded_targets, input_seq_length, output_seq_length,
-            self.numutterances_per_minibatch)
-
-        #feed in the minibatches one by one and get the validation outputs
-        outputs = []
-        for minibatch in minibatches:
-
-            #pylint: disable=E1101
-            outputs += list(self.outputs.eval(
-                feed_dict={self.inputs:minibatch[0],
-                           self.input_seq_length:minibatch[2]}))
+        #pylint: disable=E1101
+        outputs = list(self.outputs.eval(
+            feed_dict={self.inputs:padded_inputs,
+                       self.input_seq_length:input_seq_length}))
 
         #compute the validation error
         error = self.validation_metric(outputs[:len(targets)], targets)
@@ -503,22 +416,19 @@ class CrossEnthropyTrainer(Trainer):
             targets: a list containing the ground truth target labels
         '''
 
-        cross_enthropy = 0
-        num_frames = 0
+        loss = np.zeros(outputs.shape[0])
 
         for utt in range(outputs.shape[0]):
-            num_frames += targets[utt].size
+            loss[utt] += np.mean(-np.log(
+                outputs[utt, np.arange(targets[utt].size), targets[utt]]))
 
-            cross_enthropy += -np.log(
-                outputs[utt, np.arange(targets[utt].size), targets[utt]]).sum()
-
-        return cross_enthropy/num_frames
+        return loss
 
 class CTCTrainer(Trainer):
     '''A trainer that minimises the CTC loss, the output sequences'''
     def __init__(self, classifier, input_dim, max_input_length,
                  max_target_length, init_learning_rate, learning_rate_decay,
-                 num_steps, numutterances_per_minibatch, beam_width):
+                 num_steps, batch_size, numbatches_to_aggregate, beam_width):
         '''
         NnetTrainer constructor, creates the training graph
 
@@ -531,8 +441,9 @@ class CTCTrainer(Trainer):
             learning_rate_decay: the parameter for exponential learning rate
                 decay
             num_steps: the total number of steps that will be taken
-            numutterances_per_minibatch: determines how many utterances are
-                processed at a time to limit memory usage
+            batch_size: the batch size
+            numbatches_to_aggregate: number of batches that are aggragated
+                before the gradients are applied
             beam_width: the width of the beam used for validation
         '''
 
@@ -540,7 +451,7 @@ class CTCTrainer(Trainer):
         super(CTCTrainer, self).__init__(
             classifier, input_dim, max_input_length, max_target_length,
             init_learning_rate, learning_rate_decay, num_steps, \
-              numutterances_per_minibatch)
+              batch_size)
 
     def compute_loss(self, targets, logits, logit_seq_length,
                      target_seq_length):
@@ -630,7 +541,7 @@ class CTCTrainer(Trainer):
         #remove the padding from the outputs
         trimmed_outputs = [o[np.where(o != -1)] for o in outputs]
 
-        errors = 0
+        ler = np.zeros(len(targets))
 
         for k, target in enumerate(targets):
 
@@ -647,106 +558,25 @@ class CTCTrainer(Trainer):
                         error_matrix[x-1, y-1] + (target[x-1] !=
                                                   trimmed_outputs[k][y-1])])
 
-            errors += error_matrix[-1, -1]
-
-        ler = errors/sum([target.size for target in targets])
+            ler[k] = error_matrix[-1, -1]/target.size
 
         return ler
 
-def padd_batch(inputs, targets, input_length, target_length):
+def pad(inputs, length):
     '''
-    Pad the inputs and targets so they have the maximum length
+    Pad the inputs so they have the maximum length
 
     Args:
-        inputs: the inputs to the neural net, this should be a list
-            containing an NxF matrix for each utterance in the batch where
-            N is the number of frames in the utterance and F is the input
-            feature dimension
-        targets: the targets for neural nnet, this should be
-            a list containing an T-dimensional vector for each utterance where
-            T is the sequence length of the targets
-        input_length: the length that will be used for padding the inputs
-        target_length: the length that will be used for padding the targets
+        inputs: the inputs, this should be a list containing time major
+            tenors
+        length: the length that will be used for padding the inputs
 
     Returns:
-        a pair containing:
-            - the padded inputs
-            - the padded targets
+        the padded inputs
     '''
 
     padded_inputs = [np.append(
-        i, np.zeros([input_length-i.shape[0], i.shape[1]]), 0)
+        i, np.zeros([length-i.shape[0], i.shape[1]]), 0)
                      for i in inputs]
-    padded_targets = [np.append(
-        t, np.zeros(target_length-t.shape[0]), 0)
-                      for t in targets]
 
-    return padded_inputs, padded_targets
-
-
-def split_batch(inputs, targets, input_seq_length, output_seq_length,
-                numutterances_per_minibatch):
-    '''
-    Split batch data into smaller minibatches.
-
-    Args:
-        inputs: a list of input features
-        targets: a list of targets
-        input_seq_length: a list of inputs sequence lengths
-        target_seq_length: a list of target sequence lengths
-        numutterances_per_minibatch: number of utterances per minibatch
-
-    Returns:
-        a list of quadruples (one for each minibatch) containing numpy arrays
-        where the first dimension is the minibatch size:
-            - the inputs
-            - the targets
-            - the inputs sequence lengths
-            - the outputs sequence lengths
-    '''
-
-    #fill the inputs to have a round number of minibatches
-    added_inputs = (inputs
-                    + (-(len(inputs))%numutterances_per_minibatch)
-                    *[np.zeros([inputs[0].shape[0],
-                                inputs[0].shape[1]])])
-
-    added_targets = (targets
-                     + ((-len(targets))%numutterances_per_minibatch)
-                     *[np.zeros(targets[0].size)])
-
-    added_input_seq_length = \
-        (input_seq_length
-         + (((-len(input_seq_length))%numutterances_per_minibatch))*[0])
-
-    added_output_seq_length = \
-        (output_seq_length
-         + (((-len(output_seq_length))%numutterances_per_minibatch))*[0])
-
-    #create the minibatches
-    minibatches = []
-
-    for k in range(len(added_inputs)/numutterances_per_minibatch):
-
-        minibatch_inputs = np.array(
-            added_inputs[k*numutterances_per_minibatch:
-                         (k+1)*numutterances_per_minibatch])
-
-        minibatch_targets = np.array(
-            added_targets[k*numutterances_per_minibatch:
-                          (k+1)*numutterances_per_minibatch])
-
-        minibatch_input_seq_length = np.array(added_input_seq_length[
-            k*numutterances_per_minibatch:
-            (k+1)*numutterances_per_minibatch])
-
-        minibatch_output_seq_length = np.array(added_output_seq_length[
-            k*numutterances_per_minibatch:
-            (k+1)*numutterances_per_minibatch])
-
-        minibatches.append((minibatch_inputs,
-                            minibatch_targets[:, :, np.newaxis],
-                            minibatch_input_seq_length,
-                            minibatch_output_seq_length))
-
-    return minibatches
+    return padded_inputs
