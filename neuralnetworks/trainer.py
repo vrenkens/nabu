@@ -6,13 +6,16 @@ import tensorflow as tf
 import numpy as np
 from classifiers import seq_convertors
 
+import pdb
+
 class Trainer(object):
     '''General class outlining the training environment of a classifier.'''
     __metaclass__ = ABCMeta
 
     def __init__(self, classifier, input_dim, max_input_length,
                  max_target_length, init_learning_rate, learning_rate_decay,
-                 num_steps, batch_size, numbatches_to_aggregate):
+                 num_steps, batch_size,
+                 numbatches_to_aggregate=1):
         '''
         NnetTrainer constructor, creates the training graph
 
@@ -27,6 +30,8 @@ class Trainer(object):
             num_steps: the total number of steps that will be taken
             batch_size: determines how many utterances are
                 processed at a time to limit memory usage
+            cluster: the optional cluster used for distributed training, it
+                should contain at least one parmeter server and one worker
             numbatches_to_aggregate: number of batches that are aggragated
                 before the gradients are applied
         '''
@@ -101,8 +106,9 @@ class Trainer(object):
                 optimizer = tf.train.AdamOptimizer(self.learning_rate)
 
                 #create an optimizer that aggregates gradients
-                optimizer = tf.SyncReplicasOptimizerV2(optimizer,
-                                                       numbatches_to_aggregate)
+                optimizer = tf.train.SyncReplicasOptimizer(
+                    optimizer, numbatches_to_aggregate, replica_id=0,
+                    total_num_replicas = 1)
 
                 #compute the loss
                 self.loss = self.compute_loss(
@@ -130,10 +136,6 @@ class Trainer(object):
                 self.update_op = tf.group(*([apply_gradients_op] + update_ops),
                                           name='update')
 
-                #saver for the training variables
-                self.saver = tf.train.Saver(tf.get_collection(
-                    tf.GraphKeys.VARIABLES, scope='train'))
-
             with tf.name_scope('valid'):
                 #compute the outputs that will be used for validation
                 self.outputs = self.validation(logits, logit_seq_length)
@@ -141,14 +143,26 @@ class Trainer(object):
             # add an operation to initialise all the variables in the graph
             self.init_op = tf.initialize_all_variables()
 
+            #operations to initialise the token queue
+            self.init_token_op = optimizer.get_init_tokens_op()
+            self.chief_queue_runner = optimizer.get_chief_queue_runner()
+
             #create the summaries for visualisation
             tf.summary.scalar('loss', self.loss)
 
-            self.summary = tf.merge_all()
+            self.summary = tf.merge_all_summaries()
+
+            #saver for the training network
+            self.trainsaver = tf.train.Saver()
 
 
         #specify that the graph can no longer be modified after this point
         self.graph.finalize()
+
+        #create the supervisor
+        self.sv = tf.Supervisor(graph=self.graph,
+                   is_chief=True,
+                   saver=self.trainsaver)
 
         #start without visualisation
         self.summarywriter = None
@@ -248,8 +262,9 @@ class Trainer(object):
         target_seq_length = [t.shape[0] for t in targets]
 
         #pad the inputs and targets till the maximum lengths
-        padded_inputs = pad(inputs, self.max_input_length)
-        padded_targets = pad(targets, self.max_target_length)
+        padded_inputs = np.array(pad(inputs, self.max_input_length))
+        padded_targets = np.array(pad(targets, self.max_target_length))
+        padded_targets = padded_targets[:,:,np.newaxis]
 
         #pylint: disable=E1101
         _, loss, summary, lr = tf.get_default_session().run(
@@ -290,7 +305,7 @@ class Trainer(object):
         input_seq_length = [i.shape[0] for i in inputs]
 
         #pad the inputs and targets till the maximum lengths
-        padded_inputs = pad(inputs, self.max_input_length)
+        padded_inputs = np.array(pad(inputs, self.max_input_length))
 
         #pylint: disable=E1101
         outputs = list(self.outputs.eval(
@@ -450,8 +465,8 @@ class CTCTrainer(Trainer):
         self.beam_width = beam_width
         super(CTCTrainer, self).__init__(
             classifier, input_dim, max_input_length, max_target_length,
-            init_learning_rate, learning_rate_decay, num_steps, \
-              batch_size)
+            init_learning_rate, learning_rate_decay, num_steps,
+            batch_size, numbatches_to_aggregate)
 
     def compute_loss(self, targets, logits, logit_seq_length,
                      target_seq_length):
@@ -574,9 +589,8 @@ def pad(inputs, length):
     Returns:
         the padded inputs
     '''
-
     padded_inputs = [np.append(
-        i, np.zeros([length-i.shape[0], i.shape[1]]), 0)
+        i, np.zeros([length-i.shape[0]] + list(i.shape[1:])), 0)
                      for i in inputs]
 
     return padded_inputs

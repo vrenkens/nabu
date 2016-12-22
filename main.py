@@ -18,7 +18,7 @@ TEST = True
 #pointers to the config files
 database_cfg_file = 'config/databases/TIMIT.cfg'
 feat_cfg_file = 'config/features/fbank.cfg'
-nnet_cfg_file = 'config/nnet/wavenet.cfg'
+nnet_cfg_file = 'config/nnet/DBLSTM.cfg'
 
 #set the CUDA GPU that Tensorflow should use
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
@@ -144,7 +144,7 @@ if TEST:
 
     references = dict()
     for line in lines:
-        splitline = line.strip().split('')
+        splitline = line.strip().split(' ')
         references[splitline[0]] = coder.normalize(splitline[1:])
 
     #compute the character error rate

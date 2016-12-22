@@ -7,6 +7,8 @@ from classifiers import *
 import tensorflow as tf
 from trainer import CTCTrainer
 from decoder import CTCDecoder
+from math import ceil
+import numpy as np
 
 class Nnet(object):
     '''a class for using a DBLTSM with CTC for ASR'''
@@ -91,8 +93,8 @@ class Nnet(object):
                                         + '/training/step' + str(step))
 
             #do a validation step
-            if val_data is not None:
-                validation_loss = trainer.evaluate(val_data, val_labels)
+            if val_dispenser is not None:
+                validation_loss = self.validate(val_dispenser, trainer)
                 print 'validation loss at step %d: %f' % (step, validation_loss)
                 validation_step = step
                 trainer.save_trainer(self.savedir
@@ -117,9 +119,9 @@ class Nnet(object):
 
                 #validate the model if required
                 if (step%int(self.conf['valid_frequency']) == 0
-                        and val_data is not None):
+                        and val_dispenser is not None):
 
-                    current_loss = trainer.evaluate(val_data, val_labels)
+                    current_loss = self.validate(val_dispenser, trainer)
                     print 'validation loss at step %d: %f' %(step, current_loss)
 
                     if self.conf['valid_adapt'] == 'True':
@@ -223,3 +225,38 @@ class Nnet(object):
 
 
         return nbests
+
+    def validate(self, dispenser, trainer):
+        '''validate the performance of the model
+
+        Args:
+            dispenser: the batchdispenser for the validation data
+            trainer: the trainer object
+
+        Returns:
+            the average validation loss
+        '''
+
+        losses = np.zeros(0)
+
+        for _ in range(int(ceil(dispenser.num_batches))):
+
+            #get a batch of data
+            val_data, val_labels = dispenser.get_batch(True)
+            num_utt = len(val_data)
+
+            #pad the data with empty utterances untill batch size
+            val_data = (
+                val_data + (dispenser.size - num_utt)*
+                [np.zeros([0,val_data[0].shape[1]])])
+            val_labels = (
+                val_labels + (dispenser.size - num_utt)*
+                [np.zeros([0])])
+
+            #get the losses for the this batch of data
+            batch_losses = trainer.evaluate(val_data, val_labels)
+            losses = np.append(losses, batch_losses[:num_utt])
+
+        validation_loss = losses.mean()
+
+        return validation_loss

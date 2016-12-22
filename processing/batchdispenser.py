@@ -58,9 +58,13 @@ class BatchDispenser(object):
         #save the target coder
         self.target_coder = target_coder
 
-    def get_batch(self):
+    def get_batch(self, stop_at_end=False):
         '''
         Get a batch of features and targets.
+
+        Args:
+            stop_at_end: boolean, if False the batchdispenser will loop around
+                otherwise the batchdispenser will stop at the end
 
         Returns:
             A pair containing:
@@ -74,7 +78,10 @@ class BatchDispenser(object):
 
         while len(batch_inputs) < self.size:
             #read utterance
-            utt_id, utt_mat, _ = self.feature_reader.get_utt()
+            utt_id, utt_mat, looped = self.feature_reader.get_utt()
+
+            if looped and stop_at_end:
+                break
 
             #get transcription
             if utt_id in self.target_dict:
@@ -101,7 +108,7 @@ class BatchDispenser(object):
         batch_targets = []
 
         while True:
-            
+
             #read utterance
             utt_id, utt_mat, looped = self.feature_reader.get_utt()
 
@@ -198,7 +205,7 @@ class BatchDispenser(object):
         The number of batches is not necessarily a whole number
         '''
 
-        return self.num_utt/self.size
+        return float(self.num_utt)/self.size
 
     @property
     def num_utt(self):
