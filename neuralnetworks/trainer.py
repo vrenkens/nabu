@@ -14,8 +14,7 @@ class Trainer(object):
 
     def __init__(self, classifier, input_dim, max_input_length,
                  max_target_length, init_learning_rate, learning_rate_decay,
-                 num_steps, batch_size,
-                 numbatches_to_aggregate=1):
+                 num_steps, batch_size, numbatches_to_aggregate, logdir):
         '''
         NnetTrainer constructor, creates the training graph
 
@@ -34,6 +33,7 @@ class Trainer(object):
                 should contain at least one parmeter server and one worker
             numbatches_to_aggregate: number of batches that are aggragated
                 before the gradients are applied
+            logdir: directory where the summaries will be written
         '''
 
         self.batch_size = batch_size
@@ -106,9 +106,10 @@ class Trainer(object):
                 optimizer = tf.train.AdamOptimizer(self.learning_rate)
 
                 #create an optimizer that aggregates gradients
-                optimizer = tf.train.SyncReplicasOptimizer(
-                    optimizer, numbatches_to_aggregate, replica_id=0,
-                    total_num_replicas = 1)
+                optimizer = tf.train.SyncReplicasOptimizerV2(
+                    opt=optimizer,
+                    replicas_to_aggregate=numbatches_to_aggregate,
+                    total_num_replicas=1)
 
                 #compute the loss
                 self.loss = self.compute_loss(
@@ -150,22 +151,26 @@ class Trainer(object):
             #create the summaries for visualisation
             tf.summary.scalar('loss', self.loss)
 
-            self.summary = tf.merge_all_summaries()
-
             #saver for the training network
             self.trainsaver = tf.train.Saver()
 
+        #create the supervisor
+        self.supervisor = tf.train.Supervisor(
+            graph=self.graph,
+            ready_for_local_init_op=optimizer.ready_for_local_init_op,
+            is_chief=True,
+            init_op=self.init_op,
+            local_init_op=optimizer.chief_init_op,
+            logdir=logdir,
+            saver=self.trainsaver,
+            global_step=self.global_step,
+            save_summaries_secs=0)
 
         #specify that the graph can no longer be modified after this point
         self.graph.finalize()
 
-        #create the supervisor
-        self.sv = tf.Supervisor(graph=self.graph,
-                   is_chief=True,
-                   saver=self.trainsaver)
-
-        #start without visualisation
-        self.summarywriter = None
+        #start with an empty session
+        self.session = None
 
     @abstractmethod
     def compute_loss(self, targets, logits, logit_seq_length,
@@ -223,22 +228,26 @@ class Trainer(object):
 
         raise NotImplementedError('Abstract method')
 
-    def initialize(self):
-        '''Initialize all the variables in the graph'''
+    def start(self):
+        '''do all the needed preperations for training and start the session'''
 
-        self.init_op.run() #pylint: disable=E1101
+        #start the session and standart servises
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True #pylint: disable=E1101
+        self.session = self.supervisor.PrepareSession(config=config)
 
-    def start_visualization(self, logdir):
-        '''
-        open a summarywriter for visualisation and add the graph
+        #start the queue runners
+        self.supervisor.start_queue_runners(
+            sess=self.session,
+            queue_runners=[self.chief_queue_runner])
 
-        Args:
-            logdir: directory where the summaries will be written
-        '''
+        #fill the queue with initial tokens
+        self.session.run(self.init_token_op)
 
-        self.summarywriter = tf.train.SummaryWriter(logdir=logdir,
-                                                    graph=self.graph)
+    def stop(self):
+        '''close the session'''
 
+        self.session.close()
 
     def update(self, inputs, targets):
         '''
@@ -256,6 +265,8 @@ class Trainer(object):
                 - the loss at this step
                 - the learning rate used at this step
         '''
+        if self.session is None:
+            raise Exception('Trainer not started')
 
         #get a list of sequence lengths
         input_seq_length = [i.shape[0] for i in inputs]
@@ -267,18 +278,20 @@ class Trainer(object):
         padded_targets = padded_targets[:,:,np.newaxis]
 
         #pylint: disable=E1101
-        _, loss, summary, lr = tf.get_default_session().run(
-            [self.update_op, self.loss, self.summary, self.learning_rate],
+        _, loss, summary, lr = self.session.run(
+            fetches=[self.update_op,
+                     self.loss,
+                     self.supervisor.summary_op,
+                     self.learning_rate],
             feed_dict={self.inputs:padded_inputs,
                        self.targets:padded_targets,
                        self.input_seq_length:input_seq_length,
                        self.target_seq_length:target_seq_length})
 
-        #add the summary is visualisation was started
-        if self.summarywriter is not None:
-            #pylint: disable=E1101
-            self.summarywriter.add_summary(summary,
-                                           global_step=self.global_step.eval())
+        #add the summary
+        self.supervisor.summary_writer.add_summary(
+            summary=summary,
+            global_step=self.global_step.eval(session=self.session))
 
         return loss, lr
 
@@ -298,6 +311,9 @@ class Trainer(object):
             a numpy array containing the loss of each utterance in the batch
         '''
 
+        if self.session is None:
+            raise Exception('Trainer not started')
+
         if inputs is None or targets is None:
             return None
 
@@ -309,6 +325,7 @@ class Trainer(object):
 
         #pylint: disable=E1101
         outputs = list(self.outputs.eval(
+            session=self.session,
             feed_dict={self.inputs:padded_inputs,
                        self.input_seq_length:input_seq_length}))
 
@@ -320,7 +337,7 @@ class Trainer(object):
     def halve_learning_rate(self):
         '''halve the learning rate'''
 
-        self.halve_learningrate_op.run()
+        self.halve_learningrate_op.run(session=self.session)
 
     def save_model(self, filename):
         '''
@@ -329,7 +346,7 @@ class Trainer(object):
         Args:
             filename: path to the model file
         '''
-        self.modelsaver.save(tf.get_default_session(), filename)
+        self.modelsaver.save(self.session, filename)
 
     def restore_model(self, filename):
         '''
@@ -338,7 +355,7 @@ class Trainer(object):
         Args:
             filename: path where the model will be saved
         '''
-        self.modelsaver.restore(tf.get_default_session(), filename)
+        self.modelsaver.restore(self.session, filename)
 
     def save_trainer(self, filename):
         '''
@@ -347,8 +364,7 @@ class Trainer(object):
         Args:
             filename: path where the model will be saved
         '''
-        self.modelsaver.save(tf.get_default_session(), filename)
-        self.saver.save(tf.get_default_session(), filename + '_trainvars')
+        self.trainsaver.save(self.session, filename)
 
     def restore_trainer(self, filename):
         '''
@@ -357,8 +373,7 @@ class Trainer(object):
         Args:
             filename: path where the model will be saved
         '''
-        self.modelsaver.restore(tf.get_default_session(), filename)
-        self.saver.restore(tf.get_default_session(), filename + '_trainvars')
+        self.trainsaver.restore(self.session, filename)
 
 class CrossEnthropyTrainer(Trainer):
     '''A trainer that minimises the cross-enthropy loss, the output sequences
@@ -402,7 +417,7 @@ class CrossEnthropyTrainer(Trainer):
                                         int(nonseq_logits.get_shape()[1]))
 
             #compute the cross-enthropy loss
-            loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(
+            loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
                 nonseq_logits, nonseq_targets))
 
         return loss
@@ -443,7 +458,8 @@ class CTCTrainer(Trainer):
     '''A trainer that minimises the CTC loss, the output sequences'''
     def __init__(self, classifier, input_dim, max_input_length,
                  max_target_length, init_learning_rate, learning_rate_decay,
-                 num_steps, batch_size, numbatches_to_aggregate, beam_width):
+                 num_steps, batch_size, numbatches_to_aggregate, logdir,
+                 beam_width):
         '''
         NnetTrainer constructor, creates the training graph
 
@@ -459,14 +475,23 @@ class CTCTrainer(Trainer):
             batch_size: the batch size
             numbatches_to_aggregate: number of batches that are aggragated
                 before the gradients are applied
+            logdir: directory where the summaries will be written
             beam_width: the width of the beam used for validation
         '''
 
         self.beam_width = beam_width
+
         super(CTCTrainer, self).__init__(
-            classifier, input_dim, max_input_length, max_target_length,
-            init_learning_rate, learning_rate_decay, num_steps,
-            batch_size, numbatches_to_aggregate)
+            classifier=classifier,
+            input_dim=input_dim,
+            max_input_length=max_input_length,
+            max_target_length=max_target_length,
+            init_learning_rate=init_learning_rate,
+            learning_rate_decay=learning_rate_decay,
+            num_steps=num_steps,
+            batch_size=batch_size,
+            numbatches_to_aggregate=numbatches_to_aggregate,
+            logdir=logdir)
 
     def compute_loss(self, targets, logits, logit_seq_length,
                      target_seq_length):
@@ -509,7 +534,7 @@ class CTCTrainer(Trainer):
             sparse_targets = tf.SparseTensor(tf.cast(indices, tf.int64), values,
                                              shape)
 
-            loss = tf.reduce_sum(tf.nn.ctc_loss(logits, sparse_targets,
+            loss = tf.reduce_mean(tf.nn.ctc_loss(logits, sparse_targets,
                                                 logit_seq_length,
                                                 time_major=False))
 

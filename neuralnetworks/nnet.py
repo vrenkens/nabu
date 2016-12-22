@@ -1,7 +1,6 @@
 '''@file nnet.py
 contains the functionality for a Kaldi style neural network'''
 
-import shutil
 import os
 from classifiers import *
 import tensorflow as tf
@@ -55,124 +54,46 @@ class Nnet(object):
         #compute the total number of steps
         num_steps = int(dispenser.num_batches *int(self.conf['num_epochs']))
 
-        #set the step to the starting step
-        step = int(self.conf['starting_step'])
-
-        #go to the point in the database where the training was at checkpoint
-        for _ in range(step):
-            dispenser.skip_batch()
-
-        #put the DBLSTM in a CTC training environment
+        #create the trainer
         print 'building the training graph'
         trainer = CTCTrainer(
-            self.classifier, self.input_dim, dispenser.max_input_length,
-            dispenser.max_target_length,
-            float(self.conf['initial_learning_rate']),
-            float(self.conf['learning_rate_decay']),
-            num_steps, int(self.conf['batch_size']),
-            int(self.conf['numbatches_to_aggregate']),
-            int(self.conf['beam_width']))
+            classifier=self.classifier,
+            input_dim=self.input_dim,
+            max_input_length=dispenser.max_input_length,
+            max_target_length=dispenser.max_target_length,
+            init_learning_rate=float(self.conf['initial_learning_rate']),
+            learning_rate_decay=float(self.conf['learning_rate_decay']),
+            num_steps=num_steps,
+            batch_size=int(self.conf['batch_size']),
+            numbatches_to_aggregate=int(self.conf['numbatches_to_aggregate']),
+            logdir=self.savedir + '/logdir',
+            beam_width=int(self.conf['beam_width']))
 
-        #start the visualization if it is requested
-        if self.conf['visualise'] == 'True':
-            if os.path.isdir(self.savedir + '/logdir'):
-                shutil.rmtree(self.savedir + '/logdir')
+        #start the trainer
+        trainer.start()
+        step = 0
 
-            trainer.start_visualization(self.savedir + '/logdir')
+        #start the training iteration
+        while step < num_steps:
 
-        #start a tensorflow session
-        config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True #pylint: disable=E1101
-        with tf.Session(graph=trainer.graph, config=config):
-            #initialise the trainer
-            trainer.initialize()
+            #get a batch of data
+            batch_data, batch_labels = dispenser.get_batch()
 
-            #load the neural net if the starting step is not 0
-            if step > 0:
-                trainer.restore_trainer(self.savedir
-                                        + '/training/step' + str(step))
+            #update the model
+            loss, lr = trainer.update(batch_data, batch_labels)
 
-            #do a validation step
-            if val_dispenser is not None:
-                validation_loss = self.validate(val_dispenser, trainer)
-                print 'validation loss at step %d: %f' % (step, validation_loss)
-                validation_step = step
-                trainer.save_trainer(self.savedir
-                                     + '/validation/validated')
-                num_retries = 0
+            #print the progress
+            print ('step %d/%d loss: %f, learning rate: %f'
+                   %(step, num_steps, loss, lr))
 
-            #start the training iteration
-            while step < num_steps:
+            #increment the step
+            step += 1
 
-                #get a batch of data
-                batch_data, batch_labels = dispenser.get_batch()
+        #save the final model
+        trainer.save_model(self.savedir + '/final')
 
-                #update the model
-                loss, lr = trainer.update(batch_data, batch_labels)
-
-                #print the progress
-                print ('step %d/%d loss: %f, learning rate: %f'
-                       %(step, num_steps, loss, lr))
-
-                #increment the step
-                step += 1
-
-                #validate the model if required
-                if (step%int(self.conf['valid_frequency']) == 0
-                        and val_dispenser is not None):
-
-                    current_loss = self.validate(val_dispenser, trainer)
-                    print 'validation loss at step %d: %f' %(step, current_loss)
-
-                    if self.conf['valid_adapt'] == 'True':
-                        #if the loss increased, half the learning rate and go
-                        #back to the previous validation step
-                        if current_loss > validation_loss:
-
-                            #go back in the dispenser
-                            for _ in range(step-validation_step):
-                                dispenser.return_batch()
-
-                            #load the validated model
-                            trainer.restore_trainer(self.savedir
-                                                    + '/validation/validated')
-
-                            #halve the learning rate
-                            trainer.halve_learning_rate()
-
-                            #save the model to store the new learning rate
-                            trainer.save_trainer(self.savedir
-                                                 + '/validation/validated')
-
-                            step = validation_step
-
-                            if num_retries == int(self.conf['valid_retries']):
-                                print '''the validation loss is worse,
-                                         terminating training'''
-                                break
-
-                            print '''the validation loss is worse, returning to
-                                     the previously validated model with halved
-                                     learning rate'''
-
-                            num_retries += 1
-
-                            continue
-
-                        else:
-                            validation_loss = current_loss
-                            validation_step = step
-                            num_retries = 0
-                            trainer.save_trainer(self.savedir
-                                                 + '/validation/validated')
-
-                #save the model if at checkpoint
-                if step%int(self.conf['check_freq']) == 0:
-                    trainer.save_trainer(self.savedir + '/training/step'
-                                         + str(step))
-
-            #save the final model
-            trainer.save_model(self.savedir + '/final')
+        #stop the trainer
+        trainer.stop()
 
     def decode(self, reader, target_coder):
         '''
