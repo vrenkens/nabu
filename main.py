@@ -6,8 +6,6 @@ from six.moves import configparser
 from neuralnetworks import nnet
 from processing import ark, prepare_data, feature_reader, batchdispenser, target_coder, target_normalizers, score
 
-import pdb
-
 #here you can set which steps should be executed. If a step has been executed in the past the result have been saved and the step does not have to be executed again (if nothing has changed)
 TRAINFEATURES = False
 DEVFEATURES = False
@@ -18,7 +16,7 @@ TEST = True
 #pointers to the config files
 database_cfg_file = 'config/databases/TIMIT.cfg'
 feat_cfg_file = 'config/features/fbank.cfg'
-nnet_cfg_file = 'config/nnet/wavenet.cfg'
+nnet_cfg_file = 'config/nnet/DBLSTM.cfg'
 
 #set the CUDA GPU that Tensorflow should use
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
@@ -65,7 +63,7 @@ _, features, _ = reader.read_next_utt()
 input_dim = features.shape[1]
 
 #create the coder
-coder = target_coder.TextCoder(target_normalizers.aurora4_normalizer)
+coder = eval('target_coder.%s(target_normalizers.%s)' % (database_cfg['coder'], database_cfg['normalizer']))
 
 #create the neural net
 nnet_cfg = configparser.ConfigParser()
@@ -148,7 +146,6 @@ if TEST:
         references[splitline[0]] = coder.normalize(splitline[1:])
 
     #compute the character error rate
-    pdb.set_trace()
     CER = score.CER(nbests, references)
 
     print 'character error rate: %f' % CER
