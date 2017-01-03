@@ -11,7 +11,7 @@ def aurora4_normalizer(transcription, alphabet):
         alphabet: the known characters alphabet
 
     Returns:
-        the normalized transcription
+        the normalized transcription as a string
     '''
 
     #create a dictionary of words that should be replaced

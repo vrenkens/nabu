@@ -176,6 +176,10 @@ class ArkReader(object):
 
         return reader
 
+    @property
+    def num_utt(self):
+        return len(self.scp_data)
+
 class ArkWriter(object):
     '''
     Class to write numpy matrices into Kaldi .ark file and create the

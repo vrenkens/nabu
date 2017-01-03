@@ -1,16 +1,15 @@
 '''@file score.py
 contains functions to score the system'''
 
+import os
 import numpy as np
 
-def CER(nbests, references):
+def cer(decodedir, references):
     '''
     compute the character error rate
 
     Args:
-        nbests: the nbest lists, this is a dictionary with the uttreance id as
-            key and a pair containing a list of hypothesis strings and
-            a list of log probabilities
+        decodedir: the directory containing the decoded utterances
         references: the reference transcriptions as a list of strings
 
     Returns:
@@ -21,8 +20,25 @@ def CER(nbests, references):
     num_labels = 0
 
     for utt in references:
-        #get the single best decoded utterance as a list
-        decoded = nbests[utt][0][0].split(' ')
+        #read the best decoded utterance
+        if not os.path.exists(decodedir + '/' + utt):
+            print 'WARNING: %s was not decoded' % utt
+            continue
+
+        nbest = []
+        with open(decodedir + '/' + utt) as fid:
+            lines = fid.readlines()
+
+        for line in lines:
+            splitline = line.strip().split('\t')
+            if len(splitline) == 2:
+                nbest.append((float(splitline[0]), splitline[1]))
+            else:
+                nbest.append((float(splitline[0]), ''))
+
+        scores = np.array([h[0] for h in nbest])
+
+        decoded = nbest[np.argmax(scores)][1].split(' ')
 
         #get the reference as a list
         reference = references[utt].split(' ')

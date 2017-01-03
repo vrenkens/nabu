@@ -4,25 +4,30 @@ neural network decoder environment'''
 from abc import ABCMeta, abstractmethod
 import tensorflow as tf
 import numpy as np
-from classifiers import seq_convertors
 
 class Decoder(object):
     '''the abstract class for a decoder'''
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, classifier, input_dim, max_input_length):
+    def __init__(self, conf, classifier, input_dim, max_input_length, expdir):
         '''
         Decoder constructor, creates the decoding graph
 
         Args:
+            conf: the decoder config
             classifier: the classifier that will be used for decoding
             input_dim: the input dimension to the nnnetgraph
             max_input_length: the maximum length of the inputs
+            expdir: the location where the models were saved and the results
+                will be written
         '''
 
-        self.graph = tf.Graph()
+        self.conf = conf
         self.max_input_length = max_input_length
+        self.expdir = expdir
+
+        self.graph = tf.Graph()
 
         with self.graph.as_default():
 
@@ -73,35 +78,59 @@ class Decoder(object):
             decoded: the outputs of the decoding graph
 
         Returns:
-            the processed outputs
+            a list of pairs containing:
+                - the score of the output
+                - the output lable sequence as a numpy array
         '''
 
-    def __call__(self, inputs):
+    def decode(self, reader, coder):
         '''decode using the neural net
 
         Args:
-            inputs: the inputs to the graph as a NxF numpy array where N is the
-                number of frames and F is the input feature dimension
+            reader: a feauture reader object containing the testng features
+            coder: a target coder object to write the results to disk
 
         Returns:
             the output of the decoder
         '''
 
-        #get the sequence length
-        input_seq_length = [inputs.shape[0]]
+        #start the session
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True #pylint: disable=E1101
+        config.allow_soft_placement = True
 
-        #pad the inputs
-        inputs = np.append(
-            inputs, np.zeros([self.max_input_length-inputs.shape[0],
-                              inputs.shape[1]]), 0)
+        with tf.Session(graph=self.graph, config=config) as sess:
 
-        #pylint: disable=E1101
-        decoded = tf.get_default_session().run(
-            self.outputs,
-            feed_dict={self.inputs:inputs[np.newaxis, :, :],
-                       self.input_seq_length:input_seq_length})
+            #load the trained model
+            self.saver.restore(sess, self.expdir + '/logdir/final.ckpt')
 
-        decoded = self.process_decoded(decoded)
+            while True:
+
+                (utt_id, inputs, looped) = reader.get_utt()
+
+                if looped:
+                    break
+
+                #get the sequence length
+                input_seq_length = [inputs.shape[0]]
+
+                #pad the inputs
+                inputs = np.append(
+                    inputs, np.zeros([self.max_input_length-inputs.shape[0],
+                                      inputs.shape[1]]), 0)
+
+                #pylint: disable=E1101
+                decoded = sess.run(
+                    self.outputs,
+                    feed_dict={self.inputs:inputs[np.newaxis, :, :],
+                               self.input_seq_length:input_seq_length})
+
+                decoded = self.process_decoded(decoded)
+
+                #write the results to disk
+                with open(self.expdir + '/decoded/' + utt_id, 'w') as fid:
+                    for d in decoded:
+                        fid.write('%f\t%s\n' % (d[0], coder.decode(d[1])))
 
         return decoded
 
@@ -115,58 +144,9 @@ class Decoder(object):
 
         self.saver.restore(tf.get_default_session(), filename)
 
-class SimpleDecoder(Decoder):
-    '''Simple decoder that passes the output logits through a softmax'''
-
-    def get_outputs(self, logits, logits_seq_length):
-        '''
-        Put the classifier output logits through a softmax
-
-        Args:
-            logits: A list containing a 1xO tensor for each timestep where O
-                is the classifier output dimension
-            logits_seq_length: the logits sequence length
-        Returns:
-            An NxO tensor containing posterior distributions
-        '''
-
-        #convert logits to non sequence for the softmax computation
-        logits = seq_convertors.seq2nonseq(logits, logits_seq_length)
-
-        return tf.nn.softmax(logits)
-
-    def process_decoded(self, decoded):
-        '''
-        do nothing
-
-        Args:
-            decoded: the outputs of the decoding graph
-
-        Returns:
-            the outputs of the decoding graph
-        '''
-
-        return decoded
 
 class CTCDecoder(Decoder):
     '''CTC Decoder'''
-
-    def __init__(self, classifier, input_dim, max_input_length, beam_width):
-        '''
-        Decoder constructor, creates the decoding graph
-
-        Args:
-            classifier: the classifier that will be used for decoding
-            input_dim: the input dimension to the nnnetgraph
-            max_input_length: the maximum length of the inputs
-            beam_width: the width of the decoding beam
-        '''
-
-        #store the beam width
-        self.beam_width = beam_width
-
-        super(CTCDecoder, self).__init__(classifier, input_dim,
-                                         max_input_length)
 
     def get_outputs(self, logits, logits_seq_length):
         '''
@@ -178,9 +158,9 @@ class CTCDecoder(Decoder):
             logits_seq_length: the logits sequence length
 
         Returns:
-            a pair containg:
-                - a tuple of length W containing vectors with output sequences
-                - a W dimensional vector containing the log probabilities
+            a tupple of length beam_width + 1 where the first beam_width
+            elements are vectors with label sequences and the last elements
+            is a beam_width length vector containing scores
         '''
 
         #Convert logits to time major
@@ -188,8 +168,8 @@ class CTCDecoder(Decoder):
 
         #do the CTC beam search
         sparse_outputs, logprobs = tf.nn.ctc_beam_search_decoder(
-            tf.pack(logits), logits_seq_length, self.beam_width,
-            self.beam_width)
+            tf.pack(logits), logits_seq_length, int(self.conf['beam_width']),
+            int(self.conf['beam_width']))
 
         #convert the outputs to dense tensors
         dense_outputs = [
@@ -203,17 +183,20 @@ class CTCDecoder(Decoder):
         create numpy arrays of decoded targets
 
         Args:
-            decoded: a pair containing:
-                - a tuple of length W containing vectors with output sequences
-                - a W dimensional vector containing the log probabilities
+            decoded: a tupple of length beam_width + 1 where the first
+                beam_width elements are vectors with label sequences and the
+                last elements is a beam_width length vector containing scores
 
         Returns:
-            decoded: a pair containing:
-                - a list of output sequences
-                - a W dimensional vector containing the log probabilities
+            a list of pairs containing:
+                - the score of the output
+                - the output lable sequence as a numpy array
         '''
 
         target_sequences = decoded[:-1]
         logprobs = decoded[-1]
 
-        return target_sequences, logprobs
+        processed = [(logprobs[b], target_sequences[b])
+                     for b in range(len(target_sequences))]
+
+        return processed

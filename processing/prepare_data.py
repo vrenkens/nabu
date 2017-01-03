@@ -10,7 +10,7 @@ import feat
 import readfiles
 import ark
 
-def prepare_data(datadir, featdir, conf, feat_type, dynamic):
+def prepare_data(datadir, featdir, conf):
     '''
     compute the features of all segments and save them on disk
 
@@ -18,10 +18,6 @@ def prepare_data(datadir, featdir, conf, feat_type, dynamic):
         datadir: directory where the kaldi data prep has been done
         featdir: directory where the features will be put
         conf: feature configuration
-        featureType: string containing the type of features, optione are:
-            fbank, mfcc and ssc.
-        dynamic: the type of dynamic information added, options are:
-            nodelta, delta and ddelta.
     '''
 
     if not os.path.exists(featdir):
@@ -48,7 +44,7 @@ def prepare_data(datadir, featdir, conf, feat_type, dynamic):
     rate_utt = {utt: read_wav(wavfiles[utt]) for utt in wavfiles}
 
     #create a featureComputer
-    comp = feat.FeatureComputer(feat_type, dynamic, conf)
+    comp = feat.FeatureComputer(conf)
 
     #compute all the features
     max_length = 0

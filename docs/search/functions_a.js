@@ -1,15 +1,9 @@
 var searchData=
 [
-  ['read_5falignments',['read_alignments',['../readfiles_8py.html#a78955eb7ec00765e90cf3559f12f87c4',1,'processing::readfiles']]],
-  ['read_5fnext_5fscp',['read_next_scp',['../classprocessing_1_1ark_1_1ArkReader.html#aa735c86ed5117a8fc0bf2d4a3f83bf64',1,'processing::ark::ArkReader']]],
-  ['read_5fnext_5futt',['read_next_utt',['../classprocessing_1_1ark_1_1ArkReader.html#ab5e3ba694455deb642f24fa9da1ed459',1,'processing::ark::ArkReader']]],
-  ['read_5fprevious_5fscp',['read_previous_scp',['../classprocessing_1_1ark_1_1ArkReader.html#a1938f68fe3f3dd115fc7cdae452a15cc',1,'processing::ark::ArkReader']]],
-  ['read_5fsegments',['read_segments',['../readfiles_8py.html#a49a87cc62cd4931250d0958f39bf5d78',1,'processing::readfiles']]],
-  ['read_5ftarget_5ffile',['read_target_file',['../classprocessing_1_1batchdispenser_1_1BatchDispenser.html#ad2781126fccdf357dae7158da17af83d',1,'processing.batchdispenser.BatchDispenser.read_target_file()'],['../classprocessing_1_1batchdispenser_1_1TextBatchDispenser.html#ace5f56fecd9bbfcf6a7465a9c2b5e6c5',1,'processing.batchdispenser.TextBatchDispenser.read_target_file()'],['../classprocessing_1_1batchdispenser_1_1AlignmentBatchDispenser.html#aa0d3e0a31724ea753eeab02020e91c22',1,'processing.batchdispenser.AlignmentBatchDispenser.read_target_file()']]],
-  ['read_5futt',['read_utt',['../classprocessing_1_1ark_1_1ArkReader.html#a19eb7017df4e61bf59d799a5faefcec0',1,'processing::ark::ArkReader']]],
-  ['read_5futt2spk',['read_utt2spk',['../readfiles_8py.html#ad9767b5923b7f765db71af2fc536dd50',1,'processing::readfiles']]],
-  ['read_5futt_5fdata',['read_utt_data',['../classprocessing_1_1ark_1_1ArkReader.html#a101a8d8ef34d314e8214401b994e9e79',1,'processing::ark::ArkReader']]],
-  ['read_5fwav',['read_wav',['../prepare__data_8py.html#a6bfe24173f7f7497d504039e7bc1647e',1,'processing::prepare_data']]],
-  ['read_5fwavfiles',['read_wavfiles',['../readfiles_8py.html#afa1a535177afd88fea31f98c0d969688',1,'processing::readfiles']]],
-  ['return_5fbatch',['return_batch',['../classprocessing_1_1batchdispenser_1_1BatchDispenser.html#ac581c358f53e501c2bd26deb11641109',1,'processing::batchdispenser::BatchDispenser']]]
+  ['pad',['pad',['../trainer_8py.html#a0be0e51d877bd2376023347b94f64c2b',1,'neuralnetworks::trainer']]],
+  ['powspec',['powspec',['../sigproc_8py.html#a0290012fdbcf190c8e7a8549940f1b2f',1,'processing::sigproc']]],
+  ['preemphasis',['preemphasis',['../sigproc_8py.html#af50f8cb415e18ebae60b55041c777450',1,'processing::sigproc']]],
+  ['prepare_5fdata',['prepare_data',['../prepare__data_8py.html#ae77003aec7f4c39f3a63001f4130b549',1,'processing::prepare_data']]],
+  ['prev_5fid',['prev_id',['../classprocessing_1_1feature__reader_1_1FeatureReader.html#a0b9df4a09f747ed38b7d7f7d4607aaa1',1,'processing::feature_reader::FeatureReader']]],
+  ['process_5fdecoded',['process_decoded',['../classneuralnetworks_1_1decoder_1_1Decoder.html#a621116123b75f0b51d33c61de1ae7fc5',1,'neuralnetworks.decoder.Decoder.process_decoded()'],['../classneuralnetworks_1_1decoder_1_1CTCDecoder.html#a243334500bb102700454a1afc203c1fb',1,'neuralnetworks.decoder.CTCDecoder.process_decoded()']]]
 ];

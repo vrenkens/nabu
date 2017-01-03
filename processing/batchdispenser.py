@@ -58,11 +58,12 @@ class BatchDispenser(object):
         #save the target coder
         self.target_coder = target_coder
 
-    def get_batch(self, stop_at_end=False):
+    def get_batch(self, pos=None, stop_at_end=False):
         '''
         Get a batch of features and targets.
 
         Args:
+            pos: position in the feature reader, if None will remain unchanged
             stop_at_end: boolean, if False the batchdispenser will loop around
                 otherwise the batchdispenser will stop at the end
 
@@ -75,6 +76,9 @@ class BatchDispenser(object):
         #set up the data lists.
         batch_inputs = []
         batch_targets = []
+
+        if pos is not None:
+            self.feature_reader.pos = pos
 
         while len(batch_inputs) < self.size:
             #read utterance
@@ -92,6 +96,9 @@ class BatchDispenser(object):
                 batch_targets.append(encoded_targets)
             else:
                 print 'WARNING no targets for %s' % utt_id
+
+        if self.feature_reader.pos == self.feature_reader.num_utt:
+            self.feature_reader.pos = 0
 
         return batch_inputs, batch_targets
 
@@ -224,6 +231,10 @@ class BatchDispenser(object):
         '''the maximal sequence length of the features'''
 
         return self.feature_reader.max_input_length
+
+    @property
+    def pos(self):
+        return self.feature_reader.pos
 
 class TextBatchDispenser(BatchDispenser):
     '''a batch dispenser, which uses text targets.'''

@@ -2,175 +2,311 @@
 neural network trainer environment'''
 
 from abc import ABCMeta, abstractmethod
+from time import sleep
+from math import ceil
 import tensorflow as tf
+from tensorflow.python.client.device_lib import list_local_devices
 import numpy as np
 from classifiers import seq_convertors
-
-import pdb
 
 class Trainer(object):
     '''General class outlining the training environment of a classifier.'''
     __metaclass__ = ABCMeta
 
-    def __init__(self, classifier, input_dim, max_input_length,
-                 max_target_length, init_learning_rate, learning_rate_decay,
-                 num_steps, batch_size, numbatches_to_aggregate, logdir):
+    def __init__(self,
+                 conf,
+                 classifier,
+                 input_dim,
+                 max_input_length,
+                 max_target_length,
+                 dispenser,
+                 val_dispenser=None,
+                 logdir=None,
+                 server=None,
+                 cluster=None,
+                 task_index=0):
         '''
         NnetTrainer constructor, creates the training graph
 
         Args:
             classifier: the neural net classifier that will be trained
+            conf: the trainer config
             input_dim: the input dimension to the nnnetgraph
             max_input_length: the maximal length of the input sequences
             max_target_length: the maximal length of the target sequences
-            init_learning_rate: the initial learning rate
-            learning_rate_decay: the parameter for exponential learning rate
-                decay
             num_steps: the total number of steps that will be taken
-            batch_size: determines how many utterances are
-                processed at a time to limit memory usage
+            dispenser: a Batchdispenser object
             cluster: the optional cluster used for distributed training, it
                 should contain at least one parmeter server and one worker
-            numbatches_to_aggregate: number of batches that are aggragated
-                before the gradients are applied
+            val_dispenser: the batchdispenser for the validation data if None
+                validation will not be used
             logdir: directory where the summaries will be written
+            server: optional server to be used for distributed training
+            cluster: optional cluster to be used for distributed training
+            task_index: optional index of the worker task in the cluster
         '''
 
-        self.batch_size = batch_size
+        self.conf = conf
+        self.dispenser = dispenser
         self.max_input_length = max_input_length
         self.max_target_length = max_target_length
+        self.num_steps = int(dispenser.num_batches*int(conf['num_epochs'])
+                             /max(1, int(conf['numbatches_to_aggregate'])))
+        self.val_dispenser = val_dispenser
+        self.logdir = logdir
+        self.server = server
 
         #create the graph
         self.graph = tf.Graph()
 
+        if cluster is None:
+            #non distributed training
+            is_chief = True
+            num_replicas = 1
+
+            #choose a GPU if it is available otherwise take a CPU
+            local_device_protos = (list_local_devices())
+            gpu = [x.name for x in local_device_protos
+                   if x.device_type == 'GPU']
+            if len(gpu) > 0:
+                device = str(gpu[0])
+            else:
+                device = str(local_device_protos[0].name)
+
+        else:
+            #distributed training
+            num_replicas = len(cluster.as_dict()['worker'])
+            is_chief = task_index == 0
+            device = tf.train.replica_device_setter(
+                worker_device="/job:worker/task:%d" % task_index,
+                cluster=cluster)
+
         #define the placeholders in the graph
         with self.graph.as_default():
 
-            #create the inputs placeholder
-            self.inputs = tf.placeholder(
-                tf.float32, shape=[batch_size, max_input_length, input_dim],
-                name='inputs')
+            with tf.device(device):
 
-            #reference labels
-            self.targets = tf.placeholder(
-                tf.int32, shape=[batch_size, max_target_length, 1],
-                name='targets')
+                #create the inputs placeholder
+                self.inputs = tf.placeholder(
+                    dtype=tf.float32,
+                    shape=[dispenser.size, max_input_length, input_dim],
+                    name='inputs')
+
+                #reference labels
+                self.targets = tf.placeholder(
+                    dtype=tf.int32,
+                    shape=[dispenser.size, max_target_length, 1],
+                    name='targets')
+
+                #the length of all the input sequences
+                self.input_seq_length = tf.placeholder(
+                    dtype=tf.int32,
+                    shape=[dispenser.size],
+                    name='input_seq_length')
+
+                #the length of all the output sequences
+                self.target_seq_length = tf.placeholder(
+                    dtype=tf.int32,
+                    shape=[dispenser.size],
+                    name='output_seq_length')
+
+                #a placeholder to set the position
+                self.pos_in = tf.placeholder(
+                    dtype=tf.int32,
+                    shape=[],
+                    name='pos_in')
+
+                self.val_loss_in = tf.placeholder(
+                    dtype=tf.float32,
+                    shape=[],
+                    name='val_loss_in')
+
+                #compute the training outputs of the classifier
+                trainlogits, logit_seq_length, \
+                self.modelsaver, self.control_ops = classifier(
+                    inputs=self.inputs,
+                    input_seq_length=self.input_seq_length,
+                    targets=self.targets,
+                    target_seq_length=self.target_seq_length,
+                    is_training=True,
+                    reuse=False,
+                    scope='Classifier')
+
+                #compute the validation output of the classifier
+                logits, _, _, _ = classifier(
+                    inputs=self.inputs,
+                    input_seq_length=self.input_seq_length,
+                    targets=self.targets,
+                    target_seq_length=self.target_seq_length,
+                    is_training=False,
+                    reuse=True,
+                    scope='Classifier')
 
 
-            #the length of all the input sequences
-            self.input_seq_length = tf.placeholder(
-                tf.int32, shape=[batch_size], name='input_seq_length')
+                with tf.variable_scope('train'):
+                    #a variable to hold the amount of steps already taken
+                    self.global_step = tf.get_variable(
+                        'global_step', [], dtype=tf.int32,
+                        initializer=tf.constant_initializer(0), trainable=False)
 
-            #the length of all the output sequences
-            self.target_seq_length = tf.placeholder(
-                tf.int32, shape=[batch_size], name='output_seq_length')
+                    #a variable that indicates if features are being read
+                    self.reading = tf.get_variable(
+                        name='reading',
+                        shape=[],
+                        dtype=tf.bool,
+                        initializer=tf.constant_initializer(False),
+                        trainable=False)
 
-            #compute the training outputs of the classifier
-            trainlogits, logit_seq_length, self.modelsaver, self.control_ops =\
-                classifier(
-                    self.inputs, self.input_seq_length, targets=self.targets,
-                    target_seq_length=self.target_seq_length, is_training=True,
-                    reuse=False, scope='Classifier')
+                    #the position in the feature reader
+                    self.pos = tf.get_variable(
+                        name='position',
+                        shape=[],
+                        dtype=tf.int32,
+                        initializer=tf.constant_initializer(0),
+                        trainable=False)
 
-            #compute the validation output of the classifier
-            logits, _, _, _ = classifier(
-                self.inputs, self.input_seq_length, targets=self.targets,
-                target_seq_length=self.target_seq_length, is_training=False,
-                reuse=True, scope='Classifier')
+                    #the current validation loss
+                    self.val_loss = tf.get_variable(
+                        name='validation_loss',
+                        shape=[],
+                        dtype=tf.float32,
+                        initializer=tf.constant_initializer(1.79e+308),
+                        trainable=False)
+
+                    #a variable that specifies when the model was last validated
+                    self.validated_step = tf.get_variable(
+                        name='validated_step',
+                        shape=[],
+                        dtype=tf.int32,
+                        initializer=tf.constant_initializer(
+                            -int(conf['valid_frequency'])),
+                        trainable=False)
+
+                    #operation to start reading
+                    self.block_reader = self.reading.assign(True).op
+
+                    #operation to release the reader
+                    self.release_reader = self.reading.assign(False).op
+
+                    #operation to set the position
+                    self.set_pos = self.pos.assign(self.pos_in).op
+
+                    #operation to update the validated steps
+                    self.set_val_step = self.validated_step.assign(
+                        self.global_step).op
+
+                    #operation to set the validation loss
+                    self.set_val_loss = self.val_loss.assign(
+                        self.val_loss_in).op
+
+                    #a variable to scale the learning rate (used to reduce the
+                    #learning rate in case validation performance drops)
+                    learning_rate_fact = tf.get_variable(
+                        name='learning_rate_fact',
+                        shape=[],
+                        initializer=tf.constant_initializer(1.0),
+                        trainable=False)
+
+                    #operation to half the learning rate
+                    self.halve_learningrate_op = learning_rate_fact.assign(
+                        learning_rate_fact/2).op
+
+                    #compute the learning rate with exponential decay and scale
+                    #with the learning rate factor
+                    self.learning_rate = (tf.train.exponential_decay(
+                        learning_rate=float(conf['initial_learning_rate']),
+                        global_step=self.global_step,
+                        decay_steps=self.num_steps,
+                        decay_rate=float(conf['learning_rate_decay']))
+                                          * learning_rate_fact)
+
+                    #create the optimizer
+                    optimizer = tf.train.AdamOptimizer(self.learning_rate)
+
+                    #create an optimizer that aggregates gradients
+                    if int(conf['numbatches_to_aggregate']) > 0:
+                        optimizer = tf.train.SyncReplicasOptimizerV2(
+                            opt=optimizer,
+                            replicas_to_aggregate=int(
+                                conf['numbatches_to_aggregate']),
+                            total_num_replicas=num_replicas)
+
+                    #compute the loss
+                    self.loss = self.compute_loss(
+                        self.targets, trainlogits, logit_seq_length,
+                        self.target_seq_length)
+
+                    #compute the gradients
+                    grads = optimizer.compute_gradients(self.loss)
+
+                    with tf.variable_scope('clip'):
+                        #clip the gradients
+                        grads = [(tf.clip_by_value(grad, -1., 1.), var)
+                                 for grad, var in grads]
+
+                    #opperation to apply the gradients
+                    apply_gradients_op = optimizer.apply_gradients(
+                        grads_and_vars=grads,
+                        global_step=self.global_step,
+                        name='apply_gradients')
+
+                    #all remaining operations with the UPDATE_OPS GraphKeys
+                    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+
+                    #create an operation to update the gradients, the batch_loss
+                    #and do all other update ops
+                    #pylint: disable=E1101
+                    self.update_op = tf.group(
+                        *([apply_gradients_op] + update_ops),
+                        name='update')
+
+                with tf.name_scope('valid'):
+                    #compute the outputs that will be used for validation
+                    self.outputs = self.validation(logits, logit_seq_length)
+
+                # add an operation to initialise all the variables in the graph
+                self.init_op = tf.global_variables_initializer()
+
+                #operations to initialise the token queue
+                if int(conf['numbatches_to_aggregate']) > 0:
+                    self.init_token_op = optimizer.get_init_tokens_op()
+                    self.chief_queue_runner = optimizer.get_chief_queue_runner()
+                    ready_for_local_init_op = optimizer.ready_for_local_init_op
+                    if is_chief:
+                        local_init_op = optimizer.chief_init_op
+                    else:
+                        local_init_op = optimizer.local_step_init_op
+                else:
+                    self.init_token_op = tf.no_op()
+                    self.chief_queue_runner = None
+                    ready_for_local_init_op = tf.no_op()
+                    local_init_op = tf.no_op()
+
+                #create the summaries for visualisation
+                tf.summary.scalar('validation loss', self.val_loss)
+                tf.summary.scalar('learning rate', self.learning_rate)
+
+                #create a histogram for all trainable parameters
+                for param in tf.trainable_variables():
+                    tf.summary.histogram(param.name, param)
 
 
-            with tf.variable_scope('train'):
-
-                #a variable to hold the amount of steps already taken
-                self.global_step = tf.get_variable(
-                    'global_step', [], dtype=tf.int32,
-                    initializer=tf.constant_initializer(0), trainable=False)
-
-                #a variable to scale the learning rate (used to reduce the
-                #learning rate in case validation performance drops)
-                learning_rate_fact = tf.get_variable(
-                    'learning_rate_fact', [],
-                    initializer=tf.constant_initializer(1.0), trainable=False)
-
-                #operation to half the learning rate
-                self.halve_learningrate_op = learning_rate_fact.assign(
-                    learning_rate_fact/2).op
-
-                #compute the learning rate with exponential decay and scale with
-                #the learning rate factor
-                self.learning_rate = tf.train.exponential_decay(
-                    init_learning_rate, self.global_step, num_steps,
-                    learning_rate_decay) * learning_rate_fact
-
-                #create the optimizer
-                optimizer = tf.train.AdamOptimizer(self.learning_rate)
-
-                #create an optimizer that aggregates gradients
-                optimizer = tf.train.SyncReplicasOptimizerV2(
-                    opt=optimizer,
-                    replicas_to_aggregate=numbatches_to_aggregate,
-                    total_num_replicas=1)
-
-                #compute the loss
-                self.loss = self.compute_loss(
-                    self.targets, trainlogits, logit_seq_length,
-                    self.target_seq_length)
-
-                #compute the gradients
-                grads = optimizer.compute_gradients(self.loss)
-
-                with tf.variable_scope('clip'):
-                    #clip the gradients
-                    grads = [(tf.clip_by_value(grad, -1., 1.), var)
-                             for grad, var in grads]
-
-                #opperation to apply the gradients
-                apply_gradients_op = optimizer.apply_gradients(
-                    grads, global_step=self.global_step, name='apply_gradients')
-
-                #all remaining operations with the UPDATE_OPS GraphKeys
-                update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-
-                #create an operation to update the gradients, the batch_loss
-                #and do all other update ops
-                #pylint: disable=E1101
-                self.update_op = tf.group(*([apply_gradients_op] + update_ops),
-                                          name='update')
-
-            with tf.name_scope('valid'):
-                #compute the outputs that will be used for validation
-                self.outputs = self.validation(logits, logit_seq_length)
-
-            # add an operation to initialise all the variables in the graph
-            self.init_op = tf.initialize_all_variables()
-
-            #operations to initialise the token queue
-            self.init_token_op = optimizer.get_init_tokens_op()
-            self.chief_queue_runner = optimizer.get_chief_queue_runner()
-
-            #create the summaries for visualisation
-            tf.summary.scalar('loss', self.loss)
-
-            #saver for the training network
-            self.trainsaver = tf.train.Saver()
+                #saver for the training network
+                self.trainsaver = tf.train.Saver()
 
         #create the supervisor
         self.supervisor = tf.train.Supervisor(
             graph=self.graph,
-            ready_for_local_init_op=optimizer.ready_for_local_init_op,
-            is_chief=True,
+            ready_for_local_init_op=ready_for_local_init_op,
+            is_chief=is_chief,
             init_op=self.init_op,
-            local_init_op=optimizer.chief_init_op,
+            local_init_op=local_init_op,
             logdir=logdir,
             saver=self.trainsaver,
-            global_step=self.global_step,
-            save_summaries_secs=0)
+            global_step=self.global_step)
 
         #specify that the graph can no longer be modified after this point
         self.graph.finalize()
-
-        #start with an empty session
-        self.session = None
 
     @abstractmethod
     def compute_loss(self, targets, logits, logit_seq_length,
@@ -223,33 +359,89 @@ class Trainer(object):
             targets: the ground truth labels
 
         Returns:
-            The validation outputs
+            a numpy array containing the loss of all utterances
+
         '''
 
         raise NotImplementedError('Abstract method')
 
-    def start(self):
-        '''do all the needed preperations for training and start the session'''
+    def train(self):
+        '''train the model'''
+
+        #look for the master if distributed training is done
+        if self.server is None:
+            master = ''
+        else:
+            master = self.server.target
 
         #start the session and standart servises
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True #pylint: disable=E1101
-        self.session = self.supervisor.PrepareSession(config=config)
+        config.allow_soft_placement = True
 
-        #start the queue runners
-        self.supervisor.start_queue_runners(
-            sess=self.session,
-            queue_runners=[self.chief_queue_runner])
+        with self.supervisor.managed_session(master, config=config) as sess:
 
-        #fill the queue with initial tokens
-        self.session.run(self.init_token_op)
+            #start the queue runners
+            if self.chief_queue_runner is not None:
+                self.supervisor.start_queue_runners(
+                    sess=sess,
+                    queue_runners=[self.chief_queue_runner])
 
-    def stop(self):
-        '''close the session'''
+            #fill the queue with initial tokens
+            sess.run(self.init_token_op)
 
-        self.session.close()
+            #set the reading flag to false
+            sess.run(self.release_reader)
 
-    def update(self, inputs, targets):
+            #start the training loop
+            with self.supervisor.stop_on_exception():
+                while (not self.supervisor.should_stop()
+                       and self.global_step.eval(sess) < self.num_steps):
+
+                    #check if validation is due
+                    [step, val_step] = sess.run(
+                        [self.global_step, self.validated_step])
+                    if (step - val_step >= int(self.conf['valid_frequency']) and
+                            int(self.conf['valid_frequency']) > 0):
+
+                        self.validate(sess)
+
+                    #wait until the reader is free
+                    while self.reading.eval(sess):
+                        sleep(1)
+
+
+                    #block the reader
+                    sess.run(self.block_reader)
+
+                    #read a batch of data
+                    batch_data, batch_labels = self.dispenser.get_batch(
+                        self.pos.eval(sess))
+
+                    #update the position
+                    self.set_pos.run(
+                        session=sess,
+                        feed_dict={self.pos_in:self.dispenser.pos})
+
+                    #release the reader
+                    sess.run(self.release_reader)
+
+                    #update the model
+                    loss, lr = self.update(batch_data, batch_labels, sess)
+
+                    print ('step %d/%d loss: %f, learning rate: %f'
+                           %(self.global_step.eval(sess), self.num_steps, loss,
+                             lr))
+
+                #the chief will save the final model
+                if self.supervisor.is_chief:
+                    self.modelsaver.save(sess, self.logdir + '/final.ckpt')
+
+                self.supervisor.request_stop()
+
+
+
+    def update(self, inputs, targets, sess):
         '''
         update the neural model with a batch or training data
 
@@ -259,45 +451,39 @@ class Trainer(object):
                 N is the number of frames in the utterance
             targets: the targets for neural nnet, this should be
                 a list containing an N-dimensional vector for each utterance
+            sess: the session
 
         Returns:
             a pair containing:
                 - the loss at this step
                 - the learning rate used at this step
         '''
-        if self.session is None:
-            raise Exception('Trainer not started')
 
         #get a list of sequence lengths
         input_seq_length = [i.shape[0] for i in inputs]
         target_seq_length = [t.shape[0] for t in targets]
 
-        #pad the inputs and targets till the maximum lengths
+        #pad the inputs and targets untill the maximum lengths
         padded_inputs = np.array(pad(inputs, self.max_input_length))
         padded_targets = np.array(pad(targets, self.max_target_length))
-        padded_targets = padded_targets[:,:,np.newaxis]
+        padded_targets = padded_targets[:, :, np.newaxis]
 
         #pylint: disable=E1101
-        _, loss, summary, lr = self.session.run(
+        _, loss, lr = sess.run(
             fetches=[self.update_op,
                      self.loss,
-                     self.supervisor.summary_op,
                      self.learning_rate],
             feed_dict={self.inputs:padded_inputs,
                        self.targets:padded_targets,
                        self.input_seq_length:input_seq_length,
                        self.target_seq_length:target_seq_length})
 
-        #add the summary
-        self.supervisor.summary_writer.add_summary(
-            summary=summary,
-            global_step=self.global_step.eval(session=self.session))
-
         return loss, lr
 
-    def evaluate(self, inputs, targets):
+    def validate(self, sess):
         '''
-        Evaluate the performance of the neural net
+        Evaluate the performance of the neural net and halves the learning rate
+        if it is worse
 
         Args:
             inputs: the inputs to the neural net, this should be a list
@@ -307,73 +493,43 @@ class Trainer(object):
                 a list containing an NxO matrix for each utterance where O is
                 the output dimension of the neural net
 
-        Returns:
-            a numpy array containing the loss of each utterance in the batch
         '''
 
-        if self.session is None:
-            raise Exception('Trainer not started')
+        errors = []
 
-        if inputs is None or targets is None:
-            return None
+        #update the validated step
+        sess.run([self.set_val_step])
 
-        #get a list of sequence lengths
-        input_seq_length = [i.shape[0] for i in inputs]
+        for _ in range(int(ceil(self.val_dispenser.num_batches))):
 
-        #pad the inputs and targets till the maximum lengths
-        padded_inputs = np.array(pad(inputs, self.max_input_length))
+            inputs, targets = self.val_dispenser.get_batch(stop_at_end=True)
 
-        #pylint: disable=E1101
-        outputs = list(self.outputs.eval(
-            session=self.session,
-            feed_dict={self.inputs:padded_inputs,
-                       self.input_seq_length:input_seq_length}))
+            #get a list of sequence lengths
+            input_seq_length = [i.shape[0] for i in inputs]
 
-        #compute the validation error
-        error = self.validation_metric(outputs[:len(targets)], targets)
+            #pad the inputs and targets till the maximum lengths
+            padded_inputs = np.array(pad(inputs, self.max_input_length))
 
-        return error
+            #pylint: disable=E1101
+            outputs = list(self.outputs.eval(
+                session=sess,
+                feed_dict={self.inputs:padded_inputs,
+                           self.input_seq_length:input_seq_length}))
 
-    def halve_learning_rate(self):
-        '''halve the learning rate'''
+            #compute the validation error
+            errors = np.append(
+                errors,
+                self.validation_metric(outputs[:len(targets)], targets))
 
-        self.halve_learningrate_op.run(session=self.session)
+        val_loss = np.mean(errors)
 
-    def save_model(self, filename):
-        '''
-        Save the model
+        print 'validation loss: %f' % val_loss
 
-        Args:
-            filename: path to the model file
-        '''
-        self.modelsaver.save(self.session, filename)
+        if val_loss > self.val_loss.eval(session=sess):
+            print 'halving learning rate'
+            sess.run([self.halve_learningrate_op])
 
-    def restore_model(self, filename):
-        '''
-        Load the model
-
-        Args:
-            filename: path where the model will be saved
-        '''
-        self.modelsaver.restore(self.session, filename)
-
-    def save_trainer(self, filename):
-        '''
-        Save the training progress (including the model)
-
-        Args:
-            filename: path where the model will be saved
-        '''
-        self.trainsaver.save(self.session, filename)
-
-    def restore_trainer(self, filename):
-        '''
-        Load the training progress (including the model)
-
-        Args:
-            filename: path where the model will be saved
-        '''
-        self.trainsaver.restore(self.session, filename)
+        sess.run(self.set_val_loss, feed_dict={self.val_loss_in:val_loss})
 
 class CrossEnthropyTrainer(Trainer):
     '''A trainer that minimises the cross-enthropy loss, the output sequences
@@ -444,6 +600,9 @@ class CrossEnthropyTrainer(Trainer):
             outputs: the validation output, which is a matrix containing the
                 label probabilities of size [batch_size, max_input_length, dim].
             targets: a list containing the ground truth target labels
+
+        Returns:
+            a numpy array containing the loss of all utterances
         '''
 
         loss = np.zeros(outputs.shape[0])
@@ -456,42 +615,6 @@ class CrossEnthropyTrainer(Trainer):
 
 class CTCTrainer(Trainer):
     '''A trainer that minimises the CTC loss, the output sequences'''
-    def __init__(self, classifier, input_dim, max_input_length,
-                 max_target_length, init_learning_rate, learning_rate_decay,
-                 num_steps, batch_size, numbatches_to_aggregate, logdir,
-                 beam_width):
-        '''
-        NnetTrainer constructor, creates the training graph
-
-        Args:
-            classifier: the neural net classifier that will be trained
-            input_dim: the input dimension to the nnnetgraph
-            max_input_length: the maximal length of the input sequences
-            max_target_length: the maximal length of the target sequences
-            init_learning_rate: the initial learning rate
-            learning_rate_decay: the parameter for exponential learning rate
-                decay
-            num_steps: the total number of steps that will be taken
-            batch_size: the batch size
-            numbatches_to_aggregate: number of batches that are aggragated
-                before the gradients are applied
-            logdir: directory where the summaries will be written
-            beam_width: the width of the beam used for validation
-        '''
-
-        self.beam_width = beam_width
-
-        super(CTCTrainer, self).__init__(
-            classifier=classifier,
-            input_dim=input_dim,
-            max_input_length=max_input_length,
-            max_target_length=max_target_length,
-            init_learning_rate=init_learning_rate,
-            learning_rate_decay=learning_rate_decay,
-            num_steps=num_steps,
-            batch_size=batch_size,
-            numbatches_to_aggregate=numbatches_to_aggregate,
-            logdir=logdir)
 
     def compute_loss(self, targets, logits, logit_seq_length,
                      target_seq_length):
@@ -535,8 +658,8 @@ class CTCTrainer(Trainer):
                                              shape)
 
             loss = tf.reduce_mean(tf.nn.ctc_loss(logits, sparse_targets,
-                                                logit_seq_length,
-                                                time_major=False))
+                                                 logit_seq_length,
+                                                 time_major=False))
 
         return loss
 
@@ -559,7 +682,7 @@ class CTCTrainer(Trainer):
 
         #do the CTC beam search
         sparse_output, _ = tf.nn.ctc_beam_search_decoder(
-            tf.pack(tm_logits), logit_seq_length, self.beam_width)
+            tf.pack(tm_logits), logit_seq_length, int(self.conf['beam_width']))
 
         #convert the output to dense tensors with -1 as default values
         dense_output = tf.sparse_tensor_to_dense(sparse_output[0],
@@ -576,6 +699,9 @@ class CTCTrainer(Trainer):
                 decoded labels of size [batch_size, max_decoded_length]. the
                 output sequences are padded with -1
             targets: a list containing the ground truth target labels
+
+        Returns:
+            a numpy array containing the loss of all utterances
         '''
 
         #remove the padding from the outputs
