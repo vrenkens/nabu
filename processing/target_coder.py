@@ -6,6 +6,23 @@ from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 import numpy as np
 
+def coder_factory(target_normalizer, coder_type):
+    '''create a target coder
+
+    Args:
+        target_normalizer: a target normalizer function
+        coder_type: the type of coder to create
+
+    Returns:
+        a TargetCoder object'''
+
+    if coder_type == 'textcoder':
+        return TextCoder(target_normalizer)
+    elif coder_type == 'phonemecoder':
+        return PhonemeCoder(target_normalizer)
+    else:
+        raise Exception('Undefined coder type: %s' % coder_type)
+
 class TargetCoder(object):
     '''an abstract class for a target coder which can encode and decode target
     sequences'''
@@ -133,31 +150,7 @@ class TextCoder(TargetCoder):
 
         return alphabet
 
-class AlignmentCoder(TargetCoder):
-    '''a coder for state alignments'''
-
-    def __init__(self, target_normalizer, num_targets):
-        '''
-        AlignmentCoder constructor
-
-        Args:
-            target_normalizer: a target normalizer function
-            num_targets: total number of targets
-        '''
-
-        self.num_targets = num_targets
-        super(AlignmentCoder, self).__init__(target_normalizer)
-
-    def create_alphabet(self):
-        '''
-        create the alphabet of alignment targets
-        '''
-
-        alphabet = [str(target) for target in range(self.num_targets)]
-
-        return alphabet
-
-class PhonemeEncoder(TargetCoder):
+class PhonemeCoder(TargetCoder):
     """ Sets up a 39 element foldet phoneme alphabet."""
 
     def create_alphabet(self):

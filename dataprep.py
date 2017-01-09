@@ -63,3 +63,8 @@ fid = open(
     database_cfg['train_features'] + '/' + feat_cfg['name'] + '/dim', 'w')
 fid.write(str(input_dim))
 fid.close()
+
+#shuffle the training data on disk
+print '------- shuffling examples ----------'
+prepare_data.shuffle_examples(database_cfg['train_features'] + '/' +
+                              feat_cfg['name'])

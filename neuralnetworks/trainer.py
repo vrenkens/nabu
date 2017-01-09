@@ -1,6 +1,8 @@
 '''@file trainer.py
 neural network trainer environment'''
 
+import os
+import shutil
 from abc import ABCMeta, abstractmethod
 from time import sleep
 from math import ceil
@@ -8,6 +10,61 @@ import tensorflow as tf
 from tensorflow.python.client.device_lib import list_local_devices
 import numpy as np
 from classifiers import seq_convertors
+
+def trainer_factory(conf,
+                    classifier,
+                    input_dim,
+                    max_input_length,
+                    max_target_length,
+                    dispenser,
+                    val_dispenser,
+                    logdir,
+                    server,
+                    cluster,
+                    task_index,
+                    trainer_type):
+
+    '''Create a Trainer object
+
+    Args:
+        classifier: the neural net classifier that will be trained
+        conf: the trainer config
+        input_dim: the input dimension to the nnnetgraph
+        max_input_length: the maximal length of the input sequences
+        max_target_length: the maximal length of the target sequences
+        num_steps: the total number of steps that will be taken
+        dispenser: a Batchdispenser object
+        cluster: the optional cluster used for distributed training, it
+            should contain at least one parmeter server and one worker
+        val_dispenser: the batchdispenser for the validation data if None
+            validation will not be used
+        logdir: directory where the summaries will be written
+        server: optional server to be used for distributed training
+        cluster: optional cluster to be used for distributed training
+        task_index: optional index of the worker task in the cluster
+        trainer_type: the trainer type
+
+    Returns: a Trainer object
+    '''
+
+    if trainer_type == 'ctctrainer':
+        trainer_class = CTCTrainer
+    elif trainer_type == 'crossenthropytrainer':
+        trainer_class = CrossEnthropyTrainer
+    else:
+        raise Exception('Undefined trainer type: %s' % trainer_type)
+
+    return trainer_class(conf,
+                         classifier,
+                         input_dim,
+                         max_input_length,
+                         max_target_length,
+                         dispenser,
+                         val_dispenser,
+                         logdir,
+                         server,
+                         cluster,
+                         task_index)
 
 class Trainer(object):
     '''General class outlining the training environment of a classifier.'''
@@ -55,6 +112,7 @@ class Trainer(object):
         self.val_dispenser = val_dispenser
         self.logdir = logdir
         self.server = server
+        self.cluster = cluster
 
         #create the graph
         self.graph = tf.Graph()
@@ -76,6 +134,7 @@ class Trainer(object):
         else:
             #distributed training
             num_replicas = len(cluster.as_dict()['worker'])
+            num_servers = len(cluster.as_dict()['ps'])
             is_chief = task_index == 0
             device = tf.train.replica_device_setter(
                 worker_device="/job:worker/task:%d" % task_index,
@@ -141,6 +200,20 @@ class Trainer(object):
                     is_training=False,
                     reuse=True,
                     scope='Classifier')
+
+                if cluster is not None:
+                    #create the queues to notify the parameter servers if
+                    #training has completed
+                    self.queues = [tf.FIFOQueue(
+                        capacity=num_replicas,
+                        dtypes=tf.int32,
+                        shapes=[],
+                        shared_name='done_queue'+ str(i))
+                                   for i in range(num_servers)]
+                    self.done = tf.group(*[q.enqueue(0) for q in self.queues])
+                    self.waitop = self.queues[task_index].dequeue_many(
+                        num_replicas)
+
 
 
                 with tf.variable_scope('train'):
@@ -368,6 +441,14 @@ class Trainer(object):
     def train(self):
         '''train the model'''
 
+        #let the chief workerdelete the logdir if it allready exists and you
+        #want to restart training
+        if (self.supervisor.is_chief
+                and self.conf['resume_training'] != True
+                and os.path.isdir(self.logdir)):
+
+            shutil.rmtree(self.logdir)
+
         #look for the master if distributed training is done
         if self.server is None:
             master = ''
@@ -401,8 +482,8 @@ class Trainer(object):
                     #check if validation is due
                     [step, val_step] = sess.run(
                         [self.global_step, self.validated_step])
-                    if (step - val_step >= int(self.conf['valid_frequency']) and
-                            int(self.conf['valid_frequency']) > 0):
+                    if (step - val_step >= int(self.conf['valid_frequency'])
+                            and int(self.conf['valid_frequency']) > 0):
 
                         self.validate(sess)
 
@@ -429,9 +510,9 @@ class Trainer(object):
                     #update the model
                     loss, lr = self.update(batch_data, batch_labels, sess)
 
-                    print ('step %d/%d loss: %f, learning rate: %f'
-                           %(self.global_step.eval(sess), self.num_steps, loss,
-                             lr))
+                    print('step %d/%d loss: %f, learning rate: %f'
+                          %(self.global_step.eval(sess), self.num_steps,
+                            loss, lr))
 
                 #the chief will save the final model
                 if self.supervisor.is_chief:
@@ -439,7 +520,25 @@ class Trainer(object):
 
                 self.supervisor.request_stop()
 
+                #notify the parameter server that training is over
+                self.done.run(session=sess)
 
+
+
+
+
+    def wait(self):
+        '''wait for workers to finish'''
+
+        #start the session and standart servises
+        config = tf.ConfigProto()
+        config.allow_soft_placement = True
+
+        with tf.Session(
+            self.server.target, graph=self.graph, config=config) as sess:
+
+            sess.run(self.waitop)
+            print 'all workers have terminated'
 
     def update(self, inputs, targets, sess):
         '''

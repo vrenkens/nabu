@@ -52,7 +52,8 @@ class DBLSTM(Classifier):
 
             #add gaussian noise to the inputs
             if is_training:
-                logits = inputs + tf.random_normal(inputs.get_shape(), stddev=0.6)
+                logits = inputs + tf.random_normal(inputs.get_shape(),
+                                                   stddev=0.6)
             else:
                 logits = inputs
 
