@@ -16,7 +16,7 @@ TEST = True
 #pointers to the config files
 database_cfg_file = 'config/databases/TIMIT.cfg'
 feat_cfg_file = 'config/features/fbank.cfg'
-nnet_cfg_file = 'config/nnet/DBLSTM.cfg'
+nnet_cfg_file = 'config/nnet/DNN.cfg'
 
 #set the CUDA GPU that Tensorflow should use
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
