@@ -89,6 +89,8 @@ def train(clusterfile,
                     tunneled.append(remote)
                     atexit.register(p.terminate)
 
+        if job_name == 'ps':
+            server.join()
 
     featdir = database_cfg['train_features'] + '/' +  feat_cfg['name']
 
@@ -173,10 +175,7 @@ def train(clusterfile,
         trainer_type=trainer_cfg['trainer'])
 
     #train the classifier
-    if job_name == 'ps':
-        trainer.wait()
-    else:
-        trainer.train()
+    trainer.train()
 
 if __name__ == '__main__':
 

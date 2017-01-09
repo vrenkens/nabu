@@ -4,7 +4,7 @@ neural network trainer environment'''
 import os
 import shutil
 from abc import ABCMeta, abstractmethod
-from time import sleep
+from time import time, sleep
 from math import ceil
 import tensorflow as tf
 from tensorflow.python.client.device_lib import list_local_devices
@@ -134,7 +134,6 @@ class Trainer(object):
         else:
             #distributed training
             num_replicas = len(cluster.as_dict()['worker'])
-            num_servers = len(cluster.as_dict()['ps'])
             is_chief = task_index == 0
             device = tf.train.replica_device_setter(
                 worker_device="/job:worker/task:%d" % task_index,
@@ -200,21 +199,6 @@ class Trainer(object):
                     is_training=False,
                     reuse=True,
                     scope='Classifier')
-
-                if cluster is not None:
-                    #create the queues to notify the parameter servers if
-                    #training has completed
-                    self.queues = [tf.FIFOQueue(
-                        capacity=num_replicas,
-                        dtypes=tf.int32,
-                        shapes=[],
-                        shared_name='done_queue'+ str(i))
-                                   for i in range(num_servers)]
-                    self.done = tf.group(*[q.enqueue(0) for q in self.queues])
-                    self.waitop = self.queues[task_index].dequeue_many(
-                        num_replicas)
-
-
 
                 with tf.variable_scope('train'):
                     #a variable to hold the amount of steps already taken
@@ -441,14 +425,6 @@ class Trainer(object):
     def train(self):
         '''train the model'''
 
-        #let the chief workerdelete the logdir if it allready exists and you
-        #want to restart training
-        if (self.supervisor.is_chief
-                and self.conf['resume_training'] != True
-                and os.path.isdir(self.logdir)):
-
-            shutil.rmtree(self.logdir)
-
         #look for the master if distributed training is done
         if self.server is None:
             master = ''
@@ -487,10 +463,12 @@ class Trainer(object):
 
                         self.validate(sess)
 
+                    #start time
+                    start = time()
+
                     #wait until the reader is free
                     while self.reading.eval(sess):
                         sleep(1)
-
 
                     #block the reader
                     sess.run(self.block_reader)
@@ -510,35 +488,16 @@ class Trainer(object):
                     #update the model
                     loss, lr = self.update(batch_data, batch_labels, sess)
 
-                    print('step %d/%d loss: %f, learning rate: %f'
+                    print(('step %d/%d loss: %f, learning rate: %f, '
+                           'time elapsed: %f sec')
                           %(self.global_step.eval(sess), self.num_steps,
-                            loss, lr))
+                            loss, lr, time()-start))
 
                 #the chief will save the final model
                 if self.supervisor.is_chief:
                     self.modelsaver.save(sess, self.logdir + '/final.ckpt')
 
                 self.supervisor.request_stop()
-
-                #notify the parameter server that training is over
-                self.done.run(session=sess)
-
-
-
-
-
-    def wait(self):
-        '''wait for workers to finish'''
-
-        #start the session and standart servises
-        config = tf.ConfigProto()
-        config.allow_soft_placement = True
-
-        with tf.Session(
-            self.server.target, graph=self.graph, config=config) as sess:
-
-            sess.run(self.waitop)
-            print 'all workers have terminated'
 
     def update(self, inputs, targets, sess):
         '''

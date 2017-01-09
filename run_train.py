@@ -18,7 +18,7 @@ def main(_):
     '''main function'''
 
     #pointers to the config files
-    computing_cfg_file = 'config/computing/local.cfg'
+    computing_cfg_file = 'config/computing/static.cfg'
     database_cfg_file = 'config/databases/TIMIT.cfg'
     feat_cfg_file = 'config/features/fbank.cfg'
     nnet_cfg_file = 'config/nnet/DBLSTM.cfg'
@@ -29,6 +29,14 @@ def main(_):
     parsed_computing_cfg = configparser.ConfigParser()
     parsed_computing_cfg.read(computing_cfg_file)
     computing_cfg = dict(parsed_computing_cfg.items('computing'))
+
+    #read the trainer config file
+    parsed_trainer_cfg = configparser.ConfigParser()
+    parsed_trainer_cfg.read(trainer_cfg_file)
+    trainer_cfg = dict(parsed_trainer_cfg.items('trainer'))
+
+    if os.path.isdir(FLAGS.expdir) and trainer_cfg['resume_training'] != 'True':
+        shutil.rmtree(FLAGS.expdir)
 
     if not os.path.isdir(FLAGS.expdir):
         os.mkdir(FLAGS.expdir)
