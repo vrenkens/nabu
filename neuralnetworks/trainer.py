@@ -1,11 +1,10 @@
 '''@file trainer.py
 neural network trainer environment'''
 
-import os
-import shutil
 from abc import ABCMeta, abstractmethod
 from time import time, sleep
 from math import ceil
+from contextlib import contextmanager
 import tensorflow as tf
 from tensorflow.python.client.device_lib import list_local_devices
 import numpy as np
@@ -134,6 +133,7 @@ class Trainer(object):
         else:
             #distributed training
             num_replicas = len(cluster.as_dict()['worker'])
+            numservers = len(cluster.as_dict()['ps'])
             is_chief = task_index == 0
             device = tf.train.replica_device_setter(
                 worker_device="/job:worker/task:%d" % task_index,
@@ -199,6 +199,18 @@ class Trainer(object):
                     is_training=False,
                     reuse=True,
                     scope='Classifier')
+
+                #create a done queue for each parameter server
+                done_queues = []
+                for ps in range(numservers):
+                    with tf.device("/job:ps/task:%d" % (ps)):
+                        done_queues.append(tf.FIFOQueue(
+                            capacity=num_replicas,
+                            dtypes=tf.int32,
+                            shared_name='done_queue' + str(ps)))
+
+                #create an operation that enqueues an element in each done queue
+                self.done = tf.group(*[q.enqueue(0) for q in done_queues])
 
                 with tf.variable_scope('train'):
                     #a variable to hold the amount of steps already taken
@@ -436,7 +448,8 @@ class Trainer(object):
         config.gpu_options.allow_growth = True #pylint: disable=E1101
         config.allow_soft_placement = True
 
-        with self.supervisor.managed_session(master, config=config) as sess:
+        with context_wrapper(self.supervisor.managed_session, self.done, master,
+                             config=config) as sess:
 
             #start the queue runners
             if self.chief_queue_runner is not None:
@@ -803,3 +816,49 @@ def pad(inputs, length):
                      for i in inputs]
 
     return padded_inputs
+
+@contextmanager
+def context_wrapper(context, exitop, *args, **kwargs):
+    '''wrapper for session context that runs an op before exitting
+
+    Args:
+        context: the session context manager
+        exitop: the op to run before exitting the context
+        args: arguments for context
+        kwargs: keyword arguments for context
+
+    Returns:
+        a session context manager'''
+
+    with context(*args, **kwargs) as sess:
+        try:
+            yield sess
+        finally:
+            sess.run(exitop)
+
+def wait(server, task_index, numworkers):
+    '''wait for the workers to finish
+
+    Args:
+        server: the Tensorflow server
+        task_index: the ps task_index
+        numworkers: total number of workers
+    '''
+
+    print 'waiting for workers to finish'
+
+    graph = tf.Graph()
+    with graph.as_default():
+        with tf.device("/job:ps/task:%d" % (task_index)):
+            done_queue = tf.FIFOQueue(
+                capacity=numworkers,
+                dtypes=tf.int32,
+                shared_name='done_queue' + str(task_index))
+            dequeue_op = done_queue.dequeue()
+
+    graph.finalize()
+
+    with tf.Session(target=server.target, graph=graph) as sess:
+        for i in range(numworkers):
+            sess.run(dequeue_op)
+            print '%d/%d workers have finished' % (i+1, numworkers)

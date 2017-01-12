@@ -2,6 +2,7 @@
 contains functionality for creating a cluster'''
 
 import os
+import socket
 
 def get_machines(machine_dir):
     ''' gets the machines that reported in the machine directory
@@ -19,9 +20,18 @@ def get_machines(machine_dir):
     machines['ps'] = []
 
     for f in files:
+        with open(f) as fid:
+            job_name = fid.read()
         splitfile = f.split('-')
-        if splitfile[0] not in ['ps', 'worker']:
+        if job_name not in ['ps', 'worker']:
             continue
-        machines[splitfile[0]].append(splitfile[1])
+        machines[job_name].append((splitfile[0], int(splitfile[1])))
 
     return machines
+
+def port_available(port):
+    '''check if port is available'''
+
+    sock = socket.socket()
+    result = sock.connect_ex(('localhost', port))
+    return not result == 0

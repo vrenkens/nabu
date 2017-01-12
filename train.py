@@ -7,6 +7,7 @@ import subprocess
 import atexit
 import tensorflow as tf
 from six.moves import configparser
+import distributed
 import processing
 import neuralnetworks
 
@@ -54,43 +55,75 @@ def train(clusterfile,
         server = None
     else:
         #read the cluster file
-        clusterdict = dict()
-        clusterdict['worker'] = []
-        clusterdict['ps'] = []
         machines = dict()
         machines['worker'] = []
         machines['ps'] = []
         with open(clusterfile) as fid:
-            port = 2222
             for line in fid:
                 if len(line.strip()) > 0:
                     split = line.strip().split(',')
-                    clusterdict[split[0]].append('localhost:%d' % (port))
-                    machines[split[0]].append(split[1])
-                    port += 1
-        cluster = tf.train.ClusterSpec(clusterdict)
-        if job_name == "ps":
-            os.environ['CUDA_VISIBLE_DEVICES'] = ''
-        server = tf.train.Server(cluster, job_name, task_index)
+                    machines[split[0]].append((split[1], int(split[2])))
 
-        #get the port and machin name for this task
-        port = int(clusterdict[job_name][task_index].split(':')[1])
-        local = machines[job_name][task_index]
+        #build the cluster and create ssh tunnels to machines in the cluster
+        port = 1024
+        clusterdict = dict()
+        clusterdict['worker'] = []
+        clusterdict['ps'] = []
+        localmachine = machines[job_name][task_index][0]
 
-        #create an ssh tunnel to all other machines
-        tunneled = []
+        #get a list of ports used on this machine
+        localports = []
         for job in machines:
             for remote in machines[job]:
-                if local != remote and remote not in tunneled:
+                if localmachine != remote[0]:
+                    localports.append(remote[1])
+
+        for job in machines:
+            for remote in machines[job]:
+
+                #create an ssh tunnel if the local machine is not the same as
+                #the remote machine
+                if localmachine != remote[0]:
+
+                    #look for an available port
+                    while (port not in localports
+                           and not distributed.cluster.port_available(port)):
+
+                        port += 1
+
+                    #create the ssh tunnel
                     p = subprocess.Popen(
                         ['ssh', '-o', 'StrictHostKeyChecking=no', '-o',
-                         'UserKnownHostsFile=/dev/null', '-R',
-                         '%d:localhost:%d' % (port, port), '-N', remote])
-                    tunneled.append(remote)
+                         'UserKnownHostsFile=/dev/null', '-L',
+                         '%d:localhost:%d' % (port, remote[1]), '-N',
+                         remote[0]])
+
+                    #make sure the ssh tunnel is closed at exit
                     atexit.register(p.terminate)
 
+                    #add the machine to the cluster
+                    clusterdict[job].append('localhost:%d' % port)
+
+                    port += 1
+
+                else:
+                    clusterdict[job].append('localhost:%d' % remote[1])
+
+        #create the cluster
+        cluster = tf.train.ClusterSpec(clusterdict)
+
+        #make sure the ps does not use a GPU
+        if job_name == "ps":
+            os.environ['CUDA_VISIBLE_DEVICES'] = ''
+
+        #create the server for this task
+        server = tf.train.Server(cluster, job_name, task_index)
+
+        #the ps should just wait
         if job_name == 'ps':
-            server.join()
+            neuralnetworks.trainer.wait(server, task_index,
+                                        len(machines['worker']))
+            return
 
     featdir = database_cfg['train_features'] + '/' +  feat_cfg['name']
 

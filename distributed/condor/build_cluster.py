@@ -4,6 +4,7 @@ this file will be ran for all machines to build the cluster'''
 import os
 import socket
 from time import sleep
+import distributed
 from train import train
 import tensorflow as tf
 
@@ -12,27 +13,31 @@ def main():
 
     cluster_dir = FLAGS.expdir + '/cluster'
 
-    #report that this machine is available
-    machine_index = 0
-    machine_file = '%s/%s-%s-%d' % (cluster_dir, FLAGS.job_name,
-                                    socket.gethostname(), machine_index)
+    port = 1024
+    machine_file = '%s/%s-%d' % (cluster_dir, socket.gethostname(), port)
 
-    while os.path.exists(machine_file):
-        machine_index += 1
-        machine_file = '%s/%s-%s-%d' % (cluster_dir, FLAGS.job_name,
-                                        socket.gethostname(), machine_index)
+    #look for an available port
+    while (os.path.exists(machine_file)
+           and not distributed.cluster.port_available(port)):
 
-    fid = open(machine_file, 'w')
-    fid.close()
+        port += 1
+        machine_file = '%s/%s-%d' % (cluster_dir, socket.gethostname(), port)
+
+    #report that the machine is ready
+    with open(machine_file, 'w') as fid:
+        fid.write(FLAGS.job_name)
 
     #wait untill the main process has given a go
     print 'waiting for cluster to be ready...'
 
     #read the task_index in the created file
     task_index = ''
-    while len(task_index) == 0 and not os.path.exists(cluster_dir + '/ready'):
+    while (task_index == FLAGS.job_name
+           and not os.path.exists(cluster_dir + '/ready')):
+
         with open(machine_file) as fid:
             task_index = fid.read()
+
         sleep(1)
 
     print 'cluster is ready'

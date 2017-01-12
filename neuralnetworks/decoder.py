@@ -5,6 +5,36 @@ from abc import ABCMeta, abstractmethod
 import tensorflow as tf
 import numpy as np
 
+def decoder_factory(conf,
+                    classifier,
+                    input_dim,
+                    max_input_length,
+                    expdir,
+                    decoder_type):
+    '''
+    creates a decoder object
+
+    Args:
+        conf: the decoder config
+        classifier: the classifier that will be used for decoding
+        input_dim: the input dimension to the nnnetgraph
+        max_input_length: the maximum length of the inputs
+        expdir: the location where the models were saved and the results
+            will be written
+        decoder_type: the decoder type
+    '''
+
+    if decoder_type == 'ctcdecoder':
+        decoder_class = CTCDecoder
+    else:
+        raise Exception('Undefined decoder type: %s' % decoder_type)
+
+    return decoder_class(conf,
+                         classifier,
+                         input_dim,
+                         max_input_length,
+                         expdir)
+
 class Decoder(object):
     '''the abstract class for a decoder'''
 

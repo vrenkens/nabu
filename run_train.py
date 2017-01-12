@@ -8,10 +8,10 @@ import atexit
 from time import sleep
 import tensorflow as tf
 from six.moves import configparser
-from distributed import cluster
+import distributed
 from train import train
 
-tf.app.flags.DEFINE_string('expdir', '.', 'The experiments directory')
+tf.app.flags.DEFINE_string('expdir', 'expdir', 'The experiments directory')
 FLAGS = tf.app.flags.FLAGS
 
 def main(_):
@@ -69,30 +69,44 @@ def main(_):
                     split = line.strip().split(',')
                     machines[split[0]].append(split[1])
 
+        #create the outputs directory
+        if not os.path.isdir(FLAGS.expdir + '/outputs'):
+            os.mkdir(FLAGS.expdir + '/outputs')
+
         #run all the jobs
-        processes = []
+        processes = dict()
+        processes['worker'] = []
+        processes['ps'] = []
         for job in machines:
             task_index = 0
             for machine in machines[job]:
-                processes.append(subprocess.Popen(
-                    ['distributed/static/run_remote.sh',
-                     machine, computing_cfg['clusterfile'], job,
-                     str(task_index), FLAGS.expdir],
-                    stdout=open(
-                        '%s/%s-%d' % (FLAGS.expdir, job, task_index), 'w', 0),
-                    stderr=subprocess.STDOUT))
-                atexit.register(processes[-1].terminate)
+                command = ('python train.py --clusterfile=%s --job_name=%s '
+                           '--task_index=%d --expdir=%s') % (
+                    computing_cfg['clusterfile'], job, task_index, FLAGS.expdir)
+                processes[job].append(distributed.static.run_remote.run_remote(
+                    command=command,
+                    host=machine,
+                    out=open('%s/outputs/%s-%d' % (FLAGS.expdir, job,
+                                                   task_index), 'w', 0)
+                    ))
                 task_index += 1
 
+        #make sure the created processes are terminated at exit
+        for process in processes['worker']:
+            atexit.register(process.terminate)
+
         #wait for all processes to finish
-        for process in processes:
-            process.wait()
+        for job in processes:
+            for process in processes[job]:
+                process.wait()
+
+
 
     elif computing_cfg['distributed'] == 'condor':
 
         #create the directories
-        if not os.path.isdir(FLAGS.expdir + '/condor'):
-            os.mkdir(FLAGS.expdir + '/condor')
+        if not os.path.isdir(FLAGS.expdir + '/outputs'):
+            os.mkdir(FLAGS.expdir + '/outputs')
         if os.path.isdir(FLAGS.expdir + '/cluster'):
             shutil.rmtree(FLAGS.expdir + '/cluster')
         os.mkdir(FLAGS.expdir + '/cluster')
@@ -114,7 +128,8 @@ def main(_):
             numps = 0
             while not ready:
                 #check the machines in the cluster
-                machines = cluster.get_machines(FLAGS.expdir + '/cluster')
+                machines = distributed.cluster.get_machines(
+                    FLAGS.expdir + '/cluster')
 
                 if (len(machines['ps']) > numps
                         or len(machines['worker']) > numworkers):
@@ -140,6 +155,7 @@ def main(_):
                 sleep(1)
 
         except KeyboardInterrupt:
+
             #remove all jobs that are not running
             os.system('condor_rm -constraint \'JobStatus =!= 2\'')
 
@@ -158,10 +174,10 @@ def main(_):
                 task_index = 0
                 for machine in machines[job]:
                     with open(FLAGS.expdir + '/cluster/%s-%s'
-                              % (job, machine), 'w') as fid:
+                              % (machine[0], machine[1]), 'w') as fid:
                         fid.write(str(task_index))
 
-                    cfid.write('%s,%s\n' % (job, machine))
+                    cfid.write('%s,%s,%d\n' % (job, machine[0], machine[1]))
 
         #notify the machine that the cluster is ready
         fid = open(FLAGS.expdir + '/cluster/ready', 'w')

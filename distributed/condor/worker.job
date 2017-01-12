@@ -25,11 +25,11 @@ Arguments = "python build_cluster.py --job_name=worker --expdir=$(expdir)"
 executable = distributed/condor/create_environment.sh
 
 #Output of condors handling of the jobs, will be in 'initialdir'
-Log          = $(expdir)/condor/worker-$(Process).log
+Log          = $(expdir)/outputs/worker-$(Process).log
 #Standard output of the 'executable', in 'initialdir'
-Output       = $(expdir)/condor/worker-$(Process).out
+Output       = $(expdir)/outputs/worker-$(Process).out
 #Standard error of the 'executable', in 'initialdir'
-Error        = $(expdir)/condor/worker-$(Process).err
+Error        = $(expdir)/outputs/worker-$(Process).err
 
 # Queue however many parameter servers were requested
 Queue $(numjobs)
