@@ -87,9 +87,15 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a6d78cbf407eb70498499c55733e90dfe"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trainer_8py.html#a6d78cbf407eb70498499c55733e90dfe">neuralnetworks.trainer.trainer_factory</a> (conf, classifier, input_dim, max_input_length, max_target_length, dispenser, val_dispenser, logdir, server, cluster, task_index, trainer_type)</td></tr>
+<tr class="memdesc:a6d78cbf407eb70498499c55733e90dfe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a <a class="el" href="classneuralnetworks_1_1trainer_1_1Trainer.html" title="General class outlining the training environment of a classifier. ">Trainer</a> object.  <a href="trainer_8py.html#a6d78cbf407eb70498499c55733e90dfe">More...</a><br /></td></tr>
+<tr class="separator:a6d78cbf407eb70498499c55733e90dfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0be0e51d877bd2376023347b94f64c2b"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trainer_8py.html#a0be0e51d877bd2376023347b94f64c2b">neuralnetworks.trainer.pad</a> (inputs, length)</td></tr>
 <tr class="memdesc:a0be0e51d877bd2376023347b94f64c2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pad the inputs so they have the maximum length.  <a href="trainer_8py.html#a0be0e51d877bd2376023347b94f64c2b">More...</a><br /></td></tr>
 <tr class="separator:a0be0e51d877bd2376023347b94f64c2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa84bbafc84a8f048481788cb1d2623e5"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trainer_8py.html#aa84bbafc84a8f048481788cb1d2623e5">neuralnetworks.trainer.wait</a> (server, task_index, numworkers)</td></tr>
+<tr class="memdesc:aa84bbafc84a8f048481788cb1d2623e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">wait for the workers to finish  <a href="trainer_8py.html#aa84bbafc84a8f048481788cb1d2623e5">More...</a><br /></td></tr>
+<tr class="separator:aa84bbafc84a8f048481788cb1d2623e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>neural network trainer environment </p>
@@ -130,6 +136,160 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the padded inputs </dd></dl>
+
+</div>
+</div>
+<a id="file_a6d78cbf407eb70498499c55733e90dfe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a6d78cbf407eb70498499c55733e90dfe">&sect;&nbsp;</a></span>trainer_factory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def neuralnetworks.trainer.trainer_factory </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>conf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>classifier</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>input_dim</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>max_input_length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>max_target_length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>dispenser</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>val_dispenser</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>logdir</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>server</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>cluster</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>task_index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>trainer_type</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create a Trainer object. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">classifier</td><td>the neural net classifier that will be trained </td></tr>
+    <tr><td class="paramname">conf</td><td>the trainer config </td></tr>
+    <tr><td class="paramname">input_dim</td><td>the input dimension to the nnnetgraph </td></tr>
+    <tr><td class="paramname">max_input_length</td><td>the maximal length of the input sequences </td></tr>
+    <tr><td class="paramname">max_target_length</td><td>the maximal length of the target sequences </td></tr>
+    <tr><td class="paramname">num_steps</td><td>the total number of steps that will be taken </td></tr>
+    <tr><td class="paramname">dispenser</td><td>a Batchdispenser object </td></tr>
+    <tr><td class="paramname">cluster</td><td>the optional cluster used for distributed training, it should contain at least one parmeter server and one worker </td></tr>
+    <tr><td class="paramname">val_dispenser</td><td>the batchdispenser for the validation data if None validation will not be used </td></tr>
+    <tr><td class="paramname">logdir</td><td>directory where the summaries will be written </td></tr>
+    <tr><td class="paramname">server</td><td>optional server to be used for distributed training </td></tr>
+    <tr><td class="paramname">cluster</td><td>optional cluster to be used for distributed training </td></tr>
+    <tr><td class="paramname">task_index</td><td>optional index of the worker task in the cluster </td></tr>
+    <tr><td class="paramname">trainer_type</td><td>the trainer type</td></tr>
+    <tr><td class="paramname">Returns</td><td>a Trainer object </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="file_aa84bbafc84a8f048481788cb1d2623e5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_aa84bbafc84a8f048481788cb1d2623e5">&sect;&nbsp;</a></span>wait()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def neuralnetworks.trainer.wait </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>server</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>task_index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>numworkers</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>wait for the workers to finish </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">server</td><td>the Tensorflow server </td></tr>
+    <tr><td class="paramname">task_index</td><td>the ps task_index </td></tr>
+    <tr><td class="paramname">numworkers</td><td>total number of workers </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

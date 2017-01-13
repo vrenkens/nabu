@@ -1,7 +1,7 @@
 var searchData=
 [
   ['pad',['pad',['../trainer_8py.html#a0be0e51d877bd2376023347b94f64c2b',1,'neuralnetworks::trainer']]],
-  ['phonemeencoder',['PhonemeEncoder',['../classprocessing_1_1target__coder_1_1PhonemeEncoder.html',1,'processing::target_coder']]],
+  ['phonemecoder',['PhonemeCoder',['../classprocessing_1_1target__coder_1_1PhonemeCoder.html',1,'processing::target_coder']]],
   ['powspec',['powspec',['../sigproc_8py.html#a0290012fdbcf190c8e7a8549940f1b2f',1,'processing::sigproc']]],
   ['preemphasis',['preemphasis',['../sigproc_8py.html#af50f8cb415e18ebae60b55041c777450',1,'processing::sigproc']]],
   ['prepare_5fdata',['prepare_data',['../prepare__data_8py.html#ae77003aec7f4c39f3a63001f4130b549',1,'processing::prepare_data']]],
