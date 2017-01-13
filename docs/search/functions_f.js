@@ -1,0 +1,5 @@
+var searchData=
+[
+  ['validation',['validation',['../classneuralnetworks_1_1trainer_1_1Trainer.html#a6e7aa840e6911e915929cbd05f9ddd1f',1,'neuralnetworks.trainer.Trainer.validation()'],['../classneuralnetworks_1_1trainer_1_1CrossEnthropyTrainer.html#ade9d703dbad114cc393f5338651d8c56',1,'neuralnetworks.trainer.CrossEnthropyTrainer.validation()'],['../classneuralnetworks_1_1trainer_1_1CTCTrainer.html#a4e15db08ab1f3cf30686176dde47c97a',1,'neuralnetworks.trainer.CTCTrainer.validation()']]],
+  ['validation_5fmetric',['validation_metric',['../classneuralnetworks_1_1trainer_1_1Trainer.html#a55459e705dc27fc006f306f2d675eed5',1,'neuralnetworks.trainer.Trainer.validation_metric()'],['../classneuralnetworks_1_1trainer_1_1CrossEnthropyTrainer.html#aaeb3a17b22831f96d34ffefb9d32d43c',1,'neuralnetworks.trainer.CrossEnthropyTrainer.validation_metric()'],['../classneuralnetworks_1_1trainer_1_1CTCTrainer.html#a3197975186e0bb353c9ae04122da5c3b',1,'neuralnetworks.trainer.CTCTrainer.validation_metric()']]]
+];

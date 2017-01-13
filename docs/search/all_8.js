@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['magspec',['magspec',['../sigproc_8py.html#a39ef971559637288fa6f20e420884064',1,'processing::sigproc']]],
-  ['main_2epy',['main.py',['../main_8py.html',1,'']]],
-  ['max_5finput_5flength',['max_input_length',['../classprocessing_1_1batchdispenser_1_1BatchDispenser.html#a087ae53b8ea4c3240e9dddce622d3fdf',1,'processing::batchdispenser::BatchDispenser']]]
+  ['l2norm',['L2Norm',['../classneuralnetworks_1_1classifiers_1_1activation_1_1L2Norm.html',1,'neuralnetworks::classifiers::activation']]],
+  ['layer_2epy',['layer.py',['../layer_8py.html',1,'']]],
+  ['logpowspec',['logpowspec',['../sigproc_8py.html#a3fcb1dd8dd45a8c1b50c734d9317934e',1,'processing::sigproc']]],
+  ['licence',['LICENCE',['../md_LICENCE.html',1,'']]]
 ];

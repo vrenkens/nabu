@@ -4,3 +4,6 @@ This package contains all the functionality for data processing:
 - feature storing and loading
 - file interpretation
 '''
+
+from . import ark, base, batchdispenser, feat, feature_reader, prepare_data,\
+readfiles, score, sigproc, target_coder, target_normalizers

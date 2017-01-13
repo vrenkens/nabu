@@ -1,7 +1,4 @@
 '''@package neuralNetworks
-The neural network functionality:
-- classifiers: the neural net classifiers
-- trainer: the training environment for the classifiers
-- decoder: the decoding environment for the classifiers
+The neural network functionality
 '''
-__all__ = ['decoder', 'trainer', 'nnet']
+from . import trainer, decoder, classifier_factory

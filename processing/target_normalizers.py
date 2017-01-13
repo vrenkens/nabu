@@ -2,6 +2,22 @@
 Contains functions for target normalization, this is database and task dependent
 '''
 
+def normalizer_factory(normalizer_type):
+    '''create a normalizer_type
+
+    Args:
+        normalizer_type: the type of normalizer_type
+
+    Returns:
+        a normalizer function'''
+
+    if normalizer_type == 'aurora4_normalizer':
+        return aurora4_normalizer
+    elif normalizer_type == 'timit_phone_norm':
+        return timit_phone_norm
+    else:
+        raise Exception('Undefined normalizer: %s' % normalizer_type)
+
 def aurora4_normalizer(transcription, alphabet):
     '''
     normalizer for Aurora 4 training transcriptions
@@ -11,7 +27,7 @@ def aurora4_normalizer(transcription, alphabet):
         alphabet: the known characters alphabet
 
     Returns:
-        the normalized transcription
+        the normalized transcription as a string
     '''
 
     #create a dictionary of words that should be replaced

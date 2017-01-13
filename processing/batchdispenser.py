@@ -58,9 +58,14 @@ class BatchDispenser(object):
         #save the target coder
         self.target_coder = target_coder
 
-    def get_batch(self):
+    def get_batch(self, pos=None, stop_at_end=False):
         '''
         Get a batch of features and targets.
+
+        Args:
+            pos: position in the feature reader, if None will remain unchanged
+            stop_at_end: boolean, if False the batchdispenser will loop around
+                otherwise the batchdispenser will stop at the end
 
         Returns:
             A pair containing:
@@ -72,9 +77,15 @@ class BatchDispenser(object):
         batch_inputs = []
         batch_targets = []
 
+        if pos is not None:
+            self.feature_reader.pos = pos
+
         while len(batch_inputs) < self.size:
             #read utterance
-            utt_id, utt_mat, _ = self.feature_reader.get_utt()
+            utt_id, utt_mat, looped = self.feature_reader.get_utt()
+
+            if looped and stop_at_end:
+                break
 
             #get transcription
             if utt_id in self.target_dict:
@@ -85,6 +96,9 @@ class BatchDispenser(object):
                 batch_targets.append(encoded_targets)
             else:
                 print 'WARNING no targets for %s' % utt_id
+
+        if self.feature_reader.pos == self.feature_reader.num_utt:
+            self.feature_reader.pos = 0
 
         return batch_inputs, batch_targets
 
@@ -101,7 +115,7 @@ class BatchDispenser(object):
         batch_targets = []
 
         while True:
-            
+
             #read utterance
             utt_id, utt_mat, looped = self.feature_reader.get_utt()
 
@@ -198,7 +212,7 @@ class BatchDispenser(object):
         The number of batches is not necessarily a whole number
         '''
 
-        return self.num_utt/self.size
+        return float(self.num_utt)/self.size
 
     @property
     def num_utt(self):
@@ -217,6 +231,10 @@ class BatchDispenser(object):
         '''the maximal sequence length of the features'''
 
         return self.feature_reader.max_input_length
+
+    @property
+    def pos(self):
+        return self.feature_reader.pos
 
 class TextBatchDispenser(BatchDispenser):
     '''a batch dispenser, which uses text targets.'''

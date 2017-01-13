@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['processing',['processing',['../namespaceprocessing.html',1,'']]]
+  ['classifiers',['classifiers',['../namespaceclassifiers.html',1,'']]]
 ];

@@ -7,34 +7,30 @@ import numpy as np
 class FeatureComputer(object):
     '''A featurecomputer is used to compute a certain type of features'''
 
-    def __init__(self, featureType, dynamic, conf):
+    def __init__(self, conf):
         '''
         FeatureComputer constructor
 
         Args:
-            featureType: string containing the type of features, optione are:
-                fbank, mfcc and ssc.
-            dynamic: the type of dynamic information added, options are:
-                nodelta, delta and ddelta.
             conf: the feature configuration
         '''
 
-        if featureType == 'fbank':
+        if conf['type'] == 'fbank':
             self.comp_feat = base.logfbank
-        elif featureType == 'mfcc':
+        elif conf['type'] == 'mfcc':
             self.comp_feat = base.mfcc
-        elif featureType == 'ssc':
+        elif conf['type'] == 'ssc':
             self.comp_feat = base.ssc
-        elif featureType == 'raw':
+        elif conf['type'] == 'raw':
             self.comp_feat = base.raw
         else:
             raise Exception('unknown feature type')
 
-        if dynamic == 'nodelta':
+        if conf['dynamic'] == 'nodelta':
             self.comp_dyn = lambda x: x
-        elif dynamic == 'delta':
+        elif conf['dynamic'] == 'delta':
             self.comp_dyn = base.delta
-        elif dynamic == 'ddelta':
+        elif conf['dynamic'] == 'ddelta':
             self.comp_dyn = base.ddelta
         else:
             raise Exception('unknown dynamic type')

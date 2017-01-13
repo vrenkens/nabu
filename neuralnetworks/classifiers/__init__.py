@@ -3,4 +3,5 @@
     (e.g. layers)
 '''
 
-__all__ =  ['activation', 'classifier', 'dblstm', 'dnn', 'layer', 'ops', 'seq_convertors', 'wavenet']
+from . import activation, classifier, dblstm, dnn, layer, ops, seq_convertors,\
+wavenet

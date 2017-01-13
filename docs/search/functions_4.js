@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['framesig',['framesig',['../sigproc_8py.html#a6c274a445ca11d593f2b3b77293d82b1',1,'processing::sigproc']]]
+  ['encode',['encode',['../classprocessing_1_1target__coder_1_1TargetCoder.html#a9ab23c08bdb4f3c4bdefcded70b546e7',1,'processing::target_coder::TargetCoder']]]
 ];

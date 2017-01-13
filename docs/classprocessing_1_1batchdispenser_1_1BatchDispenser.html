@@ -92,9 +92,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aeb7c5521a3de021dbd5e91d5ff510b58"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classprocessing_1_1batchdispenser_1_1BatchDispenser.html#aeb7c5521a3de021dbd5e91d5ff510b58">__init__</a> (self, feature_reader, target_coder, size, target_path)</td></tr>
 <tr class="memdesc:aeb7c5521a3de021dbd5e91d5ff510b58"><td class="mdescLeft">&#160;</td><td class="mdescRight">batchDispenser constructor TODO: move encoding to the constructor  <a href="#aeb7c5521a3de021dbd5e91d5ff510b58">More...</a><br /></td></tr>
 <tr class="separator:aeb7c5521a3de021dbd5e91d5ff510b58"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a35ef5228e62ca26035931093f68f7638"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classprocessing_1_1batchdispenser_1_1BatchDispenser.html#a35ef5228e62ca26035931093f68f7638">get_batch</a> (self)</td></tr>
-<tr class="memdesc:a35ef5228e62ca26035931093f68f7638"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a batch of features and targets.  <a href="#a35ef5228e62ca26035931093f68f7638">More...</a><br /></td></tr>
-<tr class="separator:a35ef5228e62ca26035931093f68f7638"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae439eed348207c366cdf76a6e1d82d3b"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classprocessing_1_1batchdispenser_1_1BatchDispenser.html#ae439eed348207c366cdf76a6e1d82d3b">get_batch</a> (self, pos=None, stop_at_end=False)</td></tr>
+<tr class="memdesc:ae439eed348207c366cdf76a6e1d82d3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a batch of features and targets.  <a href="#ae439eed348207c366cdf76a6e1d82d3b">More...</a><br /></td></tr>
+<tr class="separator:ae439eed348207c366cdf76a6e1d82d3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abbd064de7ae758823bb74e67b82226ac"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classprocessing_1_1batchdispenser_1_1BatchDispenser.html#abbd064de7ae758823bb74e67b82226ac">get_all_data</a> (self)</td></tr>
 <tr class="memdesc:abbd064de7ae758823bb74e67b82226ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">read all data in a single batch  <a href="#abbd064de7ae758823bb74e67b82226ac">More...</a><br /></td></tr>
 <tr class="separator:abbd064de7ae758823bb74e67b82226ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -127,6 +127,9 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classprocessing_1_1batchdispenser_1_1BatchDispenser.html#a087ae53b8ea4c3240e9dddce622d3fdf">max_input_length</a> (self)</td></tr>
 <tr class="memdesc:a087ae53b8ea4c3240e9dddce622d3fdf"><td class="mdescLeft">&#160;</td><td class="mdescRight">the maximal sequence length of the features <br /></td></tr>
 <tr class="separator:a087ae53b8ea4c3240e9dddce622d3fdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae703bc9f52af089be554f23f3d0b9f4b"><td class="memItemLeft" align="right" valign="top"><a id="ae703bc9f52af089be554f23f3d0b9f4b"></a>
+def&#160;</td><td class="memItemRight" valign="bottom"><b>pos</b> (self)</td></tr>
+<tr class="separator:ae703bc9f52af089be554f23f3d0b9f4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -254,8 +257,8 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a35ef5228e62ca26035931093f68f7638"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a35ef5228e62ca26035931093f68f7638">&sect;&nbsp;</a></span>get_batch()</h2>
+<a id="ae439eed348207c366cdf76a6e1d82d3b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae439eed348207c366cdf76a6e1d82d3b">&sect;&nbsp;</a></span>get_batch()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -264,13 +267,36 @@ Public Attributes</h2></td></tr>
           <td class="memname">def processing.batchdispenser.BatchDispenser.get_batch </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em></td><td>)</td>
+          <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>pos</em> = <code>None</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>stop_at_end</em> = <code>False</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Get a batch of features and targets. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pos</td><td>position in the feature reader, if None will remain unchanged </td></tr>
+    <tr><td class="paramname">stop_at_end</td><td>boolean, if False the batchdispenser will loop around otherwise the batchdispenser will stop at the end</td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="section return"><dt>Returns</dt><dd>A pair containing:<ul>
 <li>The features: a list of feature matrices</li>
 <li>The targets: a list of target vectors </li>

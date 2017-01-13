@@ -101,6 +101,19 @@ class FeatureReader(object):
 
         return reader
 
+    @property
+    def num_utt(self):
+        return self.reader.num_utt
+
+    @property
+    def pos(self):
+        return self.reader.scp_position
+
+    @pos.setter
+    def pos(self, pos):
+        self.reader.scp_position = pos
+
+
 
 
 def apply_cmvn(utt, stats):

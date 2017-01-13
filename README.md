@@ -16,4 +16,4 @@ Installation
 Goal
 --------------------------
 
-This is code for end-to-end neural networks for automatic speech recognition
+This is code for end-to-end neural networks for automatic speech recognition. Implemented with Tensorflow.
