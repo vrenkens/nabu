@@ -3,8 +3,8 @@ this is the file that should be run for experiments'''
 
 import os
 import shutil
-import subprocess
 import atexit
+import subprocess
 from time import sleep
 import tensorflow as tf
 from six.moves import configparser
@@ -18,7 +18,7 @@ def main(_):
     '''main function'''
 
     #pointers to the config files
-    computing_cfg_file = 'config/computing/static.cfg'
+    computing_cfg_file = 'config/computing/condor.cfg'
     database_cfg_file = 'config/databases/TIMIT.cfg'
     feat_cfg_file = 'config/features/fbank.cfg'
     nnet_cfg_file = 'config/nnet/DBLSTM.cfg'
@@ -82,7 +82,8 @@ def main(_):
             for machine in machines[job]:
                 command = ('python train.py --clusterfile=%s --job_name=%s '
                            '--task_index=%d --expdir=%s') % (
-                    computing_cfg['clusterfile'], job, task_index, FLAGS.expdir)
+                               computing_cfg['clusterfile'], job, task_index,
+                               FLAGS.expdir)
                 processes[job].append(distributed.static.run_remote.run_remote(
                     command=command,
                     host=machine,
@@ -92,8 +93,9 @@ def main(_):
                 task_index += 1
 
         #make sure the created processes are terminated at exit
-        for process in processes['worker']:
-            atexit.register(process.terminate)
+        for job in processes:
+            for process in processes[job]:
+                atexit.register(process.terminate)
 
         #wait for all processes to finish
         for job in processes:
@@ -112,13 +114,16 @@ def main(_):
         os.mkdir(FLAGS.expdir + '/cluster')
 
         #submit the parameter server jobs
-        os.system('condor_submit expdir=%s numjobs=%s distributed/condor/ps.job'
-                  % (FLAGS.expdir, computing_cfg['numps']))
+        print()
+        subprocess.call(['condor_submit', 'expdir=%s' % FLAGS.expdir,
+                         'numjobs=%s' % computing_cfg['numps'],
+                         'distributed/condor/ps.job'])
 
         #submit the worker jobs
-        os.system('condor_submit expdir=%s numjobs=%s '
-                  'distributed/condor/worker.job' %
-                  (FLAGS.expdir, computing_cfg['numworkers']))
+        subprocess.call(['condor_submit', 'expdir=%s' % FLAGS.expdir,
+                         'numjobs=%s' % computing_cfg['numworkers'],
+                         'memory=%s' % computing_cfg['minmemory'],
+                         'distributed/condor/worker.job'])
 
         ready = False
 
@@ -178,6 +183,7 @@ def main(_):
                         fid.write(str(task_index))
 
                     cfid.write('%s,%s,%d\n' % (job, machine[0], machine[1]))
+                    task_index += 1
 
         #notify the machine that the cluster is ready
         fid = open(FLAGS.expdir + '/cluster/ready', 'w')

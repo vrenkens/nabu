@@ -2,14 +2,18 @@
 this file will be ran for all machines to build the cluster'''
 
 import os
+import sys
 import socket
 from time import sleep
 import distributed
 from train import train
 import tensorflow as tf
 
-def main():
+def main(_):
     '''main function'''
+
+    #unbuffer stdout
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
     cluster_dir = FLAGS.expdir + '/cluster'
 
@@ -33,7 +37,7 @@ def main():
     #read the task_index in the created file
     task_index = ''
     while (task_index == FLAGS.job_name
-           and not os.path.exists(cluster_dir + '/ready')):
+           or not os.path.exists(cluster_dir + '/ready')):
 
         with open(machine_file) as fid:
             task_index = fid.read()

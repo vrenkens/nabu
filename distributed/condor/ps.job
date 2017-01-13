@@ -1,24 +1,23 @@
 # Normal execution
 Universe         = vanilla
-# just 1 CPU for the parameter server
-RequestCpus      = 1
-# specify enough RAM so the parameter server can store the model
+# just 1 CPU
+requestCpus      = 1
+# need enough RAM to store the parameters
 RequestMemory    = 2G
-#specify that cuda should be available
-Requirements = machineowner == "PSI/Spraak"
+
+#Run on Visics machines
+Requirements = MachineOwner == "Visics"
 
 #Specfy nice user behavior
 NiceUser = true
 #Send an email in case of an error
 Notification = Error
-#stream the output so it can be folowed
-stream_output = True
 
 # Should run from the parent directory
 initialdir = .
 
 #Run he build cluster script for the parameter server
-Arguments = "python build_cluster.py --job_name=ps --expdir=$(expdir)"
+Arguments = "python -m distributed.condor.build_cluster --job_name=ps --expdir=$(expdir)"
 # This is the executable or script I want to run
 executable = distributed/condor/create_environment.sh
 

@@ -26,9 +26,6 @@ def train(clusterfile,
         expdir: the experiments directory
     '''
 
-    #unbuffer stdout
-    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-
     #read the database config file
     parsed_database_cfg = configparser.ConfigParser()
     parsed_database_cfg.read(expdir + '/database.cfg')
@@ -75,7 +72,7 @@ def train(clusterfile,
         localports = []
         for job in machines:
             for remote in machines[job]:
-                if localmachine != remote[0]:
+                if localmachine == remote[0]:
                     localports.append(remote[1])
 
         for job in machines:
@@ -86,8 +83,8 @@ def train(clusterfile,
                 if localmachine != remote[0]:
 
                     #look for an available port
-                    while (port not in localports
-                           and not distributed.cluster.port_available(port)):
+                    while (port in localports
+                           or not distributed.cluster.port_available(port)):
 
                         port += 1
 

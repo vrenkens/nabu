@@ -10,7 +10,7 @@ import processing
 tf.app.flags.DEFINE_string('expdir', '.', 'The experiments directory')
 FLAGS = tf.app.flags.FLAGS
 
-def main():
+def main(_):
     '''does everything for testing'''
 
     #read the database config file

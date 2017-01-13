@@ -20,7 +20,7 @@ def get_machines(machine_dir):
     machines['ps'] = []
 
     for f in files:
-        with open(f) as fid:
+        with open(os.path.join(machine_dir, f)) as fid:
             job_name = fid.read()
         splitfile = f.split('-')
         if job_name not in ['ps', 'worker']:

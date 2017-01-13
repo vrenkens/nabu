@@ -197,9 +197,8 @@ class CTCDecoder(Decoder):
         logits = tf.pack(tf.unpack(logits, axis=1))
 
         #do the CTC beam search
-        sparse_outputs, logprobs = tf.nn.ctc_beam_search_decoder(
-            tf.pack(logits), logits_seq_length, int(self.conf['beam_width']),
-            int(self.conf['beam_width']))
+        sparse_outputs, logprobs = tf.nn.ctc_greedy_decoder(
+            tf.pack(logits), logits_seq_length)
 
         #convert the outputs to dense tensors
         dense_outputs = [

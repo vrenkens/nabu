@@ -4,7 +4,6 @@ neural network trainer environment'''
 from abc import ABCMeta, abstractmethod
 from time import time, sleep
 from math import ceil
-from contextlib import contextmanager
 import tensorflow as tf
 from tensorflow.python.client.device_lib import list_local_devices
 import numpy as np
@@ -200,17 +199,22 @@ class Trainer(object):
                     reuse=True,
                     scope='Classifier')
 
-                #create a done queue for each parameter server
-                done_queues = []
-                for ps in range(numservers):
-                    with tf.device("/job:ps/task:%d" % (ps)):
-                        done_queues.append(tf.FIFOQueue(
-                            capacity=num_replicas,
-                            dtypes=tf.int32,
-                            shared_name='done_queue' + str(ps)))
+                if cluster is not None:
+                    #create a done queue for each parameter server
+                    done_queues = []
+                    for ps in range(numservers):
+                        with tf.device("/job:ps/task:%d" % (ps)):
+                            done_queues.append(tf.FIFOQueue(
+                                capacity=num_replicas,
+                                dtypes=tf.int32,
+                                shared_name='done_queue' + str(ps)))
 
-                #create an operation that enqueues an element in each done queue
-                self.done = tf.group(*[q.enqueue(0) for q in done_queues])
+                    #create an operation that enqueues an element in each done
+                    #queue
+                    self.done = tf.group(*[q.enqueue(0) for q in done_queues])
+
+                else:
+                    self.done = tf.no_op()
 
                 with tf.variable_scope('train'):
                     #a variable to hold the amount of steps already taken
@@ -448,8 +452,7 @@ class Trainer(object):
         config.gpu_options.allow_growth = True #pylint: disable=E1101
         config.allow_soft_placement = True
 
-        with context_wrapper(self.supervisor.managed_session, self.done, master,
-                             config=config) as sess:
+        with self.supervisor.managed_session(master, config=config) as sess:
 
             #start the queue runners
             if self.chief_queue_runner is not None:
@@ -509,6 +512,9 @@ class Trainer(object):
                 #the chief will save the final model
                 if self.supervisor.is_chief:
                     self.modelsaver.save(sess, self.logdir + '/final.ckpt')
+
+                #notify the parameter server that he worker has terminated
+                sess.run(self.done)
 
                 self.supervisor.request_stop()
 
@@ -752,8 +758,8 @@ class CTCTrainer(Trainer):
         tm_logits = tf.transpose(logits, [1, 0, 2])
 
         #do the CTC beam search
-        sparse_output, _ = tf.nn.ctc_beam_search_decoder(
-            tf.pack(tm_logits), logit_seq_length, int(self.conf['beam_width']))
+        sparse_output, _ = tf.nn.ctc_greedy_decoder(
+            tf.pack(tm_logits), logit_seq_length)
 
         #convert the output to dense tensors with -1 as default values
         dense_output = tf.sparse_tensor_to_dense(sparse_output[0],
@@ -816,25 +822,6 @@ def pad(inputs, length):
                      for i in inputs]
 
     return padded_inputs
-
-@contextmanager
-def context_wrapper(context, exitop, *args, **kwargs):
-    '''wrapper for session context that runs an op before exitting
-
-    Args:
-        context: the session context manager
-        exitop: the op to run before exitting the context
-        args: arguments for context
-        kwargs: keyword arguments for context
-
-    Returns:
-        a session context manager'''
-
-    with context(*args, **kwargs) as sess:
-        try:
-            yield sess
-        finally:
-            sess.run(exitop)
 
 def wait(server, task_index, numworkers):
     '''wait for the workers to finish
