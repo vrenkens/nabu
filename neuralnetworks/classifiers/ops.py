@@ -77,3 +77,49 @@ def mu_law_encode(inputs, num_levels, scope=None):
         encoded = tf.one_hot(quantized, num_levels)
 
     return encoded
+
+def pyramid_stack(inputs, sequence_lengths, scope=None):
+    '''
+    concatenate each two consecutive elements
+
+    Args:
+        inputs: A time minor tensor [batch_size, time, input_size]
+        sequence_lengths: the length of the input sequences
+        scope: the current scope
+
+    Returns:
+        inputs: Concatenated inputs [batch_size, time/2, input_size*2]
+        sequence_lengths: the lengths of the inputs sequences [batch_size]
+    '''
+
+    with tf.name_scope(scope or 'pyramid_stack'):
+
+        input_shape = tf.Tensor.get_shape(inputs)
+
+        #pad with zeros if odd number of inputs
+        if int(input_shape[1]) % 2 == 1:
+            padded_inputs = tf.pad(inputs, [[0, 0], [0, 1], [0, 0]])
+            length = int(input_shape[1]) + 1
+        else:
+            padded_inputs = inputs
+            length = int(input_shape[1])
+
+        #convert imputs to time major
+        time_major_input = tf.transpose(padded_inputs, [1, 0, 2])
+
+        #seperate odd and even inputs
+        odd_inputs = tf.gather(time_major_input, range(1, length, 2))
+        even_inputs = tf.gather(time_major_input, range(0, length, 2))
+
+        #concatenate odd and even inputs
+        time_major_outputs = tf.concat(2, [even_inputs, odd_inputs])
+
+        #convert back to time minor
+        outputs = tf.transpose(time_major_outputs, [1, 0, 2])
+
+        #compute the new sequence length
+        output_sequence_lengths = tf.cast(tf.ceil(tf.cast(sequence_lengths,
+                                                          tf.float32)/2),
+                                          tf.int32)
+
+    return outputs, output_sequence_lengths

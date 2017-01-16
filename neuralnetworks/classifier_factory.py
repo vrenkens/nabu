@@ -20,5 +20,7 @@ def classifier_factory(conf, output_dim, classifier_type):
         return classifiers.dnn.DNN(conf, output_dim)
     elif classifier_type == 'wavenet':
         return classifiers.wavenet.Wavenet(conf, output_dim)
+    elif classifier_type == 'las':
+        return classifiers.las.LAS(conf, output_dim)
     else:
         raise Exception('undefined classifier type: %s' % classifier_type)

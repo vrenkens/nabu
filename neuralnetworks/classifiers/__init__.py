@@ -4,4 +4,4 @@
 '''
 
 from . import activation, classifier, dblstm, dnn, layer, ops, seq_convertors,\
-wavenet
+wavenet, las, las_elements

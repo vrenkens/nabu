@@ -18,11 +18,11 @@ def main(_):
     '''main function'''
 
     #pointers to the config files
-    computing_cfg_file = 'config/computing/condor.cfg'
+    computing_cfg_file = 'config/computing/local.cfg'
     database_cfg_file = 'config/databases/TIMIT.cfg'
     feat_cfg_file = 'config/features/fbank.cfg'
-    nnet_cfg_file = 'config/nnet/DBLSTM.cfg'
-    trainer_cfg_file = 'config/trainer/CTCtrainer.cfg'
+    nnet_cfg_file = 'config/nnet/LAS.cfg'
+    trainer_cfg_file = 'config/trainer/cross_enthropytrainer.cfg'
     decoder_cfg_file = 'config/decoder/CTCdecoder.cfg'
 
     #read the computing config file

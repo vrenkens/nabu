@@ -2,10 +2,10 @@
 Neural network layers '''
 
 import tensorflow as tf
-import seq_convertors
-import ops
 from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn
+import seq_convertors
+import ops
 
 class FFLayer(object):
     '''This class defines a fully connected feed forward layer'''
@@ -80,8 +80,7 @@ class BLSTMLayer(object):
 
         self.num_units = num_units
 
-    def __call__(self, inputs, sequence_length, is_training=False,
-                 reuse=False, scope=None):
+    def __call__(self, inputs, sequence_length, reuse=False, scope=None):
         """
         Create the variables and do the forward computation
 
@@ -89,7 +88,6 @@ class BLSTMLayer(object):
             inputs: the input to the layer as a
                 [batch_size, max_length, dim] tensor
             sequence_length: the length of the input sequences
-            is_training: whether or not the network is in training mode
             reuse: Setting this value to true will cause tensorflow to look
                       for variables with the same name in the graph and reuse
                       these instead of creating new variables.
@@ -116,6 +114,49 @@ class BLSTMLayer(object):
             outputs = tf.concat(2, outputs_tupple)
 
             return outputs
+
+class PBLSTMLayer(object):
+    ''' a pyramidal bidirectional LSTM layer'''
+
+    def __init__(self, num_units):
+        """
+        BlstmLayer constructor
+        Args:
+            num_units: The number of units in the LSTM
+            pyramidal: indicates if a pyramidal BLSTM is desired.
+        """
+
+        #create BLSTM layer
+        self.blstm = BLSTMLayer(num_units)
+
+    def __call__(self, inputs, sequence_lengths, reuse=False, scope=None):
+        """
+        Create the variables and do the forward computation
+        Args:
+            inputs: A time minor tensor of shape [batch_size, time,
+                input_size],
+            sequence_lengths: the length of the input sequences
+            reuse: Setting this value to true will cause tensorflow to look
+                for variables with the same name in the graph and reuse
+                these instead of creating new variables.
+            scope: The variable scope sets the namespace under which
+                the variables created during this call will be stored.
+        Returns:
+            the output of the layer, the concatenated outputs of the
+            forward and backward pass shape [batch_size, time/2, input_size*2].
+        """
+
+
+        with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
+
+            #apply blstm layer
+            outputs = self.blstm(inputs, sequence_lengths, reuse)
+            stacked_outputs, output_seq_lengths = ops.pyramid_stack(
+                outputs,
+                sequence_lengths)
+
+
+        return stacked_outputs, output_seq_lengths
 
 class GatedAConv1d(object):
     '''A gated atrous convolution block'''

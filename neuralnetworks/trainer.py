@@ -45,9 +45,9 @@ def trainer_factory(conf,
     Returns: a Trainer object
     '''
 
-    if trainer_type == 'ctctrainer':
+    if trainer_type == 'ctc':
         trainer_class = CTCTrainer
-    elif trainer_type == 'crossenthropytrainer':
+    elif trainer_type == 'cross_enthropy':
         trainer_class = CrossEnthropyTrainer
     else:
         raise Exception('Undefined trainer type: %s' % trainer_type)
