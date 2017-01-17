@@ -7,10 +7,29 @@ import las_elements
 
 class LAS(Classifier):
     '''a listen attend and spell classifier'''
+    def __init__(self, conf, output_dim):
+        '''LAS constructor
+
+        Args:
+            conf: the classifier config
+            output_dim: the classifier output dimension'''
+
+        #create the listener
+        self.encoder = las_elements.listener.Listener(
+            numlayers=int(conf['listener_layers']),
+            numunits=int(conf['listener_units']),
+            dropout=float(conf['listener_dropout']))
+
+        #create the speller
+        self.decoder = las_elements.speller.Speller(
+            numlayers=int(conf['speller_layers']),
+            numunits=int(conf['speller_units']),
+            dropout=float(conf['speller_dropout']))
+
+        super(LAS, self).__init__(conf, output_dim)
 
     def __call__(self, inputs, input_seq_length, targets=None,
-                 target_seq_length=None, is_training=False, reuse=False,
-                 scope=None):
+                 target_seq_length=None, is_training=False, scope=None):
         '''
         Add the neural net variables and operations to the graph
 
@@ -25,39 +44,20 @@ class LAS(Classifier):
             target_seq_length: The sequence lengths of the target utterances,
                 this is a [batch_size] dimansional vector
             is_training: whether or not the network is in training mode
-            reuse: wheter or not the variables in the network should be reused
             scope: the name scope
 
         Returns:
-            A quadruple containing:
+            A pair containing:
                 - output logits
                 - the output logits sequence lengths as a vector
-                - a saver object
-                - an empty dictionary of control operations
         '''
 
-        with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
-
-            #create the listener
-            listener = las_elements.listener.Listener(
-                numlayers=int(self.conf['listener_layers']),
-                numunits=int(self.conf['listener_units']),
-                dropout=float(self.conf['listener_dropout']))
-
-            #create the speller
-            speller = las_elements.speller.Speller(
-                numlayers=int(self.conf['speller_layers']),
-                numunits=int(self.conf['speller_units']),
-                dropout=float(self.conf['speller_dropout']))
-
+        with tf.variable_scope(scope or type(self).__name__):
             #compute the high level features
-            hlfeat = listener(inputs, input_seq_length, is_training, reuse)
+            hlfeat = self.encoder(inputs, input_seq_length, is_training)
 
             #compute the output logits
-            logits = speller(hlfeat, targets, self.output_dim, is_training,
-                             reuse)
+            logits, _ = self.decoder(hlfeat, targets, self.output_dim, None,
+                                     is_training)
 
-            #create a saver object
-            saver = tf.train.Saver()
-
-            return logits, target_seq_length, saver, None
+            return logits, target_seq_length

@@ -12,8 +12,7 @@ class DBLSTM(Classifier):
     '''A deep bidirectional LSTM classifier'''
 
     def __call__(self, inputs, input_seq_length, targets=None,
-                 target_seq_length=None, is_training=False, reuse=False,
-                 scope=None):
+                 target_seq_length=None, is_training=False, scope=None):
         '''
         Add the neural net variables and operations to the graph
 
@@ -28,18 +27,16 @@ class DBLSTM(Classifier):
             target_seq_length: The sequence lengths of the target utterances,
                 this is a [batch_size] dimansional vector
             is_training: whether or not the network is in training mode
-            reuse: wheter or not the variables in the network should be reused
             scope: the name scope
 
         Returns:
-            A quadruple containing:
+            A pair containing:
                 - output logits
                 - the output logits sequence lengths as a vector
                 - a saver object
-                - a dictionary of control operations (may be empty)
         '''
 
-        with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
+        with tf.variable_scope(scope or type(self).__name__):
 
             #the blstm layer
             blstm = BLSTMLayer(int(self.conf['num_units']))
@@ -59,16 +56,13 @@ class DBLSTM(Classifier):
 
             for layer in range(int(self.conf['num_layers'])):
                 logits = blstm(logits, input_seq_length,
-                               is_training, reuse, 'layer' + str(layer))
+                               is_training, 'layer' + str(layer))
 
             logits = seq_convertors.seq2nonseq(logits, input_seq_length)
 
-            logits = outlayer(logits, is_training, reuse, 'outlayer')
+            logits = outlayer(logits, is_training, 'outlayer')
 
             logits = seq_convertors.nonseq2seq(logits, input_seq_length,
                                                int(inputs.get_shape()[1]))
 
-            #create a saver
-            saver = tf.train.Saver()
-
-        return logits, input_seq_length, saver, None
+        return logits, input_seq_length

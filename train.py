@@ -2,7 +2,6 @@
 this file will do the neural net training'''
 
 import os
-import sys
 import subprocess
 import atexit
 import tensorflow as tf
@@ -45,6 +44,11 @@ def train(clusterfile,
     parsed_trainer_cfg = configparser.ConfigParser()
     parsed_trainer_cfg.read(expdir + '/trainer.cfg')
     trainer_cfg = dict(parsed_trainer_cfg.items('trainer'))
+
+    #read the decoder config file
+    parsed_decoder_cfg = configparser.ConfigParser()
+    parsed_decoder_cfg.read(expdir + '/decoder.cfg')
+    decoder_cfg = dict(parsed_decoder_cfg.items('decoder'))
 
     if clusterfile is None:
         #no distributed training
@@ -162,7 +166,7 @@ def train(clusterfile,
         with open(featdir + '/maxlength', 'r') as fid:
             max_input_length = int(fid.read())
 
-        val_featreader = processing.feature_reader.FeatureReader(
+        val_reader = processing.feature_reader.FeatureReader(
             scpfile=featdir + '/feats.scp',
             cmvnfile=featdir + '/cmvn.scp',
             utt2spkfile=featdir + '/utt2spk',
@@ -171,34 +175,41 @@ def train(clusterfile,
 
         textfile = database_cfg['devtext']
 
-        val_dispenser = processing.batchdispenser.TextBatchDispenser(
-            feature_reader=val_featreader,
-            target_coder=coder,
-            size=int(trainer_cfg['batch_size']),
-            target_path=textfile)
+        #read the validation targets
+        with open(textfile) as fid:
+            lines = fid.readlines()
+
+        val_targets = dict()
+        for line in lines:
+            splitline = line.strip().split(' ')
+            val_targets[splitline[0]] = coder.normalize(' '.join(splitline[1:]))
 
     else:
         if int(trainer_cfg['valid_utt']) > 0:
             val_dispenser = dispenser.split(int(trainer_cfg['valid_utt']))
+            val_reader = val_dispenser.feature_reader
+            val_targets = val_dispenser.target_dict
         else:
             val_dispenser = None
 
     #create the classifier
     classifier = neuralnetworks.classifier_factory.classifier_factory(
         conf=nnet_cfg,
-        output_dim=coder.num_labels + 1,
+        output_dim=coder.num_labels,
         classifier_type=nnet_cfg['classifier'])
 
     #create the trainer
     trainer = neuralnetworks.trainer.trainer_factory(
         conf=trainer_cfg,
+        decoder_conf=decoder_cfg,
         classifier=classifier,
         input_dim=input_dim,
         max_input_length=dispenser.max_input_length,
         max_target_length=dispenser.max_target_length,
         dispenser=dispenser,
-        val_dispenser=val_dispenser,
-        logdir=expdir + '/logdir',
+        val_reader=val_reader,
+        val_targets=val_targets,
+        expdir=expdir,
         server=server,
         cluster=cluster,
         task_index=task_index,

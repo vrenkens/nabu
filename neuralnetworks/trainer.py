@@ -3,20 +3,22 @@ neural network trainer environment'''
 
 from abc import ABCMeta, abstractmethod
 from time import time, sleep
-from math import ceil
 import tensorflow as tf
 from tensorflow.python.client.device_lib import list_local_devices
 import numpy as np
 from classifiers import seq_convertors
+import decoder
 
 def trainer_factory(conf,
+                    decoder_conf,
                     classifier,
                     input_dim,
                     max_input_length,
                     max_target_length,
                     dispenser,
-                    val_dispenser,
-                    logdir,
+                    val_reader,
+                    val_targets,
+                    expdir,
                     server,
                     cluster,
                     task_index,
@@ -27,6 +29,7 @@ def trainer_factory(conf,
     Args:
         classifier: the neural net classifier that will be trained
         conf: the trainer config
+        decoder_conf: the decoder config used for validation
         input_dim: the input dimension to the nnnetgraph
         max_input_length: the maximal length of the input sequences
         max_target_length: the maximal length of the target sequences
@@ -34,8 +37,9 @@ def trainer_factory(conf,
         dispenser: a Batchdispenser object
         cluster: the optional cluster used for distributed training, it
             should contain at least one parmeter server and one worker
-        val_dispenser: the batchdispenser for the validation data if None
+        val_reader: a feature reader for the validation data if None
             validation will not be used
+        val_targets: a dictionary containing the targets of the validation set
         logdir: directory where the summaries will be written
         server: optional server to be used for distributed training
         cluster: optional cluster to be used for distributed training
@@ -53,13 +57,15 @@ def trainer_factory(conf,
         raise Exception('Undefined trainer type: %s' % trainer_type)
 
     return trainer_class(conf,
+                         decoder_conf,
                          classifier,
                          input_dim,
                          max_input_length,
                          max_target_length,
                          dispenser,
-                         val_dispenser,
-                         logdir,
+                         val_reader,
+                         val_targets,
+                         expdir,
                          server,
                          cluster,
                          task_index)
@@ -70,13 +76,15 @@ class Trainer(object):
 
     def __init__(self,
                  conf,
+                 decoder_conf,
                  classifier,
                  input_dim,
                  max_input_length,
                  max_target_length,
                  dispenser,
-                 val_dispenser=None,
-                 logdir=None,
+                 val_reader=None,
+                 val_targets=None,
+                 expdir=None,
                  server=None,
                  cluster=None,
                  task_index=0):
@@ -86,6 +94,7 @@ class Trainer(object):
         Args:
             classifier: the neural net classifier that will be trained
             conf: the trainer config
+            decoder_conf: the decoder config used for validation
             input_dim: the input dimension to the nnnetgraph
             max_input_length: the maximal length of the input sequences
             max_target_length: the maximal length of the target sequences
@@ -93,9 +102,11 @@ class Trainer(object):
             dispenser: a Batchdispenser object
             cluster: the optional cluster used for distributed training, it
                 should contain at least one parmeter server and one worker
-            val_dispenser: the batchdispenser for the validation data if None
+            val_reader: the feature reader for the validation data if None
                 validation will not be used
-            logdir: directory where the summaries will be written
+            val_targets: a dictionary containing the targets of the validation
+                set
+            expdir: directory where the summaries will be written
             server: optional server to be used for distributed training
             cluster: optional cluster to be used for distributed training
             task_index: optional index of the worker task in the cluster
@@ -107,8 +118,9 @@ class Trainer(object):
         self.max_target_length = max_target_length
         self.num_steps = int(dispenser.num_batches*int(conf['num_epochs'])
                              /max(1, int(conf['numbatches_to_aggregate'])))
-        self.val_dispenser = val_dispenser
-        self.logdir = logdir
+        self.val_reader = val_reader
+        self.val_targets = val_targets
+        self.logdir = expdir + '/logdir'
         self.server = server
         self.cluster = cluster
 
@@ -179,25 +191,28 @@ class Trainer(object):
                     name='val_loss_in')
 
                 #compute the training outputs of the classifier
-                trainlogits, logit_seq_length, \
-                self.modelsaver, self.control_ops = classifier(
+                trainlogits, logit_seq_length = classifier(
                     inputs=self.inputs,
                     input_seq_length=self.input_seq_length,
                     targets=self.targets,
                     target_seq_length=self.target_seq_length,
                     is_training=True,
-                    reuse=False,
                     scope='Classifier')
 
-                #compute the validation output of the classifier
-                logits, _, _, _ = classifier(
-                    inputs=self.inputs,
-                    input_seq_length=self.input_seq_length,
-                    targets=self.targets,
-                    target_seq_length=self.target_seq_length,
-                    is_training=False,
-                    reuse=True,
-                    scope='Classifier')
+                #create a saver for the classifier
+                self.modelsaver = tf.train.Saver(tf.get_collection(
+                    tf.GraphKeys.GLOBAL_VARIABLES, scope='Classifier'))
+
+                #create a decoder object for validation
+                self.decoder = decoder.decoder_factory(
+                    conf=decoder_conf,
+                    classifier=classifier,
+                    classifier_scope=tf.VariableScope(True, 'Classifier'),
+                    input_dim=input_dim,
+                    max_input_length=max_input_length,
+                    coder=dispenser.target_coder,
+                    expdir=expdir,
+                    decoder_type=decoder_conf['decoder'])
 
                 if cluster is not None:
                     #create a done queue for each parameter server
@@ -333,10 +348,6 @@ class Trainer(object):
                         *([apply_gradients_op] + update_ops),
                         name='update')
 
-                with tf.name_scope('valid'):
-                    #compute the outputs that will be used for validation
-                    self.outputs = self.validation(logits, logit_seq_length)
-
                 # add an operation to initialise all the variables in the graph
                 self.init_op = tf.global_variables_initializer()
 
@@ -374,7 +385,7 @@ class Trainer(object):
             is_chief=is_chief,
             init_op=self.init_op,
             local_init_op=local_init_op,
-            logdir=logdir,
+            logdir=self.logdir,
             saver=self.trainsaver,
             global_step=self.global_step)
 
@@ -572,41 +583,22 @@ class Trainer(object):
 
         '''
 
-        errors = []
-
         #update the validated step
         sess.run([self.set_val_step])
 
-        for _ in range(int(ceil(self.val_dispenser.num_batches))):
+        outputs = decoder.decode(self.decoder, self.val_reader, sess)
 
-            inputs, targets = self.val_dispenser.get_batch(stop_at_end=True)
-
-            #get a list of sequence lengths
-            input_seq_length = [i.shape[0] for i in inputs]
-
-            #pad the inputs and targets till the maximum lengths
-            padded_inputs = np.array(pad(inputs, self.max_input_length))
-
-            #pylint: disable=E1101
-            outputs = list(self.outputs.eval(
-                session=sess,
-                feed_dict={self.inputs:padded_inputs,
-                           self.input_seq_length:input_seq_length}))
-
-            #compute the validation error
-            errors = np.append(
-                errors,
-                self.validation_metric(outputs[:len(targets)], targets))
-
-        val_loss = np.mean(errors)
+        val_loss = self.decoder.score(outputs, self.val_targets)
 
         print 'validation loss: %f' % val_loss
 
-        if val_loss > self.val_loss.eval(session=sess):
+        if (val_loss > self.val_loss.eval(session=sess)
+                and self.conf['valid_adapt'] == 'True'):
             print 'halving learning rate'
             sess.run([self.halve_learningrate_op])
 
         sess.run(self.set_val_loss, feed_dict={self.val_loss_in:val_loss})
+
 
 class CrossEnthropyTrainer(Trainer):
     '''A trainer that minimises the cross-enthropy loss, the output sequences

@@ -24,8 +24,7 @@ class Listener(object):
         #create the pblstm layer
         self.pblstm = neuralnetworks.classifiers.layer.PBLSTMLayer(numunits)
 
-    def __call__(self, inputs, sequence_lengths, is_training=False,
-                 reuse=False, scope=None):
+    def __call__(self, inputs, sequence_lengths, is_training=False, scope=None):
         """
         Create the variables and do the forward computation
 
@@ -44,13 +43,13 @@ class Listener(object):
             the output of the layer
         """
 
-        with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
+        with tf.variable_scope(scope or type(self).__name__):
 
             outputs = inputs
             output_seq_lengths = sequence_lengths
             for l in range(self.numlayers):
                 outputs, output_seq_lengths = self.pblstm(
-                    outputs, output_seq_lengths, reuse, 'layer%d' % l)
+                    outputs, output_seq_lengths, 'layer%d' % l)
 
                 if self.dropout < 1:
                     outputs = tf.nn.dropout(outputs, self.dropout)

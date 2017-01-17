@@ -1,8 +1,8 @@
 '''@file feature_reader.py
 reading features and applying cmvn and splicing them'''
 
-import ark
 import copy
+import ark
 import numpy as np
 import readfiles
 
