@@ -208,10 +208,10 @@ class GreedyDecoder(Decoder):
 
             #encode the inputs
             with tf.variable_scope(classifier_scope):
-                hlfeat = classifier.encoder(self.inputs, [max_input_length],
+                hlfeat = classifier.encoder(self.inputs, self.input_seq_length,
                                             False, False)
 
-            def body(step, state, outputs, score):
+            def body(step, state, outputs, score, reuse=True):
                 '''the body of the decoding while loop
 
                 Args:
@@ -219,6 +219,8 @@ class GreedyDecoder(Decoder):
                     state: the current decoding state
                     outputs: the current decodin outputs
                     score: the score of the decoded sequence
+                    reuse: if set to True, the variables in the classifier
+                        will be reused
 
                 returns:
                     the loop vars'''
@@ -231,7 +233,8 @@ class GreedyDecoder(Decoder):
 
                     #get the output logits
                     with tf.variable_scope(classifier_scope) as scope:
-                        scope.reuse_variables()
+                        if reuse:
+                            scope.reuse_variables()
                         logits, state = classifier.decoder(
                             hlfeat=hlfeat,
                             targets=prev_output,
@@ -281,7 +284,10 @@ class GreedyDecoder(Decoder):
             state = None
 
             #do the first step to allow None state
-            step, state, outputs, score = body(step, state, outputs, score)
+            step, state, outputs, score = body(step, state, outputs, score,
+                                               False)
+
+            #make sure the variables are reused in the next
 
             state_shape = [st.get_shape() for st in nest.flatten(state)]
             state_shape = nest.pack_sequence_as(state, state_shape)

@@ -24,7 +24,8 @@ class LAS(Classifier):
         self.decoder = las_elements.speller.Speller(
             numlayers=int(conf['speller_layers']),
             numunits=int(conf['speller_units']),
-            dropout=float(conf['speller_dropout']))
+            dropout=float(conf['speller_dropout']),
+            sample_prob=float(conf['sample_prob']))
 
         super(LAS, self).__init__(conf, output_dim)
 
@@ -53,11 +54,27 @@ class LAS(Classifier):
         '''
 
         with tf.variable_scope(scope or type(self).__name__):
+
+            #add input noise
+            std_input_noise = float(self.conf['std_input_noise'])
+            if is_training and std_input_noise > 0:
+                noisy_inputs = inputs + tf.random_normal(
+                    inputs.get_shape(), stddev=std_input_noise)
+            else:
+                noisy_inputs = inputs
+
             #compute the high level features
-            hlfeat = self.encoder(inputs, input_seq_length, is_training)
+            hlfeat = self.encoder(noisy_inputs, input_seq_length, is_training)
+
+            #shift the targets to encoder inputs by prepending a start of
+            #sequence label and taking of the end of sequence label
+            batch_size = int(targets.get_shape()[0])
+            sos_labels = tf.ones([batch_size,1,1], dtype=tf.int32)
+            encoder_inputs = tf.concat(1,[sos_labels, targets])
+            encoder_inputs = encoder_inputs[:, :-1, :]
 
             #compute the output logits
-            logits, _ = self.decoder(hlfeat, targets, self.output_dim, None,
-                                     is_training)
+            logits, _ = self.decoder(hlfeat, encoder_inputs, self.output_dim,
+                                     None, is_training)
 
             return logits, target_seq_length
