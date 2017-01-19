@@ -1,9 +1,9 @@
 '''@file dnn.py
 The DNN neural network classifier'''
 
-import seq_convertors
 import tensorflow as tf
 import activation
+from neuralnetworks import ops
 from classifier import Classifier
 from layer import FFLayer
 
@@ -74,7 +74,7 @@ class DNN(Classifier):
             #do the forward computation
 
             #convert the sequential data to non sequential data
-            nonseq_inputs = seq_convertors.seq2nonseq(inputs, input_seq_length)
+            nonseq_inputs = ops.seq2nonseq(inputs, input_seq_length)
 
             activations = [None]*int(self.conf['num_layers'])
             activations[0] = layer(nonseq_inputs, is_training, 'layer0')
@@ -88,8 +88,8 @@ class DNN(Classifier):
                               'layer' + self.conf['num_layers'])
 
             #convert the logits to sequence logits to match expected output
-            seq_logits = seq_convertors.nonseq2seq(logits, input_seq_length,
-                                                   int(inputs.get_shape()[1]))
+            seq_logits = ops.nonseq2seq(logits, input_seq_length,
+                                        int(inputs.get_shape()[1]))
 
 
         return seq_logits, input_seq_length

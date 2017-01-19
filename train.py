@@ -122,8 +122,8 @@ def train(clusterfile,
 
         #the ps should just wait
         if job_name == 'ps':
-            neuralnetworks.trainer.wait(server, task_index,
-                                        len(machines['worker']))
+            neuralnetworks.trainers.trainer.wait(server, task_index,
+                                                 len(machines['worker']))
             return
 
     featdir = database_cfg['train_features'] + '/' +  feat_cfg['name']
@@ -185,7 +185,7 @@ def train(clusterfile,
             val_targets[splitline[0]] = coder.normalize(' '.join(splitline[1:]))
 
         # TEMPORARY LINE FOR TESTING! REMOVE
-        print('SPLITTING VALDATION DATA')
+        print 'SPLITTING VALDATION DATA'
         val_reader = val_reader.split(32)
         utt_ids = val_reader.reader.utt_ids
         val_targets = {utt_id:val_targets[utt_id] for utt_id in utt_ids}
@@ -199,13 +199,13 @@ def train(clusterfile,
             val_dispenser = None
 
     #create the classifier
-    classifier = neuralnetworks.classifier_factory.classifier_factory(
+    classifier = neuralnetworks.classifiers.classifier_factory.factory(
         conf=nnet_cfg,
         output_dim=coder.num_labels,
         classifier_type=nnet_cfg['classifier'])
 
     #create the trainer
-    trainer = neuralnetworks.trainer.trainer_factory(
+    trainer = neuralnetworks.trainers.trainer_factory.factory(
         conf=trainer_cfg,
         decoder_conf=decoder_cfg,
         classifier=classifier,

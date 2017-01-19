@@ -5,7 +5,7 @@ import tensorflow as tf
 from classifier import Classifier
 from layer import FFLayer, BLSTMLayer
 from activation import TfActivation
-import seq_convertors
+from neuralnetworks import ops
 
 
 class DBLSTM(Classifier):
@@ -58,11 +58,11 @@ class DBLSTM(Classifier):
                 logits = blstm(logits, input_seq_length,
                                is_training, 'layer' + str(layer))
 
-            logits = seq_convertors.seq2nonseq(logits, input_seq_length)
+            logits = ops.seq2nonseq(logits, input_seq_length)
 
             logits = outlayer(logits, is_training, 'outlayer')
 
-            logits = seq_convertors.nonseq2seq(logits, input_seq_length,
-                                               int(inputs.get_shape()[1]))
+            logits = ops.nonseq2seq(logits, input_seq_length,
+                                    int(inputs.get_shape()[1]))
 
         return logits, input_seq_length

@@ -4,8 +4,7 @@ Neural network layers '''
 import tensorflow as tf
 from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn
-import seq_convertors
-import ops
+from neuralnetworks import ops
 
 class FFLayer(object):
     '''This class defines a fully connected feed forward layer'''
@@ -267,10 +266,9 @@ class Conv1dLayer(object):
             out = tf.nn.conv1d(inputs, w, self.stride, padding='SAME')
 
             #add the bias
-            out = seq_convertors.seq2nonseq(out, seq_length)
+            out = ops.seq2nonseq(out, seq_length)
             out += b
-            out = seq_convertors.nonseq2seq(out, seq_length,
-                                            int(inputs.get_shape()[1]))
+            out = ops.nonseq2seq(out, seq_length, int(inputs.get_shape()[1]))
 
         return out
 
@@ -332,9 +330,8 @@ class AConv1dLayer(object):
 
 
             #add the bias
-            out = seq_convertors.seq2nonseq(out, seq_length)
+            out = ops.seq2nonseq(out, seq_length)
             out += b
-            out = seq_convertors.nonseq2seq(out, seq_length,
-                                            int(inputs.get_shape()[1]))
+            out = ops.nonseq2seq(out, seq_length, int(inputs.get_shape()[1]))
 
         return out

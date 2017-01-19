@@ -3,7 +3,8 @@ contains de LAS class'''
 
 import tensorflow as tf
 from classifier import Classifier
-import las_elements
+import encoders
+import decoders
 
 class LAS(Classifier):
     '''a listen attend and spell classifier'''
@@ -15,13 +16,13 @@ class LAS(Classifier):
             output_dim: the classifier output dimension'''
 
         #create the listener
-        self.encoder = las_elements.listener.Listener(
+        self.encoder = encoders.listener.Listener(
             numlayers=int(conf['listener_layers']),
             numunits=int(conf['listener_units']),
             dropout=float(conf['listener_dropout']))
 
         #create the speller
-        self.decoder = las_elements.speller.Speller(
+        self.decoder = decoders.speller.Speller(
             numlayers=int(conf['speller_layers']),
             numunits=int(conf['speller_units']),
             dropout=float(conf['speller_dropout']),
@@ -69,8 +70,8 @@ class LAS(Classifier):
             #shift the targets to encoder inputs by prepending a start of
             #sequence label and taking of the end of sequence label
             batch_size = int(targets.get_shape()[0])
-            sos_labels = tf.ones([batch_size,1,1], dtype=tf.int32)
-            encoder_inputs = tf.concat(1,[sos_labels, targets])
+            sos_labels = tf.ones([batch_size, 1, 1], dtype=tf.int32)
+            encoder_inputs = tf.concat(1, [sos_labels, targets])
             encoder_inputs = encoder_inputs[:, :-1, :]
 
             #compute the output logits

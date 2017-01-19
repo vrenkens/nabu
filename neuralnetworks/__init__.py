@@ -1,4 +1,4 @@
 '''@package neuralnetworks
 The neural network functionality
 '''
-from . import classifiers, trainer, decoder, classifier_factory
+from . import classifiers, trainers, decoders, ops
