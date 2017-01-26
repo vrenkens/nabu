@@ -65,22 +65,37 @@ def main(_):
 
 
     #create the classifier
-    classifier = neuralnetworks.classifier_factory.classifier_factory(
+    classifier = neuralnetworks.classifiers.classifier_factory.factory(
         conf=nnet_cfg,
-        output_dim=coder.num_labels + 1,
+        output_dim=coder.num_labels,
         classifier_type=nnet_cfg['classifier'])
 
     #create a decoder
-    decoder = neuralnetworks.decoder.decoder_factory(
-        conf=decoder_cfg,
-        classifier=classifier,
-        input_dim=input_dim,
-        max_input_length=reader.max_input_length,
-        expdir=FLAGS.expdir,
-        decoder_type=decoder_cfg['decoder'])
+    graph = tf.Graph()
+    with graph.as_default():
+        decoder = neuralnetworks.decoders.decoder_factory.factory(
+            conf=decoder_cfg,
+            classifier=classifier,
+            classifier_scope=tf.VariableScope(False, 'Classifier'),
+            input_dim=input_dim,
+            max_input_length=reader.max_input_length,
+            coder=coder,
+            expdir=FLAGS.expdir,
+            decoder_type=decoder_cfg['decoder'])
 
-    #decode with te neural net
-    decoder.decode(reader, coder)
+        saver = tf.train.Saver(tf.get_collection(
+            tf.GraphKeys.GLOBAL_VARIABLES, scope='Classifier'))
+
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True #pylint: disable=E1101
+    config.allow_soft_placement = True
+
+    with tf.Session(graph=graph, config=config) as sess:
+        #load the model
+        saver.restore(sess, FLAGS.expdir + '/logdir/final.ckpt')
+
+        #decode with te neural net
+        decoded = neuralnetworks.decoders.decoder.decode(decoder, reader, sess)
 
     #the path to the text file
     textfile = database_cfg['testtext']
@@ -95,9 +110,9 @@ def main(_):
         references[splitline[0]] = coder.normalize(' '.join(splitline[1:]))
 
     #compute the character error rate
-    CER = processing.score.cer(decodedir, references)
+    score = decoder.score(decoded, references)
 
-    print 'character error rate: %f' % CER
+    print 'score: %f' % score
 
 if __name__ == '__main__':
     tf.app.run()

@@ -65,7 +65,10 @@ class LAS(Classifier):
                 noisy_inputs = inputs
 
             #compute the high level features
-            hlfeat = self.encoder(noisy_inputs, input_seq_length, is_training)
+            hlfeat = self.encoder(
+                inputs=noisy_inputs,
+                sequence_lengths=input_seq_length,
+                is_training=is_training)
 
             #shift the targets to encoder inputs by prepending a start of
             #sequence label and taking of the end of sequence label
@@ -75,7 +78,11 @@ class LAS(Classifier):
             encoder_inputs = encoder_inputs[:, :-1, :]
 
             #compute the output logits
-            logits, _ = self.decoder(hlfeat, encoder_inputs, self.output_dim,
-                                     None, is_training)
+            logits, _ = self.decoder(
+                hlfeat=hlfeat,
+                encoder_inputs=encoder_inputs,
+                numlabels=self.output_dim,
+                initial_state=None,
+                is_training=is_training)
 
             return logits, target_seq_length

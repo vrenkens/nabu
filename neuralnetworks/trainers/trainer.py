@@ -516,7 +516,7 @@ class Trainer(object):
                 containing NxF matrices for each utterance in the batch where
                 N is the number of frames in the utterance
             targets: the one-hot encoded targets for neural nnet, this should be
-                a list containing an NxO matrix for each utterance where O is
+            a list containing an NxO matrix for each utterance where O is
                 the output dimension of the neural net
 
         '''
@@ -524,7 +524,7 @@ class Trainer(object):
         #update the validated step
         sess.run([self.set_val_step])
 
-        outputs = decoder.decode(self.decoder, self.val_reader, sess)
+        outputs = decoders.decoder.decode(self.decoder, self.val_reader, sess)
 
         val_loss = self.decoder.score(outputs, self.val_targets)
 

@@ -7,8 +7,6 @@ from tensorflow.python.util import nest
 import decoder
 import processing
 
-import pdb
-
 class BeamSearchDecoder(decoder.Decoder):
     '''greedy decoder'''
 
@@ -47,60 +45,47 @@ class BeamSearchDecoder(decoder.Decoder):
 
             #encode the inputs
             with tf.variable_scope(classifier_scope):
-                hlfeat = classifier.encoder(self.inputs, [max_input_length],
+                hlfeat = classifier.encoder(self.inputs, self.input_seq_length,
                                             False, False)
 
+            #repeat the high level features for all beam elements
+            hlfeat = tf.tile(hlfeat, [int(conf['beam_width']), 1, 1])
 
-            def body(step, beam, reuse=True):
+
+            def body(step, beam, reuse=True, initial_state_attention=True):
                 '''the body of the decoding while loop
 
                 Args:
                     beam: a Beam object containing the current beam
                     reuse: set to True to reuse the classifier
+                    initial_state_attention: whether attention has to be applied
+                        to the initital state to ge an initial context
 
                 returns:
                     the loop vars'''
 
-                with tf.variable_scope('body') as scope:
+                with tf.variable_scope('body'):
 
-                    #start with an empty
-                    expanded_beam = Beam(beam.state, beam.max_steps)
+                    #put the last output in the correct format
+                    prev_output = tf.expand_dims(beam.sequences[:, step], 1)
 
-                    for b in beam:
+                    #get a callable for the output logits
+                    with tf.variable_scope(classifier_scope) as scope:
+                        if reuse:
+                            scope.reuse_variables()
+                        logits, state = classifier.decoder(
+                            hlfeat=hlfeat,
+                            encoder_inputs=prev_output,
+                            numlabels=classifier.output_dim,
+                            initial_state=beam.states,
+                            initial_state_attention=initial_state_attention,
+                            is_training=False)
+                        logits = tf.reshape(
+                            logits,
+                            [int(conf['beam_width']), classifier.output_dim])
 
-                        #put the last output in the correct format
-                        prev_output = tf.expand_dims(tf.expand_dims(
-                            b.sequence[b.length], 0), 0)
-
-                        #get a callable for the output logits
-                        with tf.variable_scope(classifier_scope) as scope:
-                            if reuse:
-                                scope.reuse_variables()
-                            logits, state = classifier.decoder(
-                                hlfeat=hlfeat,
-                                targets=prev_output,
-                                numlabels=classifier.output_dim,
-                                initial_state=b.state,
-                                is_training=False)
-                            logits = tf.squeeze(logits)
-                        cb_logits_state = lambda l=logits, s=state: (l, s)
-
-                        #bool for dummy or expand
-                        expand = tf.logical_or(
-                            tf.equal(b.sequence[b.length], 0),
-                            tf.equal(b.score, -b.score.dtype.max))
-
-                        #compute the new beam
-                        new_beam = tf.cond(
-                            expand,
-                            lambda e=b, ls=cb_logits_state: expand_beam(ls, e),
-                            lambda e=b: dummy_expand(classifier.output_dim, e))
-
-                        #expand the beam
-                        expanded_beam += new_beam
-
-                    #prune the beam
-                    expanded_beam.prune(int(conf['beam_width']))
+                    #update the beam
+                    beam = beam.update(logits, state, step)
 
                     step = step + 1
 
@@ -117,28 +102,30 @@ class BeamSearchDecoder(decoder.Decoder):
                     a boolean that evaluates to True if the loop should
                     continue'''
 
-                #check if all beam elements have terminated
-                expand = tf.pack([tf.logical_or(
-                    tf.equal(b.sequence[b.length], 0),
-                    tf.equal(b.score, -b.score.dtype.max)) for b in beam])
+                with tf.variable_scope('cond'):
 
-                finished = tf.equal(tf.reduce_sum(tf.cast(expand, tf.int32)), 0)
+                    #check if all beam elements have terminated
+                    cont = tf.logical_and(
+                        tf.logical_not(beam.all_terminated(step)),
+                        tf.less(step, int(conf['max_steps'])))
 
-                return tf.logical_and(tf.logical_not(finished),
-                                      tf.less(step, int(conf['max_steps'])))
-
+                return cont
 
 
             #initialise the loop variables
-            score = tf.constant(0, dtype=tf.float32)
+            negmax = tf.tile([-tf.float32.max], [int(conf['beam_width'])-1])
+            scores = tf.concat(0, [tf.zeros([1]), negmax])
+            lengths = tf.ones([int(conf['beam_width'])], dtype=tf.int32)
+            sequences = tf.ones(
+                [int(conf['beam_width']), int(conf['max_steps'])],
+                dtype=tf.int32)
+            states = classifier.decoder.zero_state(int(conf['beam_width']))
+            beam = Beam(sequences, lengths, states, scores)
             step = tf.constant(0)
-            outputs = tf.constant([1])
-            state = None
-            beam_element = BeamElement(outputs, step, state, score)
-            beam = dummy_expand(classifier.output_dim, beam_element)
 
-            #do the first step to allow None state
-            step, beam = body(step, beam, False)
+            #do the first step because the initial state should not be used
+            #to compute a context and reuse should be False
+            step, beam = body(step, beam, False, False)
 
             #run the rest of the decoding loop
             _, beam = tf.while_loop(
@@ -148,11 +135,15 @@ class BeamSearchDecoder(decoder.Decoder):
                 parallel_iterations=1,
                 back_prop=False)
 
-            #get the beam scores
-            scores = [b.score for b in beam]
+            with tf.variable_scope('cut_sequences'):
+                #get the beam scores
+                scores = tf.unpack(beam.scores)
 
-            #cut the beam sequences
-            sequences = [b.sequence[:b.length] for b in beam]
+                #cut the beam sequences
+                sequences = tf.unpack(beam.sequences)
+                lengths = tf.unpack(beam.lengths)
+                sequences = [sequences[i][:lengths[i]]
+                             for i in range(len(lengths))]
 
             self.outputs = [scores, sequences]
 
@@ -169,7 +160,8 @@ class BeamSearchDecoder(decoder.Decoder):
                 - the output lable sequence as a numpy array
         '''
 
-        return [(d[0][i], d[1][i]) for i in range(len(decoded[0]))]
+        return [(decoded[0][i], decoded[1][i][1:])
+                for i in range(len(decoded[0]))]
 
     def score(self, outputs, targets):
         '''score the performance
@@ -183,188 +175,142 @@ class BeamSearchDecoder(decoder.Decoder):
 
         return processing.score.cer(outputs, targets)
 
-class BeamElement(namedtuple('BeamElement', ['sequence', 'length', 'state',
-                                             'score'])):
-    '''a named tuple class for elements in the beam
+
+class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores'])):
+    '''a named tuple class for a beam
 
     the tuple fields are:
-        - sequence: the sequence as a [max_steps] vector
-        - length: the length of the sequence as a scalar
-        - state: the state of the decoder as a possibly nested tuple of tensors
-        - score: the score of the beam element
+        - sequences: the sequences as a [size x max_steps] tensor
+        - lengths: the length of the sequences as a [size] tensor
+        - states: the state of the decoder as a possibly nested tuple of
+            [size x state_dim] tensors
+        - scores: the score of the beam element as a [size] tensor
         '''
 
-    @property
-    def vector(self):
-        '''the beam element as a vector
-
-        returns:
-            - a vector representing the beam element'''
-
-        sequence_vector = tf.cast(self.sequence, tf.float32)
-        length_vector = tf.cast(tf.expand_dims(self.length), tf.float32)
-        score_vector = tf.expand_dims(self.score)
-        state_vector = tf.concat(0, nest.flatten(self.state))
-
-        return tf.concat(0, [sequence_vector, length_vector, state_vector,
-                             score_vector])
-
-class Beam(list):
-    '''a beam that holds beam elements'''
-
-    def __init__(self, state, max_steps):
-        '''Beam constructor, creates an ampty beam
+    def update(self, logits, states, step):
+        '''update the beam by expanding the beam with new hypothesis
+        and selecting the best ones. Use as beam = beam.update(...)
 
         Args:
-            state: an example of a state in the beam, this should be a possibly
-                nested list of [1xS] tensors where S is the length of the state
-                element
-            max_steps: the maximum number of decoding steps'''
-
-        #super constructor
-        super(Beam, self).__init__()
-
-        #save the state example
-        self.state = state
-
-        #get the dimension of the state
-        if state is not None:
-            self.state_dim = sum([int(s.get_size()[1])
-                                 for s in nest.flatten(state)])
-        else:
-            self.state_dim = 0
-
-        self.max_steps = max_steps
-
-    def write_tensor(self, tensor):
-        '''write a tensor containing vectorised beam elements to the beam
-        this overwrites the beam
-
-        Args:
-            - index: the index where the beam element should be written
-            - vector: the vector representation of the beam element
-        '''
-
-        #clear the beam
-        del self[:]
-
-        #get the fields from the beam element out of the vector
-        sequence_tensor = tf.cast(tensor[:, :self.max_steps], tf.int32)
-        length_vector = tf.cast(tensor[:, self.max_steps], tf.int32)
-        state_tensor = tensor[:, self.max_steps + 1:
-                              self.max_steps + 1 + self.state_dim]
-        score_vector = tensor[:, -1]
-
-        #create all the beam elements and put them in the beam
-        for i in range(int(tensor.get_shape()[0])):
-            #get the beam element fields
-            sequence = sequence_tensor[i]
-            state = nest.pack_sequence_as(self.state, state_tensor[i])
-            length = length_vector[i]
-            score = score_vector[i]
-
-            #create the beamelement
-            beamElement = BeamElement(sequence, length, state, score)
-
-            #put the beam element in the beam
-            self[i] = beamElement
-
-    @property
-    def tensor(self):
-        '''create a tensor version of the beam
+            logits: the decoder output logits as a [size x numlabels] tensor
+            states: the decoder output states as a possibly nested tuple of
+                [size x state_dim] tensor
+            step: the current step
 
         Returns:
-            a tensor of size [beam_size, beam_element_size]'''
+            a new updated Beam as a Beam object'''
 
-        return tf.pack([e.vector for e in self])
+        with tf.variable_scope('update'):
 
-    def prune(self, beam_width):
-        '''prune the beam to only retain the elements with the highest score
+            numlabels = int(logits.get_shape()[1])
+            max_steps = int(self.sequences.get_shape()[1])
+            beam_width = self.size
 
+            #get flags for finished beam elements
+            finished = tf.equal(self.sequences[:, step], 0)
+
+            with tf.variable_scope('scores'):
+
+                #compute the log probabilities and vectorise
+                logprobs = tf.reshape(tf.log(tf.nn.softmax(logits)), [-1])
+
+                #put the old scores in the same format as the logrobs
+                oldscores = tf.reshape(tf.tile(tf.expand_dims(self.scores, 1),
+                                               [1, numlabels]),
+                                       [-1])
+
+                #compute the new scores
+                newscores = oldscores + logprobs
+
+                #only update the scores of the unfinished beam elements
+                full_finished = tf.reshape(
+                    tf.tile(tf.expand_dims(finished, 1), [1, numlabels]),
+                    [-1])
+                scores = tf.select(full_finished, oldscores, newscores)
+
+                #set the scores of expanded beams from finished elements to
+                #negative maximum
+                expanded_finished = tf.reshape(tf.concat(
+                    1, [tf.tile([[False]], [beam_width, 1]),
+                        tf.tile(tf.expand_dims(finished, 1), [1, numlabels-1])])
+                                               , [-1])
+
+                scores = tf.select(
+                    expanded_finished,
+                    tf.tile([-scores.dtype.max], [numlabels*beam_width]),
+                    scores)
+
+
+            with tf.variable_scope('lengths'):
+                #update the sequence lengths for the unfinshed beam elements
+                lengths = tf.select(finished, self.lengths, self.lengths+1)
+
+                #repeat the lengths for all expanded elements
+                lengths = tf.reshape(
+                    tf.tile(tf.expand_dims(lengths, 1), [1, numlabels]), [-1])
+
+
+
+            with tf.variable_scope('prune'):
+
+                #select the best beam elements according to normalised scores
+                float_lengths = tf.cast(lengths, tf.float32)
+                _, indices = tf.nn.top_k(scores/float_lengths, beam_width,
+                                         sorted=False)
+
+                #from the indices, compute the expanded beam elements and the
+                #selected labels
+                expanded_elements = tf.floordiv(indices, numlabels)
+                labels = tf.mod(indices, numlabels)
+
+                #put the selected label for the finished elements to zero
+                finished = tf.gather(finished, expanded_elements)
+                labels = tf.select(finished, tf.tile([0], [beam_width]), labels)
+
+                #select the best lengths and scores
+                lengths = tf.gather(lengths, indices)
+                scores = tf.gather(scores, indices)
+
+            #get the states for the expanded beam elements
+            with tf.variable_scope('states'):
+                #flatten the states
+                flat_states = nest.flatten(states)
+
+                #select the states
+                flat_states = [tf.gather(s, expanded_elements)
+                               for s in flat_states]
+
+                #pack them in the original format
+                states = nest.pack_sequence_as(states, flat_states)
+
+            with tf.variable_scope('sequences'):
+                #get the sequences for the expanded elements
+                sequences = tf.gather(self.sequences, expanded_elements)
+
+                #seperate the real sequence from the adding
+                real = sequences[:, :step+1]
+                padding = sequences[:, step+2:]
+
+                #construct the new sequences by adding the selected labels
+                labels = tf.expand_dims(labels, 1)
+                sequences = tf.concat(1, [real, labels, padding])
+
+                #specify the shape of the sequences
+                sequences.set_shape([beam_width, max_steps])
+
+            return Beam(sequences, lengths, states, scores)
+
+    def all_terminated(self, step):
+        '''check if all elements in the beam have terminated
         Args:
-            beam_width: the number of retained beam elements'''
+            step: the current step
 
-        #put all the scores of the beam into a vector
-        scores = tf.pack([e.score for e in self])
+        Returns:
+            a bool tensor'''
+        with tf.variable_scope('all_terminated'):
+            return tf.equal(tf.reduce_sum(self.sequences[:, step]), 0)
 
-        #get the indices of the highest scores
-        _, indices = tf.nn.top_k(scores, beam_width)
-
-        #get the best beam_elements from the beam as a tensor
-        beam_tensor = tf.gather(self.tensor, indices)
-
-        #write the tensor to the beam
-        self.write_tensor(beam_tensor)
-
-def expand_beam(cb_logits_state, beam_element):
-    '''expand the beam_element into a beam of possibilities
-
-    Args:
-        cb_logits_state: a callable that returns a pair containing the
-            logits [1, 1, numlabels] and state when called
-        beam_element: the beam element that will be expanded
-
-    Returns:
-        the expanded beam'''
-
-    #get the logits and state
-    logits, state = cb_logits_state()
-    logits = tf.squeeze(logits)
-
-    #get the number of labels
-    numlabels = int(logits.get_shape()[0])
-
-    #get the logprobs
-    logprobs = tf.log(tf.nn.softmax(logits))
-
-    #compute the scores
-    float_step = tf.cast(beam_element.length, tf.float32)
-    scores = tf.expand_dims(
-        (beam_element.score*(float_step-1) + logprobs)/float_step, 1)
-
-    #vectorize the states an repeat for all the beams
-    states = tf.concat(0, nest.flatten(state))
-    states = tf.expand_dims(states, 0)
-    states = tf.tile(states, [numlabels, 1])
-
-    #add one to the length and repeat for all beams
-    lengths = tf.tile([[beam_element.length + 1]], [numlabels, 1])
-
-    sequences = tf.tile(tf.expand_dims(beam_element.sequence, 0),
-                        [numlabels, 1])
-    sequences[:, beam_element.length+1] = tf.range(numlabels)
-    beam_tensor = tf.concat(1, [sequences, lengths, states, scores])
-
-    #create a beam
-    max_steps = int(beam_element.sequence.get_shape()[0])
-    beam = Beam(beam_element.state, max_steps)
-    beam.write_tensor(beam_tensor)
-
-    return beam
-
-def dummy_expand(numlabels, beam_element):
-    '''create a dummy beam that contains the input beam elements and for
-    the rest it contains dummy elements to meet the constant size constraint
-    of tf.cond
-
-    Args:
-        numlabels: the number of labels
-        beam_element: the beam_element that should be expanded
-
-    Returns:
-        the expanded beam'''
-
-    #create a new beam
-    max_steps = int(beam_element.sequence.get_shape()[0])
-    beam = Beam(beam_element.state, max_steps)
-
-    #set the beam element as first element
-    beam.append(beam_element)
-
-    #create a dummy element
-    dummy = BeamElement(beam_element.sequence, beam_element.length,
-                        beam_element.state, -beam_element.score.dtype.max)
-
-    beam += [dummy]*(numlabels-1)
-
-    return beam
+    @property
+    def size(self):
+        '''get the size of the beam'''
+        return int(self.lengths.get_shape()[0])

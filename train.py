@@ -184,12 +184,6 @@ def train(clusterfile,
             splitline = line.strip().split(' ')
             val_targets[splitline[0]] = coder.normalize(' '.join(splitline[1:]))
 
-        # TEMPORARY LINE FOR TESTING! REMOVE
-        print 'SPLITTING VALDATION DATA'
-        val_reader = val_reader.split(32)
-        utt_ids = val_reader.reader.utt_ids
-        val_targets = {utt_id:val_targets[utt_id] for utt_id in utt_ids}
-
     else:
         if int(trainer_cfg['valid_utt']) > 0:
             val_dispenser = dispenser.split(int(trainer_cfg['valid_utt']))

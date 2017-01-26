@@ -47,7 +47,8 @@ class GreedyDecoder(decoder.Decoder):
                 hlfeat = classifier.encoder(self.inputs, self.input_seq_length,
                                             False, False)
 
-            def body(step, state, outputs, score, reuse=True):
+            def body(step, state, outputs, score, reuse=True,
+                     initial_state_attention=True):
                 '''the body of the decoding while loop
 
                 Args:
@@ -57,11 +58,13 @@ class GreedyDecoder(decoder.Decoder):
                     score: the score of the decoded sequence
                     reuse: if set to True, the variables in the classifier
                         will be reused
+                    initial_state_attention: whether attention has to be applied
+                        to the initital state to ge an initial context
 
                 returns:
                     the loop vars'''
 
-                with tf.variable_scope('body') as scope:
+                with tf.variable_scope('body'):
 
                     #put the last output in the correct format
                     prev_output = tf.expand_dims(tf.expand_dims(
@@ -73,9 +76,10 @@ class GreedyDecoder(decoder.Decoder):
                             scope.reuse_variables()
                         logits, state = classifier.decoder(
                             hlfeat=hlfeat,
-                            targets=prev_output,
+                            encoder_inputs=prev_output,
                             numlabels=classifier.output_dim,
                             initial_state=state,
+                            initial_state_attention=initial_state_attention,
                             is_training=False)
                         logits = tf.squeeze(logits)
 
@@ -108,8 +112,10 @@ class GreedyDecoder(decoder.Decoder):
                     a boolean that evaluates to True if the loop should
                     continue'''
 
-                return tf.logical_and(tf.logical_not(tf.equal(outputs[-1], 0)),
-                                      tf.less(step, int(conf['max_steps'])))
+                with tf.variable_scope('cond'):
+                    return tf.logical_and(
+                        tf.logical_not(tf.equal(outputs[-1], 0)),
+                        tf.less(step, int(conf['max_steps'])))
 
 
 
@@ -117,11 +123,12 @@ class GreedyDecoder(decoder.Decoder):
             score = tf.constant(0, dtype=tf.float32)
             step = tf.constant(0)
             outputs = tf.constant([1])
-            state = None
+            state = classifier.decoder.zero_state(1)
 
-            #do the first step to allow None state
+            #do the first step because the initial state should not be used
+            #to compute a context and reuse should be False
             step, state, outputs, score = body(step, state, outputs, score,
-                                               False)
+                                               False, False)
 
             #make sure the variables are reused in the next
 

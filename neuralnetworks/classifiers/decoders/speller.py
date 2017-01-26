@@ -1,8 +1,8 @@
 '''@file speller.py
 contains the speller functionality'''
 
-import tensorflow as tf
 from functools import partial
+import tensorflow as tf
 
 
 class Speller(object):
@@ -27,8 +27,9 @@ class Speller(object):
         self.sample_prob = sample_prob
 
 
-    def __call__(self, hlfeat, targets, numlabels, initial_state=None,
-                 is_training=False, reuse=False, scope=None):
+    def __call__(self, hlfeat, encoder_inputs, numlabels, initial_state=None,
+                 initial_state_attention=False, is_training=False,
+                 scope=None):
         """
         Create the variables and do the forward computation in training mode
 
@@ -40,51 +41,49 @@ class Speller(object):
             numlabels: number of output labels
             initial_state: the initial decoder state, could be usefull for
                 decoding
+            initial_state_attention: whether attention has to be applied
+                to the initital state to ge an initial context
             is_training: whether or not the network is in training mode
-            reuse: Setting this value to true will cause tensorflow to look
-                for variables with the same name in the graph and reuse
-                these instead of creating new variables.
             scope: The variable scope sets the namespace under which
                 the variables created during this call will be stored.
 
         Returns:
-            the output logits of the listener
-            the final state of the listener
+            - the output logits of the listener as a
+                [batch_size x target_seq_length x numlabels] tensor
+            - the final state of the listener
         """
 
-        with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
+        with tf.variable_scope(scope or type(self).__name__):
 
             #get the batch size
             batch_size = hlfeat.get_shape()[0]
 
             #squeezed targets
-            squeezed_targets = tf.reshape(targets, targets.get_shape()[0:2])
+            squeezed_inputs = tf.reshape(encoder_inputs,
+                encoder_inputs.get_shape()[0:2])
 
             #one hot encode the targets
-            one_hot_targets = tf.one_hot(squeezed_targets, numlabels,
-                                         dtype=tf.float32)
+            one_hot_inputs = tf.one_hot(squeezed_inputs, numlabels,
+                                        dtype=tf.float32)
 
             #put targets in time major
-            time_major_targets = tf.transpose(one_hot_targets, [1, 0, 2])
+            time_major_inputs = tf.transpose(one_hot_inputs, [1, 0, 2])
 
             #convert targets to list
-            target_list = tf.unpack(time_major_targets)
+            input_list = tf.unpack(time_major_inputs)
 
             #create the rnn cell
             rnn_cell = self.create_rnn(is_training)
 
             if initial_state is None:
                 initial_state = rnn_cell.zero_state(batch_size, tf.float32)
-                initial_state_attention = False
-            else:
-                initial_state_attention = True
 
             #create the loop functions
-            lf = partial(loop_function, time_major_targets, self.sample_prob)
+            lf = partial(loop_function, time_major_inputs, self.sample_prob)
 
             #use the attention decoder
             logit_list, state = tf.nn.seq2seq.attention_decoder(
-                decoder_inputs=target_list,
+                decoder_inputs=input_list,
                 initial_state=initial_state,
                 attention_states=hlfeat,
                 cell=rnn_cell,
