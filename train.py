@@ -63,7 +63,8 @@ def train(clusterfile,
             for line in fid:
                 if len(line.strip()) > 0:
                     split = line.strip().split(',')
-                    machines[split[0]].append((split[1], int(split[2])))
+                    machines[split[0]].append(
+                        (split[1], int(split[2]), split[3]))
 
         #build the cluster and create ssh tunnels to machines in the cluster
         port = 1024
@@ -71,6 +72,11 @@ def train(clusterfile,
         clusterdict['worker'] = []
         clusterdict['ps'] = []
         localmachine = machines[job_name][task_index][0]
+
+        #specify the GPU that should be used
+        localGPU = machines[job_name][task_index][2]
+        os.environ['CUDA_VISIBLE_DEVICES'] = localGPU
+
 
         #get a list of ports used on this machine
         localports = []
@@ -112,10 +118,6 @@ def train(clusterfile,
 
         #create the cluster
         cluster = tf.train.ClusterSpec(clusterdict)
-
-        #make sure the ps does not use a GPU
-        if job_name == "ps":
-            os.environ['CUDA_VISIBLE_DEVICES'] = ''
 
         #create the server for this task
         server = tf.train.Server(cluster, job_name, task_index)

@@ -12,6 +12,8 @@ class Classifier(object):
 
         self.conf = conf
         self.output_dim = output_dim
+        if conf['blank_label'] == 'True':
+            self.output_dim += 1
 
     @abstractmethod
     def __call__(self, inputs, input_seq_length, targets=None,

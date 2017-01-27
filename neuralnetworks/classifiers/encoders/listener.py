@@ -40,7 +40,8 @@ class Listener(object):
                       the variables created during this call will be stored.
 
         Returns:
-            the output of the layer
+            the output of the layer as a [bath_size, max_length, output_dim]
+            tensor
         """
 
         with tf.variable_scope(scope or type(self).__name__):

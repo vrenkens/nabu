@@ -25,22 +25,23 @@ class CTCDecoder(decoder.Decoder):
                 will be written
         '''
 
+        self.conf = conf
+        self.max_input_length = max_input_length
+        self.expdir = expdir
+        self.coder = coder
+        self.batch_size = int(conf['batch_size'])
+
         with tf.variable_scope('ctcdecoder'):
-
-            self.conf = conf
-            self.max_input_length = max_input_length
-            self.expdir = expdir
-            self.coder = coder
-
 
             #create the inputs placeholder
             self.inputs = tf.placeholder(
-                tf.float32, shape=[1, max_input_length, input_dim],
+                tf.float32,
+                shape=[self.batch_size, max_input_length, input_dim],
                 name='inputs')
 
             #create the sequence length placeholder
             self.input_seq_length = tf.placeholder(
-                tf.int32, shape=[1], name='seq_length')
+                tf.int32, shape=[self.batch_size], name='seq_length')
 
             #create the decoding graph
             logits, logits_seq_length =\
@@ -50,41 +51,20 @@ class CTCDecoder(decoder.Decoder):
                     scope=classifier_scope)
 
             #Convert logits to time major
-            logits = tf.pack(tf.unpack(logits, axis=1))
+            logits = tf.transpose(logits, [1, 0, 2])
 
             #do the CTC beam search
             sparse_outputs, logprobs = tf.nn.ctc_greedy_decoder(
-                tf.pack(logits), logits_seq_length)
+                logits, logits_seq_length)
+            sparse_outputs = sparse_outputs[0]
+            logprobs = tf.unpack(tf.reshape(logprobs, [-1]))
 
-            #convert the outputs to dense tensors
-            dense_outputs = [
-                tf.reshape(tf.sparse_tensor_to_dense(o), [-1])
-                for o in sparse_outputs]
+            #split the sparse tensors into the seperate utterances
+            output_list = tf.sparse_split(0, self.batch_size, sparse_outputs)
+            outputs = [tf.sparse_tensor_to_dense(o) for o in output_list]
 
-            self.outputs = dense_outputs + [tf.reshape(logprobs, [-1])]
-
-    def process_decoded(self, decoded):
-        '''
-        create numpy arrays of decoded targets
-
-        Args:
-            decoded: a tupple of length beam_width + 1 where the first
-                beam_width elements are vectors with label sequences and the
-                last elements is a beam_width length vector containing scores
-
-        Returns:
-            a list of pairs containing:
-                - the score of the output
-                - the output lable sequence as a numpy array
-        '''
-
-        target_sequences = decoded[:-1]
-        logprobs = decoded[-1]
-
-        processed = [(logprobs[b], target_sequences[b])
-                     for b in range(len(target_sequences))]
-
-        return processed
+            self.outputs = [[(logprobs[i], outputs[i])]
+                            for i in range(self.batch_size)]
 
     def score(self, outputs, targets):
         '''score the performance

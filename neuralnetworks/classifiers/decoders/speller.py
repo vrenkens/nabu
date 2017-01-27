@@ -36,8 +36,8 @@ class Speller(object):
         Args:
             hlfeat: the high level features of shape
                 [batch_size x hl_seq_length x feat_dim]
-            targets: the one-hot encoded training targets of shape
-                [batch_size x target_seq_length x 1].
+            encoder_inputs: the one-hot encoded training targets of shape
+                [batch_size x target_seq_length (x 1)].
             numlabels: number of output labels
             initial_state: the initial decoder state, could be usefull for
                 decoding

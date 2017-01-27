@@ -55,8 +55,7 @@ class DBLSTM(Classifier):
                 logits = inputs
 
             for layer in range(int(self.conf['num_layers'])):
-                logits = blstm(logits, input_seq_length,
-                               is_training, 'layer' + str(layer))
+                logits = blstm(logits, input_seq_length, 'layer' + str(layer))
 
             logits = ops.seq2nonseq(logits, input_seq_length)
 

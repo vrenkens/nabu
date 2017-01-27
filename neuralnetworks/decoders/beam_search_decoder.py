@@ -22,6 +22,7 @@ class BeamSearchDecoder(decoder.Decoder):
                 created/loaded from
             input_dim: the input dimension to the nnnetgraph
             max_input_length: the maximum length of the inputs
+            batch_size: the decoder batch size
             coder: a TargetCoder object
             expdir: the location where the models were saved and the results
                 will be written
@@ -31,25 +32,31 @@ class BeamSearchDecoder(decoder.Decoder):
         self.max_input_length = max_input_length
         self.expdir = expdir
         self.coder = coder
+        self.batch_size = int(conf['batch_size'])
 
         with tf.variable_scope('BeamSearchDecoder'):
 
             #create the inputs placeholder
             self.inputs = tf.placeholder(
-                tf.float32, shape=[1, max_input_length, input_dim],
+                tf.float32,
+                shape=[self.batch_size, max_input_length, input_dim],
                 name='inputs')
 
             #create the sequence length placeholder
             self.input_seq_length = tf.placeholder(
-                tf.int32, shape=[1], name='seq_length')
+                tf.int32, shape=[self.batch_size], name='seq_length')
 
-            #encode the inputs
+            #encode the inputs [batch_size x output_length x output_dim]
             with tf.variable_scope(classifier_scope):
                 hlfeat = classifier.encoder(self.inputs, self.input_seq_length,
                                             False, False)
 
             #repeat the high level features for all beam elements
-            hlfeat = tf.tile(hlfeat, [int(conf['beam_width']), 1, 1])
+            hlfeat = tf.reshape(tf.tile(tf.expand_dims(hlfeat, 1),
+                                        [1, int(conf['beam_width']), 1, 1]),
+                                [int(conf['beam_width'])*self.batch_size,
+                                 int(hlfeat.get_shape()[1]),
+                                 int(hlfeat.get_shape()[2])])
 
 
             def body(step, beam, reuse=True, initial_state_attention=True):
@@ -67,25 +74,45 @@ class BeamSearchDecoder(decoder.Decoder):
                 with tf.variable_scope('body'):
 
                     #put the last output in the correct format
-                    prev_output = tf.expand_dims(beam.sequences[:, step], 1)
+                    # [batch_size x beam_width]
+                    prev_output = beam.sequences[:, :, step]
 
-                    #get a callable for the output logits
+                    #put the prev_output and state in the correct shape so all
+                    #beam elements from all batches are processed in parallel
+                    #[batch_size*beam_width x 1]
+                    prev_output = tf.expand_dims(
+                        tf.reshape(prev_output, [-1]), 1)
+
+                    states = [tf.reshape(s, [-1, int(s.get_shape()[2])])
+                              for s in nest.flatten(beam.states)]
+                    states = nest.pack_sequence_as(beam.states, states)
+
+                    #compute the next state and logits
                     with tf.variable_scope(classifier_scope) as scope:
                         if reuse:
                             scope.reuse_variables()
-                        logits, state = classifier.decoder(
+                        logits, states = classifier.decoder(
                             hlfeat=hlfeat,
                             encoder_inputs=prev_output,
                             numlabels=classifier.output_dim,
-                            initial_state=beam.states,
+                            initial_state=states,
                             initial_state_attention=initial_state_attention,
                             is_training=False)
-                        logits = tf.reshape(
-                            logits,
-                            [int(conf['beam_width']), classifier.output_dim])
+
+                    #put the states and logits in the format for the beam
+                    states = [tf.reshape(s,
+                                         [self.batch_size,
+                                          int(conf['beam_width']),
+                                          int(s.get_shape()[1])])
+                              for s in nest.flatten(states)]
+                    states = nest.pack_sequence_as(beam.states, states)
+                    logits = tf.reshape(logits,
+                                        [self.batch_size,
+                                         int(conf['beam_width']),
+                                         int(logits.get_shape()[2])])
 
                     #update the beam
-                    beam = beam.update(logits, state, step)
+                    beam = beam.update(logits, states, step)
 
                     step = step + 1
 
@@ -113,13 +140,27 @@ class BeamSearchDecoder(decoder.Decoder):
 
 
             #initialise the loop variables
-            negmax = tf.tile([-tf.float32.max], [int(conf['beam_width'])-1])
-            scores = tf.concat(0, [tf.zeros([1]), negmax])
-            lengths = tf.ones([int(conf['beam_width'])], dtype=tf.int32)
-            sequences = tf.ones(
-                [int(conf['beam_width']), int(conf['max_steps'])],
+            negmax = tf.tile(
+                [[-tf.float32.max]],
+                [self.batch_size, int(conf['beam_width'])-1])
+            scores = tf.concat(
+                1, [tf.zeros([self.batch_size, 1]), negmax])
+            lengths = tf.ones(
+                [self.batch_size, int(conf['beam_width'])],
                 dtype=tf.int32)
-            states = classifier.decoder.zero_state(int(conf['beam_width']))
+            sequences = tf.ones(
+                [self.batch_size, int(conf['beam_width']),
+                 int(conf['max_steps'])],
+                dtype=tf.int32)
+            states = classifier.decoder.zero_state(
+                int(conf['beam_width'])*self.batch_size)
+            flat_states = [tf.reshape(s,
+                                      [self.batch_size,
+                                       int(conf['beam_width']),
+                                       int(s.get_shape()[1])])
+                           for s in nest.flatten(states)]
+            states = nest.pack_sequence_as(states, flat_states)
+
             beam = Beam(sequences, lengths, states, scores)
             step = tf.constant(0)
 
@@ -137,31 +178,19 @@ class BeamSearchDecoder(decoder.Decoder):
 
             with tf.variable_scope('cut_sequences'):
                 #get the beam scores
-                scores = tf.unpack(beam.scores)
+                scores = [tf.unpack(s) for s in tf.unpack(beam.scores)]
 
-                #cut the beam sequences
-                sequences = tf.unpack(beam.sequences)
-                lengths = tf.unpack(beam.lengths)
-                sequences = [sequences[i][:lengths[i]]
+                #cut the beam sequences to the correct length and take of
+                #the start of sequence token
+                sequences = [tf.unpack(s) for s in tf.unpack(beam.sequences)]
+                lengths = [tf.unpack(l) for l in tf.unpack(beam.lengths)]
+                sequences = [[sequences[i][j][1:lengths[i][j]]
+                              for j in range(len(lengths[i]))]
                              for i in range(len(lengths))]
 
-            self.outputs = [scores, sequences]
-
-    def process_decoded(self, decoded):
-        '''
-        create numpy arrays of decoded targets
-
-        Args:
-            decoded: the most likely label sequence
-
-        Returns:
-            a list of pairs containing:
-                - the score of the output
-                - the output lable sequence as a numpy array
-        '''
-
-        return [(decoded[0][i], decoded[1][i][1:])
-                for i in range(len(decoded[0]))]
+            self.outputs = [[(scores[i][j], sequences[i][j])
+                             for j in range(len(sequences[i]))]
+                            for i in range(len(sequences))]
 
     def score(self, outputs, targets):
         '''score the performance
@@ -180,11 +209,14 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores'])):
     '''a named tuple class for a beam
 
     the tuple fields are:
-        - sequences: the sequences as a [size x max_steps] tensor
-        - lengths: the length of the sequences as a [size] tensor
+        - sequences: the sequences as a [batch_size x beam_width x max_steps]
+            tensor
+        - lengths: the length of the sequences as a [batch_size x beam_width]
+            tensor
         - states: the state of the decoder as a possibly nested tuple of
-            [size x state_dim] tensors
-        - scores: the score of the beam element as a [size] tensor
+            [batch_size x beam_width x state_dim] tensors
+        - scores: the score of the beam element as a [batch_size x beam_width]
+            tensor
         '''
 
     def update(self, logits, states, step):
@@ -192,9 +224,10 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores'])):
         and selecting the best ones. Use as beam = beam.update(...)
 
         Args:
-            logits: the decoder output logits as a [size x numlabels] tensor
+            logits: the decoder output logits as a
+                [batch_size x beam_width x numlabels] tensor
             states: the decoder output states as a possibly nested tuple of
-                [size x state_dim] tensor
+                [batch_size x beam_width x state_dim] tensor
             step: the current step
 
         Returns:
@@ -202,52 +235,62 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores'])):
 
         with tf.variable_scope('update'):
 
-            numlabels = int(logits.get_shape()[1])
-            max_steps = int(self.sequences.get_shape()[1])
-            beam_width = self.size
+            numlabels = int(logits.get_shape()[2])
+            max_steps = int(self.sequences.get_shape()[2])
+            beam_width = self.beam_width
+            batch_size = self.batch_size
 
-            #get flags for finished beam elements
-            finished = tf.equal(self.sequences[:, step], 0)
+            #get flags for finished beam elements: [batch_size x beam_width]
+            finished = tf.equal(self.sequences[:, :, step], 0)
 
             with tf.variable_scope('scores'):
 
                 #compute the log probabilities and vectorise
-                logprobs = tf.reshape(tf.log(tf.nn.softmax(logits)), [-1])
+                #[batch_size x beam_width*numlabels]
+                logprobs = tf.reshape(tf.log(tf.nn.softmax(logits)),
+                                      [batch_size, -1])
 
                 #put the old scores in the same format as the logrobs
-                oldscores = tf.reshape(tf.tile(tf.expand_dims(self.scores, 1),
-                                               [1, numlabels]),
-                                       [-1])
+                #[batch_size x beam_width*numlabels]
+                oldscores = tf.reshape(tf.tile(tf.expand_dims(self.scores, 2),
+                                               [1, 1, numlabels]),
+                                       [batch_size, -1])
 
                 #compute the new scores
                 newscores = oldscores + logprobs
 
                 #only update the scores of the unfinished beam elements
+                #[batch_size x beam_width*numlabels]
                 full_finished = tf.reshape(
-                    tf.tile(tf.expand_dims(finished, 1), [1, numlabels]),
-                    [-1])
+                    tf.tile(tf.expand_dims(finished, 2), [1, 1, numlabels]),
+                    [batch_size, -1])
                 scores = tf.select(full_finished, oldscores, newscores)
 
                 #set the scores of expanded beams from finished elements to
-                #negative maximum
+                #negative maximum [batch_size x beam_width*numlabels]
                 expanded_finished = tf.reshape(tf.concat(
-                    1, [tf.tile([[False]], [beam_width, 1]),
-                        tf.tile(tf.expand_dims(finished, 1), [1, numlabels-1])])
-                                               , [-1])
+                    2, [tf.tile([[[False]]], [batch_size, beam_width, 1]),
+                        tf.tile(tf.expand_dims(finished, 2),
+                                [1, 1, numlabels-1])])
+                                               , [batch_size, -1])
 
                 scores = tf.select(
                     expanded_finished,
-                    tf.tile([-scores.dtype.max], [numlabels*beam_width]),
+                    tf.tile([[-scores.dtype.max]],
+                            [batch_size, numlabels*beam_width]),
                     scores)
 
 
             with tf.variable_scope('lengths'):
                 #update the sequence lengths for the unfinshed beam elements
+                #[batch_size x beam_width]
                 lengths = tf.select(finished, self.lengths, self.lengths+1)
 
                 #repeat the lengths for all expanded elements
+                #[batch_size x beam_width*numlabels]
                 lengths = tf.reshape(
-                    tf.tile(tf.expand_dims(lengths, 1), [1, numlabels]), [-1])
+                    tf.tile(tf.expand_dims(lengths, 2), [1, 1, numlabels]),
+                    [batch_size, -1])
 
 
 
@@ -263,13 +306,27 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores'])):
                 expanded_elements = tf.floordiv(indices, numlabels)
                 labels = tf.mod(indices, numlabels)
 
+                #transform indices and expanded_elements for gather ops
+                offset = tf.expand_dims(
+                    tf.range(batch_size)*beam_width*numlabels,
+                    1)
+                indices = indices + offset
+                offset = tf.expand_dims(
+                    tf.range(batch_size)*beam_width,
+                    1)
+                expanded_elements = expanded_elements + offset
+
                 #put the selected label for the finished elements to zero
-                finished = tf.gather(finished, expanded_elements)
-                labels = tf.select(finished, tf.tile([0], [beam_width]), labels)
+                finished = tf.gather(tf.reshape(finished, [-1]),
+                                     expanded_elements)
+                labels = tf.select(
+                    finished,
+                    tf.tile([[0]], [batch_size, beam_width]),
+                    labels)
 
                 #select the best lengths and scores
-                lengths = tf.gather(lengths, indices)
-                scores = tf.gather(scores, indices)
+                lengths = tf.gather(tf.reshape(lengths, [-1]), indices)
+                scores = tf.gather(tf.reshape(scores, [-1]), indices)
 
             #get the states for the expanded beam elements
             with tf.variable_scope('states'):
@@ -277,7 +334,9 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores'])):
                 flat_states = nest.flatten(states)
 
                 #select the states
-                flat_states = [tf.gather(s, expanded_elements)
+                flat_states = [tf.gather(
+                    tf.reshape(s, [-1, int(s.get_shape()[2])]),
+                    expanded_elements)
                                for s in flat_states]
 
                 #pack them in the original format
@@ -285,18 +344,20 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores'])):
 
             with tf.variable_scope('sequences'):
                 #get the sequences for the expanded elements
-                sequences = tf.gather(self.sequences, expanded_elements)
+                sequences = tf.gather(
+                    tf.reshape(self.sequences, [-1, max_steps]),
+                    expanded_elements)
 
                 #seperate the real sequence from the adding
-                real = sequences[:, :step+1]
-                padding = sequences[:, step+2:]
+                real = sequences[:, :, :step+1]
+                padding = sequences[:, :, step+2:]
 
                 #construct the new sequences by adding the selected labels
-                labels = tf.expand_dims(labels, 1)
-                sequences = tf.concat(1, [real, labels, padding])
+                labels = tf.expand_dims(labels, 2)
+                sequences = tf.concat(2, [real, labels, padding])
 
                 #specify the shape of the sequences
-                sequences.set_shape([beam_width, max_steps])
+                sequences.set_shape([batch_size, beam_width, max_steps])
 
             return Beam(sequences, lengths, states, scores)
 
@@ -308,9 +369,14 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores'])):
         Returns:
             a bool tensor'''
         with tf.variable_scope('all_terminated'):
-            return tf.equal(tf.reduce_sum(self.sequences[:, step]), 0)
+            return tf.equal(tf.reduce_sum(self.sequences[:, :, step]), 0)
 
     @property
-    def size(self):
+    def beam_width(self):
+        '''get the size of the beam'''
+        return int(self.lengths.get_shape()[1])
+
+    @property
+    def batch_size(self):
         '''get the size of the beam'''
         return int(self.lengths.get_shape()[0])

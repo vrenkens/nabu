@@ -177,12 +177,17 @@ def main(_):
         with open(FLAGS.expdir + '/cluster/cluster', 'w') as cfid:
             for job in machines:
                 task_index = 0
+                if job == 'ps':
+                    GPU = ''
+                else:
+                    GPU = '0'
                 for machine in machines[job]:
                     with open(FLAGS.expdir + '/cluster/%s-%s'
                               % (machine[0], machine[1]), 'w') as fid:
                         fid.write(str(task_index))
 
-                    cfid.write('%s,%s,%d\n' % (job, machine[0], machine[1]))
+                    cfid.write('%s,%s,%d,%s\n' % (job, machine[0], machine[1],
+                                                  GPU))
                     task_index += 1
 
         #notify the machine that the cluster is ready

@@ -21,13 +21,7 @@ def cer(outputs, targets):
     for utt in targets:
         scores = np.array([h[0] for h in outputs[utt]])
 
-
-        print 'decoded: %s' % outputs[utt][np.argmax(scores)][1]
-        print 'reference: %s' % targets[utt]
-
-
         decoded = outputs[utt][np.argmax(scores)][1].split(' ')
-        print 'score: %f' % (np.max(scores)/len(decoded))
 
         #get the reference as a list
         reference = targets[utt].split(' ')

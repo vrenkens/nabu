@@ -2,7 +2,6 @@
 contains the decoder factory'''
 
 import ctc_decoder
-import greedy_decoder
 import beam_search_decoder
 
 def factory(conf,
@@ -31,8 +30,6 @@ def factory(conf,
 
     if decoder_type == 'ctcdecoder':
         decoder_class = ctc_decoder.CTCDecoder
-    elif decoder_type == 'greedydecoder':
-        decoder_class = greedy_decoder.GreedyDecoder
     elif decoder_type == 'beamsearchdecoder':
         decoder_class = beam_search_decoder.BeamSearchDecoder
     else:

@@ -11,20 +11,6 @@ class Decoder(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def process_decoded(self, decoded):
-        '''
-        do some postprocessing on the output of the decoding graph
-
-        Args:
-            decoded: the outputs of the decoding graph
-
-        Returns:
-            a list of pairs containing:
-                - the score of the output
-                - the output lable sequence as a numpy array
-        '''
-
-    @abstractmethod
     def score(self, outputs, targets):
         '''score the performance
 
@@ -54,33 +40,48 @@ def decode(decoder, reader, sess):
     config.allow_soft_placement = True
 
     decoded = dict()
+    looped = False
 
-    while True:
+    while not looped:
 
-        (utt_id, inputs, looped) = reader.get_utt()
+        utt_ids = []
+        inputs = []
 
-        if looped:
-            reader.prev_id()
+        for _ in range(decoder.batch_size):
+            #read a batch of data
+            (utt_id, inp, looped) = reader.get_utt()
+
+            if looped:
+                reader.prev_id()
+                break
+
+            utt_ids.append(utt_id)
+            inputs.append(inp)
+
+        if len(utt_ids) == 0:
             break
 
-        #get the sequence length
-        input_seq_length = [inputs.shape[0]]
+        #add empty elements to the inputs to get a full batch
+        feat_dim = inputs[0].shape[1]
+        inputs += [np.zeros([0, feat_dim])]*(decoder.batch_size-len(inputs))
 
-        #pad the inputs
-        inputs = np.append(
-            inputs, np.zeros([decoder.max_input_length-inputs.shape[0],
-                              inputs.shape[1]]), 0)
+        #get the sequence length
+        input_seq_length = [inp.shape[0] for inp in inputs]
+
+        #pad the inputs and put them in a tensor
+        inputs = np.array([np.append(
+            inp, np.zeros([decoder.max_input_length-inp.shape[0],
+                           inp.shape[1]]), 0) for inp in inputs])
 
         #pylint: disable=E1101
         output = sess.run(
             decoder.outputs,
-            feed_dict={decoder.inputs:inputs[np.newaxis, :, :],
+            feed_dict={decoder.inputs:inputs,
                        decoder.input_seq_length:input_seq_length})
 
-        processed = decoder.process_decoded(output)
-
         #convert the label sequence into a sequence of characers
-        decoded[utt_id] = [(p[0], decoder.coder.decode(p[1]))
-                           for p in processed]
+        for i, utt_id in enumerate(utt_ids):
+            decoded[utt_id] = [(p[0], decoder.coder.decode(p[1]))
+                               for p in output[i]]
 
     return decoded
