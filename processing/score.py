@@ -1,16 +1,15 @@
 '''@file score.py
 contains functions to score the system'''
 
-import os
 import numpy as np
 
-def cer(decodedir, references):
+def cer(outputs, targets):
     '''
     compute the character error rate
 
     Args:
-        decodedir: the directory containing the decoded utterances
-        references: the reference transcriptions as a list of strings
+        outputs: a dictionary containing the decoder outputs
+        targets: a dictionary containing the reference outputs
 
     Returns:
     the character error rate
@@ -19,29 +18,13 @@ def cer(decodedir, references):
     errors = 0
     num_labels = 0
 
-    for utt in references:
-        #read the best decoded utterance
-        if not os.path.exists(decodedir + '/' + utt):
-            print 'WARNING: %s was not decoded' % utt
-            continue
+    for utt in targets:
+        scores = np.array([h[0] for h in outputs[utt]])
 
-        nbest = []
-        with open(decodedir + '/' + utt) as fid:
-            lines = fid.readlines()
-
-        for line in lines:
-            splitline = line.strip().split('\t')
-            if len(splitline) == 2:
-                nbest.append((float(splitline[0]), splitline[1]))
-            else:
-                nbest.append((float(splitline[0]), ''))
-
-        scores = np.array([h[0] for h in nbest])
-
-        decoded = nbest[np.argmax(scores)][1].split(' ')
+        decoded = outputs[utt][np.argmax(scores)][1].split(' ')
 
         #get the reference as a list
-        reference = references[utt].split(' ')
+        reference = targets[utt].split(' ')
 
         #compute the error
         error_matrix = np.zeros([len(reference) + 1, len(decoded) + 1])

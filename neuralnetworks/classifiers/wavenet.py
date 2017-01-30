@@ -9,8 +9,7 @@ class Wavenet(Classifier):
     ''''a wavenet classifier'''
 
     def __call__(self, inputs, input_seq_length, targets=None,
-                 target_seq_length=None, is_training=False, reuse=False,
-                 scope=None):
+                 target_seq_length=None, is_training=False, scope=None):
         '''
         Add the neural net variables and operations to the graph
 
@@ -25,18 +24,15 @@ class Wavenet(Classifier):
             target_seq_length: The sequence lengths of the target utterances,
                 this is a [batch_size] dimansional vector
             is_training: whether or not the network is in training mode
-            reuse: wheter or not the variables in the network should be reused
             scope: the name scope
 
         Returns:
-            A quadruple containing:
+            A pair containing:
                 - output logits
                 - the output logits sequence lengths as a vector
-                - a saver object
-                - a dictionary of control operations (may be empty)
         '''
 
-        with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
+        with tf.variable_scope(scope or type(self).__name__):
 
             #create the gated convolutional layers
             dconv = GatedAConv1d(int(self.conf['kernel_size']))
@@ -49,13 +45,14 @@ class Wavenet(Classifier):
 
             #add gaussian noise to the inputs
             if is_training:
-                forward = inputs + tf.random_normal(inputs.get_shape(), stddev=0.6)
+                forward = inputs + tf.random_normal(inputs.get_shape(),
+                                                    stddev=0.6)
             else:
                 forward = inputs
 
             #apply the input layer
             logits = 0
-            forward = onebyone(forward, input_seq_length, is_training, reuse,
+            forward = onebyone(forward, input_seq_length, is_training,
                                'inlayer')
             forward = tf.nn.tanh(forward)
 
@@ -64,22 +61,18 @@ class Wavenet(Classifier):
                 for l in range(int(self.conf['num_layers'])):
                     forward, highway = dconv(
                         forward, input_seq_length, self.conf['causal'] == 'True'
-                        , 2**l, is_training, reuse, 'dconv%d-%d' % (b, l))
+                        , 2**l, is_training, 'dconv%d-%d' % (b, l))
                     logits += highway
 
             #apply the relu
             logits = tf.nn.relu(logits)
 
             #apply the one by one convloution
-            logits = onebyone(logits, input_seq_length, is_training, reuse,
-                              '1x1')
+            logits = onebyone(logits, input_seq_length, is_training, '1x1')
             logits = tf.nn.relu(logits)
 
             #apply the output layer
-            logits = outlayer(logits, input_seq_length, is_training, reuse,
-                              'outlayer')
+            logits = outlayer(logits, input_seq_length, is_training, 'outlayer')
 
-            #create a saver
-            saver = tf.train.Saver()
 
-        return logits, input_seq_length, saver, None
+        return logits, input_seq_length

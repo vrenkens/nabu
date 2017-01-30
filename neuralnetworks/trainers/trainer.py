@@ -3,66 +3,10 @@ neural network trainer environment'''
 
 from abc import ABCMeta, abstractmethod
 from time import time, sleep
-from math import ceil
 import tensorflow as tf
 from tensorflow.python.client.device_lib import list_local_devices
 import numpy as np
-from classifiers import seq_convertors
-
-def trainer_factory(conf,
-                    classifier,
-                    input_dim,
-                    max_input_length,
-                    max_target_length,
-                    dispenser,
-                    val_dispenser,
-                    logdir,
-                    server,
-                    cluster,
-                    task_index,
-                    trainer_type):
-
-    '''Create a Trainer object
-
-    Args:
-        classifier: the neural net classifier that will be trained
-        conf: the trainer config
-        input_dim: the input dimension to the nnnetgraph
-        max_input_length: the maximal length of the input sequences
-        max_target_length: the maximal length of the target sequences
-        num_steps: the total number of steps that will be taken
-        dispenser: a Batchdispenser object
-        cluster: the optional cluster used for distributed training, it
-            should contain at least one parmeter server and one worker
-        val_dispenser: the batchdispenser for the validation data if None
-            validation will not be used
-        logdir: directory where the summaries will be written
-        server: optional server to be used for distributed training
-        cluster: optional cluster to be used for distributed training
-        task_index: optional index of the worker task in the cluster
-        trainer_type: the trainer type
-
-    Returns: a Trainer object
-    '''
-
-    if trainer_type == 'ctctrainer':
-        trainer_class = CTCTrainer
-    elif trainer_type == 'crossenthropytrainer':
-        trainer_class = CrossEnthropyTrainer
-    else:
-        raise Exception('Undefined trainer type: %s' % trainer_type)
-
-    return trainer_class(conf,
-                         classifier,
-                         input_dim,
-                         max_input_length,
-                         max_target_length,
-                         dispenser,
-                         val_dispenser,
-                         logdir,
-                         server,
-                         cluster,
-                         task_index)
+from neuralnetworks import decoders
 
 class Trainer(object):
     '''General class outlining the training environment of a classifier.'''
@@ -70,13 +14,15 @@ class Trainer(object):
 
     def __init__(self,
                  conf,
+                 decoder_conf,
                  classifier,
                  input_dim,
                  max_input_length,
                  max_target_length,
                  dispenser,
-                 val_dispenser=None,
-                 logdir=None,
+                 val_reader=None,
+                 val_targets=None,
+                 expdir=None,
                  server=None,
                  cluster=None,
                  task_index=0):
@@ -86,6 +32,7 @@ class Trainer(object):
         Args:
             classifier: the neural net classifier that will be trained
             conf: the trainer config
+            decoder_conf: the decoder config used for validation
             input_dim: the input dimension to the nnnetgraph
             max_input_length: the maximal length of the input sequences
             max_target_length: the maximal length of the target sequences
@@ -93,9 +40,11 @@ class Trainer(object):
             dispenser: a Batchdispenser object
             cluster: the optional cluster used for distributed training, it
                 should contain at least one parmeter server and one worker
-            val_dispenser: the batchdispenser for the validation data if None
+            val_reader: the feature reader for the validation data if None
                 validation will not be used
-            logdir: directory where the summaries will be written
+            val_targets: a dictionary containing the targets of the validation
+                set
+            expdir: directory where the summaries will be written
             server: optional server to be used for distributed training
             cluster: optional cluster to be used for distributed training
             task_index: optional index of the worker task in the cluster
@@ -107,8 +56,9 @@ class Trainer(object):
         self.max_target_length = max_target_length
         self.num_steps = int(dispenser.num_batches*int(conf['num_epochs'])
                              /max(1, int(conf['numbatches_to_aggregate'])))
-        self.val_dispenser = val_dispenser
-        self.logdir = logdir
+        self.val_reader = val_reader
+        self.val_targets = val_targets
+        self.logdir = expdir + '/logdir'
         self.server = server
         self.cluster = cluster
 
@@ -179,25 +129,28 @@ class Trainer(object):
                     name='val_loss_in')
 
                 #compute the training outputs of the classifier
-                trainlogits, logit_seq_length, \
-                self.modelsaver, self.control_ops = classifier(
+                trainlogits, logit_seq_length = classifier(
                     inputs=self.inputs,
                     input_seq_length=self.input_seq_length,
                     targets=self.targets,
                     target_seq_length=self.target_seq_length,
                     is_training=True,
-                    reuse=False,
                     scope='Classifier')
 
-                #compute the validation output of the classifier
-                logits, _, _, _ = classifier(
-                    inputs=self.inputs,
-                    input_seq_length=self.input_seq_length,
-                    targets=self.targets,
-                    target_seq_length=self.target_seq_length,
-                    is_training=False,
-                    reuse=True,
-                    scope='Classifier')
+                #create a saver for the classifier
+                self.modelsaver = tf.train.Saver(tf.get_collection(
+                    tf.GraphKeys.GLOBAL_VARIABLES, scope='Classifier'))
+
+                #create a decoder object for validation
+                self.decoder = decoders.decoder_factory.factory(
+                    conf=decoder_conf,
+                    classifier=classifier,
+                    classifier_scope=tf.VariableScope(True, 'Classifier'),
+                    input_dim=input_dim,
+                    max_input_length=max_input_length,
+                    coder=dispenser.target_coder,
+                    expdir=expdir,
+                    decoder_type=decoder_conf['decoder'])
 
                 if cluster is not None:
                     #create a done queue for each parameter server
@@ -333,10 +286,6 @@ class Trainer(object):
                         *([apply_gradients_op] + update_ops),
                         name='update')
 
-                with tf.name_scope('valid'):
-                    #compute the outputs that will be used for validation
-                    self.outputs = self.validation(logits, logit_seq_length)
-
                 # add an operation to initialise all the variables in the graph
                 self.init_op = tf.global_variables_initializer()
 
@@ -374,7 +323,7 @@ class Trainer(object):
             is_chief=is_chief,
             init_op=self.init_op,
             local_init_op=local_init_op,
-            logdir=logdir,
+            logdir=self.logdir,
             saver=self.trainsaver,
             global_step=self.global_step)
 
@@ -567,243 +516,26 @@ class Trainer(object):
                 containing NxF matrices for each utterance in the batch where
                 N is the number of frames in the utterance
             targets: the one-hot encoded targets for neural nnet, this should be
-                a list containing an NxO matrix for each utterance where O is
+            a list containing an NxO matrix for each utterance where O is
                 the output dimension of the neural net
 
         '''
 
-        errors = []
-
         #update the validated step
         sess.run([self.set_val_step])
 
-        for _ in range(int(ceil(self.val_dispenser.num_batches))):
+        outputs = decoders.decoder.decode(self.decoder, self.val_reader, sess)
 
-            inputs, targets = self.val_dispenser.get_batch(stop_at_end=True)
-
-            #get a list of sequence lengths
-            input_seq_length = [i.shape[0] for i in inputs]
-
-            #pad the inputs and targets till the maximum lengths
-            padded_inputs = np.array(pad(inputs, self.max_input_length))
-
-            #pylint: disable=E1101
-            outputs = list(self.outputs.eval(
-                session=sess,
-                feed_dict={self.inputs:padded_inputs,
-                           self.input_seq_length:input_seq_length}))
-
-            #compute the validation error
-            errors = np.append(
-                errors,
-                self.validation_metric(outputs[:len(targets)], targets))
-
-        val_loss = np.mean(errors)
+        val_loss = self.decoder.score(outputs, self.val_targets)
 
         print 'validation loss: %f' % val_loss
 
-        if val_loss > self.val_loss.eval(session=sess):
+        if (val_loss > self.val_loss.eval(session=sess)
+                and self.conf['valid_adapt'] == 'True'):
             print 'halving learning rate'
             sess.run([self.halve_learningrate_op])
 
         sess.run(self.set_val_loss, feed_dict={self.val_loss_in:val_loss})
-
-class CrossEnthropyTrainer(Trainer):
-    '''A trainer that minimises the cross-enthropy loss, the output sequences
-    must be of the same length as the input sequences'''
-
-    def compute_loss(self, targets, logits, logit_seq_length,
-                     target_seq_length):
-        '''
-        Compute the loss
-
-        Creates the operation to compute the cross-enthropy loss for every input
-        frame (if you want to have a different loss function, overwrite this
-        method)
-
-        Args:
-            targets: a list that contains a Bx1 tensor containing the targets
-                for eacht time step where B is the batch size
-            logits: a list that contains a BxO tensor containing the output
-                logits for eacht time step where O is the output dimension
-            logit_seq_length: the length of all the input sequences as a vector
-            target_seq_length: the length of all the target sequences as a
-                vector
-
-        Returns:
-            a scalar value containing the loss
-        '''
-
-        with tf.name_scope('cross_enthropy_loss'):
-
-            #convert to non sequential data
-            nonseq_targets = seq_convertors.seq2nonseq(targets,
-                                                       target_seq_length)
-            nonseq_logits = seq_convertors.seq2nonseq(logits, logit_seq_length)
-
-            #make a vector out of the targets
-            nonseq_targets = tf.reshape(nonseq_targets, [-1])
-
-            #one hot encode the targets
-            #pylint: disable=E1101
-            nonseq_targets = tf.one_hot(nonseq_targets,
-                                        int(nonseq_logits.get_shape()[1]))
-
-            #compute the cross-enthropy loss
-            loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
-                nonseq_logits, nonseq_targets))
-
-        return loss
-
-    def validation(self, logits, logit_seq_length):
-        '''
-        apply a softmax to the logits so the cross-enthropy can be computed
-
-        Args:
-            logits: a [batch_size, max_input_length, dim] tensor containing the
-                logits
-            logit_seq_length: the length of all the input sequences as a vector
-
-        Returns:
-            a tensor with the same shape as logits with the label probabilities
-        '''
-
-        return tf.nn.softmax(logits)
-
-    def validation_metric(self, outputs, targets):
-        '''the cross-enthropy
-
-        Args:
-            outputs: the validation output, which is a matrix containing the
-                label probabilities of size [batch_size, max_input_length, dim].
-            targets: a list containing the ground truth target labels
-
-        Returns:
-            a numpy array containing the loss of all utterances
-        '''
-
-        loss = np.zeros(outputs.shape[0])
-
-        for utt in range(outputs.shape[0]):
-            loss[utt] += np.mean(-np.log(
-                outputs[utt, np.arange(targets[utt].size), targets[utt]]))
-
-        return loss
-
-class CTCTrainer(Trainer):
-    '''A trainer that minimises the CTC loss, the output sequences'''
-
-    def compute_loss(self, targets, logits, logit_seq_length,
-                     target_seq_length):
-        '''
-        Compute the loss
-
-        Creates the operation to compute the CTC loss for every input
-        frame (if you want to have a different loss function, overwrite this
-        method)
-
-        Args:
-            targets: a [batch_size, max_target_length, 1] tensor containing the
-                targets
-            logits: a [batch_size, max_input_length, dim] tensor containing the
-                inputs
-            logit_seq_length: the length of all the input sequences as a vector
-            target_seq_length: the length of all the target sequences as a
-                vector
-
-        Returns:
-            a scalar value containing the loss
-        '''
-
-        with tf.name_scope('CTC_loss'):
-
-            #get the batch size
-            batch_size = int(targets.get_shape()[0])
-
-            #convert the targets into a sparse tensor representation
-            indices = tf.concat(0, [tf.concat(
-                1, [tf.expand_dims(tf.tile([s], [target_seq_length[s]]), 1),
-                    tf.expand_dims(tf.range(target_seq_length[s]), 1)])
-                                    for s in range(batch_size)])
-
-            values = tf.reshape(
-                seq_convertors.seq2nonseq(targets, target_seq_length), [-1])
-
-            shape = [batch_size, int(targets.get_shape()[1])]
-
-            sparse_targets = tf.SparseTensor(tf.cast(indices, tf.int64), values,
-                                             shape)
-
-            loss = tf.reduce_mean(tf.nn.ctc_loss(logits, sparse_targets,
-                                                 logit_seq_length,
-                                                 time_major=False))
-
-        return loss
-
-    def validation(self, logits, logit_seq_length):
-        '''
-        decode the validation set with CTC beam search
-
-        Args:
-            logits: a [batch_size, max_input_length, dim] tensor containing the
-                inputs
-            logit_seq_length: the length of all the input sequences as a vector
-
-        Returns:
-            a matrix containing the decoded labels with size
-            [batch_size, max_decoded_length]
-        '''
-
-        #Convert logits to time major
-        tm_logits = tf.transpose(logits, [1, 0, 2])
-
-        #do the CTC beam search
-        sparse_output, _ = tf.nn.ctc_greedy_decoder(
-            tf.pack(tm_logits), logit_seq_length)
-
-        #convert the output to dense tensors with -1 as default values
-        dense_output = tf.sparse_tensor_to_dense(sparse_output[0],
-                                                 default_value=-1)
-
-        return dense_output
-
-
-    def validation_metric(self, outputs, targets):
-        '''the Label Error Rate for the decoded labels
-
-        Args:
-            outputs: the validation output, which is a matrix containing the
-                decoded labels of size [batch_size, max_decoded_length]. the
-                output sequences are padded with -1
-            targets: a list containing the ground truth target labels
-
-        Returns:
-            a numpy array containing the loss of all utterances
-        '''
-
-        #remove the padding from the outputs
-        trimmed_outputs = [o[np.where(o != -1)] for o in outputs]
-
-        ler = np.zeros(len(targets))
-
-        for k, target in enumerate(targets):
-
-            error_matrix = np.zeros([target.size + 1,
-                                     trimmed_outputs[k].size + 1])
-
-            error_matrix[:, 0] = np.arange(target.size + 1)
-            error_matrix[0, :] = np.arange(trimmed_outputs[k].size + 1)
-
-            for x in range(1, target.size + 1):
-                for y in range(1, trimmed_outputs[k].size + 1):
-                    error_matrix[x, y] = min([
-                        error_matrix[x-1, y] + 1, error_matrix[x, y-1] + 1,
-                        error_matrix[x-1, y-1] + (target[x-1] !=
-                                                  trimmed_outputs[k][y-1])])
-
-            ler[k] = error_matrix[-1, -1]/target.size
-
-        return ler
 
 def pad(inputs, length):
     '''

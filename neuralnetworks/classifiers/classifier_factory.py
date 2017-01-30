@@ -1,9 +1,12 @@
 '''@file classifier_factory
 contains the classifier factory'''
 
-import classifiers
+import dblstm
+import dnn
+import wavenet
+import las
 
-def classifier_factory(conf, output_dim, classifier_type):
+def factory(conf, output_dim, classifier_type):
     '''create a classifier
 
     Args:
@@ -15,10 +18,12 @@ def classifier_factory(conf, output_dim, classifier_type):
         A Classifier object'''
 
     if classifier_type == 'dblstm':
-        return classifiers.dblstm.DBLSTM(conf, output_dim)
+        return dblstm.DBLSTM(conf, output_dim)
     elif classifier_type == 'dnn':
-        return classifiers.dnn.DNN(conf, output_dim)
+        return dnn.DNN(conf, output_dim)
     elif classifier_type == 'wavenet':
-        return classifiers.wavenet.Wavenet(conf, output_dim)
+        return wavenet.Wavenet(conf, output_dim)
+    elif classifier_type == 'las':
+        return las.LAS(conf, output_dim)
     else:
         raise Exception('undefined classifier type: %s' % classifier_type)

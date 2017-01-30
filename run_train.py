@@ -18,12 +18,12 @@ def main(_):
     '''main function'''
 
     #pointers to the config files
-    computing_cfg_file = 'config/computing/condor.cfg'
+    computing_cfg_file = 'config/computing/local.cfg'
     database_cfg_file = 'config/databases/TIMIT.cfg'
     feat_cfg_file = 'config/features/fbank.cfg'
-    nnet_cfg_file = 'config/nnet/DBLSTM.cfg'
-    trainer_cfg_file = 'config/trainer/CTCtrainer.cfg'
-    decoder_cfg_file = 'config/decoder/CTCdecoder.cfg'
+    nnet_cfg_file = 'config/nnet/LAS.cfg'
+    trainer_cfg_file = 'config/trainer/cross_enthropytrainer.cfg'
+    decoder_cfg_file = 'config/decoder/BeamSearchDecoder.cfg'
 
     #read the computing config file
     parsed_computing_cfg = configparser.ConfigParser()
@@ -177,12 +177,17 @@ def main(_):
         with open(FLAGS.expdir + '/cluster/cluster', 'w') as cfid:
             for job in machines:
                 task_index = 0
+                if job == 'ps':
+                    GPU = ''
+                else:
+                    GPU = '0'
                 for machine in machines[job]:
                     with open(FLAGS.expdir + '/cluster/%s-%s'
                               % (machine[0], machine[1]), 'w') as fid:
                         fid.write(str(task_index))
 
-                    cfid.write('%s,%s,%d\n' % (job, machine[0], machine[1]))
+                    cfid.write('%s,%s,%d,%s\n' % (job, machine[0], machine[1],
+                                                  GPU))
                     task_index += 1
 
         #notify the machine that the cluster is ready

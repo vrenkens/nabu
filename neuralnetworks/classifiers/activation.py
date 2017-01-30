@@ -19,36 +19,34 @@ class Activation(object):
 
         self.activation = activation
 
-    def __call__(self, inputs, is_training=False, reuse=False):
+    def __call__(self, inputs, is_training=False):
         '''
         apply the activation function
         Args:
             inputs: the inputs to the activation function
             is_training: whether or not the network is in training mode
-            reuse: wheter or not the variables in the network should be reused
         Returns:
             the output to the activation function
         '''
 
         if self.activation is not None:
             #apply the wrapped activation
-            activations = self.activation(inputs, is_training, reuse)
+            activations = self.activation(inputs, is_training)
         else:
             activations = inputs
 
         #add own computation
-        activation = self._apply_func(activations, is_training, reuse)
+        activation = self._apply_func(activations, is_training)
 
         return activation
 
     @abstractmethod
-    def _apply_func(self, activations, is_training, reuse):
+    def _apply_func(self, activations, is_training):
         '''
         apply own functionality
         Args:
             activations: the ioutputs to the wrapped activation function
             is_training: whether or not the network is in training mode
-            reuse: wheter or not the variables in the network should be reused
         Returns:
             the output to the activation function
         '''
@@ -70,13 +68,12 @@ class TfActivation(Activation):
         super(TfActivation, self).__init__(activation)
         self.tf_activation = tfActivation
 
-    def _apply_func(self, activations, is_training, reuse):
+    def _apply_func(self, activations, is_training):
         '''
         apply own functionality
         Args:
             activations: the ioutputs to the wrapped activation function
             is_training: whether or not the network is in training mode
-            reuse: wheter or not the variables in the network should be reused
         Returns:
             the output to the activation function
         '''
@@ -87,18 +84,17 @@ class TfActivation(Activation):
 class L2Norm(Activation):
     '''a wrapper for an activation function that will add l2 normalisation'''
 
-    def _apply_func(self, activations, is_training, reuse):
+    def _apply_func(self, activations, is_training):
         '''
         apply own functionality
         Args:
             activations: the ioutputs to the wrapped activation function
             is_training: whether or not the network is in training mode
-            reuse: wheter or not the variables in the network should be reused
         Returns:
             the output to the activation function
         '''
 
-        with tf.variable_scope('l2_norm', reuse=reuse):
+        with tf.variable_scope('l2_norm'):
             #compute the mean squared value
             sig = tf.reduce_mean(tf.square(activations), 1, keep_dims=True)
 
@@ -126,13 +122,12 @@ class Dropout(Activation):
         assert dropout > 0 and dropout <= 1
         self.dropout = dropout
 
-    def _apply_func(self, activations, is_training, reuse):
+    def _apply_func(self, activations, is_training):
         '''
         apply own functionality
         Args:
             activations: the ioutputs to the wrapped activation function
             is_training: whether or not the network is in training mode
-            reuse: wheter or not the variables in the network should be reused
         Returns:
             the output to the activation function
         '''
@@ -145,17 +140,16 @@ class Dropout(Activation):
 class Batchnorm(Activation): # pylint: disable=too-few-public-methods
     '''A wrapper for an activation function that will add batch normalisation'''
 
-    def _apply_func(self, activations, is_training, reuse):
+    def _apply_func(self, activations, is_training):
         '''
         apply own functionality
         Args:
             activations: the ioutputs to the wrapped activation function
             is_training: whether or not the network is in training mode
-            reuse: wheter or not the variables in the network should be reused
         Returns:
             the output to the activation function
         '''
 
         return tf.contrib.layers.batch_norm(activations,
                                             is_training=is_training,
-                                            reuse=reuse, scope='batch_norm')
+                                            scope='batch_norm')

@@ -2,10 +2,9 @@
 Neural network layers '''
 
 import tensorflow as tf
-import seq_convertors
-import ops
 from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn
+from neuralnetworks import ops
 
 class FFLayer(object):
     '''This class defines a fully connected feed forward layer'''
@@ -25,22 +24,21 @@ class FFLayer(object):
         self.activation = act
         self.weights_std = weights_std
 
-    def __call__(self, inputs, is_training=False, reuse=False, scope=None):
+    def __call__(self, inputs, is_training=False, scope=None):
         '''
         Create the variables and do the forward computation
 
         Args:
             inputs: the input to the layer
             is_training: whether or not the network is in training mode
-            reuse: wheter or not the variables in the network should be reused
             scope: the variable scope of the layer
 
         Returns:
             The output of the layer
         '''
 
-        with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
-            with tf.variable_scope('parameters', reuse=reuse):
+        with tf.variable_scope(scope or type(self).__name__):
+            with tf.variable_scope('parameters'):
 
                 stddev = (self.weights_std if self.weights_std is not None
                           else 1/int(inputs.get_shape()[1])**0.5)
@@ -54,12 +52,12 @@ class FFLayer(object):
                     initializer=tf.constant_initializer(0))
 
             #apply weights and biases
-            with tf.variable_scope('linear', reuse=reuse):
+            with tf.variable_scope('linear'):
                 linear = tf.matmul(inputs, weights) + biases
 
             #apply activation function
-            with tf.variable_scope('activation', reuse=reuse):
-                outputs = self.activation(linear, is_training, reuse)
+            with tf.variable_scope('activation'):
+                outputs = self.activation(linear, is_training)
 
         return outputs
 
@@ -80,8 +78,7 @@ class BLSTMLayer(object):
 
         self.num_units = num_units
 
-    def __call__(self, inputs, sequence_length, is_training=False,
-                 reuse=False, scope=None):
+    def __call__(self, inputs, sequence_length, scope=None):
         """
         Create the variables and do the forward computation
 
@@ -89,10 +86,6 @@ class BLSTMLayer(object):
             inputs: the input to the layer as a
                 [batch_size, max_length, dim] tensor
             sequence_length: the length of the input sequences
-            is_training: whether or not the network is in training mode
-            reuse: Setting this value to true will cause tensorflow to look
-                      for variables with the same name in the graph and reuse
-                      these instead of creating new variables.
             scope: The variable scope sets the namespace under which
                       the variables created during this call will be stored.
 
@@ -100,7 +93,7 @@ class BLSTMLayer(object):
             the output of the layer
         """
 
-        with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
+        with tf.variable_scope(scope or type(self).__name__):
 
             #create the lstm cell that will be used for the forward and backward
             #pass
@@ -117,6 +110,46 @@ class BLSTMLayer(object):
 
             return outputs
 
+class PBLSTMLayer(object):
+    ''' a pyramidal bidirectional LSTM layer'''
+
+    def __init__(self, num_units):
+        """
+        BlstmLayer constructor
+        Args:
+            num_units: The number of units in the LSTM
+            pyramidal: indicates if a pyramidal BLSTM is desired.
+        """
+
+        #create BLSTM layer
+        self.blstm = BLSTMLayer(num_units)
+
+    def __call__(self, inputs, sequence_lengths, scope=None):
+        """
+        Create the variables and do the forward computation
+        Args:
+            inputs: A time minor tensor of shape [batch_size, time,
+                input_size],
+            sequence_lengths: the length of the input sequences
+            scope: The variable scope sets the namespace under which
+                the variables created during this call will be stored.
+        Returns:
+            the output of the layer, the concatenated outputs of the
+            forward and backward pass shape [batch_size, time/2, input_size*2].
+        """
+
+
+        with tf.variable_scope(scope or type(self).__name__):
+
+            #apply blstm layer
+            outputs = self.blstm(inputs, sequence_lengths)
+            stacked_outputs, output_seq_lengths = ops.pyramid_stack(
+                outputs,
+                sequence_lengths)
+
+
+        return stacked_outputs, output_seq_lengths
+
 class GatedAConv1d(object):
     '''A gated atrous convolution block'''
     def __init__(self, kernel_size):
@@ -129,7 +162,7 @@ class GatedAConv1d(object):
         self.kernel_size = kernel_size
 
     def __call__(self, inputs, seq_length, causal=False, dilation_rate=1,
-                 is_training=False, reuse=False, scope=None):
+                 is_training=False, scope=None):
         '''
         Create the variables and do the forward computation
 
@@ -141,9 +174,6 @@ class GatedAConv1d(object):
                 affected by previous inputs
             dilation_rate: the rate of dilation
             is_training: whether or not the network is in training mode
-            reuse: Setting this value to true will cause tensorflow to look
-                      for variables with the same name in the graph and reuse
-                      these instead of creating new variables.
             scope: The variable scope sets the namespace under which
                       the variables created during this call will be stored.
 
@@ -153,7 +183,7 @@ class GatedAConv1d(object):
                 - the skip connections
         '''
 
-        with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
+        with tf.variable_scope(scope or type(self).__name__):
 
             num_units = int(inputs.get_shape()[2])
 
@@ -165,24 +195,22 @@ class GatedAConv1d(object):
             onebyone = Conv1dLayer(num_units, 1, 1)
 
             #compute the data
-            data = dconv(inputs, seq_length, causal, is_training, reuse,
-                         'data_dconv')
+            data = dconv(inputs, seq_length, causal, is_training, 'data_dconv')
             data = tf.nn.tanh(data)
 
             #compute the gate
-            gate = dconv(inputs, seq_length, causal, is_training, reuse,
-                         'gate_dconv')
+            gate = dconv(inputs, seq_length, causal, is_training, 'gate_dconv')
             gate = tf.nn.sigmoid(gate)
 
             #compute the gated output
             gated = data*gate
 
             #compute the final output
-            out = onebyone(gated, seq_length, is_training, reuse, '1x1_res')
+            out = onebyone(gated, seq_length, is_training, '1x1_res')
             out = tf.nn.tanh(out)
 
             #compute the skip
-            skip = onebyone(gated, seq_length, is_training, reuse, '1x1_skip')
+            skip = onebyone(gated, seq_length, is_training, '1x1_skip')
 
             #return the residual and the skip
             return inputs + out, skip
@@ -203,8 +231,7 @@ class Conv1dLayer(object):
         self.kernel_size = kernel_size
         self.stride = stride
 
-    def __call__(self, inputs, seq_length, is_training=False, reuse=False,
-                 scope=None):
+    def __call__(self, inputs, seq_length, is_training=False, scope=None):
         '''
         Create the variables and do the forward computation
 
@@ -213,9 +240,6 @@ class Conv1dLayer(object):
                 [batch_size, max_length, dim] tensor
             seq_length: the length of the input sequences
             is_training: whether or not the network is in training mode
-            reuse: Setting this value to true will cause tensorflow to look
-                      for variables with the same name in the graph and reuse
-                      these instead of creating new variables.
             scope: The variable scope sets the namespace under which
                       the variables created during this call will be stored.
 
@@ -223,7 +247,7 @@ class Conv1dLayer(object):
             the outputs which is a [batch_size, max_length/stride, num_units]
         '''
 
-        with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
+        with tf.variable_scope(scope or type(self).__name__):
 
             input_dim = int(inputs.get_shape()[2])
             stddev = 1/input_dim**0.5
@@ -242,10 +266,9 @@ class Conv1dLayer(object):
             out = tf.nn.conv1d(inputs, w, self.stride, padding='SAME')
 
             #add the bias
-            out = seq_convertors.seq2nonseq(out, seq_length)
+            out = ops.seq2nonseq(out, seq_length)
             out += b
-            out = seq_convertors.nonseq2seq(out, seq_length,
-                                            int(inputs.get_shape()[1]))
+            out = ops.nonseq2seq(out, seq_length, int(inputs.get_shape()[1]))
 
         return out
 
@@ -266,7 +289,7 @@ class AConv1dLayer(object):
         self.dilation_rate = dilation_rate
 
     def __call__(self, inputs, seq_length, causal=False,
-                 is_training=False, reuse=False, scope=None):
+                 is_training=False, scope=None):
         '''
         Create the variables and do the forward computation
 
@@ -277,9 +300,6 @@ class AConv1dLayer(object):
             causal: flag for causality, if true every output will only be
                 affected by previous inputs
             is_training: whether or not the network is in training mode
-            reuse: Setting this value to true will cause tensorflow to look
-                for variables with the same name in the graph and reuse
-                these instead of creating new variables.
             scope: The variable scope sets the namespace under which
                 the variables created during this call will be stored.
 
@@ -287,7 +307,7 @@ class AConv1dLayer(object):
             the outputs which is a [batch_size, max_length/stride, num_units]
         '''
 
-        with tf.variable_scope(scope or type(self).__name__, reuse=reuse):
+        with tf.variable_scope(scope or type(self).__name__):
 
             input_dim = int(inputs.get_shape()[2])
             stddev = 1/input_dim**0.5
@@ -310,9 +330,8 @@ class AConv1dLayer(object):
 
 
             #add the bias
-            out = seq_convertors.seq2nonseq(out, seq_length)
+            out = ops.seq2nonseq(out, seq_length)
             out += b
-            out = seq_convertors.nonseq2seq(out, seq_length,
-                                            int(inputs.get_shape()[1]))
+            out = ops.nonseq2seq(out, seq_length, int(inputs.get_shape()[1]))
 
         return out
