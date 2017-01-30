@@ -1,9 +1,9 @@
 var searchData=
 [
   ['nabu',['Nabu',['../index.html',1,'']]],
-  ['neuralnetworks',['neuralNetworks',['../namespaceneuralNetworks.html',1,'']]],
+  ['neuralnetworks',['neuralnetworks',['../namespaceneuralnetworks.html',1,'']]],
   ['next_5fid',['next_id',['../classprocessing_1_1feature__reader_1_1FeatureReader.html#aaa2bdef6c735aec5c6f8973a25235d90',1,'processing::feature_reader::FeatureReader']]],
-  ['nonseq2seq',['nonseq2seq',['../seq__convertors_8py.html#a00194dc54494e61471f9fcf6aa810ee4',1,'neuralnetworks::classifiers::seq_convertors']]],
+  ['nonseq2seq',['nonseq2seq',['../ops_8py.html#a7ffc40ab74c69850e9cb1c857670c492',1,'neuralnetworks::ops']]],
   ['normalize',['normalize',['../classprocessing_1_1target__coder_1_1TargetCoder.html#a91638e8a351ecb0be0890b16e054f980',1,'processing::target_coder::TargetCoder']]],
   ['normalizer_5ffactory',['normalizer_factory',['../target__normalizers_8py.html#a647a5ff8b9c9f0e566118cea0a666a77',1,'processing::target_normalizers']]],
   ['num_5fbatches',['num_batches',['../classprocessing_1_1batchdispenser_1_1BatchDispenser.html#a42c3662bf6d98ef9a2b621e204d4d98f',1,'processing::batchdispenser::BatchDispenser']]],

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['update',['update',['../classneuralnetworks_1_1trainer_1_1Trainer.html#a50ff7fe69eb7cea07bc57c55dffdae80',1,'neuralnetworks::trainer::Trainer']]]
+  ['write_5fnext_5futt',['write_next_utt',['../classprocessing_1_1ark_1_1ArkWriter.html#a45fae33fe16a6d072e5800ad03e42591',1,'processing::ark::ArkWriter']]]
 ];

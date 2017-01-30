@@ -74,15 +74,15 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a4c5530eda79cdd368323ec0318621224"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="score_8py.html#a4c5530eda79cdd368323ec0318621224">processing.score.cer</a> (decodedir, references)</td></tr>
-<tr class="memdesc:a4c5530eda79cdd368323ec0318621224"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the character error rate  <a href="score_8py.html#a4c5530eda79cdd368323ec0318621224">More...</a><br /></td></tr>
-<tr class="separator:a4c5530eda79cdd368323ec0318621224"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18f8b266a1f69431b8e66fa27097307e"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="score_8py.html#a18f8b266a1f69431b8e66fa27097307e">processing.score.cer</a> (outputs, targets)</td></tr>
+<tr class="memdesc:a18f8b266a1f69431b8e66fa27097307e"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the character error rate  <a href="score_8py.html#a18f8b266a1f69431b8e66fa27097307e">More...</a><br /></td></tr>
+<tr class="separator:a18f8b266a1f69431b8e66fa27097307e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>contains functions to score the system </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="file_a4c5530eda79cdd368323ec0318621224"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a4c5530eda79cdd368323ec0318621224">&sect;&nbsp;</a></span>cer()</h2>
+<a id="file_a18f8b266a1f69431b8e66fa27097307e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a18f8b266a1f69431b8e66fa27097307e">&sect;&nbsp;</a></span>cer()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -91,13 +91,13 @@ Functions</h2></td></tr>
           <td class="memname">def processing.score.cer </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>decodedir</em>, </td>
+          <td class="paramname"><em>outputs</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>references</em>&#160;</td>
+          <td class="paramname"><em>targets</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -110,8 +110,8 @@ Functions</h2></td></tr>
 <p>compute the character error rate </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">decodedir</td><td>the directory containing the decoded utterances </td></tr>
-    <tr><td class="paramname">references</td><td>the reference transcriptions as a list of strings</td></tr>
+    <tr><td class="paramname">outputs</td><td>a dictionary containing the decoder outputs </td></tr>
+    <tr><td class="paramname">targets</td><td>a dictionary containing the reference outputs</td></tr>
   </table>
   </dd>
 </dl>

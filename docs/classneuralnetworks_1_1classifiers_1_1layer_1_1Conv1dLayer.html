@@ -58,7 +58,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><b>neuralnetworks</b></li><li class="navelem"><b>classifiers</b></li><li class="navelem"><b>layer</b></li><li class="navelem"><a class="el" href="classneuralnetworks_1_1classifiers_1_1layer_1_1Conv1dLayer.html">Conv1dLayer</a></li>  </ul>
+<li class="navelem"><a class="el" href="namespaceneuralnetworks.html">neuralnetworks</a></li><li class="navelem"><b>classifiers</b></li><li class="navelem"><b>layer</b></li><li class="navelem"><a class="el" href="classneuralnetworks_1_1classifiers_1_1layer_1_1Conv1dLayer.html">Conv1dLayer</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -87,9 +87,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ad87782509f066a124a53be87ba9b4f6d"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneuralnetworks_1_1classifiers_1_1layer_1_1Conv1dLayer.html#ad87782509f066a124a53be87ba9b4f6d">__init__</a> (self, num_units, kernel_size, stride)</td></tr>
 <tr class="memdesc:ad87782509f066a124a53be87ba9b4f6d"><td class="mdescLeft">&#160;</td><td class="mdescRight">constructor  <a href="#ad87782509f066a124a53be87ba9b4f6d">More...</a><br /></td></tr>
 <tr class="separator:ad87782509f066a124a53be87ba9b4f6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a69c9e92153306304ee7bd28222c75587"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneuralnetworks_1_1classifiers_1_1layer_1_1Conv1dLayer.html#a69c9e92153306304ee7bd28222c75587">__call__</a> (self, inputs, seq_length, is_training=False, reuse=False, scope=None)</td></tr>
-<tr class="memdesc:a69c9e92153306304ee7bd28222c75587"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create the variables and do the forward computation.  <a href="#a69c9e92153306304ee7bd28222c75587">More...</a><br /></td></tr>
-<tr class="separator:a69c9e92153306304ee7bd28222c75587"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a36ba4da3f6c8815976eb5ca64d59b8ee"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneuralnetworks_1_1classifiers_1_1layer_1_1Conv1dLayer.html#a36ba4da3f6c8815976eb5ca64d59b8ee">__call__</a> (self, inputs, seq_length, is_training=False, scope=None)</td></tr>
+<tr class="memdesc:a36ba4da3f6c8815976eb5ca64d59b8ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create the variables and do the forward computation.  <a href="#a36ba4da3f6c8815976eb5ca64d59b8ee">More...</a><br /></td></tr>
+<tr class="separator:a36ba4da3f6c8815976eb5ca64d59b8ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -157,8 +157,8 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a69c9e92153306304ee7bd28222c75587"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a69c9e92153306304ee7bd28222c75587">&sect;&nbsp;</a></span>__call__()</h2>
+<a id="a36ba4da3f6c8815976eb5ca64d59b8ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a36ba4da3f6c8815976eb5ca64d59b8ee">&sect;&nbsp;</a></span>__call__()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -191,12 +191,6 @@ Public Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>reuse</em> = <code>False</code>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
           <td class="paramname"><em>scope</em> = <code>None</code>&#160;</td>
         </tr>
         <tr>
@@ -213,7 +207,6 @@ Public Attributes</h2></td></tr>
     <tr><td class="paramname">inputs</td><td>the input to the layer as a [batch_size, max_length, dim] tensor </td></tr>
     <tr><td class="paramname">seq_length</td><td>the length of the input sequences </td></tr>
     <tr><td class="paramname">is_training</td><td>whether or not the network is in training mode </td></tr>
-    <tr><td class="paramname">reuse</td><td>Setting this value to true will cause tensorflow to look for variables with the same name in the graph and reuse these instead of creating new variables. </td></tr>
     <tr><td class="paramname">scope</td><td>The variable scope sets the namespace under which the variables created during this call will be stored.</td></tr>
   </table>
   </dd>

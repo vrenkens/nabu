@@ -12,6 +12,5 @@ var searchData=
   ['read_5fwav',['read_wav',['../prepare__data_8py.html#a6bfe24173f7f7497d504039e7bc1647e',1,'processing::prepare_data']]],
   ['read_5fwavfiles',['read_wavfiles',['../readfiles_8py.html#afa1a535177afd88fea31f98c0d969688',1,'processing::readfiles']]],
   ['readfiles_2epy',['readfiles.py',['../readfiles_8py.html',1,'']]],
-  ['restore',['restore',['../classneuralnetworks_1_1decoder_1_1Decoder.html#aebbd6da9c0f509e4145e2655b05af6ce',1,'neuralnetworks::decoder::Decoder']]],
   ['return_5fbatch',['return_batch',['../classprocessing_1_1batchdispenser_1_1BatchDispenser.html#ac581c358f53e501c2bd26deb11641109',1,'processing::batchdispenser::BatchDispenser']]]
 ];

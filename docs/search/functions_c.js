@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['seq2nonseq',['seq2nonseq',['../seq__convertors_8py.html#a5be00150c1f81ade6c0d395298d6c192',1,'neuralnetworks::classifiers::seq_convertors']]],
+  ['seq2nonseq',['seq2nonseq',['../ops_8py.html#af4668862cd1db3dfe566a898a9099d26',1,'neuralnetworks::ops']]],
   ['shuffle_5fexamples',['shuffle_examples',['../prepare__data_8py.html#ad1a6cefe289ecb6d481b22e90464f65a',1,'processing::prepare_data']]],
   ['skip_5fbatch',['skip_batch',['../classprocessing_1_1batchdispenser_1_1BatchDispenser.html#abcfdc6913bafd55124af1202e2a13f2f',1,'processing::batchdispenser::BatchDispenser']]],
   ['snip',['snip',['../feat_8py.html#ab75e1805b03f72ea7acae532d0bf24fd',1,'processing::feat']]],
