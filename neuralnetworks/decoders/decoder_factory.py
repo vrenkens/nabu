@@ -3,6 +3,7 @@ contains the decoder factory'''
 
 import ctc_decoder
 import beam_search_decoder
+import attention_visualizer
 
 def factory(conf,
             classifier,
@@ -32,6 +33,8 @@ def factory(conf,
         decoder_class = ctc_decoder.CTCDecoder
     elif decoder_type == 'beamsearchdecoder':
         decoder_class = beam_search_decoder.BeamSearchDecoder
+    elif decoder_type == 'attention_visualizer':
+        decoder_class = attention_visualizer.AttentionVisiualizer
     else:
         raise Exception('Undefined decoder type: %s' % decoder_type)
 

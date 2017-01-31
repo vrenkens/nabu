@@ -7,11 +7,14 @@ import tensorflow as tf
 import neuralnetworks
 import processing
 
+
 tf.app.flags.DEFINE_string('expdir', '.', 'The experiments directory')
 FLAGS = tf.app.flags.FLAGS
 
 def main(_):
     '''does everything for testing'''
+
+    decoder_cfg_file = 'config/decoder/BeamSearchDecoder.cfg'
 
     #read the database config file
     parsed_database_cfg = configparser.ConfigParser()
@@ -30,7 +33,7 @@ def main(_):
 
     #read the decoder config file
     parsed_decoder_cfg = configparser.ConfigParser()
-    parsed_decoder_cfg.read(FLAGS.expdir + '/decoder.cfg')
+    parsed_decoder_cfg.read(decoder_cfg_file)
     decoder_cfg = dict(parsed_decoder_cfg.items('decoder'))
 
     decodedir = FLAGS.expdir + '/decoded'
