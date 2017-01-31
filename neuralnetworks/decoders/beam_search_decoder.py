@@ -8,7 +8,7 @@ import decoder
 import processing
 
 class BeamSearchDecoder(decoder.Decoder):
-    '''greedy decoder'''
+    '''Beam search decoder'''
 
     def __init__(self, conf, classifier, classifier_scope, input_dim,
                  max_input_length, coder, expdir):

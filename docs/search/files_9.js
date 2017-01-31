@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['target_5fcoder_2epy',['target_coder.py',['../target__coder_8py.html',1,'']]],
-  ['target_5fnormalizers_2epy',['target_normalizers.py',['../target__normalizers_8py.html',1,'']]],
-  ['test_2epy',['test.py',['../test_8py.html',1,'']]],
-  ['train_2epy',['train.py',['../train_8py.html',1,'']]]
+  ['score_2epy',['score.py',['../score_8py.html',1,'']]],
+  ['sigproc_2epy',['sigproc.py',['../sigproc_8py.html',1,'']]],
+  ['speller_2epy',['speller.py',['../speller_8py.html',1,'']]]
 ];

@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['factory',['factory',['../decoder__factory_8py.html#ad404902919b55bb05608addc811bc37e',1,'neuralnetworks::decoders::decoder_factory']]],
   ['feat_2epy',['feat.py',['../feat_8py.html',1,'']]],
   ['feature_5freader_2epy',['feature_reader.py',['../feature__reader_8py.html',1,'']]],
   ['featurecomputer',['FeatureComputer',['../classprocessing_1_1feat_1_1FeatureComputer.html',1,'processing::feat']]],

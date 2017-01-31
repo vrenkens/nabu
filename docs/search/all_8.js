@@ -3,6 +3,9 @@ var searchData=
   ['l2norm',['L2Norm',['../classneuralnetworks_1_1classifiers_1_1activation_1_1L2Norm.html',1,'neuralnetworks::classifiers::activation']]],
   ['las',['LAS',['../classneuralnetworks_1_1classifiers_1_1las_1_1LAS.html',1,'neuralnetworks::classifiers::las']]],
   ['layer_2epy',['layer.py',['../layer_8py.html',1,'']]],
+  ['listener',['Listener',['../classneuralnetworks_1_1classifiers_1_1encoders_1_1listener_1_1Listener.html',1,'neuralnetworks::classifiers::encoders::listener']]],
+  ['listener_2epy',['listener.py',['../listener_8py.html',1,'']]],
   ['logpowspec',['logpowspec',['../sigproc_8py.html#a3fcb1dd8dd45a8c1b50c734d9317934e',1,'processing::sigproc']]],
+  ['loop_5ffunction',['loop_function',['../speller_8py.html#adcb23d59de3248aeadcf85992a8debb1',1,'neuralnetworks::classifiers::decoders::speller']]],
   ['licence',['LICENCE',['../md_LICENCE.html',1,'']]]
 ];

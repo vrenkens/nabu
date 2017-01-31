@@ -9,7 +9,7 @@ import decoder
 import processing
 
 class AttentionVisiualizer(decoder.Decoder):
-    '''greedy decoder'''
+    '''Decoder for attention visualisation'''
 
     def __init__(self, conf, classifier, classifier_scope, input_dim,
                  max_input_length, coder, expdir):

@@ -1,8 +1,10 @@
 var searchData=
 [
-  ['powspec',['powspec',['../sigproc_8py.html#a0290012fdbcf190c8e7a8549940f1b2f',1,'processing::sigproc']]],
-  ['preemphasis',['preemphasis',['../sigproc_8py.html#af50f8cb415e18ebae60b55041c777450',1,'processing::sigproc']]],
-  ['prepare_5fdata',['prepare_data',['../prepare__data_8py.html#ae77003aec7f4c39f3a63001f4130b549',1,'processing::prepare_data']]],
-  ['prev_5fid',['prev_id',['../classprocessing_1_1feature__reader_1_1FeatureReader.html#a0b9df4a09f747ed38b7d7f7d4607aaa1',1,'processing::feature_reader::FeatureReader']]],
-  ['pyramid_5fstack',['pyramid_stack',['../ops_8py.html#aca066e7231305db06b1e564482109b18',1,'neuralnetworks::ops']]]
+  ['next_5fid',['next_id',['../classprocessing_1_1feature__reader_1_1FeatureReader.html#aaa2bdef6c735aec5c6f8973a25235d90',1,'processing::feature_reader::FeatureReader']]],
+  ['nonseq2seq',['nonseq2seq',['../ops_8py.html#a7ffc40ab74c69850e9cb1c857670c492',1,'neuralnetworks::ops']]],
+  ['normalize',['normalize',['../classprocessing_1_1target__coder_1_1TargetCoder.html#a91638e8a351ecb0be0890b16e054f980',1,'processing::target_coder::TargetCoder']]],
+  ['normalizer_5ffactory',['normalizer_factory',['../target__normalizers_8py.html#a647a5ff8b9c9f0e566118cea0a666a77',1,'processing::target_normalizers']]],
+  ['num_5fbatches',['num_batches',['../classprocessing_1_1batchdispenser_1_1BatchDispenser.html#a42c3662bf6d98ef9a2b621e204d4d98f',1,'processing::batchdispenser::BatchDispenser']]],
+  ['num_5flabels',['num_labels',['../classprocessing_1_1batchdispenser_1_1BatchDispenser.html#a68ac0ac9f74ef2bf12f77f48a306b464',1,'processing.batchdispenser.BatchDispenser.num_labels()'],['../classprocessing_1_1target__coder_1_1TargetCoder.html#a8a75299bb40d5e3d54975ed8459070f2',1,'processing.target_coder.TargetCoder.num_labels()']]],
+  ['num_5futt',['num_utt',['../classprocessing_1_1batchdispenser_1_1BatchDispenser.html#a7f132d14c5f8c347ba60cb21bd4b5fe3',1,'processing::batchdispenser::BatchDispenser']]]
 ];
