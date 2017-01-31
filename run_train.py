@@ -18,7 +18,7 @@ def main(_):
     '''main function'''
 
     #pointers to the config files
-    computing_cfg_file = 'config/computing/condor_local.cfg'
+    computing_cfg_file = 'config/computing/local.cfg'
     database_cfg_file = 'config/databases/TIMIT.cfg'
     feat_cfg_file = 'config/features/fbank.cfg'
     nnet_cfg_file = 'config/nnet/LAS.cfg'
