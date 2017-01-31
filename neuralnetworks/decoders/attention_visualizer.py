@@ -102,14 +102,16 @@ class AttentionVisiualizer(decoder.Decoder):
 
                         #get the attenion tensor
                         if initial_state_attention:
-                            attention_name = (tf.get_default_graph()._name_stack
-                            + '/' + type(classifier.decoder).__name__
-                            + '/attention_decoder/attention_decoder/' +
-                            'Attention_0/Softmax:0')
+                            attention_name = (
+                                tf.get_default_graph()._name_stack
+                                + '/' + type(classifier.decoder).__name__
+                                + '/attention_decoder/attention_decoder/' +
+                                'Attention_0/Softmax:0')
                         else:
-                            attention_name = (tf.get_default_graph()._name_stack
-                            + '/' + type(classifier.decoder).__name__ +
-                            '/attention_decoder/Attention_0/Softmax:0')
+                            attention_name = (
+                                tf.get_default_graph()._name_stack
+                                + '/' + type(classifier.decoder).__name__ +
+                                '/attention_decoder/Attention_0/Softmax:0')
 
                         attention = tf.get_default_graph().get_tensor_by_name(
                             attention_name)

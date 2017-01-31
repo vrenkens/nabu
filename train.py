@@ -82,7 +82,7 @@ def train(clusterfile,
         localports = []
         for job in machines:
             for remote in machines[job]:
-                if localmachine == remote[0]:
+                if localmachine == remote[0] or remote[0] == 'localhost':
                     localports.append(remote[1])
 
         for job in machines:

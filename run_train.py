@@ -18,7 +18,7 @@ def main(_):
     '''main function'''
 
     #pointers to the config files
-    computing_cfg_file = 'config/computing/static.cfg'
+    computing_cfg_file = 'config/computing/condor_local.cfg'
     database_cfg_file = 'config/databases/TIMIT.cfg'
     feat_cfg_file = 'config/features/fbank.cfg'
     nnet_cfg_file = 'config/nnet/LAS.cfg'
@@ -114,7 +114,6 @@ def main(_):
         os.mkdir(FLAGS.expdir + '/cluster')
 
         #submit the parameter server jobs
-        print()
         subprocess.call(['condor_submit', 'expdir=%s' % FLAGS.expdir,
                          'numjobs=%s' % computing_cfg['numps'],
                          'distributed/condor/ps.job'])
@@ -193,6 +192,35 @@ def main(_):
         #notify the machine that the cluster is ready
         fid = open(FLAGS.expdir + '/cluster/ready', 'w')
         fid.close()
+
+    elif computing_cfg['distributed'] == 'condor_local':
+
+        #create the directories
+        if not os.path.isdir(FLAGS.expdir + '/outputs'):
+            os.mkdir(FLAGS.expdir + '/outputs')
+
+        #create the cluster file
+        with open(FLAGS.expdir + '/cluster', 'w') as fid:
+            port = 1024
+            for _ in range(int(computing_cfg['numps'])):
+                while not distributed.cluster.port_available(port):
+                    port += 1
+                fid.write('ps,localhost,%d,\n' % port)
+                port += 1
+            for i in range(int(computing_cfg['numworkers'])):
+                while not distributed.cluster.port_available(port):
+                    port += 1
+                fid.write('worker,localhost,%d,%d\n' % (port, i))
+                port += 1
+
+        #submit the job
+        subprocess.call(['condor_submit', 'expdir=%s' % FLAGS.expdir,
+                         'CPUs=%d' % (int(computing_cfg['numworkers']) +
+                                      int(computing_cfg['numps'])),
+                         'GPUs=%d' % (int(computing_cfg['numworkers'])),
+                         'memory=%s' % computing_cfg['minmemory'],
+                         'distributed/condor/local.job'])
+
 
     else:
         raise Exception('Unknown distributed type in %s' % computing_cfg_file)

@@ -13,7 +13,6 @@ NiceUser = true
 #Send an email in case of an error
 Notification = Error
 
-# Should run from the parent directory
 initialdir = .
 
 #Run he build cluster script for the parameter server

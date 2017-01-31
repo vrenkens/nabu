@@ -59,7 +59,8 @@ class Speller(object):
             batch_size = hlfeat.get_shape()[0]
 
             #squeezed targets
-            squeezed_inputs = tf.reshape(encoder_inputs,
+            squeezed_inputs = tf.reshape(
+                encoder_inputs,
                 encoder_inputs.get_shape()[0:2])
 
             #one hot encode the targets
