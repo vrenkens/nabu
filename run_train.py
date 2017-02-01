@@ -19,7 +19,7 @@ def main(_):
 
     #pointers to the config files
     computing_cfg_file = 'config/computing/local.cfg'
-    database_cfg_file = 'config/databases/TIMIT.cfg'
+    database_cfg_file = 'config/databases/TIMIT.conf'
     feat_cfg_file = 'config/features/fbank.cfg'
     nnet_cfg_file = 'config/nnet/LAS.cfg'
     trainer_cfg_file = 'config/trainer/cross_enthropytrainer.cfg'

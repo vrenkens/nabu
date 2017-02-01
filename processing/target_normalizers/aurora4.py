@@ -1,24 +1,7 @@
-'''@file target_normalizers.py
-Contains functions for target normalization, this is database and task dependent
-'''
+'''@file aurora4.py
+contains the timit target normalizer'''
 
-def normalizer_factory(normalizer_type):
-    '''create a normalizer_type
-
-    Args:
-        normalizer_type: the type of normalizer_type
-
-    Returns:
-        a normalizer function'''
-
-    if normalizer_type == 'aurora4_normalizer':
-        return aurora4_normalizer
-    elif normalizer_type == 'timit_phone_norm':
-        return timit_phone_norm
-    else:
-        raise Exception('Undefined normalizer: %s' % normalizer_type)
-
-def aurora4_normalizer(transcription, alphabet):
+def aurora4(transcription, alphabet):
     '''
     normalizer for Aurora 4 training transcriptions
 
@@ -72,9 +55,3 @@ def aurora4_normalizer(transcription, alphabet):
                   for character in normalized]
 
     return ' '.join(normalized)
-
-def timit_phone_norm(transcription, _):
-    """ Transorfm the transcitopn string into a list. We are expected foldet inputs in the
-        text files we are loading. In the future the folding could be implemented here
-        manually."""
-    return transcription + ' <eos>'

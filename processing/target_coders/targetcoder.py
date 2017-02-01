@@ -1,27 +1,9 @@
-'''@file target_coder.py
-a file containing the target coders which can be used to encode and decode text,
-alignments etc. '''
+'''@file targetcoder.py
+contains the TargetCoder class'''
 
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 import numpy as np
-
-def coder_factory(target_normalizer, coder_type):
-    '''create a target coder
-
-    Args:
-        target_normalizer: a target normalizer function
-        coder_type: the type of coder to create
-
-    Returns:
-        a TargetCoder object'''
-
-    if coder_type == 'textcoder':
-        return TextCoder(target_normalizer)
-    elif coder_type == 'phonemecoder':
-        return PhonemeCoder(target_normalizer)
-    else:
-        raise Exception('Undefined coder type: %s' % coder_type)
 
 class TargetCoder(object):
     '''an abstract class for a target coder which can encode and decode target
@@ -108,60 +90,3 @@ class TargetCoder(object):
         '''the number of possible labels'''
 
         return len(self.lookup)
-
-class TextCoder(TargetCoder):
-    '''a coder for text'''
-
-    def create_alphabet(self):
-        '''create the alphabet of characters'''
-
-        alphabet = []
-
-        # end of sentence token
-        alphabet.append('<eos>')
-
-        #start of sentence token
-        alphabet.append('<sos>')
-
-        #space
-        alphabet.append('<space>')
-
-        #comma
-        alphabet.append(',')
-
-        #period
-        alphabet.append('.')
-
-        #apostrophy
-        alphabet.append('\'')
-
-        #hyphen
-        alphabet.append('-')
-
-        #question mark
-        alphabet.append('?')
-
-        #unknown character
-        alphabet.append('<unk>')
-
-        #letters in the alphabet
-        for letter in range(ord('a'), ord('z')+1):
-            alphabet.append(chr(letter))
-
-        return alphabet
-
-class PhonemeCoder(TargetCoder):
-    """ Sets up a 39 element foldet phoneme alphabet."""
-
-    def create_alphabet(self):
-        """
-        Create an alphabet of folded phonemes, according to
-        "Speaker-Independent Phone Recognition Using Hidden Markov Models."
-        """
-
-        alphabet = ['<eos>', '<sos>', 'sil', 'aa', 'ae', 'ah', 'aw', 'ay', 'b',
-                    'ch', 'd', 'dh', 'dx', 'eh', 'er', 'ey', 'f', 'g', 'hh',
-                    'ih', 'iy', 'jh', 'k', 'l', 'm', 'n', 'ng', 'ow', 'oy', 'p',
-                    'r', 's', 'sh', 't', 'th', 'uh', 'uw', 'v', 'w', 'y', 'z']
-
-        return alphabet

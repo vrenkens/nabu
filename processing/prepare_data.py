@@ -68,7 +68,6 @@ def prepare_data(datadir, featdir, conf):
     #copy some kaldi files to features dir
     copyfile(datadir + '/utt2spk', featdir + '/utt2spk')
     copyfile(datadir + '/spk2utt', featdir + '/spk2utt')
-    copyfile(datadir + '/text', featdir + '/text')
     copyfile(datadir + '/wav.scp', featdir + '/wav.scp')
 
     #write the maximum length in a file
