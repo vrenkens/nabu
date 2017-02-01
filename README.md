@@ -13,9 +13,9 @@ systems for Automatic Speech Recognition. Nabu is built on top of TensorFlow.
 
 ## Usage
 
-###### Data preparation
+###Data preparation
 
-**Database preparation**
+####Database preparation
 
 Nabu's data format is the same as the [Kaldi](https://www.http://kaldi-asr.org/)
 toolkit. To prepare a database for training you should run Kaldi's data
@@ -71,7 +71,7 @@ factory).
 - normalizer field should be the name of your target normalizer (defined in the
 factory).
 
-**Feature computation**
+####Feature computation
 
 To compute the features you can use the featprep.py script. For the feature
 configuration you can modify/create a file in config/features/ or use a
@@ -87,7 +87,7 @@ Then you can compute the features with:
 python featprep
 ```
 
-###### Training a model
+### Training a model
 
 To train a pre-designed model (see Designing a model to design your own) you can
 use the run_train.py script. For configuration you can modify the folowing
