@@ -1,6 +1,6 @@
 #Nabu
 
-Please find the documentation page [here](http://vrenkens.github.io/Nabu-asr)
+Please find the documentation page [here](http://vrenkens.github.io/nabu)
 
 ##Table of content
 - [About](#about)
@@ -17,6 +17,7 @@ Please find the documentation page [here](http://vrenkens.github.io/Nabu-asr)
 - [Design](#design)
   - [Designing a model](#designing-a-model)
     - [Creating the classifier](#creating-the-classifier)
+
 
 
 ##About

@@ -63,9 +63,9 @@ def main(_):
         input_dim = int(fid.read())
 
     #create the coder
-    normalizer = processing.target_normalizers.normalizer_factory(
+    normalizer = processing.target_normalizers.normalizer_factory.factory(
         database_cfg['normalizer'])
-    coder = processing.target_coder.coder_factory(
+    coder = processing.target_coders.coder_factory.factory(
         normalizer, database_cfg['coder'])
 
 
