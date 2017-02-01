@@ -35,18 +35,24 @@ def main(_):
     parsed_trainer_cfg.read(trainer_cfg_file)
     trainer_cfg = dict(parsed_trainer_cfg.items('trainer'))
 
-    if os.path.isdir(FLAGS.expdir) and trainer_cfg['resume_training'] != 'True':
-        shutil.rmtree(FLAGS.expdir)
+    if trainer_cfg['resume_training'] == 'True':
+        if not os.path.isdir(FLAGS.expdir):
+            raise Exception('cannot find %s, please set resume_training to '
+                            'False if you want to start a new training process'
+                            % FLAGS.expdir)
+    elif os.path.isdir(FLAGS.expdir + '/logdir'):
+        shutil.rmtree(FLAGS.expdir + '/logdir')
 
-    if not os.path.isdir(FLAGS.expdir):
-        os.mkdir(FLAGS.expdir)
+        if not os.path.isdir(FLAGS.expdir):
+            os.mkdir(FLAGS.expdir)
 
-    #copy the configs to the expdir so they can be read there and the experiment
-    #information is stored
+        #copy the configs to the expdir so they can be read there and the
+        #experiment information is stored
+        shutil.copyfile(database_cfg_file, FLAGS.expdir + '/database.cfg')
+        shutil.copyfile(feat_cfg_file, FLAGS.expdir + '/features.cfg')
+        shutil.copyfile(nnet_cfg_file, FLAGS.expdir + '/nnet.cfg')
+
     shutil.copyfile(computing_cfg_file, FLAGS.expdir + '/computing.cfg')
-    shutil.copyfile(database_cfg_file, FLAGS.expdir + '/database.cfg')
-    shutil.copyfile(feat_cfg_file, FLAGS.expdir + '/features.cfg')
-    shutil.copyfile(nnet_cfg_file, FLAGS.expdir + '/nnet.cfg')
     shutil.copyfile(trainer_cfg_file, FLAGS.expdir + '/trainer.cfg')
     shutil.copyfile(decoder_cfg_file, FLAGS.expdir + '/decoder.cfg')
 

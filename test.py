@@ -14,7 +14,7 @@ FLAGS = tf.app.flags.FLAGS
 def main(_):
     '''does everything for testing'''
 
-    decoder_cfg_file = 'config/decoder/BeamSearchDecoder.cfg'
+    decoder_cfg_file = None
 
     #read the database config file
     parsed_database_cfg = configparser.ConfigParser()
@@ -32,6 +32,8 @@ def main(_):
     nnet_cfg = dict(parsed_nnet_cfg.items('nnet'))
 
     #read the decoder config file
+    if decoder_cfg_file is None:
+        decoder_cfg_file = FLAGS.expdir + '/decoder.cfg'
     parsed_decoder_cfg = configparser.ConfigParser()
     parsed_decoder_cfg.read(decoder_cfg_file)
     decoder_cfg = dict(parsed_decoder_cfg.items('decoder'))

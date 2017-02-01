@@ -17,7 +17,7 @@ class Classifier(object):
 
     @abstractmethod
     def __call__(self, inputs, input_seq_length, targets=None,
-                 target_seq_length=None, is_training=False, scope=None):
+                 target_seq_length=None, is_training=False):
         '''
         Add the neural net variables and operations to the graph
 
@@ -32,7 +32,6 @@ class Classifier(object):
             target_seq_length: The sequence lengths of the target utterances,
                 this is a [batch_size] dimansional vector
             is_training: whether or not the network is in training mode
-            scope: the name scope
 
         Returns:
             A pair containing:

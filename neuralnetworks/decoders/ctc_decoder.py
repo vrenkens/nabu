@@ -44,11 +44,11 @@ class CTCDecoder(decoder.Decoder):
                 tf.int32, shape=[self.batch_size], name='seq_length')
 
             #create the decoding graph
-            logits, logits_seq_length =\
-                classifier(
-                    self.inputs, self.input_seq_length, targets=None,
-                    target_seq_length=None, is_training=False,
-                    scope=classifier_scope)
+            with tf.variable_scope(classifier_scope):
+                logits, logits_seq_length =\
+                    classifier(
+                        self.inputs, self.input_seq_length, targets=None,
+                        target_seq_length=None, is_training=False)
 
             #Convert logits to time major
             logits = tf.transpose(logits, [1, 0, 2])

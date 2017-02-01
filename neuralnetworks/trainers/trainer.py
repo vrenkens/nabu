@@ -129,13 +129,13 @@ class Trainer(object):
                     name='val_loss_in')
 
                 #compute the training outputs of the classifier
-                trainlogits, logit_seq_length = classifier(
-                    inputs=self.inputs,
-                    input_seq_length=self.input_seq_length,
-                    targets=self.targets,
-                    target_seq_length=self.target_seq_length,
-                    is_training=True,
-                    scope='Classifier')
+                with tf.variable_scope('Classifier'):
+                    trainlogits, logit_seq_length = classifier(
+                        inputs=self.inputs,
+                        input_seq_length=self.input_seq_length,
+                        targets=self.targets,
+                        target_seq_length=self.target_seq_length,
+                        is_training=True)
 
                 #create a saver for the classifier
                 self.modelsaver = tf.train.Saver(tf.get_collection(

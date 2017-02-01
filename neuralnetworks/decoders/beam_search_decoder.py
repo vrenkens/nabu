@@ -18,8 +18,8 @@ class BeamSearchDecoder(decoder.Decoder):
         Args:
             conf: the decoder config
             classifier: the classifier that will be used for decoding
-            classifier_scope: the scope where the classier should be
-                created/loaded from
+            classifier_scope: the scope where the classier should be created/loaded
+                from
             input_dim: the input dimension to the nnnetgraph
             max_input_length: the maximum length of the inputs
             batch_size: the decoder batch size
