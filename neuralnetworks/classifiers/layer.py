@@ -97,9 +97,7 @@ class BLSTMLayer(object):
 
             #create the lstm cell that will be used for the forward and backward
             #pass
-            lstm_cell = rnn_cell.LSTMCell(self.num_units,
-                                          state_is_tuple=True,
-                                          use_peepholes=True)
+            lstm_cell = rnn_cell.BasicLSTMCell(self.num_units)
 
             #do the forward computation
             outputs_tupple, _ = bidirectional_dynamic_rnn(

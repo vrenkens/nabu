@@ -40,8 +40,9 @@ def main(_):
             raise Exception('cannot find %s, please set resume_training to '
                             'False if you want to start a new training process'
                             % FLAGS.expdir)
-    elif os.path.isdir(FLAGS.expdir + '/logdir'):
-        shutil.rmtree(FLAGS.expdir + '/logdir')
+    else:
+        if os.path.isdir(FLAGS.expdir + '/logdir'):
+            shutil.rmtree(FLAGS.expdir + '/logdir')
 
         if not os.path.isdir(FLAGS.expdir):
             os.mkdir(FLAGS.expdir)
