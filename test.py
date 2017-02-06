@@ -100,7 +100,7 @@ def main(_):
         saver.restore(sess, FLAGS.expdir + '/logdir/final.ckpt')
 
         #decode with te neural net
-        decoded = neuralnetworks.decoders.decoder.decode(decoder, reader, sess)
+        decoded = decoder.decode(reader, sess)
 
     #the path to the text file
     textfile = database_cfg['testtext']

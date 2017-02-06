@@ -10,187 +10,171 @@ import processing
 class BeamSearchDecoder(decoder.Decoder):
     '''Beam search decoder'''
 
-    def __init__(self, conf, classifier, classifier_scope, input_dim,
-                 max_input_length, coder, expdir):
-        '''
-        Decoder constructor, creates the decoding graph
+    def get_outputs(self, inputs, input_seq_length, classifier,
+                    classifier_scope):
+
+        '''compute the outputs of the decoder
 
         Args:
-            conf: the decoder config
-            classifier: the classifier that will be used for decoding
-            classifier_scope: the scope where the classier should be created/loaded
-                from
-            input_dim: the input dimension to the nnnetgraph
-            max_input_length: the maximum length of the inputs
-            batch_size: the decoder batch size
-            coder: a TargetCoder object
-            expdir: the location where the models were saved and the results
-                will be written
+            inputs: The inputs to the network as a
+                [batch_size x max_input_length x input_dim] tensor
+            input_seq_length: The sequence length of the inputs as a
+                [batch_size] vector
+            classifier: The classifier object that will be used in decoding
+            classifier_scope: the scope where the classifier was defined
+
+        Returns:
+            A list with batch_size elements containing nbest lists with elements
+            containing pairs of score and output labels
         '''
 
-        self.conf = conf
-        self.max_input_length = max_input_length
-        self.expdir = expdir
-        self.coder = coder
-        self.batch_size = int(conf['batch_size'])
+        #encode the inputs [batch_size x output_length x output_dim]
+        with tf.variable_scope(classifier_scope):
+            hlfeat = classifier.encoder(self.inputs, self.input_seq_length,
+                                        False, False)
 
-        with tf.variable_scope('BeamSearchDecoder'):
-
-            #create the inputs placeholder
-            self.inputs = tf.placeholder(
-                tf.float32,
-                shape=[self.batch_size, max_input_length, input_dim],
-                name='inputs')
-
-            #create the sequence length placeholder
-            self.input_seq_length = tf.placeholder(
-                tf.int32, shape=[self.batch_size], name='seq_length')
-
-            #encode the inputs [batch_size x output_length x output_dim]
-            with tf.variable_scope(classifier_scope):
-                hlfeat = classifier.encoder(self.inputs, self.input_seq_length,
-                                            False, False)
-
-            #repeat the high level features for all beam elements
-            hlfeat = tf.reshape(tf.tile(tf.expand_dims(hlfeat, 1),
-                                        [1, int(conf['beam_width']), 1, 1]),
-                                [int(conf['beam_width'])*self.batch_size,
-                                 int(hlfeat.get_shape()[1]),
-                                 int(hlfeat.get_shape()[2])])
+        #repeat the high level features for all beam elements
+        hlfeat = tf.reshape(tf.tile(tf.expand_dims(hlfeat, 1),
+                                    [1, int(self.conf['beam_width']), 1, 1]),
+                            [int(self.conf['beam_width'])*self.batch_size,
+                             int(hlfeat.get_shape()[1]),
+                             int(hlfeat.get_shape()[2])])
 
 
-            def body(step, beam, reuse=True, initial_state_attention=True):
-                '''the body of the decoding while loop
+        def body(step, beam, reuse=True, initial_state_attention=True):
+            '''the body of the decoding while loop
 
-                Args:
-                    beam: a Beam object containing the current beam
-                    reuse: set to True to reuse the classifier
-                    initial_state_attention: whether attention has to be applied
-                        to the initital state to ge an initial context
+            Args:
+                beam: a Beam object containing the current beam
+                reuse: set to True to reuse the classifier
+                initial_state_attention: whether attention has to be applied
+                    to the initital state to ge an initial context
 
-                returns:
-                    the loop vars'''
+            returns:
+                the loop vars'''
 
-                with tf.variable_scope('body'):
+            with tf.variable_scope('body'):
 
-                    #put the last output in the correct format
-                    # [batch_size x beam_width]
-                    prev_output = beam.sequences[:, :, step]
+                #put the last output in the correct format
+                # [batch_size x beam_width]
+                prev_output = beam.sequences[:, :, step]
 
-                    #put the prev_output and state in the correct shape so all
-                    #beam elements from all batches are processed in parallel
-                    #[batch_size*beam_width x 1]
-                    prev_output = tf.expand_dims(
-                        tf.reshape(prev_output, [-1]), 1)
+                #put the prev_output and state in the correct shape so all
+                #beam elements from all batches are processed in parallel
+                #[batch_size*beam_width x 1]
+                prev_output = tf.expand_dims(
+                    tf.reshape(prev_output, [-1]), 1)
 
-                    states = [tf.reshape(s, [-1, int(s.get_shape()[2])])
-                              for s in nest.flatten(beam.states)]
-                    states = nest.pack_sequence_as(beam.states, states)
+                states = [tf.reshape(s, [-1, int(s.get_shape()[2])])
+                          for s in nest.flatten(beam.states)]
+                states = nest.pack_sequence_as(beam.states, states)
 
-                    #compute the next state and logits
-                    with tf.variable_scope(classifier_scope) as scope:
-                        if reuse:
-                            scope.reuse_variables()
-                        logits, states = classifier.decoder(
-                            hlfeat=hlfeat,
-                            encoder_inputs=prev_output,
-                            numlabels=classifier.output_dim,
-                            initial_state=states,
-                            initial_state_attention=initial_state_attention,
-                            is_training=False)
+                #compute the next state and logits
+                with tf.variable_scope(classifier_scope) as scope:
+                    if reuse:
+                        scope.reuse_variables()
+                    logits, states = classifier.decoder(
+                        hlfeat=hlfeat,
+                        encoder_inputs=prev_output,
+                        numlabels=classifier.output_dim,
+                        initial_state=states,
+                        initial_state_attention=initial_state_attention,
+                        is_training=False)
 
-                    #put the states and logits in the format for the beam
-                    states = [tf.reshape(s,
-                                         [self.batch_size,
-                                          int(conf['beam_width']),
-                                          int(s.get_shape()[1])])
-                              for s in nest.flatten(states)]
-                    states = nest.pack_sequence_as(beam.states, states)
-                    logits = tf.reshape(logits,
-                                        [self.batch_size,
-                                         int(conf['beam_width']),
-                                         int(logits.get_shape()[2])])
+                #put the states and logits in the format for the beam
+                states = [tf.reshape(s,
+                                     [self.batch_size,
+                                      int(self.conf['beam_width']),
+                                      int(s.get_shape()[1])])
+                          for s in nest.flatten(states)]
+                states = nest.pack_sequence_as(beam.states, states)
+                logits = tf.reshape(logits,
+                                    [self.batch_size,
+                                     int(self.conf['beam_width']),
+                                     int(logits.get_shape()[2])])
 
-                    #update the beam
-                    beam = beam.update(logits, states, step)
+                #update the beam
+                beam = beam.update(logits, states, step)
 
-                    step = step + 1
+                step = step + 1
 
-                return step, beam
+            return step, beam
 
-            def cb_cond(step, beam):
-                '''the condition of the decoding while loop
+        def cb_cond(step, beam):
+            '''the condition of the decoding while loop
 
-                Args:
-                    step: the decoding step
-                    beam: a Beam object containing the current beam
+            Args:
+                step: the decoding step
+                beam: a Beam object containing the current beam
 
-                returns:
-                    a boolean that evaluates to True if the loop should
-                    continue'''
+            returns:
+                a boolean that evaluates to True if the loop should
+                continue'''
 
-                with tf.variable_scope('cond'):
+            with tf.variable_scope('cond'):
 
-                    #check if all beam elements have terminated
-                    cont = tf.logical_and(
-                        tf.logical_not(beam.all_terminated(step)),
-                        tf.less(step, int(conf['max_steps'])))
+                #check if all beam elements have terminated
+                cont = tf.logical_and(
+                    tf.logical_not(beam.all_terminated(step)),
+                    tf.less(step, int(self.conf['max_steps'])))
 
-                return cont
+            return cont
 
 
-            #initialise the loop variables
-            negmax = tf.tile(
-                [[-tf.float32.max]],
-                [self.batch_size, int(conf['beam_width'])-1])
-            scores = tf.concat(
-                1, [tf.zeros([self.batch_size, 1]), negmax])
-            lengths = tf.ones(
-                [self.batch_size, int(conf['beam_width'])],
-                dtype=tf.int32)
-            sequences = tf.ones(
-                [self.batch_size, int(conf['beam_width']),
-                 int(conf['max_steps'])],
-                dtype=tf.int32)
-            states = classifier.decoder.zero_state(
-                int(conf['beam_width'])*self.batch_size)
-            flat_states = [tf.reshape(s,
-                                      [self.batch_size,
-                                       int(conf['beam_width']),
-                                       int(s.get_shape()[1])])
-                           for s in nest.flatten(states)]
-            states = nest.pack_sequence_as(states, flat_states)
+        #initialise the loop variables
+        negmax = tf.tile(
+            [[-tf.float32.max]],
+            [self.batch_size, int(self.conf['beam_width'])-1])
+        scores = tf.concat(
+            1, [tf.zeros([self.batch_size, 1]), negmax])
+        lengths = tf.ones(
+            [self.batch_size, int(self.conf['beam_width'])],
+            dtype=tf.int32)
+        sequences = tf.ones(
+            [self.batch_size, int(self.conf['beam_width']),
+             int(self.conf['max_steps'])],
+            dtype=tf.int32)
+        states = classifier.decoder.zero_state(
+            int(self.conf['beam_width'])*self.batch_size)
+        flat_states = [tf.reshape(s,
+                                  [self.batch_size,
+                                   int(self.conf['beam_width']),
+                                   int(s.get_shape()[1])])
+                       for s in nest.flatten(states)]
+        states = nest.pack_sequence_as(states, flat_states)
 
-            beam = Beam(sequences, lengths, states, scores)
-            step = tf.constant(0)
+        beam = Beam(sequences, lengths, states, scores)
+        step = tf.constant(0)
 
-            #do the first step because the initial state should not be used
-            #to compute a context and reuse should be False
-            step, beam = body(step, beam, False, False)
+        #do the first step because the initial state should not be used
+        #to compute a context and reuse should be False
+        step, beam = body(step, beam, False, False)
 
-            #run the rest of the decoding loop
-            _, beam = tf.while_loop(
-                cond=cb_cond,
-                body=body,
-                loop_vars=[step, beam],
-                parallel_iterations=1,
-                back_prop=False)
+        #run the rest of the decoding loop
+        _, beam = tf.while_loop(
+            cond=cb_cond,
+            body=body,
+            loop_vars=[step, beam],
+            parallel_iterations=1,
+            back_prop=False)
 
-            with tf.variable_scope('cut_sequences'):
-                #get the beam scores
-                scores = [tf.unpack(s) for s in tf.unpack(beam.scores)]
+        with tf.variable_scope('cut_sequences'):
+            #get the beam scores
+            scores = [tf.unpack(s) for s in tf.unpack(beam.scores)]
 
-                #cut the beam sequences to the correct length and take of
-                #the start of sequence token
-                sequences = [tf.unpack(s) for s in tf.unpack(beam.sequences)]
-                lengths = [tf.unpack(l) for l in tf.unpack(beam.lengths)]
-                sequences = [[sequences[i][j][1:lengths[i][j]]
-                              for j in range(len(lengths[i]))]
-                             for i in range(len(lengths))]
+            #cut the beam sequences to the correct length and take of
+            #the start of sequence token
+            sequences = [tf.unpack(s) for s in tf.unpack(beam.sequences)]
+            lengths = [tf.unpack(l) for l in tf.unpack(beam.lengths)]
+            sequences = [[sequences[i][j][1:lengths[i][j]]
+                          for j in range(len(lengths[i]))]
+                         for i in range(len(lengths))]
 
-            self.outputs = [[(scores[i][j], sequences[i][j])
-                             for j in range(len(sequences[i]))]
-                            for i in range(len(sequences))]
+        outputs = [[(scores[i][j], sequences[i][j])
+                    for j in range(len(sequences[i]))]
+                   for i in range(len(sequences))]
+
+        return outputs
 
     def score(self, outputs, targets):
         '''score the performance

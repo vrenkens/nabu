@@ -17,6 +17,10 @@ Please find the documentation page [here](http://vrenkens.github.io/nabu)
 - [Design](#design)
   - [Designing a model](#designing-a-model)
     - [Creating the classifier](#creating-the-classifier)
+    - [Classifier configuration file](#classifier-configuration-file)
+  - [Designing a trainer](#designing-a-trainer)
+    - [Creating the trainer](#creating-the-trainer)
+    - [Trainer configuration file](#trainer-configuration-file)
 
 
 
@@ -189,7 +193,11 @@ To test a trained model you can use the test.py script. You can use a different
 decoder configuration then you used during training. You should modify the
 decoder_cfg_file variable at the top of test.py, so it points to the correct
 config file. If you want to use the config file that you used during training
-set the variable to None.
+set the variable to None. You can then test the model with:
+
+```
+python test.py --expdir=path/to/expdir
+```
 
 ##Design
 
@@ -198,10 +206,9 @@ set the variable to None.
 ####Creating the classifier
 
 The classifier is the core of the model. The general Classifier class is defined
-in neuralnetworks/classifiers/classifier.py. All classifiers inherit from
-Classifier and follow the same interface. To create your own classifier define
-a class that inherits from Classifier and overwrite the \__call\__ method.
-This method takes the folowing inputs:
+in neuralnetworks/classifiers/classifier.py. To create your own classifier
+create a class in neuralnetworks/classifiers/ that inherits from Classifier and
+overwrite the \__call\__ method. This method takes the following inputs:
 
 - inputs: the inputs to the neural network, this is a
     [batch_size x max_input_length x feature_dim] tensor
@@ -220,19 +227,56 @@ the output sequence lengths.
 The classifier will be called within the trainer and decoder, so the classifier
 should not define its own graph. Some example Classifiers:
 
-- neuralnetworks/classifiers/las.py
-- neuralnetworks/classifiers/dblstm.py
+- neuralnetworks/classifiers/las.py: Listen Attend and Spel model
+- neuralnetworks/classifiers/dblstm.py: Deep Biderictional LSTM model
 
 Once you've created your classifier you should add it in the factory method in
-neuralnetworks/classifiers/classifier_factory (with any name) and you should
+neuralnetworks/classifiers/classifier_factory.py (with any name) and you should
 import it in neuralnetworks/classifiers/\__init\__.py.
 
 ####Classifier configuration file
 
 If you've created your classifier you should also create a configuration file
 for it in config/nnet/. The Classifier object will have access to this
-configuration as a dictionary of strings. You can use this configuration to
-set some parameters to your model. As a minimum the configuration file should
-contain the classifier field with the name of your classifier (that you've
-defined in the factory method). As an example you can look at other
-configuration files in config/nnet/.
+configuration as a dictionary of strings in self.conf. You can use this
+configuration to set some parameters to your model. As a minimum the
+configuration file should contain the classifier field with the name of your
+classifier (that you've defined in the factory method). As an example you can
+look at other configuration files in config/nnet/.
+
+###Designing a trainer
+
+####Creating the trainer
+
+the general Trainer class is defined in neuralnetworks/trainers/trainer.py. To
+design your own trainer you should create a trainer class in
+neuralnetworks/trainers/ that inherits from trainer and overwrite the
+compute_loss method. This method takes the following inputs:
+
+- targets: a [batch_size, max_target_length] tensor containing the targets
+- logits: a [batch_size, max_logit_length, dim] tensor containing the logits
+- logit_seq_length: the length of all the logit sequences as a [batch_size]
+vector
+- target_seq_length: the length of all the target sequences as a [batch_size]
+vector
+
+The method should return the loss that you would like to minimize. Some
+implemented trainers:
+
+- neuralnetworks/trainers/cross_enthropytrainer.py: minimizes cross-enthropy
+- neuralnetworks/trainers/ctctrainer.py: minimizes CTC loss
+
+Once your tainer is created you should at it in the factory method in
+neuralnetworks/trainers/trainer_factory.py (with any name) and you should import
+it in neuralnetworks/trainers/\__init\__.py.
+
+####Training configuration file
+
+After creating you trainer should also create a configuration file for it in
+config/trainer/. The Trainer object will have access to this configuration as a
+dictionary of strings in self.conf. You can use this configuration to set some
+parameters for your trainer. As a minimum it should contain the fields that are
+defined in config/trainer/cross_enthropytrainer.cfg. And you should change the
+trainer field to the name that you defined in the factory method.
+
+###Designing a decoder

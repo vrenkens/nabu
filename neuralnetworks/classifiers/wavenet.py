@@ -19,7 +19,7 @@ class Wavenet(Classifier):
             input_seq_length: The sequence lengths of the input utterances, this
                 is a [batch_size] dimansional vector
             targets: the targets to the neural network, this is a
-                [batch_size x max_output_length x 1] tensor. The targets can be
+                [batch_size x max_output_length] tensor. The targets can be
                 used during training
             target_seq_length: The sequence lengths of the target utterances,
                 this is a [batch_size] dimansional vector

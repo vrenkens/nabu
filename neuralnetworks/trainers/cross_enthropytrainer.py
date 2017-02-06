@@ -20,19 +20,21 @@ class CrossEnthropyTrainer(trainer.Trainer):
         method)
 
         Args:
-            targets: a list that contains a Bx1 tensor containing the targets
-                for eacht time step where B is the batch size
-            logits: a list that contains a BxO tensor containing the output
-                logits for eacht time step where O is the output dimension
-            logit_seq_length: the length of all the input sequences as a vector
+            targets: a [batch_size, max_target_length] tensor containing the
+                targets
+            logits: a [batch_size, max_logit_length, dim] tensor containing the
+                logits
+            logit_seq_length: the length of all the logit sequences as a
+                [batch_size] vector
             target_seq_length: the length of all the target sequences as a
-                vector
+                [batch_size] vector
 
         Returns:
             a scalar value containing the loss
         '''
 
         with tf.name_scope('cross_enthropy_loss'):
+            targets = tf.expand_dims(targets, 2)
 
             #convert to non sequential data
             nonseq_targets = ops.seq2nonseq(targets, target_seq_length)
@@ -49,40 +51,5 @@ class CrossEnthropyTrainer(trainer.Trainer):
             #compute the cross-enthropy loss
             loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
                 nonseq_logits, nonseq_targets))
-
-        return loss
-
-    def validation(self, logits, logit_seq_length):
-        '''
-        apply a softmax to the logits so the cross-enthropy can be computed
-
-        Args:
-            logits: a [batch_size, max_input_length, dim] tensor containing the
-                logits
-            logit_seq_length: the length of all the input sequences as a vector
-
-        Returns:
-            a tensor with the same shape as logits with the label probabilities
-        '''
-
-        return tf.nn.softmax(logits)
-
-    def validation_metric(self, outputs, targets):
-        '''the cross-enthropy
-
-        Args:
-            outputs: the validation output, which is a matrix containing the
-                label probabilities of size [batch_size, max_input_length, dim].
-            targets: a list containing the ground truth target labels
-
-        Returns:
-            a numpy array containing the loss of all utterances
-        '''
-
-        loss = np.zeros(outputs.shape[0])
-
-        for utt in range(outputs.shape[0]):
-            loss[utt] += np.mean(-np.log(
-                outputs[utt, np.arange(targets[utt].size), targets[utt]]))
 
         return loss

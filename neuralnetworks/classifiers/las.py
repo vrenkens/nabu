@@ -41,7 +41,7 @@ class LAS(Classifier):
             input_seq_length: The sequence lengths of the input utterances, this
                 is a [batch_size] dimansional vector
             targets: the targets to the neural network, this is a
-                [batch_size x max_output_length x 1] tensor. The targets can be
+                [batch_size x max_output_length] tensor. The targets can be
                 used during training
             target_seq_length: The sequence lengths of the target utterances,
                 this is a [batch_size] dimansional vector
@@ -70,9 +70,9 @@ class LAS(Classifier):
         #shift the targets to encoder inputs by prepending a start of
         #sequence label and taking of the end of sequence label
         batch_size = int(targets.get_shape()[0])
-        sos_labels = tf.ones([batch_size, 1, 1], dtype=tf.int32)
+        sos_labels = tf.ones([batch_size, 1], dtype=tf.int32)
         encoder_inputs = tf.concat(1, [sos_labels, targets])
-        encoder_inputs = encoder_inputs[:, :-1, :]
+        encoder_inputs = encoder_inputs[:, :-1]
 
         #compute the output logits
         logits, _ = self.decoder(

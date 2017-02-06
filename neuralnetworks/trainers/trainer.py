@@ -102,7 +102,7 @@ class Trainer(object):
                 #reference labels
                 self.targets = tf.placeholder(
                     dtype=tf.int32,
-                    shape=[dispenser.size, max_target_length, 1],
+                    shape=[dispenser.size, max_target_length],
                     name='targets')
 
                 #the length of all the input sequences
@@ -340,49 +340,17 @@ class Trainer(object):
         trainer
 
         Args:
-            targets: a list that contains a Bx1 tensor containing the targets
-                for eacht time step where B is the batch size
-            logits: a list that contains a BxO tensor containing the output
-                logits for eacht time step where O is the output dimension
-            logit_seq_length: the length of all the input sequences as a vector
-            target_seq_length: the length of all the output sequences as a
-                vector
+            targets: a [batch_size, max_target_length] tensor containing the
+                targets
+            logits: a [batch_size, max_logit_length, dim] tensor containing the
+                logits
+            logit_seq_length: the length of all the logit sequences as a
+                [batch_size] vector
+            target_seq_length: the length of all the target sequences as a
+                [batch_size] vector
 
         Returns:
             a scalar value containing the total loss
-        '''
-
-        raise NotImplementedError('Abstract method')
-
-    @abstractmethod
-    def validation(self, logits, logit_seq_length):
-        '''
-        compute the outputs that will be used for validation
-
-        Args:
-            logits: the classifier output logits
-            logit_seq_length: the sequence lengths of the logits
-
-        Returns:
-            The validation outputs
-        '''
-
-        raise NotImplementedError('Abstract method')
-
-    @abstractmethod
-    def validation_metric(self, outputs, targets):
-        '''
-        compute the metric that will be used for validation
-
-        The metric can be e.g. an error rate or a loss
-
-        Args:
-            outputs: the validation outputs
-            targets: the ground truth labels
-
-        Returns:
-            a numpy array containing the loss of all utterances
-
         '''
 
         raise NotImplementedError('Abstract method')
@@ -492,7 +460,6 @@ class Trainer(object):
         #pad the inputs and targets untill the maximum lengths
         padded_inputs = np.array(pad(inputs, self.max_input_length))
         padded_targets = np.array(pad(targets, self.max_target_length))
-        padded_targets = padded_targets[:, :, np.newaxis]
 
         #pylint: disable=E1101
         _, loss, lr = sess.run(
@@ -524,7 +491,7 @@ class Trainer(object):
         #update the validated step
         sess.run([self.set_val_step])
 
-        outputs = decoders.decoder.decode(self.decoder, self.val_reader, sess)
+        outputs = self.decoder.decode(self.val_reader, sess)
 
         val_loss = self.decoder.score(outputs, self.val_targets)
 

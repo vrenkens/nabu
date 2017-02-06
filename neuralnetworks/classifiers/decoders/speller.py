@@ -37,7 +37,7 @@ class Speller(object):
             hlfeat: the high level features of shape
                 [batch_size x hl_seq_length x feat_dim]
             encoder_inputs: the one-hot encoded training targets of shape
-                [batch_size x target_seq_length (x 1)].
+                [batch_size x target_seq_length].
             numlabels: number of output labels
             initial_state: the initial decoder state, could be usefull for
                 decoding
@@ -58,13 +58,8 @@ class Speller(object):
             #get the batch size
             batch_size = hlfeat.get_shape()[0]
 
-            #squeezed targets
-            squeezed_inputs = tf.reshape(
-                encoder_inputs,
-                encoder_inputs.get_shape()[0:2])
-
             #one hot encode the targets
-            one_hot_inputs = tf.one_hot(squeezed_inputs, numlabels,
+            one_hot_inputs = tf.one_hot(encoder_inputs, numlabels,
                                         dtype=tf.float32)
 
             #put targets in time major
