@@ -47,11 +47,7 @@ class FeatureComputer(object):
                        float(self.conf['winstep']))
 
         #compute the features and energy
-        feat, energy = self.comp_feat(sig, rate)
-
-        #append the energy if requested
-        if self.conf['include_energy'] == 'True' and energy is not None:
-            feat = np.append(feat, energy[:, np.newaxis], 1)
+        feat = self.comp_feat(sig, rate)
 
         #add the dynamic information
         feat = self.comp_dyn(feat)
