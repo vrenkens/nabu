@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['score_2epy',['score.py',['../score_8py.html',1,'']]],
-  ['sigproc_2epy',['sigproc.py',['../sigproc_8py.html',1,'']]],
-  ['speller_2epy',['speller.py',['../speller_8py.html',1,'']]]
+  ['readfiles_2epy',['readfiles.py',['../readfiles_8py.html',1,'']]],
+  ['run_5fremote_2epy',['run_remote.py',['../run__remote_8py.html',1,'']]]
 ];

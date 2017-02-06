@@ -89,6 +89,11 @@ $(function() {
 <li><a href="#classifier-configuration-file">Classifier configuration file</a></li>
 </ul>
 </li>
+<li><a href="#designing-features">Designing features</a><ul>
+<li><a href="#creating-the-feature-computer">Creating the feature computer</a></li>
+<li><a href="#feature-configuration-file">Feature configuration file</a></li>
+</ul>
+</li>
 <li><a href="#designing-a-trainer">Designing a trainer</a><ul>
 <li><a href="#creating-the-trainer">Creating the trainer</a></li>
 <li><a href="#trainer-configuration-file">Trainer configuration file</a></li>
@@ -156,7 +161,7 @@ $(function() {
 <li>The normalizer field should be the name of your target normalizer (defined in the factory).</li>
 </ul>
 <h4>Feature computation</h4>
-<p>To compute the features you can use the featprep.py script. For the feature configuration you can modify/create a file in config/features/ or use a default config file.</p>
+<p>To compute the features you can use the featprep.py script. For the feature configuration you can modify/create a file in config/features/ or use a default config file. Look at the <a href="#designing-features">Designing features section</a> to design your own features.</p>
 <p>In the script you should modify the database_cfg_file variable to point to the desired database config file and the feat_cfg_file to point to the desired feature config file.</p>
 <p>Then you can compute the features with:</p>
 <div class="fragment"><div class="line">python featprep</div></div><!-- fragment --><h3>Training a model</h3>
@@ -199,6 +204,25 @@ $(function() {
 <p>Once you've created your classifier you should add it in the factory method in neuralnetworks/classifiers/classifier_factory.py (with any name) and you should import it in neuralnetworks/classifiers/__init__.py.</p>
 <h4>Classifier configuration file</h4>
 <p>If you've created your classifier you should also create a configuration file for it in config/nnet/. The Classifier object will have access to this configuration as a dictionary of strings in self.conf. You can use this configuration to set some parameters to your model. As a minimum the configuration file should contain the classifier field with the name of your classifier (that you've defined in the factory method). As an example you can look at other configuration files in config/nnet/.</p>
+<h3>Designing features</h3>
+<h4>Creating the feature computer</h4>
+<p>the general FeatureComputer class is defined in <a class="el" href="feature__computer_8py.html" title="contains the FeatureComputer class ">processing/feature_computers/feature_computer.py</a>. To design your own feature you should create a feature computer class that inherits from FeatureComputer and overwrite the comp_feat method. This method takes the following inputs:</p>
+<ul>
+<li>sig: the audio signal as a 1-D numpy array</li>
+<li>rate: the sampling rate</li>
+</ul>
+<p>It returns the computed features as a [seq_length x feature_dim] numpy array. Some implemented feature computers:</p>
+<ul>
+<li><a class="el" href="fbank_8py.html" title="contains the fbank feature compute ">processing/feature_computers/fbank.py</a></li>
+<li><a class="el" href="mfcc_8py.html" title="contains the fbank feature compute ">processing/feature_computers/mfcc.py</a></li>
+</ul>
+<p>Once your feature computer is created you should add it in the factory method in <a class="el" href="feature__computer__factory_8py.html" title="contains the FeatureComputer factory ">processing/feature_computers/feature_computer_factory.py</a> (with any name) and you should import it in processing/feature_computers/__init__.py.</p>
+<h4>Feature configuration file</h4>
+<p>After creating your feature computer you should also create a configuration file for it in config/features/. The FeatureComputer object will have access to this configuration as a dictionary of strings in self.conf. You can use this configuration to set some parameters for your features. As a minimum it should contain the following fields:</p>
+<ul>
+<li>name: The name of the feature, this is used for storage and loading</li>
+<li>feature: The feature type. This should be the name that you gave in the factory method</li>
+</ul>
 <h3>Designing a trainer</h3>
 <h4>Creating the trainer</h4>
 <p>The general Trainer class is defined in <a class="el" href="trainer_8py.html" title="neural network trainer environment ">neuralnetworks/trainers/trainer.py</a>. To design your own trainer you should create a trainer class in neuralnetworks/trainers/ that inherits from Trainer and overwrite the compute_loss method. This method takes the following inputs:</p>

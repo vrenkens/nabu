@@ -18,6 +18,9 @@ Please find the documentation page [here](http://vrenkens.github.io/nabu)
   - [Designing a model](#designing-a-model)
     - [Creating the classifier](#creating-the-classifier)
     - [Classifier configuration file](#classifier-configuration-file)
+  - [Designing features](#designing-features)
+    - [Creating the feature computer](#creating-the-feature-computer)
+    - [Feature configuration file](#feature-configuration-file)
   - [Designing a trainer](#designing-a-trainer)
     - [Creating the trainer](#creating-the-trainer)
     - [Trainer configuration file](#trainer-configuration-file)
@@ -110,18 +113,19 @@ should be stored
 database preparation.
 - The coder field should be the name of your target coder (defined in the
 factory).
-- The normalizer field should be the name of your target normalizer (defined in the
-factory).
+- The normalizer field should be the name of your target normalizer (defined in
+the factory).
 
 ####Feature computation
 
 To compute the features you can use the featprep.py script. For the feature
 configuration you can modify/create a file in config/features/ or use a
-default config file.
+default config file. Look at the
+[Designing features section](#designing-features) to design your own features.
 
-In the script you
-should modify the database_cfg_file variable to point to the desired database
-config file and the feat_cfg_file to point to the desired feature config file.
+In the script you should modify the database_cfg_file variable to point to the
+desired database config file and the feat_cfg_file to point to the desired
+feature config file.
 
 Then you can compute the features with:
 
@@ -254,6 +258,40 @@ configuration file should contain the classifier field with the name of your
 classifier (that you've defined in the factory method). As an example you can
 look at other configuration files in config/nnet/.
 
+###Designing features
+
+####Creating the feature computer
+
+the general FeatureComputer class is defined in
+processing/feature_computers/feature_computer.py. To design your own feature
+you should create a feature computer class that inherits from FeatureComputer
+and overwrite the comp_feat method. This method takes the following inputs:
+
+- sig: the audio signal as a 1-D numpy array
+- rate: the sampling rate
+
+It returns the computed features as a [seq_length x feature_dim] numpy array.
+Some implemented feature computers:
+
+- processing/feature_computers/fbank.py
+- processing/feature_computers/mfcc.py
+
+Once your feature computer is created you should add it in the factory method in
+processing/feature_computers/feature_computer_factory.py (with any name) and you
+should import it in processing/feature_computers/\__init\__.py.
+
+####Feature configuration file
+
+After creating your feature computer you should also create a configuration file
+for it in config/features/. The FeatureComputer object will have access to this
+configuration as a dictionary of strings in self.conf. You can use this
+configuration to set some parameters for your features. As a minimum it should
+contain the following fields:
+
+- name: The name of the feature, this is used for storage and loading
+- feature: The feature type. This should be the name that you gave in the
+factory method
+
 ###Designing a trainer
 
 ####Creating the trainer
@@ -349,10 +387,10 @@ parameter servers to update the parameters. The parameter server will run on a
 CPU. The workers will run on a GPU if one is available.
 
 For each job you can have multiple instances or tasks, if you have multiple
-parameter servers, the parameters will  be divided between them. This can help if
-communication is a bottleneck. If  there are many workers the parameter server
-may have trouble serving them all in a timely fashion. Multiple workers can
-process multiple batches in parallel and update the parameters either
+parameter servers, the parameters will  be divided between them. This can help
+if communication is a bottleneck. If  there are many workers the parameter
+server may have trouble serving them all in a timely fashion. Multiple workers
+can process multiple batches in parallel and update the parameters either
 synchronously or asynchronously (depending on the numbatches_to_aggregate field
 in the trainer config).
 
@@ -379,8 +417,8 @@ on the machine where it is called from and will run on a single device.
 ###Local
 
 To choose this computing configuration you should set the computing_cfg_file to
-'config/computing/local.cfg' at the top of run_train.py. Local computing will run
-on the machine where it is called from but runs on multiple devices. You can
+'config/computing/local.cfg' at the top of run_train.py. Local computing will
+run on the machine where it is called from but runs on multiple devices. You can
 choose the number of devices in the config file.
 
 ###Static

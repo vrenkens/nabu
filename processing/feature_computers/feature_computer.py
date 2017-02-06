@@ -18,15 +18,6 @@ class FeatureComputer(object):
             conf: the feature configuration
         '''
 
-        if conf['dynamic'] == 'nodelta':
-            self.comp_dyn = lambda x: x
-        elif conf['dynamic'] == 'delta':
-            self.comp_dyn = base.delta
-        elif conf['dynamic'] == 'ddelta':
-            self.comp_dyn = base.ddelta
-        else:
-            raise Exception('unknown dynamic type')
-
         self.conf = conf
 
     def __call__(self, sig, rate):
@@ -34,23 +25,18 @@ class FeatureComputer(object):
         compute the features
 
         Args:
-            sig: audio signal
-            rate: sampling rate
+
 
         Returns:
-            the features
+            the features as a [seq_length x feature_dim] numpy array
         '''
 
-        if self.conf['snip_edges'] == 'True':
-            #snip the edges
-            sig = snip(sig, rate, float(self.conf['winlen']),
-                       float(self.conf['winstep']))
+        #snip the edges
+        sig = snip(sig, rate, float(self.conf['winlen']),
+                   float(self.conf['winstep']))
 
         #compute the features and energy
         feat = self.comp_feat(sig, rate)
-
-        #add the dynamic information
-        feat = self.comp_dyn(feat)
 
         return feat
 

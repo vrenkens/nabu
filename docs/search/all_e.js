@@ -6,7 +6,7 @@ var searchData=
   ['shuffle_5fexamples',['shuffle_examples',['../prepare__data_8py.html#a7635be6c7eec6f95838b9626b40983d4',1,'nabu::processing::prepare_data']]],
   ['sigproc_2epy',['sigproc.py',['../sigproc_8py.html',1,'']]],
   ['skip_5fbatch',['skip_batch',['../classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#a9761cc911e8d4ee86e9c3c4c6e5e406d',1,'nabu::processing::batchdispenser::BatchDispenser']]],
-  ['snip',['snip',['../feat_8py.html#a3aa00f753d11f7a59a4b7acf9be2dc6b',1,'nabu::processing::feat']]],
+  ['snip',['snip',['../feature__computer_8py.html#a73a29c5ceba120c47457a74a40f0714d',1,'nabu::processing::feature_computers::feature_computer']]],
   ['speller',['Speller',['../classnabu_1_1neuralnetworks_1_1classifiers_1_1decoders_1_1speller_1_1Speller.html',1,'nabu::neuralnetworks::classifiers::decoders::speller']]],
   ['speller_2epy',['speller.py',['../speller_8py.html',1,'']]],
   ['splice',['splice',['../feature__reader_8py.html#a4ab1a53b4cc1e12f6fbdf23f0cd22fbf',1,'nabu::processing::feature_reader']]],

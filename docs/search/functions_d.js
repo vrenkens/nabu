@@ -4,7 +4,7 @@ var searchData=
   ['seq2nonseq',['seq2nonseq',['../ops_8py.html#a9ab7ee53425b89bd5d21329e3ba3c474',1,'nabu::neuralnetworks::ops']]],
   ['shuffle_5fexamples',['shuffle_examples',['../prepare__data_8py.html#a7635be6c7eec6f95838b9626b40983d4',1,'nabu::processing::prepare_data']]],
   ['skip_5fbatch',['skip_batch',['../classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#a9761cc911e8d4ee86e9c3c4c6e5e406d',1,'nabu::processing::batchdispenser::BatchDispenser']]],
-  ['snip',['snip',['../feat_8py.html#a3aa00f753d11f7a59a4b7acf9be2dc6b',1,'nabu::processing::feat']]],
+  ['snip',['snip',['../feature__computer_8py.html#a73a29c5ceba120c47457a74a40f0714d',1,'nabu::processing::feature_computers::feature_computer']]],
   ['splice',['splice',['../feature__reader_8py.html#a4ab1a53b4cc1e12f6fbdf23f0cd22fbf',1,'nabu::processing::feature_reader']]],
   ['split',['split',['../classnabu_1_1processing_1_1ark_1_1ArkReader.html#aeaae26092724288d4151a18f26ea3c37',1,'nabu.processing.ark.ArkReader.split()'],['../classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#aa7dd1fa046fe1cb7656a4d5923a245d2',1,'nabu.processing.batchdispenser.BatchDispenser.split()'],['../classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html#a203789a3c231845ba87a9f2b7027a7f2',1,'nabu.processing.feature_reader.FeatureReader.split()']]]
 ];

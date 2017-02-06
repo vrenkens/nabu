@@ -25,4 +25,11 @@ class Mfcc(feature_computer.FeatureComputer):
         if self.conf['include_energy'] == 'True':
             feat = np.append(feat, energy[:, np.newaxis], 1)
 
+        if self.conf['dynamic'] == 'delta':
+            feat = base.delta(feat)
+        elif self.conf['dynamic'] == 'ddelta':
+            feat = base.ddelta(feat)
+        elif self.conf['dynamic'] != 'nodelta':
+            raise Exception('unknown dynamic type')
+
         return feat
