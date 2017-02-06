@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.12"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Nabu-asr: Nabu</title>
+<title>Nabu-asr: Main Page</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -59,19 +59,204 @@ $(function() {
 
 <div class="header">
   <div class="headertitle">
-<div class="title">Nabu </div>  </div>
+<div class="title">Nabu-asr Documentation</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Disclaimer: This code is still under developement</p>
-<p>Please find the documentation page <a href="http://vrenkens.github.io/Nabu-asr">here</a></p>
-<h2>Installation </h2>
+<div class="textblock"><p>#Nabu</p>
+<p>Please find the documentation page <a href="http://vrenkens.github.io/nabu">here</a></p>
+<h2>Table of content</h2>
 <ul>
-<li>Download and install <a href="https://www.tensorflow.org/versions/0.6.0/get_started/os_setup.html#download-and-setup">TensorFlow</a>.</li>
-<li>Modify the config files for your setup</li>
-<li>run main.py</li>
+<li><a href="#about">About</a></li>
+<li><a href="#dependencies">Dependencies</a></li>
+<li><a href="#usage">Usage</a><ul>
+<li><a href="#data-preparation">Data preparation</a><ul>
+<li><a href="#database-preparation">Database preparation</a></li>
+<li><a href="#feature-computation">Feature computation</a></li>
 </ul>
-<h2>Goal </h2>
-<p>This is code for end-to-end neural networks for automatic speech recognition. Implemented with Tensorflow. </p>
+</li>
+<li><a href="#training-a-model">Training a model</a><ul>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#running-the-training-script">Running the training script</a></li>
+<li><a href="#visualization">Visualization</a></li>
+</ul>
+</li>
+<li><a href="#testing-a-model">Testing a model</a></li>
+</ul>
+</li>
+<li><a href="#design">Design</a><ul>
+<li><a href="#designing-a-model">Designing a model</a><ul>
+<li><a href="#creating-the-classifier">Creating the classifier</a></li>
+<li><a href="#classifier-configuration-file">Classifier configuration file</a></li>
+</ul>
+</li>
+<li><a href="#designing-a-trainer">Designing a trainer</a><ul>
+<li><a href="#creating-the-trainer">Creating the trainer</a></li>
+<li><a href="#trainer-configuration-file">Trainer configuration file</a></li>
+</ul>
+</li>
+<li><a href="#designing-a-decoder">Designing a decoder</a><ul>
+<li><a href="#creating-the-decoder">Creating the decoder</a></li>
+<li><a href="#decoder-configuration-file">Decoder configuration file</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#distributed-training">Distributed training</a><ul>
+<li><a href="#non-distributed">Non-distributed</a></li>
+<li><a href="#local">Local</a></li>
+<li><a href="#static">Static</a></li>
+<li><a href="#condor-local">Condor-local</a></li>
+<li><a href="#condor">Condor</a></li>
+</ul>
+</li>
+</ul>
+<h2>About</h2>
+<p>Nabu is a toolbox for designing, training and using end-to-end neural network systems for Automatic Speech Recognition. Nabu is built on top of TensorFlow. Some model architectures have been implemented in Nabu e.g.:</p>
+<ul>
+<li>Deep Bidirectional LSTM with CTC</li>
+<li>Attention based encoder-decoder networks</li>
+</ul>
+<p>Nabu's design is focused on adaptability, so users can easily design there own models and methodologies.</p>
+<h2>Dependencies</h2>
+<ul>
+<li><a href="https://www.tensorflow.org">TensorFlow</a>.</li>
+</ul>
+<h2>Usage</h2>
+<h3>Data preparation</h3>
+<h4>Database preparation</h4>
+<p>Nabu's data format is the same as the <a href="http://kaldi-asr.org/">Kaldi</a> toolkit. To prepare a database for training you should run Kaldi's data preparation scripts, these scripts can be found on the Kaldi Github. You can find more information on the Kaldi data preparation <a href="http://kaldi-asr.org/doc/data_prep.html">here</a>.</p>
+<p>The resulting data directories should contain:</p>
+<ul>
+<li>wav.scp: a text file with a line per utterance, this line should contain the ID of the utterance and either a wav filename or a command to read the audio file and pipe the results. Examples:<ul>
+<li>utt1 /path/to/file.wav</li>
+<li>utt1 sph2pipe -f wav /path/to/file.wav |</li>
+</ul>
+</li>
+<li>a text file (name does not matter) containing the reference transcription for all utterances. Example:<ul>
+<li>utt1 this is a reference transcription</li>
+</ul>
+</li>
+<li>spk2utt: a file containing a mapping from speaker to utterance, every line contains the utterances for a speaker (space separated). If no speaker information is given just put all utterances on a single line. Example:<ul>
+<li>speaker1 utt1 utt2 utt3</li>
+</ul>
+</li>
+<li>utt2spk: the reverse mapping for spk2utt one line per utterance containing the utterance ID and the speaker ID. Example:<ul>
+<li>utt1 speaker1</li>
+</ul>
+</li>
+</ul>
+<p>Next you should create a database normalizer in processing/target_normalizers/. This is a method that takes a transcription and an alphabet as input and returns the normalized transcription. You can find already implemented normalizers in processing/target_normalizers/, you should use these as examples. Once you implemented your normalizer you should add it in <a class="el" href="normalizer__factory_8py.html" title="Contains the normalizer factory. ">processing/target_normalizers/normalizer_factory.py</a> in the factory method (with a name of your choosing). You should also import your new file in processing/target_normalizers/__init__.py.</p>
+<p>Next you should create a target coder in processing/target_coders/. A target coder converts a normalized transcription string into a numpy array of labels. To create your own coder you should create a class that inherits from TargetCoder (defined in <a class="el" href="targetcoder_8py.html" title="contains the TargetCoder class ">processing/target_coders/targetcoder.py</a>). You should then overwrite the create_alphabet method that returns your desired alphabet. Some coders have been implemented and can be found in processing/target_coders/. Once you implemented your coder you should add it in <a class="el" href="coder__factory_8py.html" title="contain the coder factory ">processing/target_coders/coder_factory.py</a> in the factory method (with a name of your choosing). You should also import your new file in processing/target_coders/__init__.py.</p>
+<p>Finally, you should create a config file for your database in config/databases/. You can base your config on config/databases/template.cfg:</p>
+<ul>
+<li>_data fields should point to the directories created in the database preparations</li>
+<li>_features fields should contain writable directories where your features should be stored</li>
+<li>Text fields should point to the transcription text files created in the database preparation.</li>
+<li>The coder field should be the name of your target coder (defined in the factory).</li>
+<li>The normalizer field should be the name of your target normalizer (defined in the factory).</li>
+</ul>
+<h4>Feature computation</h4>
+<p>To compute the features you can use the featprep.py script. For the feature configuration you can modify/create a file in config/features/ or use a default config file.</p>
+<p>In the script you should modify the database_cfg_file variable to point to the desired database config file and the feat_cfg_file to point to the desired feature config file.</p>
+<p>Then you can compute the features with:</p>
+<div class="fragment"><div class="line">python featprep</div></div><!-- fragment --><h3>Training a model</h3>
+<p>To train a pre-designed model (see <a href="#designing-a-model">Designing a model</a> to design your own) you can use the run_train.py script.</p>
+<h4>Configuration</h4>
+<p>For configuration you can modify the following config files:</p>
+<ul>
+<li>config/computing/: The computing mode configuration, this will be explained more in the <a href="#distributed-training">Distributed training section</a> (stick to non-distributed.cfg for now).</li>
+<li>config/nnet/: The neural network configuration. The content of this configuration depends on the type of model. In this section you can choose the number of layers, the dimensionality of the layers etc. Look at the <a href="#designing-a-model">Designing a model section</a> if you want to design your own type of model.</li>
+<li>config/trainer/: The trainer configuration, this config contains the type of trainer and its configuration. Select the type of trainer that is appropriate for your model (e.g. cross_entropy for encoder-decoder nets).You can also set the training parameters like learning rate, batch size etc. Look at the <a href="#designing-a-trainer">Designing a trainer section</a> if you want to design your own type of trainer.</li>
+<li>config/decoder/: this configuration contains the type of decoder that will be used during validation. Choose the type that is appropriate for you model (e.g. beamsearchdecoder for encoder-decoder nets). You can also modify some decoding parameters like beam width and batch size. Look at the <a href="#designing-a-decoder">Designing a decoder section</a> if you want to design your own type of decoder.</li>
+</ul>
+<p>When all configuration files have been edited/created to your liking you should should modify the _cfg_file variables at the top of the run_train.py script so they point to the appropriate config files.</p>
+<h4>Running the training script</h4>
+<p>You can start training with:</p>
+<div class="fragment"><div class="line">python run_train.py --expdir=path/to/expdir</div></div><!-- fragment --><p>The expdir argument should point to the directory where you want all your experiment files to be written (model checkpoints, config files, event files etc).</p>
+<p>If you have a validation set, training will start by measuring the initial performance. Next, the iterative training will start until the required number of steps have been taken. If your process stopped for some reason, you can resume training by setting the resume_training field to True in the trainer config and using the same experiments directory.</p>
+<h4>Visualization</h4>
+<p>During training you can visualize the network, its parameters, performance on the validation set etc. using <a href="https://www.tensorflow.org/how_tos/summaries_and_tensorboard/">Tensorboard</a>. You can start Tensorboard with:</p>
+<div class="fragment"><div class="line">tensorboard --logdir=path/to/expdir/logdir</div></div><!-- fragment --><p>or</p>
+<div class="fragment"><div class="line">python -m tensorflow.tensorboard --logdir=path/to/expdir/logdir</div></div><!-- fragment --><p>the logdir is created in the expdir.</p>
+<h3>Testing a model</h3>
+<p>To test a trained model you can use the <a class="el" href="test_8py.html" title="this file will do the neural net testing ">test.py</a> script. You can use a different decoder configuration then you used during training. You should modify the decoder_cfg_file variable at the top of <a class="el" href="test_8py.html" title="this file will do the neural net testing ">test.py</a>, so it points to the correct config file. If you want to use the config file that you used during training set the variable to None. You can then test the model with:</p>
+<div class="fragment"><div class="line">python test.py --expdir=path/to/expdir</div></div><!-- fragment --><h2>Design</h2>
+<h3>Designing a model</h3>
+<h4>Creating the classifier</h4>
+<p>The classifier is the core of the model. The general Classifier class is defined in <a class="el" href="classifier_8py.html" title="The abstract class for a neural network classifie. ">neuralnetworks/classifiers/classifier.py</a>. To create your own classifier create a class in neuralnetworks/classifiers/ that inherits from Classifier and overwrite the __call__ method. This method takes the following inputs:</p>
+<ul>
+<li>inputs: the inputs to the neural network, this is a [batch_size x max_input_length x feature_dim] tensor</li>
+<li>input_seq_length: The sequence lengths of the input utterances, this is a [batch_size] vector</li>
+<li>targets: the targets to the neural network, this is a [batch_size x max_output_length x 1] tensor. The targets can be used during training</li>
+<li>target_seq_length: The sequence lengths of the target utterances, this is a [batch_size] vector</li>
+<li>is_training: whether or not the network is in training mode</li>
+</ul>
+<p>The method should return the output logits (probabilities before softmax) and the output sequence lengths. Some example Classifiers:</p>
+<ul>
+<li>neuralnetworks/classifiers/las.py: Listen Attend and Spell model</li>
+<li><a class="el" href="dblstm_8py.html" title="contains de DBLSTM class ">neuralnetworks/classifiers/dblstm.py</a>: Deep Biderictional LSTM model</li>
+</ul>
+<p>Once you've created your classifier you should add it in the factory method in neuralnetworks/classifiers/classifier_factory.py (with any name) and you should import it in neuralnetworks/classifiers/__init__.py.</p>
+<h4>Classifier configuration file</h4>
+<p>If you've created your classifier you should also create a configuration file for it in config/nnet/. The Classifier object will have access to this configuration as a dictionary of strings in self.conf. You can use this configuration to set some parameters to your model. As a minimum the configuration file should contain the classifier field with the name of your classifier (that you've defined in the factory method). As an example you can look at other configuration files in config/nnet/.</p>
+<h3>Designing a trainer</h3>
+<h4>Creating the trainer</h4>
+<p>The general Trainer class is defined in <a class="el" href="trainer_8py.html" title="neural network trainer environment ">neuralnetworks/trainers/trainer.py</a>. To design your own trainer you should create a trainer class in neuralnetworks/trainers/ that inherits from Trainer and overwrite the compute_loss method. This method takes the following inputs:</p>
+<ul>
+<li>targets: a [batch_size, max_target_length] tensor containing the targets</li>
+<li>logits: a [batch_size, max_logit_length, dim] tensor containing the logits</li>
+<li>logit_seq_length: the length of all the logit sequences as a [batch_size] vector</li>
+<li>target_seq_length: the length of all the target sequences as a [batch_size] vector</li>
+</ul>
+<p>The method should return the loss that you would like to minimize. Some implemented trainers:</p>
+<ul>
+<li>neuralnetworks/trainers/cross_entropytrainer.py: minimizes cross-entropy</li>
+<li><a class="el" href="ctctrainer_8py.html" title="contains the CTCTraine ">neuralnetworks/trainers/ctctrainer.py</a>: minimizes CTC loss</li>
+</ul>
+<p>Once your trainer is created you should add it in the factory method in neuralnetworks/trainers/trainer_factory.py (with any name) and you should import it in neuralnetworks/trainers/__init__.py.</p>
+<h4>Training configuration file</h4>
+<p>After creating your trainer you should also create a configuration file for it in config/trainer/. The Trainer object will have access to this configuration as a dictionary of strings in self.conf. You can use this configuration to set some parameters for your trainer. As a minimum it should contain the fields that are defined in config/trainer/cross_entropytrainer.cfg. And you should change the trainer field to the name that you defined in the factory method.</p>
+<h3>Designing a decoder</h3>
+<h4>Creating the decoder</h4>
+<p>The general Decoder class is defined in <a class="el" href="decoder_8py.html" title="neural network decoder environment ">neuralnetworks/decoders/decoder.py</a>. To design your own decoder you should create a decoder class in neuralnetworks/decoders/ that inherits from Decoder and overwrite the get_outputs and the score methods. The get_outputs method takes the following inputs:</p>
+<ul>
+<li>inputs: The inputs to the network as a [batch_size x max_input_length x input_dim] tensor</li>
+<li>input_seq_length: The sequence length of the inputs as a [batch_size] vector</li>
+<li>classifier: The classifier object that will be used in decoding</li>
+<li>classifier_scope: the scope where the classifier was defined</li>
+</ul>
+<p>To make it possible to load or reuse the classifier the classifier should always be called within the classifier scope. For example if you want to get the output logits you should do:</p>
+<div class="fragment"><div class="line">with tf.variable_scope(classifier_scope):</div><div class="line">  logits, lengths = classifier(...)</div></div><!-- fragment --><p>The method should return a list with batch_size elements containing nbest lists. Each nbest list is a list containing pairs of score and a numpy array with output labels.</p>
+<p>The score method is used to validate the model and takes the following inputs:</p>
+<ul>
+<li>outputs: a dictionary containing nbest lists of decoder outputs</li>
+<li>targets: a dictionary containing the targets</li>
+</ul>
+<p>The method should return a score that can be used for validation (e.g. Character Error Rate). Some example decoders:</p>
+<ul>
+<li><a class="el" href="ctc__decoder_8py.html" title="contains the CTCDecode ">neuralnetworks/decoders/ctc_decoder.py</a></li>
+<li><a class="el" href="beam__search__decoder_8py.html" title="contains the BeamSearchDecode ">neuralnetworks/decoders/beam_search_decoder.py</a></li>
+</ul>
+<p>Once your decoder is created you should add it in the factory method in <a class="el" href="decoder__factory_8py.html" title="contains the decoder factory ">neuralnetworks/decoders/decoder_factory.py</a> (with any name) and you should import it in neuralnetworks/decoders/__init__.py.</p>
+<h4>Decoder configuration file</h4>
+<p>After creating your decoder you should also create a configuration file for it in config/decoder/. The Decoder object will have access to this configuration as a dictionary of strings in self.conf. You can use this configuration to set some parameters for your decoder. As a minimum it should contain the decoder field and you should set it to the name that you defined in the factory method.</p>
+<h2>Distributed training</h2>
+<p>In distributed training there are 2 jobs. A parameter server (ps) will store the parameters and share them. A worker computes gradients and submits them to the parameter servers to update the parameters. The parameter server will run on a CPU. The workers will run on a GPU if one is available.</p>
+<p>For each job you can have multiple instances or tasks, if you have multiple parameter servers, the parameters will be divided between them. This can help if communication is a bottleneck. If there are many workers the parameter server may have trouble serving them all in a timely fashion. Multiple workers can process multiple batches in parallel and update the parameters either synchronously or asynchronously (depending on the numbatches_to_aggregate field in the trainer config).</p>
+<p>Nabu's distributed computing makes the assumption that the different machines have access to the same file system. Communication happens through ssh tunnels to circumvene firewalls on the network ports. SSH Authentication should happen with an RSA key and not with a password. If one of these things is not possible for your setup, you can either train non-distributed or you should make sure all your devices are in a single machine.</p>
+<p>There are 5 computing configurations that can be used for training. 2 of the configurations use the <a href="https://research.cs.wisc.edu/htcondor/">HTCondor</a> distributed computing system. If your system is not set up with condor you can either use the configurations that do not use condor, or implement a configuration for your setup.</p>
+<h3>Non-distributed</h3>
+<p>To choose this computing configuration you should set the computing_cfg_file to 'config/computing/non-distributed.cfg' at the top of run_train.py. The non-distributed computing is the simplest computing form. The training will run on the machine where it is called from and will run on a single device.</p>
+<h3>Local</h3>
+<p>To choose this computing configuration you should set the computing_cfg_file to 'config/computing/local.cfg' at the top of run_train.py. Local computing will run on the machine where it is called from but runs on multiple devices. You can choose the number of devices in the config file.</p>
+<h3>Static</h3>
+<p>To choose this computing configuration you should set the computing_cfg_file to 'config/computing/static.cfg' at the top of run_train.py. Static computing runs on a statically defined cluster over possibly multiple machines. The cluster should be defined in a cluster file (the clusterfile field in the config should point to this file). Every line in the cluster file defines a task in the cluster. Every line contains the job, the machine, the network port for communication and the GPU index the task should run on (may be empty). All seperated by commas. An example cluster file:</p>
+<div class="fragment"><div class="line">ps,ps1.example.com,1024,</div><div class="line">ps,ps2.example.com,1024,</div><div class="line">worker,worker1.example.com,1024,0</div><div class="line">worker,worker1.example.com,1024,1</div><div class="line">worker,worker2.example.com,1024,0</div></div><!-- fragment --><h3>Condor local</h3>
+<p>To choose this computing configuration you should set the computing_cfg_file to 'config/computing/condor-local.cfg' at the top of run_train.py. This configuration is the same as the <a href="#local">Local</a> configuration, but an appropriate machine is found with condor.</p>
+<h3>Condor</h3>
+<p>To choose this computing configuration you should set the computing_cfg_file to 'config/computing/condor.cfg' at the top of run_train.py. This configuration is the same as the <a href="#static">Static</a> configuration, but instead of using a statically defined cluster, a cluster will be created using Condor.</p>
+<h2>Future work</h2>
+<p>The current future work focusses on incorporating language models into Nabu. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

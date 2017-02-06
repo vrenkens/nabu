@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['update',['update',['../classneuralnetworks_1_1decoders_1_1attention__visualizer_1_1Beam.html#aaa26bda08457b3475ad6c0edf479c790',1,'neuralnetworks.decoders.attention_visualizer.Beam.update()'],['../classneuralnetworks_1_1decoders_1_1beam__search__decoder_1_1Beam.html#af1ef2ea985653325ac6ad5b7e1c1774b',1,'neuralnetworks.decoders.beam_search_decoder.Beam.update()'],['../classneuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a61c5733fd4803c995800c3d396ba9a5e',1,'neuralnetworks.trainers.trainer.Trainer.update()']]]
+  ['update',['update',['../classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1Beam.html#ab2c4710a45f6eb08cc37125d8f6e897b',1,'nabu.neuralnetworks.decoders.attention_visualizer.Beam.update()'],['../classnabu_1_1neuralnetworks_1_1decoders_1_1beam__search__decoder_1_1Beam.html#a8fa348767c50c5e1c75e04b1b6be74b5',1,'nabu.neuralnetworks.decoders.beam_search_decoder.Beam.update()'],['../classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a101b3452d140b427f8a4ef0c4540c028',1,'nabu.neuralnetworks.trainers.trainer.Trainer.update()']]]
 ];

@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['timit_5fphone_5fnorm',['timit_phone_norm',['../target__normalizers_8py.html#ad85421d1f3913af6e5d41e338c1183e8',1,'processing::target_normalizers']]],
-  ['train',['train',['../classneuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#ae4a71d47532adfc8f3b5a37fb9d1e90c',1,'neuralnetworks.trainers.trainer.Trainer.train()'],['../train_8py.html#a8c61cd24f628cb25c35605bc747b1201',1,'train.train()']]]
+  ['timit',['timit',['../timit_8py.html#a2ef08bad60257c63ce078ab201907d15',1,'nabu::processing::target_normalizers::timit']]],
+  ['train',['train',['../classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#aad9e40d768ecd96efc635b9e7ff67e60',1,'nabu.neuralnetworks.trainers.trainer.Trainer.train()'],['../train_8py.html#a008085c0b4f78723f3fcdbb3c448d886',1,'nabu.train.train()']]]
 ];
