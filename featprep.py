@@ -6,8 +6,8 @@ from six.moves import configparser
 from processing import ark, prepare_data
 
 #pointers to the config files
-database_cfg_file = 'config/databases/TIMIT.cfg'
-feat_cfg_file = 'config/features/fbank.cfg'
+database_cfg_file = 'config/databases/TIMIT.conf'
+feat_cfg_file = 'config/features/mfcc.cfg'
 
 #read the database config file
 database_cfg = configparser.ConfigParser()

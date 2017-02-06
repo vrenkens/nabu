@@ -6,7 +6,7 @@ from shutil import copyfile
 from random import shuffle
 import numpy as np
 import scipy.io.wavfile as wav
-import feat
+import feature_computers
 import readfiles
 import ark
 
@@ -44,7 +44,7 @@ def prepare_data(datadir, featdir, conf):
     rate_utt = {utt: read_wav(wavfiles[utt]) for utt in wavfiles}
 
     #create a featureComputer
-    comp = feat.FeatureComputer(conf)
+    comp = feature_computers.feature_computer_factory.factory(conf)
 
     #compute all the features
     max_length = 0

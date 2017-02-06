@@ -1,11 +1,14 @@
-'''@file feat.py
-Contains the class for feature computation'''
+'''@file feature_computer.py
+contains the FeatureComputer class'''
 
-import base
+from abc import ABCMeta, abstractmethod
 import numpy as np
+import base
 
 class FeatureComputer(object):
-    '''A featurecomputer is used to compute a certain type of features'''
+    '''A featurecomputer is used to compute features'''
+
+    __metaclass__ = ABCMeta
 
     def __init__(self, conf):
         '''
@@ -14,17 +17,6 @@ class FeatureComputer(object):
         Args:
             conf: the feature configuration
         '''
-
-        if conf['type'] == 'fbank':
-            self.comp_feat = base.logfbank
-        elif conf['type'] == 'mfcc':
-            self.comp_feat = base.mfcc
-        elif conf['type'] == 'ssc':
-            self.comp_feat = base.ssc
-        elif conf['type'] == 'raw':
-            self.comp_feat = base.raw
-        else:
-            raise Exception('unknown feature type')
 
         if conf['dynamic'] == 'nodelta':
             self.comp_dyn = lambda x: x
@@ -55,7 +47,7 @@ class FeatureComputer(object):
                        float(self.conf['winstep']))
 
         #compute the features and energy
-        feat, energy = self.comp_feat(sig, rate, self.conf)
+        feat, energy = self.comp_feat(sig, rate)
 
         #append the energy if requested
         if self.conf['include_energy'] == 'True' and energy is not None:
@@ -65,6 +57,19 @@ class FeatureComputer(object):
         feat = self.comp_dyn(feat)
 
         return feat
+
+    @abstractmethod
+    def comp_feat(self, sig, rate):
+        '''
+        compute the features
+
+        Args:
+            sig: the audio signal as a 1-D numpy array
+            rate: the sampling rate
+
+        Returns:
+            the features as a [seq_length x feature_dim] numpy array
+        '''
 
 def snip(sig, rate, winlen, winstep):
     '''
