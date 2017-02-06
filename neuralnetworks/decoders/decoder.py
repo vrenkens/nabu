@@ -76,7 +76,7 @@ class Decoder(object):
         '''score the performance
 
         Args:
-            outputs: a dictionary containing the decoder outputs
+            outputs: a dictionary containing nbest lists of decoder outputs
             targets: a dictionary containing the targets
 
         Returns:

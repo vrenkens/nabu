@@ -1,4 +1,4 @@
-import cross_enthropytrainer
+import cross_entropytrainer
 import ctctrainer
 
 def factory(conf,
@@ -43,8 +43,8 @@ def factory(conf,
 
     if trainer_type == 'ctc':
         trainer_class = ctctrainer.CTCTrainer
-    elif trainer_type == 'cross_enthropy':
-        trainer_class = cross_enthropytrainer.CrossEnthropyTrainer
+    elif trainer_type == 'cross_entropy':
+        trainer_class = cross_entropytrainer.CrossEntropyTrainer
     else:
         raise Exception('Undefined trainer type: %s' % trainer_type)
 

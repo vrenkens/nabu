@@ -1,3 +1,4 @@
 # ignore compiled code
 *.pyc
 config/databases/*.conf
+cluster

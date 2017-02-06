@@ -6,11 +6,11 @@ import subprocess
 import tensorflow as tf
 
 
-def main(_):
+def local_cluster(expdir):
     '''main function'''
 
     #read the cluster file
-    clusterfile = FLAGS.expdir + '/cluster'
+    clusterfile = expdir + '/cluster'
     machines = dict()
     machines['worker'] = []
     machines['ps'] = []
@@ -29,8 +29,8 @@ def main(_):
             processes.append(subprocess.Popen(
                 ['python', 'train.py', '--clusterfile=%s' % clusterfile,
                  '--job_name=%s' % job, '--task_index=%d' % task_index,
-                 '--expdir=%s' % FLAGS.expdir],
-                stdout=open(FLAGS.expdir + '/outputs/%s-%d' % (job, task_index),
+                 '--expdir=%s' % expdir],
+                stdout=open(expdir + '/outputs/%s-%d' % (job, task_index),
                             'w', 0),
                 stderr=subprocess.STDOUT))
             task_index += 1
@@ -38,11 +38,13 @@ def main(_):
     for process in processes:
         atexit.register(process.terminate)
 
+    print 'job submitted look in %s/outputs for the job outputs' % expdir
+
     for process in processes:
         process.wait()
 
 if __name__ == '__main__':
     tf.app.flags.DEFINE_string('expdir', 'expdir', 'The experiments directory')
     FLAGS = tf.app.flags.FLAGS
-    
-    tf.app.run()
+
+    local_cluster(FLAGS.expdir)

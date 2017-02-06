@@ -18,7 +18,7 @@ def main(_):
     '''main function'''
 
     #pointers to the config files
-    computing_cfg_file = 'config/computing/local.cfg'
+    computing_cfg_file = 'config/computing/non-distributed.cfg'
     database_cfg_file = 'config/databases/TIMIT.conf'
     feat_cfg_file = 'config/features/fbank.cfg'
     nnet_cfg_file = 'config/nnet/LAS.cfg'
@@ -57,12 +57,35 @@ def main(_):
     shutil.copyfile(trainer_cfg_file, FLAGS.expdir + '/trainer.cfg')
     shutil.copyfile(decoder_cfg_file, FLAGS.expdir + '/decoder.cfg')
 
-    if computing_cfg['distributed'] == 'local':
+    if computing_cfg['distributed'] == 'non-distributed':
 
         train(clusterfile=None,
               job_name=None,
               task_index=None,
               expdir=FLAGS.expdir)
+
+    elif computing_cfg['distributed'] == 'local':
+
+        #create the directories
+        if not os.path.isdir(FLAGS.expdir + '/outputs'):
+            os.mkdir(FLAGS.expdir + '/outputs')
+
+        #create the cluster file
+        with open(FLAGS.expdir + '/cluster', 'w') as fid:
+            port = 1024
+            for _ in range(int(computing_cfg['numps'])):
+                while not distributed.cluster.port_available(port):
+                    port += 1
+                fid.write('ps,localhost,%d,\n' % port)
+                port += 1
+            for i in range(int(computing_cfg['numworkers'])):
+                while not distributed.cluster.port_available(port):
+                    port += 1
+                fid.write('worker,localhost,%d,%d\n' % (port, i))
+                port += 1
+
+        #start the training
+        distributed.local_cluster.local_cluster(FLAGS.expdir)
 
     elif computing_cfg['distributed'] == 'static':
 
@@ -103,6 +126,9 @@ def main(_):
         for job in processes:
             for process in processes[job]:
                 atexit.register(process.terminate)
+
+        print ('training has started look in %s/outputs for the job outputs' %
+               FLAGS.expdir)
 
         #wait for all processes to finish
         for job in processes:
@@ -200,6 +226,9 @@ def main(_):
         fid = open(FLAGS.expdir + '/cluster/ready', 'w')
         fid.close()
 
+        print ('training has started look in %s/outputs for the job outputs' %
+               FLAGS.expdir)
+
     elif computing_cfg['distributed'] == 'condor_local':
 
         #create the directories
@@ -227,6 +256,9 @@ def main(_):
                          'GPUs=%d' % (int(computing_cfg['numworkers'])),
                          'memory=%s' % computing_cfg['minmemory'],
                          'distributed/condor/local.job'])
+
+        print ('job submitted look in %s/outputs for the job outputs' %
+               FLAGS.expdir)
 
 
     else:
