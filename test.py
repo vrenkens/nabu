@@ -4,8 +4,11 @@ this file will do the neural net testing'''
 import os
 from six.moves import configparser
 import tensorflow as tf
-import neuralnetworks
-import processing
+from nabu.neuralnetworks.classifiers import classifier_factory
+from nabu.neuralnetworks.decoders import decoder_factory
+from nabu.processing.target_coders import coder_factory
+from nabu.processing.target_normalizers import normalizer_factory
+from nabu.processing import feature_reader
 
 
 tf.app.flags.DEFINE_string('expdir', '.', 'The experiments directory')
@@ -48,7 +51,7 @@ def main(_):
     with open(featdir + '/maxlength', 'r') as fid:
         max_input_length = int(fid.read())
 
-    reader = processing.feature_reader.FeatureReader(
+    reader = feature_reader.FeatureReader(
         scpfile=featdir + '/feats.scp',
         cmvnfile=featdir + '/cmvn.scp',
         utt2spkfile=featdir + '/utt2spk',
@@ -63,14 +66,14 @@ def main(_):
         input_dim = int(fid.read())
 
     #create the coder
-    normalizer = processing.target_normalizers.normalizer_factory.factory(
+    normalizer = normalizer_factory.factory(
         database_cfg['normalizer'])
-    coder = processing.target_coders.coder_factory.factory(
+    coder = coder_factory.factory(
         normalizer, database_cfg['coder'])
 
 
     #create the classifier
-    classifier = neuralnetworks.classifiers.classifier_factory.factory(
+    classifier = classifier_factory.factory(
         conf=nnet_cfg,
         output_dim=coder.num_labels,
         classifier_type=nnet_cfg['classifier'])
@@ -78,7 +81,7 @@ def main(_):
     #create a decoder
     graph = tf.Graph()
     with graph.as_default():
-        decoder = neuralnetworks.decoders.decoder_factory.factory(
+        decoder = decoder_factory.factory(
             conf=decoder_cfg,
             classifier=classifier,
             classifier_scope=tf.VariableScope(False, 'Classifier'),
@@ -97,7 +100,7 @@ def main(_):
 
     with tf.Session(graph=graph, config=config) as sess:
         #load the model
-        saver.restore(sess, FLAGS.expdir + '/logdir/final.ckpt')
+        saver.restore(sess, FLAGS.expdir + '/model/network.ckpt')
 
         #decode with te neural net
         decoded = decoder.decode(reader, sess)

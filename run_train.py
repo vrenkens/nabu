@@ -8,7 +8,8 @@ import subprocess
 from time import sleep
 import tensorflow as tf
 from six.moves import configparser
-import distributed
+from nabu.distributed import cluster, local_cluster
+from nabu.distributed.static import run_remote
 from train import train
 
 tf.app.flags.DEFINE_string('expdir', 'expdir', 'The experiments directory')
@@ -18,12 +19,12 @@ def main(_):
     '''main function'''
 
     #pointers to the config files
-    computing_cfg_file = 'config/computing/non-distributed.cfg'
-    database_cfg_file = 'config/databases/TIMIT.conf'
-    feat_cfg_file = 'config/features/fbank.cfg'
-    nnet_cfg_file = 'config/nnet/DBLSTM.cfg'
-    trainer_cfg_file = 'config/trainer/CTCtrainer.cfg'
-    decoder_cfg_file = 'config/decoder/CTCdecoder.cfg'
+    computing_cfg_file = 'nabu/config/computing/non-distributed.cfg'
+    database_cfg_file = 'nabu/config/databases/TIMIT.conf'
+    feat_cfg_file = 'nabu/config/features/fbank.cfg'
+    nnet_cfg_file = 'nabu/config/nnet/DBLSTM.cfg'
+    trainer_cfg_file = 'nabu/config/trainer/CTCtrainer.cfg'
+    decoder_cfg_file = 'nabu/config/decoder/CTCdecoder.cfg'
 
     #read the computing config file
     parsed_computing_cfg = configparser.ConfigParser()
@@ -74,18 +75,18 @@ def main(_):
         with open(FLAGS.expdir + '/cluster', 'w') as fid:
             port = 1024
             for _ in range(int(computing_cfg['numps'])):
-                while not distributed.cluster.port_available(port):
+                while not cluster.port_available(port):
                     port += 1
                 fid.write('ps,localhost,%d,\n' % port)
                 port += 1
             for i in range(int(computing_cfg['numworkers'])):
-                while not distributed.cluster.port_available(port):
+                while not cluster.port_available(port):
                     port += 1
                 fid.write('worker,localhost,%d,%d\n' % (port, i))
                 port += 1
 
         #start the training
-        distributed.local_cluster.local_cluster(FLAGS.expdir)
+        local_cluster.local_cluster(FLAGS.expdir)
 
     elif computing_cfg['distributed'] == 'static':
 
@@ -114,7 +115,7 @@ def main(_):
                            '--task_index=%d --expdir=%s') % (
                                computing_cfg['clusterfile'], job, task_index,
                                FLAGS.expdir)
-                processes[job].append(distributed.static.run_remote.run_remote(
+                processes[job].append(run_remote.run_remote(
                     command=command,
                     host=machine,
                     out=open('%s/outputs/%s-%d' % (FLAGS.expdir, job,
@@ -165,7 +166,7 @@ def main(_):
             numps = 0
             while not ready:
                 #check the machines in the cluster
-                machines = distributed.cluster.get_machines(
+                machines = cluster.get_machines(
                     FLAGS.expdir + '/cluster')
 
                 if (len(machines['ps']) > numps
@@ -239,12 +240,12 @@ def main(_):
         with open(FLAGS.expdir + '/cluster', 'w') as fid:
             port = 1024
             for _ in range(int(computing_cfg['numps'])):
-                while not distributed.cluster.port_available(port):
+                while not cluster.port_available(port):
                     port += 1
                 fid.write('ps,localhost,%d,\n' % port)
                 port += 1
             for i in range(int(computing_cfg['numworkers'])):
-                while not distributed.cluster.port_available(port):
+                while not cluster.port_available(port):
                     port += 1
                 fid.write('worker,localhost,%d,%d\n' % (port, i))
                 port += 1

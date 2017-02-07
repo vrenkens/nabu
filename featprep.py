@@ -3,11 +3,11 @@ this file will go through the feature computation'''
 
 
 from six.moves import configparser
-from processing import ark, prepare_data
+from nabu.processing import ark, prepare_data
 
 #pointers to the config files
-database_cfg_file = 'config/databases/TIMIT.conf'
-feat_cfg_file = 'config/features/mfcc.cfg'
+database_cfg_file = 'nabu/config/databases/TIMIT.conf'
+feat_cfg_file = 'nabu/config/features/mfcc.cfg'
 
 #read the database config file
 database_cfg = configparser.ConfigParser()

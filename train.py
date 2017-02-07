@@ -6,9 +6,9 @@ import subprocess
 import atexit
 import tensorflow as tf
 from six.moves import configparser
-import distributed
-import processing
-import neuralnetworks
+from nabu.distributed import cluster
+from nabu import processing
+from nabu import neuralnetworks
 
 def train(clusterfile,
           job_name,
