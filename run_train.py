@@ -21,9 +21,9 @@ def main(_):
     computing_cfg_file = 'config/computing/non-distributed.cfg'
     database_cfg_file = 'config/databases/TIMIT.conf'
     feat_cfg_file = 'config/features/fbank.cfg'
-    nnet_cfg_file = 'config/nnet/LAS.cfg'
-    trainer_cfg_file = 'config/trainer/cross_enthropytrainer.cfg'
-    decoder_cfg_file = 'config/decoder/BeamSearchDecoder.cfg'
+    nnet_cfg_file = 'config/nnet/DBLSTM.cfg'
+    trainer_cfg_file = 'config/trainer/CTCtrainer.cfg'
+    decoder_cfg_file = 'config/decoder/CTCdecoder.cfg'
 
     #read the computing config file
     parsed_computing_cfg = configparser.ConfigParser()

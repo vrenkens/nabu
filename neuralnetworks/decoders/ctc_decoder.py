@@ -44,7 +44,8 @@ class CTCDecoder(decoder.Decoder):
 
         #split the sparse tensors into the seperate utterances
         output_list = tf.sparse_split(0, self.batch_size, sparse_outputs)
-        outputs = [tf.sparse_tensor_to_dense(o) for o in output_list]
+        outputs = [tf.reshape(tf.sparse_tensor_to_dense(o), [-1])
+                   for o in output_list]
 
         outputs = [[(logprobs[i], outputs[i])]
                    for i in range(self.batch_size)]
