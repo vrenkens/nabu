@@ -69,12 +69,13 @@ $(function() {
 <li><a href="#about">About</a></li>
 <li><a href="#dependencies">Dependencies</a></li>
 <li><a href="#usage">Usage</a><ul>
+<li><a href="#using-the-recognizers">Using the recognizers</a></li>
+<li><a href="#training-a-model">Training a model</a><ul>
 <li><a href="#data-preparation">Data preparation</a><ul>
 <li><a href="#database-preparation">Database preparation</a></li>
 <li><a href="#feature-computation">Feature computation</a></li>
 </ul>
 </li>
-<li><a href="#training-a-model">Training a model</a><ul>
 <li><a href="#configuration">Configuration</a></li>
 <li><a href="#running-the-training-script">Running the training script</a></li>
 <li><a href="#visualization">Visualization</a></li>
@@ -127,6 +128,9 @@ $(function() {
 <li><a href="https://www.tensorflow.org">TensorFlow</a>.</li>
 </ul>
 <h2>Usage</h2>
+<h2>Using the recognizers</h2>
+<p>Nabu contains some pre-trained models, that you can esaily use to perform recognition as follows:</p>
+<div class="fragment"><div class="line">import nabu</div><div class="line">import scipy</div><div class="line"></div><div class="line">recognizer = nabu.models.model.Model(&#39;/path/to/model/dir&#39;)</div><div class="line">rate, sig = scipy.io.wavfile.read(&#39;/path/to/file.wav&#39;)</div><div class="line"></div><div class="line">transcription = recognizer(sig, rate)</div></div><!-- fragment --><p>The transcription will be a string containing the recognized output. the model directories for the pre-trained models can be found in nabu/models/ or are created after <a href="#training-a-model">training a model</a>.</p>
 <h3>Data preparation</h3>
 <h4>Database preparation</h4>
 <p>Nabu's data format is the same as the <a href="http://kaldi-asr.org/">Kaldi</a> toolkit. To prepare a database for training you should run Kaldi's data preparation scripts, these scripts can be found on the Kaldi Github. You can find more information on the Kaldi data preparation <a href="http://kaldi-asr.org/doc/data_prep.html">here</a>.</p>
@@ -150,9 +154,9 @@ $(function() {
 </ul>
 </li>
 </ul>
-<p>Next you should create a database normalizer in processing/target_normalizers/. This is a method that takes a transcription and an alphabet as input and returns the normalized transcription. You can find already implemented normalizers in processing/target_normalizers/, you should use these as examples. Once you implemented your normalizer you should add it in <a class="el" href="normalizer__factory_8py.html" title="Contains the normalizer factory. ">processing/target_normalizers/normalizer_factory.py</a> in the factory method (with a name of your choosing). You should also import your new file in processing/target_normalizers/__init__.py.</p>
-<p>Next you should create a target coder in processing/target_coders/. A target coder converts a normalized transcription string into a numpy array of labels. To create your own coder you should create a class that inherits from TargetCoder (defined in <a class="el" href="targetcoder_8py.html" title="contains the TargetCoder class ">processing/target_coders/targetcoder.py</a>). You should then overwrite the create_alphabet method that returns your desired alphabet. Some coders have been implemented and can be found in processing/target_coders/. Once you implemented your coder you should add it in <a class="el" href="coder__factory_8py.html" title="contain the coder factory ">processing/target_coders/coder_factory.py</a> in the factory method (with a name of your choosing). You should also import your new file in processing/target_coders/__init__.py.</p>
-<p>Finally, you should create a config file for your database in config/databases/. You can base your config on config/databases/template.cfg:</p>
+<p>Next you should create a database normalizer in nabu/processing/target_normalizers/. This is a method that takes a transcription and an alphabet as input and returns the normalized transcription. You can find already implemented normalizers in nabu/processing/target_normalizers/, you should use these as examples. Once you implemented your normalizer you should add it in <a class="el" href="normalizer__factory_8py.html" title="Contains the normalizer factory. ">nabu/processing/target_normalizers/normalizer_factory.py</a> in the factory method (with a name of your choosing). You should also import your new file in nabu/processing/target_normalizers/__init__.py.</p>
+<p>Next you should create a target coder in nabu/processing/target_coders/. A target coder converts a normalized transcription string into a numpy array of labels. To create your own coder you should create a class that inherits from TargetCoder (defined in <a class="el" href="targetcoder_8py.html" title="contains the TargetCoder class ">nabu/processing/target_coders/targetcoder.py</a>). You should then overwrite the create_alphabet method that returns your desired alphabet. Some coders have been implemented and can be found in nabu/processing/target_coders/. Once you implemented your coder you should add it in <a class="el" href="coder__factory_8py.html" title="contain the coder factory ">nabu/processing/target_coders/coder_factory.py</a> in the factory method (with a name of your choosing). You should also import your new file in nabu/processing/target_coders/__init__.py.</p>
+<p>Finally, you should create a config file for your database in nabu/config/databases/. You can base your config on nabu/config/databases/template.cfg:</p>
 <ul>
 <li>_data fields should point to the directories created in the database preparations</li>
 <li>_features fields should contain writable directories where your features should be stored</li>
@@ -161,7 +165,7 @@ $(function() {
 <li>The normalizer field should be the name of your target normalizer (defined in the factory).</li>
 </ul>
 <h4>Feature computation</h4>
-<p>To compute the features you can use the featprep.py script. For the feature configuration you can modify/create a file in config/features/ or use a default config file. Look at the <a href="#designing-features">Designing features section</a> to design your own features.</p>
+<p>To compute the features you can use the featprep.py script. For the feature configuration you can modify/create a file in nabu/config/features/ or use a default config file. Look at the <a href="#designing-features">Designing features section</a> to design your own features.</p>
 <p>In the script you should modify the database_cfg_file variable to point to the desired database config file and the feat_cfg_file to point to the desired feature config file.</p>
 <p>Then you can compute the features with:</p>
 <div class="fragment"><div class="line">python featprep</div></div><!-- fragment --><h3>Training a model</h3>
@@ -169,10 +173,10 @@ $(function() {
 <h4>Configuration</h4>
 <p>For configuration you can modify the following config files:</p>
 <ul>
-<li>config/computing/: The computing mode configuration, this will be explained more in the <a href="#distributed-training">Distributed training section</a> (stick to non-distributed.cfg for now).</li>
-<li>config/nnet/: The neural network configuration. The content of this configuration depends on the type of model. In this section you can choose the number of layers, the dimensionality of the layers etc. Look at the <a href="#designing-a-model">Designing a model section</a> if you want to design your own type of model.</li>
-<li>config/trainer/: The trainer configuration, this config contains the type of trainer and its configuration. Select the type of trainer that is appropriate for your model (e.g. cross_entropy for encoder-decoder nets).You can also set the training parameters like learning rate, batch size etc. Look at the <a href="#designing-a-trainer">Designing a trainer section</a> if you want to design your own type of trainer.</li>
-<li>config/decoder/: this configuration contains the type of decoder that will be used during validation. Choose the type that is appropriate for you model (e.g. beamsearchdecoder for encoder-decoder nets). You can also modify some decoding parameters like beam width and batch size. Look at the <a href="#designing-a-decoder">Designing a decoder section</a> if you want to design your own type of decoder.</li>
+<li>nabu/config/computing/: The computing mode configuration, this will be explained more in the <a href="#distributed-training">Distributed training section</a> (stick to non-distributed.cfg for now).</li>
+<li>nabu/config/nnet/: The neural network configuration. The content of this configuration depends on the type of model. In this section you can choose the number of layers, the dimensionality of the layers etc. Look at the <a href="#designing-a-model">Designing a model section</a> if you want to design your own type of model.</li>
+<li>nabu/config/trainer/: The trainer configuration, this config contains the type of trainer and its configuration. Select the type of trainer that is appropriate for your model (e.g. cross_entropy for encoder-decoder nets).You can also set the training parameters like learning rate, batch size etc. Look at the <a href="#designing-a-trainer">Designing a trainer section</a> if you want to design your own type of trainer.</li>
+<li>nabu/config/decoder/: this configuration contains the type of decoder that will be used during validation. Choose the type that is appropriate for your model (e.g. beamsearchdecoder for encoder-decoder nets). You can also modify some decoding parameters like beam width and batch size. Look at the <a href="#designing-a-decoder">Designing a decoder section</a> if you want to design your own type of decoder.</li>
 </ul>
 <p>When all configuration files have been edited/created to your liking you should should modify the _cfg_file variables at the top of the run_train.py script so they point to the appropriate config files.</p>
 <h4>Running the training script</h4>
@@ -188,7 +192,7 @@ $(function() {
 <div class="fragment"><div class="line">python test.py --expdir=path/to/expdir</div></div><!-- fragment --><h2>Design</h2>
 <h3>Designing a model</h3>
 <h4>Creating the classifier</h4>
-<p>The classifier is the core of the model. The general Classifier class is defined in <a class="el" href="classifier_8py.html" title="The abstract class for a neural network classifie. ">neuralnetworks/classifiers/classifier.py</a>. To create your own classifier create a class in neuralnetworks/classifiers/ that inherits from Classifier and overwrite the __call__ method. This method takes the following inputs:</p>
+<p>The classifier is the core of the model. The general Classifier class is defined in <a class="el" href="classifier_8py.html" title="The abstract class for a neural network classifie. ">nabu/neuralnetworks/classifiers/classifier.py</a>. To create your own classifier create a class in nabu/neuralnetworks/classifiers/ that inherits from Classifier and overwrite the __call__ method. This method takes the following inputs:</p>
 <ul>
 <li>inputs: the inputs to the neural network, this is a [batch_size x max_input_length x feature_dim] tensor</li>
 <li>input_seq_length: The sequence lengths of the input utterances, this is a [batch_size] vector</li>
@@ -198,34 +202,34 @@ $(function() {
 </ul>
 <p>The method should return the output logits (probabilities before softmax) and the output sequence lengths. Some example Classifiers:</p>
 <ul>
-<li>neuralnetworks/classifiers/las.py: Listen Attend and Spell model</li>
-<li><a class="el" href="dblstm_8py.html" title="contains de DBLSTM class ">neuralnetworks/classifiers/dblstm.py</a>: Deep Biderictional LSTM model</li>
+<li>nabu/neuralnetworks/classifiers/las.py: Listen Attend and Spell model</li>
+<li><a class="el" href="dblstm_8py.html" title="contains de DBLSTM class ">nabu/neuralnetworks/classifiers/dblstm.py</a>: Deep Biderictional LSTM model</li>
 </ul>
-<p>Once you've created your classifier you should add it in the factory method in neuralnetworks/classifiers/classifier_factory.py (with any name) and you should import it in neuralnetworks/classifiers/__init__.py.</p>
+<p>Once you've created your classifier you should add it in the factory method in nabu/neuralnetworks/classifiers/classifier_factory.py (with any name) and you should import it in nabu/neuralnetworks/classifiers/__init__.py.</p>
 <h4>Classifier configuration file</h4>
-<p>If you've created your classifier you should also create a configuration file for it in config/nnet/. The Classifier object will have access to this configuration as a dictionary of strings in self.conf. You can use this configuration to set some parameters to your model. As a minimum the configuration file should contain the classifier field with the name of your classifier (that you've defined in the factory method). As an example you can look at other configuration files in config/nnet/.</p>
+<p>If you've created your classifier you should also create a configuration file for it in nabu/config/nnet/. The Classifier object will have access to this configuration as a dictionary of strings in self.conf. You can use this configuration to set some parameters to your model. As a minimum the configuration file should contain the classifier field with the name of your classifier (that you've defined in the factory method). As an example you can look at other configuration files in nabu/config/nnet/.</p>
 <h3>Designing features</h3>
 <h4>Creating the feature computer</h4>
-<p>the general FeatureComputer class is defined in <a class="el" href="feature__computer_8py.html" title="contains the FeatureComputer class ">processing/feature_computers/feature_computer.py</a>. To design your own feature you should create a feature computer class that inherits from FeatureComputer and overwrite the comp_feat method. This method takes the following inputs:</p>
+<p>the general FeatureComputer class is defined in <a class="el" href="feature__computer_8py.html" title="contains the FeatureComputer class ">nabu/processing/feature_computers/feature_computer.py</a>. To design your own feature you should create a feature computer class that inherits from FeatureComputer and overwrite the comp_feat and the get_dim methods. The comp_feat method takes the following inputs:</p>
 <ul>
 <li>sig: the audio signal as a 1-D numpy array</li>
 <li>rate: the sampling rate</li>
 </ul>
-<p>It returns the computed features as a [seq_length x feature_dim] numpy array. Some implemented feature computers:</p>
+<p>It returns the computed features as a [seq_length x feature_dim] numpy array. The get_utt method shpuld return the dimension of the computed features. Some implemented feature computers:</p>
 <ul>
-<li><a class="el" href="fbank_8py.html" title="contains the fbank feature compute ">processing/feature_computers/fbank.py</a></li>
-<li><a class="el" href="mfcc_8py.html" title="contains the fbank feature compute ">processing/feature_computers/mfcc.py</a></li>
+<li><a class="el" href="fbank_8py.html" title="contains the fbank feature compute ">nabu/processing/feature_computers/fbank.py</a></li>
+<li><a class="el" href="mfcc_8py.html" title="contains the fbank feature compute ">nabu/processing/feature_computers/mfcc.py</a></li>
 </ul>
-<p>Once your feature computer is created you should add it in the factory method in <a class="el" href="feature__computer__factory_8py.html" title="contains the FeatureComputer factory ">processing/feature_computers/feature_computer_factory.py</a> (with any name) and you should import it in processing/feature_computers/__init__.py.</p>
+<p>Once your feature computer is created you should add it in the factory method in <a class="el" href="feature__computer__factory_8py.html" title="contains the FeatureComputer factory ">nabu/processing/feature_computers/feature_computer_factory.py</a> (with any name) and you should import it in nabu/processing/feature_computers/__init__.py.</p>
 <h4>Feature configuration file</h4>
-<p>After creating your feature computer you should also create a configuration file for it in config/features/. The FeatureComputer object will have access to this configuration as a dictionary of strings in self.conf. You can use this configuration to set some parameters for your features. As a minimum it should contain the following fields:</p>
+<p>After creating your feature computer you should also create a configuration file for it in nabu/config/features/. The FeatureComputer object will have access to this configuration as a dictionary of strings in self.conf. You can use this configuration to set some parameters for your features. As a minimum it should contain the following fields:</p>
 <ul>
 <li>name: The name of the feature, this is used for storage and loading</li>
 <li>feature: The feature type. This should be the name that you gave in the factory method</li>
 </ul>
 <h3>Designing a trainer</h3>
 <h4>Creating the trainer</h4>
-<p>The general Trainer class is defined in <a class="el" href="trainer_8py.html" title="neural network trainer environment ">neuralnetworks/trainers/trainer.py</a>. To design your own trainer you should create a trainer class in neuralnetworks/trainers/ that inherits from Trainer and overwrite the compute_loss method. This method takes the following inputs:</p>
+<p>The general Trainer class is defined in <a class="el" href="trainer_8py.html" title="neural network trainer environment ">nabu/neuralnetworks/trainers/trainer.py</a>. To design your own trainer you should create a trainer class in nabu/neuralnetworks/trainers/ that inherits from Trainer and overwrite the compute_loss method. This method takes the following inputs:</p>
 <ul>
 <li>targets: a [batch_size, max_target_length] tensor containing the targets</li>
 <li>logits: a [batch_size, max_logit_length, dim] tensor containing the logits</li>
@@ -234,15 +238,15 @@ $(function() {
 </ul>
 <p>The method should return the loss that you would like to minimize. Some implemented trainers:</p>
 <ul>
-<li>neuralnetworks/trainers/cross_entropytrainer.py: minimizes cross-entropy</li>
-<li><a class="el" href="ctctrainer_8py.html" title="contains the CTCTraine ">neuralnetworks/trainers/ctctrainer.py</a>: minimizes CTC loss</li>
+<li>nabu/neuralnetworks/trainers/cross_entropytrainer.py: minimizes cross-entropy</li>
+<li><a class="el" href="ctctrainer_8py.html" title="contains the CTCTraine ">nabu/neuralnetworks/trainers/ctctrainer.py</a>: minimizes CTC loss</li>
 </ul>
-<p>Once your trainer is created you should add it in the factory method in neuralnetworks/trainers/trainer_factory.py (with any name) and you should import it in neuralnetworks/trainers/__init__.py.</p>
+<p>Once your trainer is created you should add it in the factory method in nabu/neuralnetworks/trainers/trainer_factory.py (with any name) and you should import it in nabu/neuralnetworks/trainers/__init__.py.</p>
 <h4>Training configuration file</h4>
-<p>After creating your trainer you should also create a configuration file for it in config/trainer/. The Trainer object will have access to this configuration as a dictionary of strings in self.conf. You can use this configuration to set some parameters for your trainer. As a minimum it should contain the fields that are defined in config/trainer/cross_entropytrainer.cfg. And you should change the trainer field to the name that you defined in the factory method.</p>
+<p>After creating your trainer you should also create a configuration file for it in nabu/config/trainer/. The Trainer object will have access to this configuration as a dictionary of strings in self.conf. You can use this configuration to set some parameters for your trainer. As a minimum it should contain the fields that are defined in nabu/config/trainer/cross_entropytrainer.cfg. And you should change the trainer field to the name that you defined in the factory method.</p>
 <h3>Designing a decoder</h3>
 <h4>Creating the decoder</h4>
-<p>The general Decoder class is defined in <a class="el" href="decoder_8py.html" title="neural network decoder environment ">neuralnetworks/decoders/decoder.py</a>. To design your own decoder you should create a decoder class in neuralnetworks/decoders/ that inherits from Decoder and overwrite the get_outputs and the score methods. The get_outputs method takes the following inputs:</p>
+<p>The general Decoder class is defined in <a class="el" href="decoder_8py.html" title="neural network decoder environment ">nabu/neuralnetworks/decoders/decoder.py</a>. To design your own decoder you should create a decoder class in nabu/neuralnetworks/decoders/ that inherits from Decoder and overwrite the get_outputs and the score methods. The get_outputs method takes the following inputs:</p>
 <ul>
 <li>inputs: The inputs to the network as a [batch_size x max_input_length x input_dim] tensor</li>
 <li>input_seq_length: The sequence length of the inputs as a [batch_size] vector</li>
@@ -258,27 +262,27 @@ $(function() {
 </ul>
 <p>The method should return a score that can be used for validation (e.g. Character Error Rate). Some example decoders:</p>
 <ul>
-<li><a class="el" href="ctc__decoder_8py.html" title="contains the CTCDecode ">neuralnetworks/decoders/ctc_decoder.py</a></li>
-<li><a class="el" href="beam__search__decoder_8py.html" title="contains the BeamSearchDecode ">neuralnetworks/decoders/beam_search_decoder.py</a></li>
+<li><a class="el" href="ctc__decoder_8py.html" title="contains the CTCDecode ">nabu/neuralnetworks/decoders/ctc_decoder.py</a></li>
+<li><a class="el" href="beam__search__decoder_8py.html" title="contains the BeamSearchDecode ">nabu/neuralnetworks/decoders/beam_search_decoder.py</a></li>
 </ul>
-<p>Once your decoder is created you should add it in the factory method in <a class="el" href="decoder__factory_8py.html" title="contains the decoder factory ">neuralnetworks/decoders/decoder_factory.py</a> (with any name) and you should import it in neuralnetworks/decoders/__init__.py.</p>
+<p>Once your decoder is created you should add it in the factory method in <a class="el" href="decoder__factory_8py.html" title="contains the decoder factory ">nabu/neuralnetworks/decoders/decoder_factory.py</a> (with any name) and you should import it in nabu/neuralnetworks/decoders/__init__.py.</p>
 <h4>Decoder configuration file</h4>
-<p>After creating your decoder you should also create a configuration file for it in config/decoder/. The Decoder object will have access to this configuration as a dictionary of strings in self.conf. You can use this configuration to set some parameters for your decoder. As a minimum it should contain the decoder field and you should set it to the name that you defined in the factory method.</p>
+<p>After creating your decoder you should also create a configuration file for it in nabu/config/decoder/. The Decoder object will have access to this configuration as a dictionary of strings in self.conf. You can use this configuration to set some parameters for your decoder. As a minimum it should contain the decoder field and you should set it to the name that you defined in the factory method.</p>
 <h2>Distributed training</h2>
 <p>In distributed training there are 2 jobs. A parameter server (ps) will store the parameters and share them. A worker computes gradients and submits them to the parameter servers to update the parameters. The parameter server will run on a CPU. The workers will run on a GPU if one is available.</p>
 <p>For each job you can have multiple instances or tasks, if you have multiple parameter servers, the parameters will be divided between them. This can help if communication is a bottleneck. If there are many workers the parameter server may have trouble serving them all in a timely fashion. Multiple workers can process multiple batches in parallel and update the parameters either synchronously or asynchronously (depending on the numbatches_to_aggregate field in the trainer config).</p>
 <p>Nabu's distributed computing makes the assumption that the different machines have access to the same file system. Communication happens through ssh tunnels to circumvene firewalls on the network ports. SSH Authentication should happen with an RSA key and not with a password. If one of these things is not possible for your setup, you can either train non-distributed or you should make sure all your devices are in a single machine.</p>
 <p>There are 5 computing configurations that can be used for training. 2 of the configurations use the <a href="https://research.cs.wisc.edu/htcondor/">HTCondor</a> distributed computing system. If your system is not set up with condor you can either use the configurations that do not use condor, or implement a configuration for your setup.</p>
 <h3>Non-distributed</h3>
-<p>To choose this computing configuration you should set the computing_cfg_file to 'config/computing/non-distributed.cfg' at the top of run_train.py. The non-distributed computing is the simplest computing form. The training will run on the machine where it is called from and will run on a single device.</p>
+<p>To choose this computing configuration you should set the computing_cfg_file to 'nabu/config/computing/non-distributed.cfg' at the top of run_train.py. The non-distributed computing is the simplest computing form. The training will run on the machine where it is called from and will run on a single device.</p>
 <h3>Local</h3>
-<p>To choose this computing configuration you should set the computing_cfg_file to 'config/computing/local.cfg' at the top of run_train.py. Local computing will run on the machine where it is called from but runs on multiple devices. You can choose the number of devices in the config file.</p>
+<p>To choose this computing configuration you should set the computing_cfg_file to 'nabu/config/computing/local.cfg' at the top of run_train.py. Local computing will run on the machine where it is called from but runs on multiple devices. You can choose the number of devices in the config file.</p>
 <h3>Static</h3>
-<p>To choose this computing configuration you should set the computing_cfg_file to 'config/computing/static.cfg' at the top of run_train.py. Static computing runs on a statically defined cluster over possibly multiple machines. The cluster should be defined in a cluster file (the clusterfile field in the config should point to this file). Every line in the cluster file defines a task in the cluster. Every line contains the job, the machine, the network port for communication and the GPU index the task should run on (may be empty). All seperated by commas. An example cluster file:</p>
+<p>To choose this computing configuration you should set the computing_cfg_file to 'nabu/config/computing/static.cfg' at the top of run_train.py. Static computing runs on a statically defined cluster over possibly multiple machines. The cluster should be defined in a cluster file (the clusterfile field in the config should point to this file). Every line in the cluster file defines a task in the cluster. Every line contains the job, the machine, the network port for communication and the GPU index the task should run on (may be empty). All seperated by commas. An example cluster file:</p>
 <div class="fragment"><div class="line">ps,ps1.example.com,1024,</div><div class="line">ps,ps2.example.com,1024,</div><div class="line">worker,worker1.example.com,1024,0</div><div class="line">worker,worker1.example.com,1024,1</div><div class="line">worker,worker2.example.com,1024,0</div></div><!-- fragment --><h3>Condor local</h3>
-<p>To choose this computing configuration you should set the computing_cfg_file to 'config/computing/condor-local.cfg' at the top of run_train.py. This configuration is the same as the <a href="#local">Local</a> configuration, but an appropriate machine is found with condor.</p>
+<p>To choose this computing configuration you should set the computing_cfg_file to 'nabu/config/computing/condor-local.cfg' at the top of run_train.py. This configuration is the same as the <a href="#local">Local</a> configuration, but an appropriate machine is found with condor.</p>
 <h3>Condor</h3>
-<p>To choose this computing configuration you should set the computing_cfg_file to 'config/computing/condor.cfg' at the top of run_train.py. This configuration is the same as the <a href="#static">Static</a> configuration, but instead of using a statically defined cluster, a cluster will be created using Condor.</p>
+<p>To choose this computing configuration you should set the computing_cfg_file to 'nabu/config/computing/condor.cfg' at the top of run_train.py. This configuration is the same as the <a href="#static">Static</a> configuration, but instead of using a statically defined cluster, a cluster will be created using Condor.</p>
 <h2>Future work</h2>
 <p>The current future work focusses on incorporating language models into Nabu. </p>
 </div></div><!-- contents -->

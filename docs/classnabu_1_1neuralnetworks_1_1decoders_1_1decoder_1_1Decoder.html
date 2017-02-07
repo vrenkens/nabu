@@ -99,6 +99,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7c284b4364b03f0f249578f23feb9e9d"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#a7c284b4364b03f0f249578f23feb9e9d">decode</a> (self, reader, sess)</td></tr>
 <tr class="memdesc:a7c284b4364b03f0f249578f23feb9e9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">decode using the neural net  <a href="#a7c284b4364b03f0f249578f23feb9e9d">More...</a><br /></td></tr>
 <tr class="separator:a7c284b4364b03f0f249578f23feb9e9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8c14d282720cf28ddc88e01510e0b2b"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#ae8c14d282720cf28ddc88e01510e0b2b">decode_utt</a> (self, features, sess)</td></tr>
+<tr class="memdesc:ae8c14d282720cf28ddc88e01510e0b2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">decode a list of utterances  <a href="#ae8c14d282720cf28ddc88e01510e0b2b">More...</a><br /></td></tr>
+<tr class="separator:ae8c14d282720cf28ddc88e01510e0b2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -197,8 +200,7 @@ Public Attributes</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">conf</td><td>the decoder config </td></tr>
     <tr><td class="paramname">classifier</td><td>the classifier that will be used for decoding </td></tr>
-    <tr><td class="paramname">classifier_scope</td><td>the scope where the classier should be created/loaded </td></tr>
-    <tr><td class="paramname">from</td><td></td></tr>
+    <tr><td class="paramname">classifier_scope</td><td>the scope where the classier should be created/loaded from </td></tr>
     <tr><td class="paramname">input_dim</td><td>the input dimension to the nnnetgraph </td></tr>
     <tr><td class="paramname">max_input_length</td><td>the maximum length of the inputs </td></tr>
     <tr><td class="paramname">batch_size</td><td>the decoder batch size </td></tr>
@@ -246,13 +248,56 @@ Public Attributes</h2></td></tr>
 <p>decode using the neural net </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">decoder</td><td>the decoder that should be used </td></tr>
     <tr><td class="paramname">reader</td><td>a feauture reader object containing the testng features </td></tr>
     <tr><td class="paramname">sess</td><td>a tensorflow session</td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>a dictionary containing the outputs </dd></dl>
+
+</div>
+</div>
+<a id="ae8c14d282720cf28ddc88e01510e0b2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae8c14d282720cf28ddc88e01510e0b2b">&sect;&nbsp;</a></span>decode_utt()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def nabu.neuralnetworks.decoders.decoder.Decoder.decode_utt </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>features</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>sess</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>decode a list of utterances </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">features</td><td>the input features as a list of [seq_length, feature_dim] numpy arrays </td></tr>
+    <tr><td class="paramname">sess</td><td>a tensorflow session</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>the decoded utterance as a string </dd></dl>
 
 </div>
 </div>

@@ -85,9 +85,9 @@ Inheritance diagram for nabu.neuralnetworks.decoders.attention_visualizer.Attent
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a7d365cc0aa6774868381573e7adc5eb0"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1AttentionVisiualizer.html#a7d365cc0aa6774868381573e7adc5eb0">__init__</a> (self, conf, classifier, classifier_scope, input_dim, max_input_length, coder, expdir)</td></tr>
-<tr class="memdesc:a7d365cc0aa6774868381573e7adc5eb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decoder constructor, creates the decoding graph.  <a href="#a7d365cc0aa6774868381573e7adc5eb0">More...</a><br /></td></tr>
-<tr class="separator:a7d365cc0aa6774868381573e7adc5eb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5bdf9c046408aee5bc4e63aa9fe0f8d8"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1AttentionVisiualizer.html#a5bdf9c046408aee5bc4e63aa9fe0f8d8">get_outputs</a> (self, inputs, input_seq_length, classifier, classifier_scope)</td></tr>
+<tr class="memdesc:a5bdf9c046408aee5bc4e63aa9fe0f8d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the outputs of the decoder  <a href="#a5bdf9c046408aee5bc4e63aa9fe0f8d8">More...</a><br /></td></tr>
+<tr class="separator:a5bdf9c046408aee5bc4e63aa9fe0f8d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a771313ebdee2f4f7af650146fcea43ff"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1AttentionVisiualizer.html#a771313ebdee2f4f7af650146fcea43ff">score</a> (self, <a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1AttentionVisiualizer.html#abc570903aa64adfea30fbf4f176dcd1f">outputs</a>, targets)</td></tr>
 <tr class="memdesc:a771313ebdee2f4f7af650146fcea43ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">score the performance  <a href="#a771313ebdee2f4f7af650146fcea43ff">More...</a><br /></td></tr>
 <tr class="separator:a771313ebdee2f4f7af650146fcea43ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -104,27 +104,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7c284b4364b03f0f249578f23feb9e9d inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#a7c284b4364b03f0f249578f23feb9e9d">decode</a> (self, reader, sess)</td></tr>
 <tr class="memdesc:a7c284b4364b03f0f249578f23feb9e9d inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="mdescLeft">&#160;</td><td class="mdescRight">decode using the neural net  <a href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#a7c284b4364b03f0f249578f23feb9e9d">More...</a><br /></td></tr>
 <tr class="separator:a7c284b4364b03f0f249578f23feb9e9d inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8c14d282720cf28ddc88e01510e0b2b inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#ae8c14d282720cf28ddc88e01510e0b2b">decode_utt</a> (self, features, sess)</td></tr>
+<tr class="memdesc:ae8c14d282720cf28ddc88e01510e0b2b inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="mdescLeft">&#160;</td><td class="mdescRight">decode a list of utterances  <a href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#ae8c14d282720cf28ddc88e01510e0b2b">More...</a><br /></td></tr>
+<tr class="separator:ae8c14d282720cf28ddc88e01510e0b2b inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a352a0b90dd2581b61dfb9dbd60c0bd55"><td class="memItemLeft" align="right" valign="top"><a id="a352a0b90dd2581b61dfb9dbd60c0bd55"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>conf</b></td></tr>
-<tr class="separator:a352a0b90dd2581b61dfb9dbd60c0bd55"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a941ad8bc31d460ab2225e636afdb476f"><td class="memItemLeft" align="right" valign="top"><a id="a941ad8bc31d460ab2225e636afdb476f"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>max_input_length</b></td></tr>
-<tr class="separator:a941ad8bc31d460ab2225e636afdb476f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a28911a3db66c7598254d5010dd2ead3a"><td class="memItemLeft" align="right" valign="top"><a id="a28911a3db66c7598254d5010dd2ead3a"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>expdir</b></td></tr>
-<tr class="separator:a28911a3db66c7598254d5010dd2ead3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af56a294fc9442953a114ba72895b0bd5"><td class="memItemLeft" align="right" valign="top"><a id="af56a294fc9442953a114ba72895b0bd5"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>coder</b></td></tr>
-<tr class="separator:af56a294fc9442953a114ba72895b0bd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a400c5d78721e2ab29c831b641652df73"><td class="memItemLeft" align="right" valign="top"><a id="a400c5d78721e2ab29c831b641652df73"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>batch_size</b></td></tr>
-<tr class="separator:a400c5d78721e2ab29c831b641652df73"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa6fda72d873306dd4aa1ca229e7f47ee"><td class="memItemLeft" align="right" valign="top"><a id="aa6fda72d873306dd4aa1ca229e7f47ee"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>inputs</b></td></tr>
-<tr class="separator:aa6fda72d873306dd4aa1ca229e7f47ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeb7c1f93f981f9869ea1804070efa4c5"><td class="memItemLeft" align="right" valign="top"><a id="aeb7c1f93f981f9869ea1804070efa4c5"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>input_seq_length</b></td></tr>
 <tr class="separator:aeb7c1f93f981f9869ea1804070efa4c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -159,15 +144,15 @@ Public Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Decoder for attention visualisation. </p>
-</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a7d365cc0aa6774868381573e7adc5eb0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7d365cc0aa6774868381573e7adc5eb0">&sect;&nbsp;</a></span>__init__()</h2>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a5bdf9c046408aee5bc4e63aa9fe0f8d8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5bdf9c046408aee5bc4e63aa9fe0f8d8">&sect;&nbsp;</a></span>get_outputs()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">def nabu.neuralnetworks.decoders.attention_visualizer.AttentionVisiualizer.__init__ </td>
+          <td class="memname">def nabu.neuralnetworks.decoders.attention_visualizer.AttentionVisiualizer.get_outputs </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -176,7 +161,13 @@ Public Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>conf</em>, </td>
+          <td class="paramname"><em>inputs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>input_seq_length</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -188,31 +179,7 @@ Public Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>classifier_scope</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>input_dim</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>max_input_length</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>coder</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>expdir</em>&#160;</td>
+          <td class="paramname"><em>classifier_scope</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -222,24 +189,20 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Decoder constructor, creates the decoding graph. </p>
+<p>compute the outputs of the decoder </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">conf</td><td>the decoder config </td></tr>
-    <tr><td class="paramname">classifier</td><td>the classifier that will be used for decoding </td></tr>
-    <tr><td class="paramname">classifier_scope</td><td>the scope where the classier should be created/loaded from </td></tr>
-    <tr><td class="paramname">input_dim</td><td>the input dimension to the nnnetgraph </td></tr>
-    <tr><td class="paramname">max_input_length</td><td>the maximum length of the inputs </td></tr>
-    <tr><td class="paramname">batch_size</td><td>the decoder batch size </td></tr>
-    <tr><td class="paramname">coder</td><td>a TargetCoder object </td></tr>
-    <tr><td class="paramname">expdir</td><td>the location where the models were saved and the results will be written </td></tr>
+    <tr><td class="paramname">inputs</td><td>The inputs to the network as a [batch_size x max_input_length x input_dim] tensor </td></tr>
+    <tr><td class="paramname">input_seq_length</td><td>The sequence length of the inputs as a [batch_size] vector </td></tr>
+    <tr><td class="paramname">classifier</td><td>The classifier object that will be used in decoding </td></tr>
+    <tr><td class="paramname">classifier_scope</td><td>the scope where the classifier was defined</td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>A list with batch_size elements containing nbest lists with elements containing pairs of score and output labels </dd></dl>
 
 </div>
 </div>
-<h2 class="groupheader">Member Function Documentation</h2>
 <a id="a771313ebdee2f4f7af650146fcea43ff"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a771313ebdee2f4f7af650146fcea43ff">&sect;&nbsp;</a></span>score()</h2>
 

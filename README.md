@@ -58,7 +58,7 @@ models and methodologies.
 ##Using the recognizers
 
 Nabu contains some pre-trained models, that you can esaily use to perform
-recognition as folows:
+recognition as follows:
 
 ```
 import nabu

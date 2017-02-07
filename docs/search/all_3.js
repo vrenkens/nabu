@@ -6,7 +6,7 @@ var searchData=
   ['classifier',['Classifier',['../classnabu_1_1neuralnetworks_1_1classifiers_1_1classifier_1_1Classifier.html',1,'nabu::neuralnetworks::classifiers::classifier']]],
   ['classifier_2epy',['classifier.py',['../classifier_8py.html',1,'']]],
   ['classifiers',['classifiers',['../namespaceclassifiers.html',1,'']]],
-  ['close',['close',['../classnabu_1_1processing_1_1ark_1_1ArkWriter.html#ac2f780c565fdc84d33129fe1b615f518',1,'nabu::processing::ark::ArkWriter']]],
+  ['close',['close',['../classnabu_1_1models_1_1model_1_1Model.html#a8165c1eafdde0d666e711cdfb432c392',1,'nabu.models.model.Model.close()'],['../classnabu_1_1processing_1_1ark_1_1ArkWriter.html#ac2f780c565fdc84d33129fe1b615f518',1,'nabu.processing.ark.ArkWriter.close()']]],
   ['cluster_2epy',['cluster.py',['../cluster_8py.html',1,'']]],
   ['coder_5ffactory_2epy',['coder_factory.py',['../coder__factory_8py.html',1,'']]],
   ['comp_5ffeat',['comp_feat',['../classnabu_1_1processing_1_1feature__computers_1_1fbank_1_1Fbank.html#a28bfc9481782a98a0b313a7c8d2960c0',1,'nabu.processing.feature_computers.fbank.Fbank.comp_feat()'],['../classnabu_1_1processing_1_1feature__computers_1_1feature__computer_1_1FeatureComputer.html#a1ce64444accc6ea8546677cfcbd70c8b',1,'nabu.processing.feature_computers.feature_computer.FeatureComputer.comp_feat()'],['../classnabu_1_1processing_1_1feature__computers_1_1mfcc_1_1Mfcc.html#a322cbcfca45b79879a5e0ebdb67b59e0',1,'nabu.processing.feature_computers.mfcc.Mfcc.comp_feat()']]],

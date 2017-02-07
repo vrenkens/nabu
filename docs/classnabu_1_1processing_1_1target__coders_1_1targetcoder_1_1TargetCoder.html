@@ -86,9 +86,9 @@ Inheritance diagram for nabu.processing.target_coders.targetcoder.TargetCoder:</
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a7627bba51bd81c8de677de6a0e911273"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1target__coders_1_1targetcoder_1_1TargetCoder.html#a7627bba51bd81c8de677de6a0e911273">__init__</a> (self, target_normalizer)</td></tr>
-<tr class="memdesc:a7627bba51bd81c8de677de6a0e911273"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classnabu_1_1processing_1_1target__coders_1_1targetcoder_1_1TargetCoder.html" title="an abstract class for a target coder which can encode and decode target sequences ...">TargetCoder</a> constructor.  <a href="#a7627bba51bd81c8de677de6a0e911273">More...</a><br /></td></tr>
-<tr class="separator:a7627bba51bd81c8de677de6a0e911273"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e31cfa81b056e07e48bdc3537785393"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1target__coders_1_1targetcoder_1_1TargetCoder.html#a3e31cfa81b056e07e48bdc3537785393">__init__</a> (self, target_normalizer=None)</td></tr>
+<tr class="memdesc:a3e31cfa81b056e07e48bdc3537785393"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classnabu_1_1processing_1_1target__coders_1_1targetcoder_1_1TargetCoder.html" title="an abstract class for a target coder which can encode and decode target sequences ...">TargetCoder</a> constructor.  <a href="#a3e31cfa81b056e07e48bdc3537785393">More...</a><br /></td></tr>
+<tr class="separator:a3e31cfa81b056e07e48bdc3537785393"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a512f7c404d4f1964e91ef5ee45418c20"><td class="memItemLeft" align="right" valign="top"><a id="a512f7c404d4f1964e91ef5ee45418c20"></a>
 def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1target__coders_1_1targetcoder_1_1TargetCoder.html#a512f7c404d4f1964e91ef5ee45418c20">create_alphabet</a> (self)</td></tr>
 <tr class="memdesc:a512f7c404d4f1964e91ef5ee45418c20"><td class="mdescLeft">&#160;</td><td class="mdescRight">create the alphabet for the code <br /></td></tr>
@@ -119,8 +119,8 @@ Public Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>an abstract class for a target coder which can encode and decode target sequences </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a7627bba51bd81c8de677de6a0e911273"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7627bba51bd81c8de677de6a0e911273">&sect;&nbsp;</a></span>__init__()</h2>
+<a id="a3e31cfa81b056e07e48bdc3537785393"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e31cfa81b056e07e48bdc3537785393">&sect;&nbsp;</a></span>__init__()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -135,7 +135,7 @@ Public Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>target_normalizer</em>&#160;</td>
+          <td class="paramname"><em>target_normalizer</em> = <code>None</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -148,7 +148,7 @@ Public Attributes</h2></td></tr>
 <p><a class="el" href="classnabu_1_1processing_1_1target__coders_1_1targetcoder_1_1TargetCoder.html" title="an abstract class for a target coder which can encode and decode target sequences ...">TargetCoder</a> constructor. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">target_normalizer</td><td>a target normalizer function </td></tr>
+    <tr><td class="paramname">target_normalizer</td><td>[optional] a target normalizer function, if None is set, the endoded utterance will not be normalized. </td></tr>
   </table>
   </dd>
 </dl>
