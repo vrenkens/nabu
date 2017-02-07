@@ -43,9 +43,6 @@ def aurora4(transcription, alphabet):
     #make the transcription lower case and put it into a list
     normalized = list(replaced.lower())
 
-    #add the beginning and ending of sequence tokens
-    normalized = ['<sos>'] + normalized + ['<eos>']
-
     #replace the spaces with <space>
     normalized = [character if character is not ' ' else '<space>'
                   for character in normalized]

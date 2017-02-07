@@ -22,9 +22,9 @@ def main(_):
     computing_cfg_file = 'nabu/config/computing/non-distributed.cfg'
     database_cfg_file = 'nabu/config/databases/TIMIT.conf'
     feat_cfg_file = 'nabu/config/features/fbank.cfg'
-    nnet_cfg_file = 'nabu/config/nnet/DBLSTM.cfg'
-    trainer_cfg_file = 'nabu/config/trainer/CTCtrainer.cfg'
-    decoder_cfg_file = 'nabu/config/decoder/CTCdecoder.cfg'
+    nnet_cfg_file = 'nabu/config/nnet/LAS.cfg'
+    trainer_cfg_file = 'nabu/config/trainer/cross_entropytrainer.cfg'
+    decoder_cfg_file = 'nabu/config/decoder/BeamSearchDecoder.cfg'
 
     #read the computing config file
     parsed_computing_cfg = configparser.ConfigParser()

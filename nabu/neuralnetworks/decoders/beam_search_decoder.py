@@ -41,7 +41,8 @@ class BeamSearchDecoder(decoder.Decoder):
                              int(hlfeat.get_shape()[2])])
 
 
-        def body(step, beam, reuse=True, initial_state_attention=True):
+        def body(step, beam, reuse=True, initial_state_attention=True,
+                 check_finished=True):
             '''the body of the decoding while loop
 
             Args:
@@ -49,6 +50,8 @@ class BeamSearchDecoder(decoder.Decoder):
                 reuse: set to True to reuse the classifier
                 initial_state_attention: whether attention has to be applied
                     to the initital state to ge an initial context
+                check_finished: finish a beam element if a sentence border
+                    token is observed
 
             returns:
                 the loop vars'''
@@ -94,7 +97,7 @@ class BeamSearchDecoder(decoder.Decoder):
                                      int(logits.get_shape()[2])])
 
                 #update the beam
-                beam = beam.update(logits, states, step)
+                beam = beam.update(logits, states, step, check_finished)
 
                 step = step + 1
 
@@ -115,7 +118,8 @@ class BeamSearchDecoder(decoder.Decoder):
 
                 #check if all beam elements have terminated
                 cont = tf.logical_and(
-                    tf.logical_not(beam.all_terminated(step)),
+                    tf.logical_not(beam.all_terminated(
+                        step, classifier.output_dim - 1)),
                     tf.less(step, int(self.conf['max_steps'])))
 
             return cont
@@ -130,9 +134,10 @@ class BeamSearchDecoder(decoder.Decoder):
         lengths = tf.ones(
             [self.batch_size, int(self.conf['beam_width'])],
             dtype=tf.int32)
-        sequences = tf.ones(
-            [self.batch_size, int(self.conf['beam_width']),
-             int(self.conf['max_steps'])],
+        sequences = tf.constant(
+            classifier.output_dim-1,
+            shape=[self.batch_size, int(self.conf['beam_width']),
+                   int(self.conf['max_steps'])],
             dtype=tf.int32)
         states = classifier.decoder.zero_state(
             int(self.conf['beam_width'])*self.batch_size)
@@ -148,7 +153,7 @@ class BeamSearchDecoder(decoder.Decoder):
 
         #do the first step because the initial state should not be used
         #to compute a context and reuse should be False
-        step, beam = body(step, beam, False, False)
+        step, beam = body(step, beam, False, False, False)
 
         #run the rest of the decoding loop
         _, beam = tf.while_loop(
@@ -163,10 +168,10 @@ class BeamSearchDecoder(decoder.Decoder):
             scores = [tf.unpack(s) for s in tf.unpack(beam.scores)]
 
             #cut the beam sequences to the correct length and take of
-            #the start of sequence token
+            #the sequence border tokens
             sequences = [tf.unpack(s) for s in tf.unpack(beam.sequences)]
             lengths = [tf.unpack(l) for l in tf.unpack(beam.lengths)]
-            sequences = [[sequences[i][j][1:lengths[i][j]]
+            sequences = [[sequences[i][j][1:lengths[i][j]-1]
                           for j in range(len(lengths[i]))]
                          for i in range(len(lengths))]
 
@@ -203,7 +208,7 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores'])):
             tensor
         '''
 
-    def update(self, logits, states, step):
+    def update(self, logits, states, step, check_finished):
         '''update the beam by expanding the beam with new hypothesis
         and selecting the best ones. Use as beam = beam.update(...)
 
@@ -213,6 +218,8 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores'])):
             states: the decoder output states as a possibly nested tuple of
                 [batch_size x beam_width x state_dim] tensor
             step: the current step
+            check_finished: finish a beam element if a sentence border
+                token is observed
 
         Returns:
             a new updated Beam as a Beam object'''
@@ -225,7 +232,11 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores'])):
             batch_size = self.batch_size
 
             #get flags for finished beam elements: [batch_size x beam_width]
-            finished = tf.equal(self.sequences[:, :, step], 0)
+            if check_finished:
+                finished = tf.equal(self.sequences[:, :, step], numlabels-1)
+            else:
+                finished = tf.constant(False, dtype=tf.bool,
+                                       shape=[batch_size, beam_width])
 
             with tf.variable_scope('scores'):
 
@@ -305,7 +316,7 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores'])):
                                      expanded_elements)
                 labels = tf.select(
                     finished,
-                    tf.tile([[0]], [batch_size, beam_width]),
+                    tf.tile([[numlabels-1]], [batch_size, beam_width]),
                     labels)
 
                 #select the best lengths and scores
@@ -345,15 +356,18 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores'])):
 
             return Beam(sequences, lengths, states, scores)
 
-    def all_terminated(self, step):
+    def all_terminated(self, step, s_label):
         '''check if all elements in the beam have terminated
         Args:
             step: the current step
+            s_label: the value of the sentence border label
+                (sould be last label)
 
         Returns:
             a bool tensor'''
         with tf.variable_scope('all_terminated'):
-            return tf.equal(tf.reduce_sum(self.sequences[:, :, step]), 0)
+            return tf.equal(tf.reduce_sum(self.sequences[:, :, step]),
+                            s_label*self.beam_width)
 
     @property
     def beam_width(self):

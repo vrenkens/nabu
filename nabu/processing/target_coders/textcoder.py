@@ -14,12 +14,6 @@ class TextCoder(targetcoder.TargetCoder):
 
         alphabet = []
 
-        # end of sentence token
-        alphabet.append('<eos>')
-
-        #start of sentence token
-        alphabet.append('<sos>')
-
         #space
         alphabet.append('<space>')
 

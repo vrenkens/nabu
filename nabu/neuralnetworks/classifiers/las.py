@@ -67,12 +67,13 @@ class LAS(Classifier):
             sequence_lengths=input_seq_length,
             is_training=is_training)
 
-        #shift the targets to encoder inputs by prepending a start of
-        #sequence label and taking of the end of sequence label
+        #prepend a sequence border label to the targets to get the encoder
+        #inputs, the label is the last label
         batch_size = int(targets.get_shape()[0])
-        sos_labels = tf.ones([batch_size, 1], dtype=tf.int32)
-        encoder_inputs = tf.concat(1, [sos_labels, targets])
-        encoder_inputs = encoder_inputs[:, :-1]
+        s_labels = tf.constant(self.output_dim-1,
+                               dtype=tf.int32,
+                               shape=[batch_size, 1])
+        encoder_inputs = tf.concat(1, [s_labels, targets])
 
         #compute the output logits
         logits, _ = self.decoder(

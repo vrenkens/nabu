@@ -12,8 +12,9 @@ class Classifier(object):
 
         self.conf = conf
         self.output_dim = output_dim
-        if conf['blank_label'] == 'True':
-            self.output_dim += 1
+
+        #increase the output dim with the amount of labels that should be added
+        self.output_dim += int(conf['add_labels'])
 
     @abstractmethod
     def __call__(self, inputs, input_seq_length, targets=None,

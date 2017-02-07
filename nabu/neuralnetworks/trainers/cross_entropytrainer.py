@@ -33,6 +33,15 @@ class CrossEntropyTrainer(trainer.Trainer):
         '''
 
         with tf.name_scope('cross_enthropy_loss'):
+            #append a end of sequence label to the targets to get the encoder
+            #outputs, the sos label is the last label
+            batch_size = int(targets.get_shape()[0])
+            output_dim = int(logits.get_shape()[2])
+            s_labels = tf.constant(output_dim-1,
+                                   dtype=tf.int32,
+                                   shape=[batch_size, 1])
+            targets = tf.concat(1, [targets, s_labels])
+
             targets = tf.expand_dims(targets, 2)
 
             #convert to non sequential data

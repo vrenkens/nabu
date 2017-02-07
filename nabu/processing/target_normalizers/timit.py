@@ -3,7 +3,7 @@ contains the timit target normalizer'''
 
 def timit(transcription, _):
     '''
-    normalizer for Timit training transcriptions, this just adds a <eos> token
+    normalizer for Timit training transcriptions, don't need do to anything
 
     Args:
         transcription: the input transcription
@@ -12,4 +12,4 @@ def timit(transcription, _):
         the normalized transcription as a string
     '''
 
-    return transcription + ' <eos>'
+    return transcription
