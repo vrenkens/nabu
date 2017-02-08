@@ -461,7 +461,7 @@ seperated by commas. An example cluster file:
 ps,ps1.example.com,1024,
 ps,ps2.example.com,1024,
 worker,worker1.example.com,1024,0
-worker,worker1.example.com,1024,1
+worker,worker1.example.com,1025,1
 worker,worker2.example.com,1024,0
 ```
 
