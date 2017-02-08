@@ -190,7 +190,6 @@ class BeamSearchDecoder(decoder.Decoder):
 
         Returns:
             the score'''
-
         return score.cer(outputs, targets)
 
 

@@ -83,4 +83,4 @@ class LAS(Classifier):
             initial_state=None,
             is_training=is_training)
 
-        return logits, target_seq_length
+        return logits, target_seq_length + 1

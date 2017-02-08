@@ -57,7 +57,7 @@ models and methodologies.
 
 ##Using the recognizers
 
-Nabu contains some pre-trained models, that you can esaily use to perform
+Nabu contains some pre-trained models, that you can easily use to perform
 recognition as follows:
 
 ```
@@ -179,7 +179,7 @@ the training parameters like learning rate, batch size etc. Look at the
 own type of trainer.
 - nabu/config/decoder/: this configuration contains the type of decoder that
 will be used during validation. Choose the type that is appropriate for your
-model (e.g. beamsearchdecoder for encoder-decoder nets). You can also modify
+model (e.g. BeamSearchDecoder for encoder-decoder nets). You can also modify
 some decoding parameters like beam width and batch size. Look at the [Designing
 a decoder section](#designing-a-decoder) if you want to design your own type of
 decoder.

@@ -33,28 +33,27 @@ class CrossEntropyTrainer(trainer.Trainer):
         '''
 
         with tf.name_scope('cross_enthropy_loss'):
-            #append a end of sequence label to the targets to get the encoder
-            #outputs, the sos label is the last label
-            batch_size = int(targets.get_shape()[0])
             output_dim = int(logits.get_shape()[2])
-            s_labels = tf.constant(output_dim-1,
-                                   dtype=tf.int32,
-                                   shape=[batch_size, 1])
-            targets = tf.concat(1, [targets, s_labels])
 
-            targets = tf.expand_dims(targets, 2)
+            #put all the tragets on top of each other
+            split_targets = tf.unpack(targets)
+            for i, target in enumerate(split_targets):
+                #only use the real data
+                split_targets[i] = target[:target_seq_length[i]]
 
-            #convert to non sequential data
-            nonseq_targets = ops.seq2nonseq(targets, target_seq_length)
+                #append an end of sequence label
+                split_targets[i] = tf.concat(
+                    0, [split_targets[i], [output_dim-1]])
+
+            #concatenate the targets
+            nonseq_targets = tf.concat(0, split_targets)
+
+            #convert the logits to non sequential data
             nonseq_logits = ops.seq2nonseq(logits, logit_seq_length)
-
-            #make a vector out of the targets
-            nonseq_targets = tf.reshape(nonseq_targets, [-1])
 
             #one hot encode the targets
             #pylint: disable=E1101
-            nonseq_targets = tf.one_hot(nonseq_targets,
-                                        int(nonseq_logits.get_shape()[1]))
+            nonseq_targets = tf.one_hot(nonseq_targets, output_dim)
 
             #compute the cross-enthropy loss
             loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
