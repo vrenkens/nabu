@@ -10,7 +10,7 @@ class Decoder(object):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, conf, classifier, classifier_scope, input_dim,
+    def __init__(self, conf, classifier, input_dim,
                  max_input_length, coder, expdir):
         '''
         Decoder constructor, creates the decoding graph
@@ -18,8 +18,6 @@ class Decoder(object):
         Args:
             conf: the decoder config
             classifier: the classifier that will be used for decoding
-            classifier_scope: the scope where the classier should be
-                created/loaded from
             input_dim: the input dimension to the nnnetgraph
             max_input_length: the maximum length of the inputs
             batch_size: the decoder batch size
@@ -48,13 +46,10 @@ class Decoder(object):
             self.outputs = self.get_outputs(
                 inputs=self.inputs,
                 input_seq_length=self.input_seq_length,
-                classifier=classifier,
-                classifier_scope=classifier_scope
-                )
+                classifier=classifier)
 
     @abstractmethod
-    def get_outputs(self, inputs, input_seq_length, classifier,
-                    classifier_scope):
+    def get_outputs(self, inputs, input_seq_length, classifier):
 
         '''compute the outputs of the decoder
 
@@ -64,7 +59,6 @@ class Decoder(object):
             input_seq_length: The sequence length of the inputs as a
                 [batch_size] vector
             classifier: The classifier object that will be used in decoding
-            classifier_scope: the scope where the classifier was defined
 
         Returns:
             A list with batch_size elements containing nbest lists with elements

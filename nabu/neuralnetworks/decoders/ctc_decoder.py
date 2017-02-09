@@ -8,8 +8,7 @@ from nabu.processing import score
 class CTCDecoder(decoder.Decoder):
     '''CTC Decoder'''
 
-    def get_outputs(self, inputs, input_seq_length, classifier,
-                    classifier_scope):
+    def get_outputs(self, inputs, input_seq_length, classifier):
 
         '''compute the outputs of the decoder
 
@@ -19,7 +18,6 @@ class CTCDecoder(decoder.Decoder):
             input_seq_length: The sequence length of the inputs as a
                 [batch_size] vector
             classifier: The classifier object that will be used in decoding
-            classifier_scope: the scope where the classifier was defined
 
         Returns:
             A list with batch_size elements containing nbest lists with elements
@@ -27,11 +25,10 @@ class CTCDecoder(decoder.Decoder):
         '''
 
         #create the decoding graph
-        with tf.variable_scope(classifier_scope):
-            logits, logits_seq_length =\
-                classifier(
-                    inputs, input_seq_length, targets=None,
-                    target_seq_length=None, is_training=False)
+        logits, logits_seq_length =\
+            classifier(
+                inputs, input_seq_length, targets=None,
+                target_seq_length=None, is_training=False)
 
         #Convert logits to time major
         logits = tf.transpose(logits, [1, 0, 2])

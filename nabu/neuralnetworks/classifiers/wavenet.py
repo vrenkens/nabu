@@ -8,8 +8,8 @@ from layer import GatedAConv1d, Conv1dLayer
 class Wavenet(Classifier):
     ''''a wavenet classifier'''
 
-    def __call__(self, inputs, input_seq_length, targets=None,
-                 target_seq_length=None, is_training=False):
+    def _get_outputs(self, inputs, input_seq_length, targets=None,
+                     target_seq_length=None, is_training=False):
         '''
         Add the neural net variables and operations to the graph
 

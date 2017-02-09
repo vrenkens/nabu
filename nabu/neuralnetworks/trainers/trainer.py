@@ -131,23 +131,20 @@ class Trainer(object):
                     name='val_loss_in')
 
                 #compute the training outputs of the classifier
-                with tf.variable_scope('Classifier'):
-                    trainlogits, logit_seq_length = classifier(
-                        inputs=self.inputs,
-                        input_seq_length=self.input_seq_length,
-                        targets=self.targets,
-                        target_seq_length=self.target_seq_length,
-                        is_training=True)
+                trainlogits, logit_seq_length = classifier(
+                    inputs=self.inputs,
+                    input_seq_length=self.input_seq_length,
+                    targets=self.targets,
+                    target_seq_length=self.target_seq_length,
+                    is_training=True)
 
                 #create a saver for the classifier
-                self.modelsaver = tf.train.Saver(tf.get_collection(
-                    tf.GraphKeys.GLOBAL_VARIABLES, scope='Classifier'))
+                self.modelsaver = tf.train.Saver(tf.trainable_variables())
 
                 #create a decoder object for validation
                 self.decoder = decoder_factory.factory(
                     conf=decoder_conf,
                     classifier=classifier,
-                    classifier_scope=tf.VariableScope(True, 'Classifier'),
                     input_dim=input_dim,
                     max_input_length=max_input_length,
                     coder=dispenser.target_coder,

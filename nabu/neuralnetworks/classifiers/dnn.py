@@ -10,8 +10,8 @@ from layer import FFLayer
 class DNN(Classifier):
     '''a DNN classifier'''
 
-    def __call__(self, inputs, input_seq_length, targets=None,
-                 target_seq_length=None, is_training=False):
+    def _get_outputs(self, inputs, input_seq_length, targets=None,
+                     target_seq_length=None, is_training=False):
         '''
         Add the neural net variables and operations to the graph
 

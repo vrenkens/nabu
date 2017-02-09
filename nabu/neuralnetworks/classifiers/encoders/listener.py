@@ -9,13 +9,16 @@ class Listener(object):
 
     transforms input features into a high level representation'''
 
-    def __init__(self, numlayers, numunits, dropout=1):
+    def __init__(self, numlayers, numunits, dropout=1, name=None):
         '''Listener constructor
 
         Args:
             numlayers: the number of PBLSTM layers
             numunits: the number of units in each layer
-            dropout: the dropout rate'''
+            dropout: the dropout rate
+            name: the name of the Listener'''
+
+
 
         #save the parameters
         self.numlayers = numlayers
@@ -27,8 +30,10 @@ class Listener(object):
         #create the blstm layer
         self.blstm = layer.BLSTMLayer(numunits)
 
-    def __call__(self, inputs, sequence_lengths, is_training=False, scope=None):
-        """
+        self.scope = tf.VariableScope(False, name or type(self).__name__)
+
+    def __call__(self, inputs, sequence_lengths, is_training=False):
+        '''
         Create the variables and do the forward computation
 
         Args:
@@ -36,18 +41,13 @@ class Listener(object):
                 [batch_size, max_length, dim] tensor
             sequence_length: the length of the input sequences
             is_training: whether or not the network is in training mode
-            reuse: Setting this value to true will cause tensorflow to look
-                      for variables with the same name in the graph and reuse
-                      these instead of creating new variables.
-            scope: The variable scope sets the namespace under which
-                      the variables created during this call will be stored.
 
         Returns:
             the output of the layer as a [bath_size, max_length, output_dim]
             tensor
-        """
+        '''
 
-        with tf.variable_scope(scope or type(self).__name__):
+        with tf.variable_scope(self.scope):
 
             outputs = inputs
             output_seq_lengths = sequence_lengths
@@ -63,5 +63,7 @@ class Listener(object):
 
             if self.dropout < 1 and is_training:
                 outputs = tf.nn.dropout(outputs, self.dropout)
+
+        self.scope.reuse_variables()
 
         return outputs

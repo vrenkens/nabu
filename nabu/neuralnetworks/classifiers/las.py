@@ -8,12 +8,14 @@ import decoders
 
 class LAS(Classifier):
     '''a listen attend and spell classifier'''
-    def __init__(self, conf, output_dim):
+    def __init__(self, conf, output_dim, name=None):
         '''LAS constructor
 
         Args:
-            conf: the classifier config
-            output_dim: the classifier output dimension'''
+            conf: The classifier configuration
+            output_dim: the classifier output dimension
+            name: the classifier name
+        '''
 
         #create the listener
         self.encoder = encoders.listener.Listener(
@@ -30,8 +32,8 @@ class LAS(Classifier):
 
         super(LAS, self).__init__(conf, output_dim)
 
-    def __call__(self, inputs, input_seq_length, targets=None,
-                 target_seq_length=None, is_training=False):
+    def _get_outputs(self, inputs, input_seq_length, targets=None,
+                     target_seq_length=None, is_training=False):
         '''
         Add the neural net variables and operations to the graph
 

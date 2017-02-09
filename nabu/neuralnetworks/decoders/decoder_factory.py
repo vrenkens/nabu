@@ -7,7 +7,6 @@ import attention_visualizer
 
 def factory(conf,
             classifier,
-            classifier_scope,
             input_dim,
             max_input_length,
             coder,
@@ -19,8 +18,6 @@ def factory(conf,
     Args:
         conf: the decoder config
         classifier: the classifier that will be used for decoding
-        classifier_scope: the scope where the classier should be created/loaded
-            from
         input_dim: the input dimension to the nnnetgraph
         max_input_length: the maximum length of the inputs
         coder: a TargetCoder object
@@ -40,7 +37,6 @@ def factory(conf,
 
     return decoder_class(conf,
                          classifier,
-                         classifier_scope,
                          input_dim,
                          max_input_length,
                          coder,

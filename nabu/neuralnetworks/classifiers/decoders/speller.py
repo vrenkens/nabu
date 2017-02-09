@@ -9,7 +9,8 @@ class Speller(object):
     '''a speller object
 
     converts the high level features into output logits'''
-    def __init__(self, numlayers, numunits, dropout=1, sample_prob=0):
+    def __init__(self, numlayers, numunits, dropout=1, sample_prob=0,
+                 name=None):
         '''speller constructor
 
         Args:
@@ -17,7 +18,8 @@ class Speller(object):
             numunits: number of units in each layer
             dropout: the dropout rate
             sample_prob: the probability that the network will sample from the
-                output during training'''
+                output during training
+            name: the speller name'''
 
 
         #save the parameters
@@ -26,10 +28,11 @@ class Speller(object):
         self.dropout = dropout
         self.sample_prob = sample_prob
 
+        self.scope = tf.VariableScope(False, name or type(self).__name__)
+
 
     def __call__(self, hlfeat, encoder_inputs, numlabels, initial_state=None,
-                 initial_state_attention=False, is_training=False,
-                 scope=None):
+                 initial_state_attention=False, is_training=False):
         """
         Create the variables and do the forward computation in training mode
 
@@ -44,8 +47,6 @@ class Speller(object):
             initial_state_attention: whether attention has to be applied
                 to the initital state to ge an initial context
             is_training: whether or not the network is in training mode
-            scope: The variable scope sets the namespace under which
-                the variables created during this call will be stored.
 
         Returns:
             - the output logits of the listener as a
@@ -53,7 +54,7 @@ class Speller(object):
             - the final state of the listener
         """
 
-        with tf.variable_scope(scope or type(self).__name__):
+        with tf.variable_scope(self.scope):
 
             #get the batch size
             batch_size = hlfeat.get_shape()[0]
@@ -90,7 +91,9 @@ class Speller(object):
 
             logits = tf.transpose(tf.pack(logit_list), [1, 0, 2])
 
-            return logits, state
+        self.scope.reuse_variables()
+
+        return logits, state
 
     def create_rnn(self, is_training=False):
         '''created the decoder rnn cell

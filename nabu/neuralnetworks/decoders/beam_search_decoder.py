@@ -10,8 +10,7 @@ from nabu.processing import score
 class BeamSearchDecoder(decoder.Decoder):
     '''Beam search decoder'''
 
-    def get_outputs(self, inputs, input_seq_length, classifier,
-                    classifier_scope):
+    def get_outputs(self, inputs, input_seq_length, classifier):
 
         '''compute the outputs of the decoder
 
@@ -21,7 +20,6 @@ class BeamSearchDecoder(decoder.Decoder):
             input_seq_length: The sequence length of the inputs as a
                 [batch_size] vector
             classifier: The classifier object that will be used in decoding
-            classifier_scope: the scope where the classifier was defined
 
         Returns:
             A list with batch_size elements containing nbest lists with elements
@@ -29,9 +27,7 @@ class BeamSearchDecoder(decoder.Decoder):
         '''
 
         #encode the inputs [batch_size x output_length x output_dim]
-        with tf.variable_scope(classifier_scope):
-            hlfeat = classifier.encoder(self.inputs, self.input_seq_length,
-                                        False, False)
+        hlfeat = classifier.encoder(self.inputs, self.input_seq_length, False)
 
         #repeat the high level features for all beam elements
         hlfeat = tf.reshape(tf.tile(tf.expand_dims(hlfeat, 1),
@@ -41,13 +37,12 @@ class BeamSearchDecoder(decoder.Decoder):
                              int(hlfeat.get_shape()[2])])
 
 
-        def body(step, beam, reuse=True, initial_state_attention=True,
+        def body(step, beam, initial_state_attention=True,
                  check_finished=True):
             '''the body of the decoding while loop
 
             Args:
                 beam: a Beam object containing the current beam
-                reuse: set to True to reuse the classifier
                 initial_state_attention: whether attention has to be applied
                     to the initital state to ge an initial context
                 check_finished: finish a beam element if a sentence border
@@ -73,16 +68,13 @@ class BeamSearchDecoder(decoder.Decoder):
                 states = nest.pack_sequence_as(beam.states, states)
 
                 #compute the next state and logits
-                with tf.variable_scope(classifier_scope) as scope:
-                    if reuse:
-                        scope.reuse_variables()
-                    logits, states = classifier.decoder(
-                        hlfeat=hlfeat,
-                        encoder_inputs=prev_output,
-                        numlabels=classifier.output_dim,
-                        initial_state=states,
-                        initial_state_attention=initial_state_attention,
-                        is_training=False)
+                logits, states = classifier.decoder(
+                    hlfeat=hlfeat,
+                    encoder_inputs=prev_output,
+                    numlabels=classifier.output_dim,
+                    initial_state=states,
+                    initial_state_attention=initial_state_attention,
+                    is_training=False)
 
                 #put the states and logits in the format for the beam
                 states = [tf.reshape(s,
@@ -152,8 +144,8 @@ class BeamSearchDecoder(decoder.Decoder):
         step = tf.constant(0)
 
         #do the first step because the initial state should not be used
-        #to compute a context and reuse should be False
-        step, beam = body(step, beam, False, False, False)
+        #to compute a context
+        step, beam = body(step, beam, False, False)
 
         #run the rest of the decoding loop
         _, beam = tf.while_loop(
