@@ -2,12 +2,10 @@
 The DNN neural network classifier'''
 
 import tensorflow as tf
-import activation
 from nabu.neuralnetworks import ops
-from classifier import Classifier
-from layer import FFLayer
+from nabu.neuralnetworks.classifiers import classifier, layer, activation
 
-class DNN(Classifier):
+class DNN(classifier.Classifier):
     '''a DNN classifier'''
 
     def _get_outputs(self, inputs, input_seq_length, targets=None,
@@ -61,11 +59,11 @@ class DNN(Classifier):
         if float(self.conf['dropout']) < 1:
             act = activation.Dropout(act, float(self.conf['dropout']))
 
-        #input layer
-        layer = FFLayer(int(self.conf['num_units']), act)
+        #input and hidden layer
+        hidlayer = layer.FFLayer(int(self.conf['num_units']), act)
 
         #output layer
-        outlayer = FFLayer(self.output_dim,
+        outlayer = layer.FFLayer(self.output_dim,
                            activation.TfActivation(None, lambda(x): x), 0)
 
         #do the forward computation
@@ -74,9 +72,9 @@ class DNN(Classifier):
         nonseq_inputs = ops.seq2nonseq(inputs, input_seq_length)
 
         activations = [None]*int(self.conf['num_layers'])
-        activations[0] = layer(nonseq_inputs, is_training, 'layer0')
+        activations[0] = hidlayer(nonseq_inputs, is_training, 'layer0')
         for l in range(1, int(self.conf['num_layers'])):
-            activations[l] = layer(activations[l-1], is_training,
+            activations[l] = hidlayer(activations[l-1], is_training,
                                    'layer' + str(l))
 
         logits = activations[-1]
@@ -90,26 +88,3 @@ class DNN(Classifier):
 
 
         return seq_logits, input_seq_length
-
-class Callable(object):
-    '''A class for an object that is callable'''
-
-    def __init__(self, value):
-        '''
-        Callable constructor
-
-        Args:
-            tensor: a tensor
-        '''
-
-        self.value = value
-
-    def __call__(self):
-        '''
-        get the object
-
-        Returns:
-            the object
-        '''
-
-        return self.value

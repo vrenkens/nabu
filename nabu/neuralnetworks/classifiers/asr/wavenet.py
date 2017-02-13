@@ -2,10 +2,9 @@
 a wavenet classifier'''
 
 import tensorflow as tf
-from classifier import Classifier
-from layer import GatedAConv1d, Conv1dLayer
+from nabu.neuralnetworks.classifiers import classifier, layer
 
-class Wavenet(Classifier):
+class Wavenet(classifier.Classifier):
     ''''a wavenet classifier'''
 
     def _get_outputs(self, inputs, input_seq_length, targets=None,
@@ -32,13 +31,13 @@ class Wavenet(Classifier):
         '''
 
         #create the gated convolutional layers
-        dconv = GatedAConv1d(int(self.conf['kernel_size']))
+        dconv = layer.GatedAConv1d(int(self.conf['kernel_size']))
 
         #create the one by one convolution layer
-        onebyone = Conv1dLayer(int(self.conf['num_units']), 1, 1)
+        onebyone = layer.Conv1dLayer(int(self.conf['num_units']), 1, 1)
 
         #create the output layer
-        outlayer = Conv1dLayer(int(self.conf['num_units']), 1, 1)
+        outlayer = layer.Conv1dLayer(int(self.conf['num_units']), 1, 1)
 
         #add gaussian noise to the inputs
         if is_training:

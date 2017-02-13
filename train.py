@@ -7,8 +7,13 @@ import atexit
 import tensorflow as tf
 from six.moves import configparser
 from nabu.distributed import cluster
-from nabu import processing
-from nabu import neuralnetworks
+from nabu.processing.target_coders import coder_factory
+from nabu.processing.target_normalizers import normalizer_factory
+from nabu.processing import batchdispenser
+from nabu.processing import feature_reader
+from nabu.neuralnetworks.classifiers.asr import asr_factory
+from nabu.neuralnetworks.trainers import trainer_factory
+from nabu.neuralnetworks.trainers import trainer
 
 def train(clusterfile,
           job_name,
@@ -18,8 +23,8 @@ def train(clusterfile,
     ''' does everything for training
 
     Args:
-        cluster: the file where all the machines in the cluster are specified
-            if None, local training will be done
+        clusterfile: the file where all the machines in the cluster are
+            specified if None, local training will be done
         job_name: one of ps or worker in the case of distributed training
         task_index: the task index in this job
         expdir: the experiments directory
@@ -35,10 +40,10 @@ def train(clusterfile,
     parsed_feat_cfg.read(expdir + '/features.cfg')
     feat_cfg = dict(parsed_feat_cfg.items('features'))
 
-    #read the nnet config file
+    #read the asr config file
     parsed_nnet_cfg = configparser.ConfigParser()
-    parsed_nnet_cfg.read(expdir + '/nnet.cfg')
-    nnet_cfg = dict(parsed_nnet_cfg.items('nnet'))
+    parsed_nnet_cfg.read(expdir + '/asr.cfg')
+    nnet_cfg = dict(parsed_nnet_cfg.items('asr'))
 
     #read the trainer config file
     parsed_trainer_cfg = configparser.ConfigParser()
@@ -52,7 +57,7 @@ def train(clusterfile,
 
     if clusterfile is None:
         #no distributed training
-        cluster = None
+        tfcluster = None
         server = None
     else:
         #read the cluster file
@@ -94,7 +99,7 @@ def train(clusterfile,
 
                     #look for an available port
                     while (port in localports
-                           or not distributed.cluster.port_available(port)):
+                           or not cluster.port_available(port)):
 
                         port += 1
 
@@ -117,30 +122,27 @@ def train(clusterfile,
                     clusterdict[job].append('localhost:%d' % remote[1])
 
         #create the cluster
-        cluster = tf.train.ClusterSpec(clusterdict)
+        tfcluster = tf.train.ClusterSpec(clusterdict)
 
         #create the server for this task
-        server = tf.train.Server(cluster, job_name, task_index)
+        server = tf.train.Server(tfcluster, job_name, task_index)
 
         #the ps should just wait
         if job_name == 'ps':
-            neuralnetworks.trainers.trainer.wait(server, task_index,
-                                                 len(machines['worker']))
+            trainer.wait(server, task_index, len(machines['worker']))
             return
 
     featdir = database_cfg['train_features'] + '/' +  feat_cfg['name']
 
     #create the coder
-    normalizer = processing.target_normalizers.normalizer_factory.factory(
-        database_cfg['normalizer'])
-    coder = processing.target_coders.coder_factory.factory(
-        normalizer, database_cfg['coder'])
+    normalizer = normalizer_factory.factory(database_cfg['normalizer'])
+    coder = coder_factory.factory(normalizer, database_cfg['coder'])
 
     #create a feature reader for the training data
     with open(featdir + '/maxlength', 'r') as fid:
         max_input_length = int(fid.read())
 
-    featreader = processing.feature_reader.FeatureReader(
+    featreader = feature_reader.FeatureReader(
         scpfile=featdir + '/feats_shuffled.scp',
         cmvnfile=featdir + '/cmvn.scp',
         utt2spkfile=featdir + '/utt2spk',
@@ -155,7 +157,7 @@ def train(clusterfile,
     textfile = database_cfg['traintext']
 
     #create a batch dispenser for the training data
-    dispenser = processing.batchdispenser.TextBatchDispenser(
+    dispenser = batchdispenser.TextBatchDispenser(
         feature_reader=featreader,
         target_coder=coder,
         size=int(trainer_cfg['batch_size']),
@@ -168,7 +170,7 @@ def train(clusterfile,
         with open(featdir + '/maxlength', 'r') as fid:
             max_input_length = int(fid.read())
 
-        val_reader = processing.feature_reader.FeatureReader(
+        val_reader = feature_reader.FeatureReader(
             scpfile=featdir + '/feats.scp',
             cmvnfile=featdir + '/cmvn.scp',
             utt2spkfile=featdir + '/utt2spk',
@@ -195,13 +197,12 @@ def train(clusterfile,
             val_dispenser = None
 
     #create the classifier
-    classifier = neuralnetworks.classifiers.classifier_factory.factory(
+    classifier = asr_factory.factory(
         conf=nnet_cfg,
-        output_dim=coder.num_labels,
-        classifier_type=nnet_cfg['classifier'])
+        output_dim=coder.num_labels)
 
     #create the trainer
-    trainer = neuralnetworks.trainers.trainer_factory.factory(
+    tr = trainer_factory.factory(
         conf=trainer_cfg,
         decoder_conf=decoder_cfg,
         classifier=classifier,
@@ -213,12 +214,12 @@ def train(clusterfile,
         val_targets=val_targets,
         expdir=expdir,
         server=server,
-        cluster=cluster,
+        cluster=tfcluster,
         task_index=task_index,
         trainer_type=trainer_cfg['trainer'])
 
     #train the classifier
-    trainer.train()
+    tr.train()
 
 if __name__ == '__main__':
 

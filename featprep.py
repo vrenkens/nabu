@@ -6,8 +6,8 @@ from six.moves import configparser
 from nabu.processing import ark, prepare_data
 
 #pointers to the config files
-database_cfg_file = 'nabu/config/databases/TIMIT.conf'
-feat_cfg_file = 'nabu/config/features/mfcc.cfg'
+database_cfg_file = 'config/databases/TIMIT.conf'
+feat_cfg_file = 'config/features/mfcc.cfg'
 
 #read the database config file
 database_cfg = configparser.ConfigParser()

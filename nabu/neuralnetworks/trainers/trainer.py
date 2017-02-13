@@ -438,8 +438,8 @@ class Trainer(object):
                     #copy the needed config files
                     shutil.copyfile(self.expdir + '/features.cfg',
                                     modeldir + '/features.cfg')
-                    shutil.copyfile(self.expdir + '/nnet.cfg',
-                                    modeldir + '/nnet.cfg')
+                    shutil.copyfile(self.expdir + '/asr.cfg',
+                                    modeldir + '/asr.cfg')
                     shutil.copyfile(self.expdir + '/decoder.cfg',
                                     modeldir + '/decoder.cfg')
 
@@ -466,7 +466,7 @@ class Trainer(object):
             inputs: the inputs to the neural net, this should be a list
                 containing an NxF matrix for each utterance in the batch where
                 N is the number of frames in the utterance
-            targets: the targets for neural nnet, this should be
+            targets: the targets for neural net, this should be
                 a list containing an N-dimensional vector for each utterance
             sess: the session
 
@@ -505,7 +505,7 @@ class Trainer(object):
             inputs: the inputs to the neural net, this should be a list
                 containing NxF matrices for each utterance in the batch where
                 N is the number of frames in the utterance
-            targets: the one-hot encoded targets for neural nnet, this should be
+            targets: the one-hot encoded targets for neural net, this should be
             a list containing an NxO matrix for each utterance where O is
                 the output dimension of the neural net
 

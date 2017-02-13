@@ -2,11 +2,11 @@
 contains de LAS class'''
 
 import tensorflow as tf
-from classifier import Classifier
+from nabu.neuralnetworks.classifiers import classifier
 import encoders
 import decoders
 
-class LAS(Classifier):
+class LAS(classifier.Classifier):
     '''a listen attend and spell classifier'''
     def __init__(self, conf, output_dim, name=None):
         '''LAS constructor
@@ -30,7 +30,7 @@ class LAS(Classifier):
             dropout=float(conf['speller_dropout']),
             sample_prob=float(conf['sample_prob']))
 
-        super(LAS, self).__init__(conf, output_dim)
+        super(LAS, self).__init__(conf, output_dim, name)
 
     def _get_outputs(self, inputs, input_seq_length, targets=None,
                      target_seq_length=None, is_training=False):

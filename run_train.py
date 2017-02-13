@@ -19,12 +19,12 @@ def main(_):
     '''main function'''
 
     #pointers to the config files
-    computing_cfg_file = 'nabu/config/computing/non-distributed.cfg'
-    database_cfg_file = 'nabu/config/databases/TIMIT.conf'
-    feat_cfg_file = 'nabu/config/features/fbank.cfg'
-    nnet_cfg_file = 'nabu/config/nnet/LAS.cfg'
-    trainer_cfg_file = 'nabu/config/trainer/cross_entropytrainer.cfg'
-    decoder_cfg_file = 'nabu/config/decoder/BeamSearchDecoder.cfg'
+    computing_cfg_file = 'config/computing/non-distributed.cfg'
+    database_cfg_file = 'config/databases/TIMIT.conf'
+    feat_cfg_file = 'config/features/fbank.cfg'
+    nnet_cfg_file = 'config/asr/LAS.cfg'
+    trainer_cfg_file = 'config/trainer/cross_entropytrainer.cfg'
+    decoder_cfg_file = 'config/decoder/BeamSearchDecoder.cfg'
 
     #read the computing config file
     parsed_computing_cfg = configparser.ConfigParser()
@@ -52,7 +52,7 @@ def main(_):
         #experiment information is stored
         shutil.copyfile(database_cfg_file, FLAGS.expdir + '/database.cfg')
         shutil.copyfile(feat_cfg_file, FLAGS.expdir + '/features.cfg')
-        shutil.copyfile(nnet_cfg_file, FLAGS.expdir + '/nnet.cfg')
+        shutil.copyfile(nnet_cfg_file, FLAGS.expdir + '/asr.cfg')
 
     shutil.copyfile(computing_cfg_file, FLAGS.expdir + '/computing.cfg')
     shutil.copyfile(trainer_cfg_file, FLAGS.expdir + '/trainer.cfg')

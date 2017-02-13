@@ -6,7 +6,7 @@ from collections import OrderedDict
 from six.moves import configparser
 import tensorflow as tf
 from nabu.processing.feature_computers import feature_computer_factory
-from nabu.neuralnetworks.classifiers import classifier_factory
+from nabu.neuralnetworks.classifiers.asr import asr_factory
 from nabu.neuralnetworks.decoders import decoder_factory
 
 class Model(object):
@@ -36,8 +36,8 @@ class Model(object):
 
         #read the nnet config file
         parsed_nnet_cfg = configparser.ConfigParser()
-        parsed_nnet_cfg.read(modeldir + '/nnet.cfg')
-        nnet_cfg = dict(parsed_nnet_cfg.items('nnet'))
+        parsed_nnet_cfg.read(modeldir + '/asr.cfg')
+        nnet_cfg = dict(parsed_nnet_cfg.items('asr'))
 
         #read the decoder config file
         if decoder_cfg_file is None:
@@ -65,10 +65,9 @@ class Model(object):
                 max_input_length = int(fid.read())
 
         #create the classifier
-        classifier = classifier_factory.factory(
+        classifier = asr_factory.factory(
             conf=nnet_cfg,
-            output_dim=len(alphabet),
-            classifier_type=nnet_cfg['classifier'])
+            output_dim=len(alphabet))
 
         #create a decoder
         graph = tf.Graph()
@@ -76,7 +75,6 @@ class Model(object):
             self.decoder = decoder_factory.factory(
                 conf=decoder_cfg,
                 classifier=classifier,
-                classifier_scope=tf.VariableScope(False, 'Classifier'),
                 input_dim=self.feature_computer.get_dim(),
                 max_input_length=max_input_length,
                 coder=coder,

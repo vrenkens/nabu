@@ -4,7 +4,7 @@ this file will do the neural net testing'''
 import os
 from six.moves import configparser
 import tensorflow as tf
-from nabu.neuralnetworks.classifiers import classifier_factory
+from nabu.neuralnetworks.classifiers.asr import asr_factory
 from nabu.neuralnetworks.decoders import decoder_factory
 from nabu.processing.target_coders import coder_factory
 from nabu.processing.target_normalizers import normalizer_factory
@@ -29,10 +29,10 @@ def main(_):
     parsed_feat_cfg.read(FLAGS.expdir + '/features.cfg')
     feat_cfg = dict(parsed_feat_cfg.items('features'))
 
-    #read the nnet config file
+    #read the asr config file
     parsed_nnet_cfg = configparser.ConfigParser()
-    parsed_nnet_cfg.read(FLAGS.expdir + '/nnet.cfg')
-    nnet_cfg = dict(parsed_nnet_cfg.items('nnet'))
+    parsed_nnet_cfg.read(FLAGS.expdir + '/asr.cfg')
+    nnet_cfg = dict(parsed_nnet_cfg.items('asr'))
 
     #read the decoder config file
     if decoder_cfg_file is None:
@@ -73,10 +73,9 @@ def main(_):
 
 
     #create the classifier
-    classifier = classifier_factory.factory(
+    classifier = asr_factory.factory(
         conf=nnet_cfg,
-        output_dim=coder.num_labels,
-        classifier_type=nnet_cfg['classifier'])
+        output_dim=coder.num_labels)
 
     #create a decoder
     graph = tf.Graph()
@@ -84,7 +83,6 @@ def main(_):
         decoder = decoder_factory.factory(
             conf=decoder_cfg,
             classifier=classifier,
-            classifier_scope=tf.VariableScope(False, 'Classifier'),
             input_dim=input_dim,
             max_input_length=reader.max_input_length,
             coder=coder,

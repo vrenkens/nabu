@@ -3,5 +3,4 @@
     (e.g. layers)
 '''
 
-from . import activation, classifier, dblstm, dnn, layer, wavenet, las, \
-encoders, decoders, classifier_factory
+from . import activation, classifier, layer, asr, lang

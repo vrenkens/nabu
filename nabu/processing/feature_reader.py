@@ -103,14 +103,17 @@ class FeatureReader(object):
 
     @property
     def num_utt(self):
+        '''number of utterances in the reader'''
         return self.reader.num_utt
 
     @property
     def pos(self):
+        '''the position in the reader'''
         return self.reader.scp_position
 
     @pos.setter
     def pos(self, pos):
+        '''the position setter'''
         self.reader.scp_position = pos
 
 

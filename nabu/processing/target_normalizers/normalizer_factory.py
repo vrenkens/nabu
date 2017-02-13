@@ -2,7 +2,8 @@
 Contains the normalizer factory
 '''
 
-import aurora4, timit
+import aurora4
+import timit
 
 def factory(normalizer_type):
     '''create a normalizer_type

@@ -2,13 +2,11 @@
 contains de DBLSTM class'''
 
 import tensorflow as tf
-from classifier import Classifier
-from layer import FFLayer, BLSTMLayer
-from activation import TfActivation
+from nabu.neuralnetworks.classifiers import classifier, layer, activation
 from nabu.neuralnetworks import ops
 
 
-class DBLSTM(Classifier):
+class DBLSTM(classifier.Classifier):
     '''A deep bidirectional LSTM classifier'''
 
     def _get_outputs(self, inputs, input_seq_length, targets=None,
@@ -35,11 +33,11 @@ class DBLSTM(Classifier):
         '''
 
         #the blstm layer
-        blstm = BLSTMLayer(int(self.conf['num_units']))
+        blstm = layer.BLSTMLayer(int(self.conf['num_units']))
 
         #the linear output layer
-        outlayer = FFLayer(self.output_dim,
-                           TfActivation(None, lambda(x): x), 0)
+        outlayer = layer.FFLayer(self.output_dim,
+                                 activation.TfActivation(None, lambda(x): x), 0)
 
         #do the forward computation
 
@@ -50,8 +48,8 @@ class DBLSTM(Classifier):
         else:
             logits = inputs
 
-        for layer in range(int(self.conf['num_layers'])):
-            logits = blstm(logits, input_seq_length, 'layer' + str(layer))
+        for l in range(int(self.conf['num_layers'])):
+            logits = blstm(logits, input_seq_length, 'layer' + str(l))
 
         logits = ops.seq2nonseq(logits, input_seq_length)
 
