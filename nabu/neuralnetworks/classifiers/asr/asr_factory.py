@@ -4,7 +4,7 @@ contains the asr factory'''
 from . import dblstm, dnn, wavenet, las
 
 def factory(conf, output_dim):
-    '''create a classifier
+    '''create an asr classifier
 
     Args:
         conf: the classifier config as a dictionary

@@ -1,15 +1,14 @@
-'''@file dblstm.py
-contains de LAS class'''
+'''@file lstmlm.py
+contains the LstmLm class'''
 
 import tensorflow as tf
 from nabu.neuralnetworks.classifiers import classifier
-import encoders
-import asr_decoders
+import lang_decoders
 
-class LAS(classifier.Classifier):
-    '''a listen attend and spell classifier'''
+class LstmLm(classifier.Classifier):
+
     def __init__(self, conf, output_dim, name=None):
-        '''LAS constructor
+        '''LstnLm constructor
 
         Args:
             conf: The classifier configuration
@@ -17,23 +16,17 @@ class LAS(classifier.Classifier):
             name: the classifier name
         '''
 
-        #create the listener
-        self.encoder = encoders.listener.Listener(
-            numlayers=int(conf['listener_layers']),
-            numunits=int(conf['listener_units']),
-            dropout=float(conf['listener_dropout']))
-
         #create the speller
-        self.decoder = asr_decoders.speller.Speller(
+        self.decoder = lang_decoders.lstm_decoder.LstmDecoder(
             numlayers=int(conf['speller_layers']),
             numunits=int(conf['speller_units']),
-            dropout=float(conf['speller_dropout']),
-            sample_prob=float(conf['sample_prob']))
+            dropout=float(conf['speller_dropout']))
 
-        super(LAS, self).__init__(conf, output_dim, name)
+        super(LstmLm, self).__init__(conf, output_dim, name)
 
-    def _get_outputs(self, inputs, input_seq_length, targets=None,
-                     target_seq_length=None, is_training=False):
+    def _get_outputs(self, inputs, input_seq_length, targets,
+                     target_seq_length, is_training):
+
         '''
         Add the neural net variables and operations to the graph
 
@@ -55,20 +48,6 @@ class LAS(classifier.Classifier):
                 - the output logits sequence lengths as a vector
         '''
 
-        #add input noise
-        std_input_noise = float(self.conf['std_input_noise'])
-        if is_training and std_input_noise > 0:
-            noisy_inputs = inputs + tf.random_normal(
-                inputs.get_shape(), stddev=std_input_noise)
-        else:
-            noisy_inputs = inputs
-
-        #compute the high level features
-        hlfeat = self.encoder(
-            inputs=noisy_inputs,
-            sequence_lengths=input_seq_length,
-            is_training=is_training)
-
         #prepend a sequence border label to the targets to get the encoder
         #inputs, the label is the last label
         batch_size = int(targets.get_shape()[0])
@@ -79,7 +58,6 @@ class LAS(classifier.Classifier):
 
         #compute the output logits
         logits, _ = self.decoder(
-            hlfeat=hlfeat,
             encoder_inputs=encoder_inputs,
             numlabels=self.output_dim,
             initial_state=None,
