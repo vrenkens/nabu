@@ -46,7 +46,7 @@ def main(_):
             shutil.rmtree(FLAGS.expdir + '/logdir')
 
         if not os.path.isdir(FLAGS.expdir):
-            os.mkdir(FLAGS.expdir)
+            os.makedirs(FLAGS.expdir)
 
         #copy the configs to the expdir so they can be read there and the
         #experiment information is stored
