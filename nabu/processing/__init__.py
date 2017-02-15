@@ -6,4 +6,4 @@ This package contains all the functionality for data processing:
 '''
 
 from . import ark, batchdispenser, feature_reader, prepare_data,\
-readfiles, score, target_coders, target_normalizers, feature_readers
+readfiles, score, target_coders, target_normalizers, feature_computers
