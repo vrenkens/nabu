@@ -42,4 +42,8 @@ def cer(outputs, targets):
         errors += error_matrix[-1, -1]
         num_labels += len(reference)
 
+        print 'decoded: %s' % ' '.join(decoded)
+        print 'reference: %s' % targets[utt]
+        print 'CER: %d' % (error_matrix[-1, -1]/len(reference))
+
     return errors/num_labels

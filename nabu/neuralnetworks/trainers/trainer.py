@@ -60,6 +60,12 @@ class Trainer(object):
                              /max(1, int(conf['numbatches_to_aggregate'])))
         self.val_reader = val_reader
         self.val_targets = val_targets
+
+        #normalize the targets
+        for utt in self.val_targets:
+            self.val_targets[utt] = dispenser.target_coder.target_normalizer(
+                self.val_targets[utt], dispenser.target_coder.lookup.keys())
+
         self.expdir = expdir
         self.server = server
         self.cluster = cluster
