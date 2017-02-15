@@ -148,7 +148,7 @@ def train(clusterfile,
         max_input_length=max_input_length)
 
     #read the feature dimension
-    with open(featdir + '/input_dim', 'r') as fid:
+    with open(featdir + '/dim', 'r') as fid:
         input_dim = int(fid.read())
 
     #the path to the text file

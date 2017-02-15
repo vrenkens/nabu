@@ -20,7 +20,7 @@ def main(_):
 
     #pointers to the config files
     computing_cfg_file = 'nabu/config/computing/non-distributed.cfg'
-    database_cfg_file = 'nabu/config/databases/TIMIT.conf'
+    database_cfg_file = 'nabu/config/databases/aurora4.conf'
     feat_cfg_file = 'nabu/config/features/fbank.cfg'
     nnet_cfg_file = 'nabu/config/nnet/LAS.cfg'
     trainer_cfg_file = 'nabu/config/trainer/cross_entropytrainer.cfg'
