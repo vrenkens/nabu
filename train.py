@@ -52,7 +52,7 @@ def train(clusterfile,
 
     if clusterfile is None:
         #no distributed training
-        cluster = None
+        tfcluster = None
         server = None
     else:
         #read the cluster file
@@ -94,7 +94,7 @@ def train(clusterfile,
 
                     #look for an available port
                     while (port in localports
-                           or not distributed.cluster.port_available(port)):
+                           or not cluster.port_available(port)):
 
                         port += 1
 
@@ -117,10 +117,10 @@ def train(clusterfile,
                     clusterdict[job].append('localhost:%d' % remote[1])
 
         #create the cluster
-        cluster = tf.train.ClusterSpec(clusterdict)
+        tfcluster = tf.train.ClusterSpec(clusterdict)
 
         #create the server for this task
-        server = tf.train.Server(cluster, job_name, task_index)
+        server = tf.train.Server(tfcluster, job_name, task_index)
 
         #the ps should just wait
         if job_name == 'ps':
@@ -213,7 +213,7 @@ def train(clusterfile,
         val_targets=val_targets,
         expdir=expdir,
         server=server,
-        cluster=cluster,
+        cluster=tfcluster,
         task_index=task_index,
         trainer_type=trainer_cfg['trainer'])
 
