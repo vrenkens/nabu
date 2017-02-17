@@ -108,7 +108,7 @@ with open(sourcefile) as fid:
     for line in fid.readlines():
         splitline = line.strip().split(' ')
         utt_id = splitline[0]
-        trans = ' '.join(splitline[1])
+        trans = ' '.join(splitline[1:])
         normalized = normalizer(trans)
         target_fid.write('%s %s\n' % (utt_id, normalized))
 
@@ -127,7 +127,7 @@ if 'devtext' in database_cfg:
         for line in fid.readlines():
             splitline = line.strip().split(' ')
             utt_id = splitline[0]
-            trans = ' '.join(splitline[1])
+            trans = ' '.join(splitline[1:])
             normalized = normalizer(trans)
             target_fid.write('%s %s\n' % (utt_id, normalized))
 
