@@ -2,13 +2,11 @@
 neural network trainer environment'''
 
 import os
-import shutil
 from abc import ABCMeta, abstractmethod
 from time import time, sleep
 import tensorflow as tf
 from tensorflow.python.client.device_lib import list_local_devices
 import numpy as np
-from nabu.neuralnetworks.decoders import decoder_factory
 
 class Trainer(object):
     '''General class outlining the training environment of a classifier.'''
@@ -16,15 +14,13 @@ class Trainer(object):
 
     def __init__(self,
                  conf,
-                 decoder_conf,
+                 decoder,
                  classifier,
                  input_dim,
-                 max_input_length,
-                 max_target_length,
                  dispenser,
-                 val_reader=None,
-                 val_targets=None,
-                 expdir=None,
+                 val_reader,
+                 val_targets,
+                 expdir,
                  server=None,
                  cluster=None,
                  task_index=0):
@@ -34,10 +30,8 @@ class Trainer(object):
         Args:
             classifier: the neural net classifier that will be trained
             conf: the trainer config
-            decoder_conf: the decoder config used for validation
+            decoder: a callable that will create a decoder
             input_dim: the input dimension to the nnnetgraph
-            max_input_length: the maximal length of the input sequences
-            max_target_length: the maximal length of the target sequences
             num_steps: the total number of steps that will be taken
             dispenser: a Batchdispenser object
             cluster: the optional cluster used for distributed training, it
@@ -54,8 +48,6 @@ class Trainer(object):
 
         self.conf = conf
         self.dispenser = dispenser
-        self.max_input_length = max_input_length
-        self.max_target_length = max_target_length
         self.num_steps = int(dispenser.num_batches*int(conf['num_epochs'])
                              /max(1, int(conf['numbatches_to_aggregate'])))
         self.val_reader = val_reader
@@ -63,6 +55,10 @@ class Trainer(object):
         self.expdir = expdir
         self.server = server
         self.cluster = cluster
+
+        #save the max lengths
+        self.max_target_length = dispenser.max_target_length
+        self.max_input_length = dispenser.max_input_length
 
         #create the graph
         self.graph = tf.Graph()
@@ -98,13 +94,14 @@ class Trainer(object):
                 #create the inputs placeholder
                 self.inputs = tf.placeholder(
                     dtype=tf.float32,
-                    shape=[dispenser.size, max_input_length, input_dim],
+                    shape=[dispenser.size, self.max_input_length,
+                           input_dim],
                     name='inputs')
 
                 #reference labels
                 self.targets = tf.placeholder(
                     dtype=tf.int32,
-                    shape=[dispenser.size, max_target_length],
+                    shape=[dispenser.size, self.max_target_length],
                     name='targets')
 
                 #the length of all the input sequences
@@ -142,14 +139,7 @@ class Trainer(object):
                 self.modelsaver = tf.train.Saver(tf.trainable_variables())
 
                 #create a decoder object for validation
-                self.decoder = decoder_factory.factory(
-                    conf=decoder_conf,
-                    classifier=classifier,
-                    input_dim=input_dim,
-                    max_input_length=max_input_length,
-                    coder=dispenser.target_coder,
-                    expdir=expdir,
-                    decoder_type=decoder_conf['decoder'])
+                self.decoder = decoder()
 
                 if cluster is not None:
                     #create a done queue for each parameter server
@@ -427,31 +417,13 @@ class Trainer(object):
 
                 #the chief will create the final model
                 if self.supervisor.is_chief:
-                    modeldir = self.expdir + '/model'
-
-                    if not os.path.isdir(modeldir):
-                        os.mkdir(modeldir)
+                    if not os.path.isdir(os.path.join(self.expdir, 'model')):
+                        os.mkdir(os.path.join(self.expdir, 'model'))
 
                     #save the network
-                    self.modelsaver.save(sess, modeldir + '/network.ckpt')
-
-                    #copy the needed config files
-                    shutil.copyfile(self.expdir + '/features.cfg',
-                                    modeldir + '/features.cfg')
-                    shutil.copyfile(self.expdir + '/asr.cfg',
-                                    modeldir + '/asr.cfg')
-                    shutil.copyfile(self.expdir + '/decoder.cfg',
-                                    modeldir + '/decoder.cfg')
-
-                    #write the used alphabet in the model directory
-                    alphabet = self.dispenser.target_coder.lookup.keys()
-                    with open(modeldir + '/alphabet', 'w') as fid:
-                        for target in alphabet:
-                            fid.write(target + '\n')
-
-                    #write the maximium input length to the model file
-                    with open(modeldir + '/max_input_length', 'w') as fid:
-                        fid.write(str(self.max_input_length))
+                    self.modelsaver.save(
+                        sess, os.path.join(self.expdir, 'final', 'network.ckpt')
+                        )
 
                 #notify the parameter server that he worker has terminated
                 sess.run(self.done)

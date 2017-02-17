@@ -4,10 +4,9 @@
 # of features for neural network training and testing
 '''
 
-from abc import ABCMeta, abstractmethod
-import gzip
+from abc import ABCMeta, abstractmethod, abstractproperty
 import copy
-import numpy as np
+import text_reader
 
 ## Class that dispenses batches of data for mini-batch training
 class BatchDispenser(object):
@@ -15,23 +14,105 @@ class BatchDispenser(object):
     child classes.'''
     __metaclass__ = ABCMeta
 
-    @abstractmethod
-    def read_target_file(self, target_path):
+    def __init__(self, size):
         '''
-        read the file containing the targets
+        batchDispenser constructor
 
         Args:
-            target_path: path to the targets file
+            size: Specifies how many utterances should be contained
+                  in each batch.
+        '''
+
+
+        #store the batch size
+        self.size = size
+
+    def get_batch(self, pos=None):
+        '''
+        Get a batch of features and targets.
+
+        Args:
+            pos: position in the reader, if None will remain unchanged
 
         Returns:
-            A dictionary containing
-                - Key: Utterance ID
-                - Value: The target sequence as a string
+            A pair containing:
+                - The features: a list of feature matrices
+                - The targets: a list of target vectors
         '''
+
+        #set up the data lists.
+        batch_inputs = []
+        batch_targets = []
+
+        if pos is not None:
+            self.pos = pos
+
+        while len(batch_inputs) < self.size:
+            #read the next pair
+            inputs, targets = self.get_pair()
+
+            if targets is not None:
+                batch_inputs.append(inputs)
+                batch_targets.append(targets)
+
+        return batch_inputs, batch_targets
+
+    @abstractmethod
+    def split(self, num_utt):
+        '''take a number of utterances from the batchdispenser to make a new one
+
+        Args:
+            num_utt: the number of utterances in the new batchdispenser
+
+        Returns:
+            a batch dispenser with the requested number of utterances'''
+
+    @abstractmethod
+    def get_pair(self):
+        '''get the next input-target pair'''
+
+    @property
+    def num_batches(self):
+        '''
+        The number of batches in the given data.
+
+        The number of batches is not necessarily a whole number
+        '''
+
+        return float(self.num_utt)/self.size
+
+    @abstractproperty
+    def num_utt(self):
+        '''The number of utterances in the given data'''
+
+    @abstractproperty
+    def num_labels(self):
+        '''the number of output labels'''
+
+    @abstractproperty
+    def max_input_length(self):
+        '''the maximal sequence length of the features'''
+
+    @abstractproperty
+    def max_target_length(self):
+        '''the maximal length of the targets'''
+
+    #pylint: disable=E0202
+    @abstractproperty
+    def pos(self):
+        '''the current position in the data'''
+
+    @pos.setter
+    @abstractmethod
+    def pos(self, pos):
+        '''setter for the current position in the data'''
+
+class AsrBatchDispenser(BatchDispenser):
+    '''a batch dispenser, used for ASR training'''
 
     def __init__(self, feature_reader, target_coder, size, target_path):
         '''
-        batchDispenser constructor TODO: move encoding to the constructor
+        batchDispenser constructor
 
         Args:
             feature_reader: Kaldi ark-file feature reader instance.
@@ -45,95 +126,18 @@ class BatchDispenser(object):
         #store the feature reader
         self.feature_reader = feature_reader
 
-        #get a dictionary connecting training utterances and targets.
-        self.target_dict = self.read_target_file(target_path)
-
-        #detect the maximum length of the target sequences
-        self.max_target_length = max([target_coder.encode(targets).size
-                                      for targets in self.target_dict.values()])
-
-        #store the batch size
-        self.size = size
-
         #save the target coder
         self.target_coder = target_coder
 
-    def get_batch(self, pos=None, stop_at_end=False):
-        '''
-        Get a batch of features and targets.
+        #get a dictionary connecting training utterances and targets.
+        self.target_dict = {}
 
-        Args:
-            pos: position in the feature reader, if None will remain unchanged
-            stop_at_end: boolean, if False the batchdispenser will loop around
-                otherwise the batchdispenser will stop at the end
+        with open(target_path, 'r') as fid:
+            for line in fid:
+                splitline = line.strip().split(' ')
+                self.target_dict[splitline[0]] = ' '.join(splitline[1:])
 
-        Returns:
-            A pair containing:
-                - The features: a list of feature matrices
-                - The targets: a list of target vectors
-        '''
-
-        #set up the data lists.
-        batch_inputs = []
-        batch_targets = []
-
-        if pos is not None:
-            self.feature_reader.pos = pos
-
-        while len(batch_inputs) < self.size:
-            #read utterance
-            utt_id, utt_mat, looped = self.feature_reader.get_utt()
-
-            if looped and stop_at_end:
-                break
-
-            #get transcription
-            if utt_id in self.target_dict:
-                targets = self.target_dict[utt_id]
-                encoded_targets = self.target_coder.encode(targets)
-
-                batch_inputs.append(utt_mat)
-                batch_targets.append(encoded_targets)
-            else:
-                print 'WARNING no targets for %s' % utt_id
-
-        if self.feature_reader.pos == self.feature_reader.num_utt:
-            self.feature_reader.pos = 0
-
-        return batch_inputs, batch_targets
-
-    def get_all_data(self):
-        '''read all data in a single batch
-
-        Returns:
-            A pair containing:
-                - The features: a list of feature matrices
-                - The targets: a list of target vectors'''
-
-        #set up the data lists.
-        batch_inputs = []
-        batch_targets = []
-
-        while True:
-
-            #read utterance
-            utt_id, utt_mat, looped = self.feature_reader.get_utt()
-
-            if looped:
-                break
-
-            #get transcription
-            if utt_id in self.target_dict:
-                targets = self.target_dict[utt_id]
-                encoded_targets = self.target_coder.encode(targets)
-
-                batch_inputs.append(utt_mat)
-                batch_targets.append(encoded_targets)
-            else:
-                print 'WARNING no targets for %s' % utt_id
-
-        return batch_inputs, batch_targets
-
+        super(AsrBatchDispenser, self).__init__(size)
 
     def split(self, num_utt):
         '''take a number of utterances from the batchdispenser to make a new one
@@ -161,58 +165,19 @@ class BatchDispenser(object):
 
         return dispenser
 
-    def skip_batch(self):
-        '''skip a batch'''
+    def get_pair(self):
+        '''get the next input-target pair'''
 
-        skipped = 0
-        while skipped < self.size:
-            #read nex utterance
-            utt_id = self.feature_reader.next_id()
+        utt_id, inputs, _ = self.feature_reader.get_utt()
 
-            if utt_id in self.target_dict:
-                #update number skipped utterances
-                skipped += 1
+        if utt_id in self.target_dict:
+            targets = self.target_coder.encode(self.target_dict[utt_id])
+        else:
+            print 'WARNING no targets for %s' % utt_id
+            targets = None
+            inputs = None
 
-    def return_batch(self):
-        '''Reset to previous batch'''
-
-        skipped = 0
-
-        while skipped < self.size:
-            #read previous utterance
-            utt_id = self.feature_reader.prev_id()
-
-            if utt_id in self.target_dict:
-                #update number skipped utterances
-                skipped += 1
-
-    def compute_target_count(self):
-        '''
-        compute the count of the targets in the data
-
-        Returns:
-            a numpy array containing the counts of the targets
-        '''
-
-        #create a big vector of stacked encoded targets
-        encoded_targets = np.concatenate(
-            [self.target_coder.encode(targets)
-             for targets in self.target_dict.values()])
-
-        #count the number of occurences of each target
-        count = np.bincount(encoded_targets)
-
-        return count
-
-    @property
-    def num_batches(self):
-        '''
-        The number of batches in the given data.
-
-        The number of batches is not necessarily a whole number
-        '''
-
-        return float(self.num_utt)/self.size
+        return inputs, targets
 
     @property
     def num_utt(self):
@@ -230,58 +195,110 @@ class BatchDispenser(object):
     def max_input_length(self):
         '''the maximal sequence length of the features'''
 
-        return self.feature_reader.max_input_length
+        return self.feature_reader.max_length
+
+    @property
+    def max_target_length(self):
+        '''the maximal length of the targets'''
+        return max([len(targets.split(' '))
+                    for targets in self.target_dict.values()])
+
 
     @property
     def pos(self):
+        '''the current position in the data'''
+
         return self.feature_reader.pos
 
-class TextBatchDispenser(BatchDispenser):
-    '''a batch dispenser, which uses text targets.'''
+    @pos.setter
+    def pos(self, pos):
+        '''setter for the current position in the data'''
 
-    def read_target_file(self, target_path):
+        self.feature_reader.pos = pos
+
+class LmBatchDispenser(BatchDispenser):
+    '''a batch dispenser, used for language model training'''
+
+    def __init__(self, target_coder, size, textfile, max_length,
+                 num_utt):
         '''
-        read the file containing the text sequences
+        BatchDispenser constructor
 
         Args:
-            target_path: path to the text file
-
-        Returns:
-            A dictionary containing
-                - Key: Utterance ID
-                - Value: The target sequence as a string
+            size: Specifies how many utterances should be contained
+                  in each batch.
+            textfile: path to the file containing the text
+            max_length: the maximum length of the text sequences
+            num_utt: number of lines in the textfile
         '''
 
-        target_dict = {}
+        #create a text reader object
+        self.textreader = text_reader.TextReader(textfile, max_length,
+                                                 target_coder)
 
-        with open(target_path, 'r') as fid:
-            for line in fid:
-                splitline = line.strip().split(' ')
-                target_dict[splitline[0]] = ' '.join(splitline[1:])
+        #the total number of utterances
+        self._num_utt = num_utt
 
-        return target_dict
+        super(LmBatchDispenser, self).__init__(size)
 
-class AlignmentBatchDispenser(BatchDispenser):
-    '''a batch dispenser, which uses state alignment targets.'''
-
-    def read_target_file(self, target_path):
-        '''
-        read the file containing the state alignments
+    def split(self, num_utt):
+        '''take a number of utterances from the batchdispenser to make a new one
 
         Args:
-            target_path: path to the alignment file
+            num_utt: the number of utterances in the new batchdispenser
 
         Returns:
-            A dictionary containing
-                - Key: Utterance ID
-                - Value: The state alignments as a space seperated string
-        '''
+            a batch dispenser with the requested number of utterances'''
 
-        target_dict = {}
+        #create a copy of self
+        dispenser = copy.deepcopy(self)
 
-        with gzip.open(target_path, 'rb') as fid:
-            for line in fid:
-                splitline = line.strip().split(' ')
-                target_dict[splitline[0]] = ' '.join(splitline[1:])
+        #split the textreader
+        dispenser.textreader = self.textreader.split(num_utt)
+        dispenser.unm_utt = num_utt
+        self._num_utt -= num_utt
 
-        return target_dict
+        return dispenser
+
+    def get_pair(self):
+        '''get the next input-target pair'''
+
+        _, targets, _ = self.textreader.get_utt()
+
+        return targets, targets[:,0]
+
+    @property
+    def num_labels(self):
+        '''the number of output labels'''
+
+        return self.textreader.coder.num_labels
+
+    @property
+    def max_input_length(self):
+        '''the maximal sequence length of the features'''
+
+        return self.textreader.max_length
+
+    @property
+    def max_target_length(self):
+        '''the maximal length of the targets'''
+
+        return self.textreader.max_length
+
+    @property
+    def num_utt(self):
+        '''The number of utterances in the given data'''
+
+        return self._num_utt
+
+    @property
+    def pos(self):
+        '''the current position in the data'''
+
+        return self.textreader.pos
+
+    @pos.setter
+    def pos(self, pos):
+        '''setter for the current position in the data'''
+
+        self.textreader.pos = pos

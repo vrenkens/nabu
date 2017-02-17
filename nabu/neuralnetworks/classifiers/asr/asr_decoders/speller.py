@@ -34,7 +34,7 @@ class Speller(object):
     def __call__(self, hlfeat, encoder_inputs, numlabels, initial_state=None,
                  initial_state_attention=False, is_training=False):
         """
-        Create the variables and do the forward computation in training mode
+        Create the variables and do the forward computation
 
         Args:
             hlfeat: the high level features of shape

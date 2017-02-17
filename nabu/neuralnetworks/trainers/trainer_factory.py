@@ -1,30 +1,27 @@
+'''@file trainer_factory.py
+contains the Trainer factory mehod'''
+
 import cross_entropytrainer
 import ctctrainer
 
 def factory(conf,
-                    decoder_conf,
-                    classifier,
-                    input_dim,
-                    max_input_length,
-                    max_target_length,
-                    dispenser,
-                    val_reader,
-                    val_targets,
-                    expdir,
-                    server,
-                    cluster,
-                    task_index,
-                    trainer_type):
-
+            decoder,
+            classifier,
+            input_dim,
+            dispenser,
+            val_reader,
+            val_targets,
+            expdir,
+            server,
+            cluster,
+            task_index):
     '''Create a Trainer object
 
     Args:
         classifier: the neural net classifier that will be trained
         conf: the trainer config
-        decoder_conf: the decoder config used for validation
+        decoder: a callable that will create a decoder
         input_dim: the input dimension to the nnnetgraph
-        max_input_length: the maximal length of the input sequences
-        max_target_length: the maximal length of the target sequences
         num_steps: the total number of steps that will be taken
         dispenser: a Batchdispenser object
         cluster: the optional cluster used for distributed training, it
@@ -36,24 +33,21 @@ def factory(conf,
         server: optional server to be used for distributed training
         cluster: optional cluster to be used for distributed training
         task_index: optional index of the worker task in the cluster
-        trainer_type: the trainer type
 
     Returns: a Trainer object
     '''
 
-    if trainer_type == 'ctc':
+    if conf['trainer'] == 'ctc':
         trainer_class = ctctrainer.CTCTrainer
-    elif trainer_type == 'cross_entropy':
+    elif conf['trainer'] == 'cross_entropy':
         trainer_class = cross_entropytrainer.CrossEntropyTrainer
     else:
-        raise Exception('Undefined trainer type: %s' % trainer_type)
+        raise Exception('Undefined trainer type: %s' % conf['trainer'])
 
     return trainer_class(conf,
-                         decoder_conf,
+                         decoder,
                          classifier,
                          input_dim,
-                         max_input_length,
-                         max_target_length,
                          dispenser,
                          val_reader,
                          val_targets,

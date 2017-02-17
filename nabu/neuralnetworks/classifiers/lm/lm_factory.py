@@ -1,4 +1,4 @@
-'''@file lang_factory.py
+'''@file lm_factory.py
 contains the language model factory'''
 
 from . import lstmlm
@@ -13,7 +13,7 @@ def factory(conf, output_dim):
     Returns:
         A Classifier object'''
 
-    if conf['lm'] == 'dblstm':
+    if conf['lm'] == 'lstmlm':
         return lstmlm.LstmLm(conf, output_dim)
     else:
         raise Exception('undefined language model type: %s' % conf['lm'])

@@ -6,7 +6,7 @@ import sys
 import socket
 from time import sleep
 from nabu.distributed import cluster
-from train import train
+from train_asr import train_asr
 import tensorflow as tf
 
 def main(_):
@@ -49,10 +49,11 @@ def main(_):
     print 'task index is %s' % task_index
 
     #start the training process
-    train(clusterfile=cluster_dir + '/cluster',
-          job_name=FLAGS.job_name,
-          task_index=int(task_index),
-          expdir=FLAGS.expdir)
+    if FLAGS.type == 'asr':
+        train_asr(clusterfile=cluster_dir + '/cluster',
+                  job_name=FLAGS.job_name,
+                  task_index=int(task_index),
+                  expdir=FLAGS.expdir)
 
     #delete the file to notify that the porcess has finished
     os.remove(machine_file)
@@ -62,6 +63,8 @@ if __name__ == '__main__':
     tf.app.flags.DEFINE_string('job_name', None, 'One of ps, worker')
     tf.app.flags.DEFINE_string('expdir', '.',
                                'the experimental directory')
+    tf.app.flags.DEFINE_string('type', 'asr',
+                               'one of asr or lm, the training type')
     FLAGS = tf.app.flags.FLAGS
 
     tf.app.run()

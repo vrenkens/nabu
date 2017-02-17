@@ -15,8 +15,8 @@ def factory(normalizer_type):
         a normalizer function'''
 
     if normalizer_type == 'aurora4_normalizer':
-        return aurora4.aurora4
+        return aurora4.Aurora4()
     elif normalizer_type == 'timit_phone_norm':
-        return timit.timit
+        return timit.Timit()
     else:
         raise Exception('Undefined normalizer: %s' % normalizer_type)

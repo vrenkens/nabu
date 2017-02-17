@@ -3,9 +3,10 @@ contains the LstmLm class'''
 
 import tensorflow as tf
 from nabu.neuralnetworks.classifiers import classifier
-import lang_decoders
+import lm_decoders
 
 class LstmLm(classifier.Classifier):
+    '''a LSTM language model'''
 
     def __init__(self, conf, output_dim, name=None):
         '''LstnLm constructor
@@ -17,10 +18,10 @@ class LstmLm(classifier.Classifier):
         '''
 
         #create the speller
-        self.decoder = lang_decoders.lstm_decoder.LstmDecoder(
-            numlayers=int(conf['speller_layers']),
-            numunits=int(conf['speller_units']),
-            dropout=float(conf['speller_dropout']))
+        self.decoder = lm_decoders.lstm_decoder.LstmDecoder(
+            numlayers=int(conf['numlayers']),
+            numunits=int(conf['numunits']),
+            dropout=float(conf['dropout']))
 
         super(LstmLm, self).__init__(conf, output_dim, name)
 
@@ -48,13 +49,14 @@ class LstmLm(classifier.Classifier):
                 - the output logits sequence lengths as a vector
         '''
 
-        #prepend a sequence border label to the targets to get the encoder
+        #prepend a sequence border label to the inputs to get the encoder
         #inputs, the label is the last label
-        batch_size = int(targets.get_shape()[0])
+        formatted_inputs = tf.cast(inputs, tf.int32)[:, :, 0]
+        batch_size = int(inputs.get_shape()[0])
         s_labels = tf.constant(self.output_dim-1,
                                dtype=tf.int32,
                                shape=[batch_size, 1])
-        encoder_inputs = tf.concat(1, [s_labels, targets])
+        encoder_inputs = tf.concat(1, [s_labels, formatted_inputs])
 
         #compute the output logits
         logits, _ = self.decoder(
@@ -63,4 +65,4 @@ class LstmLm(classifier.Classifier):
             initial_state=None,
             is_training=is_training)
 
-        return logits, target_seq_length + 1
+        return logits, input_seq_length + 1

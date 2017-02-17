@@ -3,4 +3,4 @@
     (e.g. layers)
 '''
 
-from . import activation, classifier, layer, asr, lang
+from . import activation, classifier, layer, asr, lm

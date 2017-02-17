@@ -6,58 +6,47 @@ from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn
 from nabu.neuralnetworks import ops
 
-class FFLayer(object):
-    '''This class defines a fully connected feed forward layer'''
+class Linear(object):
+    '''This class defines a fully connected linear layer'''
 
-    def __init__(self, output_dim, act, weights_std=None):
+    def __init__(self, output_dim):
         '''
         FFLayer constructor, defines the variables
         Args:
             output_dim: output dimension of the layer
-            act: the activation function
-            weights_std: the standart deviation of the weights by default the
-                inverse square root of the input dimension is taken
         '''
 
         #save the parameters
         self.output_dim = output_dim
-        self.activation = act
-        self.weights_std = weights_std
 
-    def __call__(self, inputs, is_training=False, scope=None):
+    def __call__(self, inputs, scope=None):
         '''
         Create the variables and do the forward computation
 
         Args:
-            inputs: the input to the layer
-            is_training: whether or not the network is in training mode
+            inputs: the input to the layer as a
+                [batch_size x max_length x input_dim] tensor
             scope: the variable scope of the layer
 
         Returns:
-            The output of the layer
+            The output of the layer as a
+            [batch_size x max_length x output_dim] tensor
         '''
 
         with tf.variable_scope(scope or type(self).__name__):
-            with tf.variable_scope('parameters'):
 
-                stddev = (self.weights_std if self.weights_std is not None
-                          else 1/int(inputs.get_shape()[1])**0.5)
+            stddev = 1/int(inputs.get_shape()[2])**0.5
 
-                weights = tf.get_variable(
-                    'weights', [inputs.get_shape()[1], self.output_dim],
-                    initializer=tf.random_normal_initializer(stddev=stddev))
+            weights = tf.get_variable(
+                'weights', [inputs.get_shape()[2], self.output_dim],
+                initializer=tf.random_normal_initializer(stddev=stddev))
 
-                biases = tf.get_variable(
-                    'biases', [self.output_dim],
-                    initializer=tf.constant_initializer(0))
+            biases = tf.get_variable(
+                'biases', [self.output_dim],
+                initializer=tf.constant_initializer(0))
 
             #apply weights and biases
-            with tf.variable_scope('linear'):
-                linear = tf.matmul(inputs, weights) + biases
-
-            #apply activation function
-            with tf.variable_scope('activation'):
-                outputs = self.activation(linear, is_training)
+            outputs = tf.matmul(inputs, weights) + biases
 
         return outputs
 

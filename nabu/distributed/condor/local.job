@@ -20,7 +20,8 @@ Notification = Error
 initialdir = .
 
 #Run he build cluster script for the parameter server
-Arguments = "python -m distributed.local_cluster --expdir=$(expdir)"
+Arguments = "python -m distributed.local_cluster --expdir=$(expdir) \
+  --type=$(type)"
 # This is the executable or script I want to run
 executable = distributed/condor/create_environment.sh
 

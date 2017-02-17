@@ -100,15 +100,11 @@ class Decoder(object):
                 #read a batch of data
                 (utt_id, inp, looped) = reader.get_utt()
 
-                if looped:
-                    reader.prev_id()
-                    break
-
                 utt_ids.append(utt_id)
                 inputs.append(inp)
 
-            if len(utt_ids) == 0:
-                break
+                if looped:
+                    break
 
             #add empty elements to the inputs to get a full batch
             feat_dim = inputs[0].shape[1]

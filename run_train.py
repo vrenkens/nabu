@@ -10,19 +10,24 @@ import tensorflow as tf
 from six.moves import configparser
 from nabu.distributed import cluster, local_cluster
 from nabu.distributed.static import run_remote
-from train import train
+from train_asr import train_asr
+from train_lm import train_lm
 
 tf.app.flags.DEFINE_string('expdir', 'expdir', 'The experiments directory')
+tf.app.flags.DEFINE_string('type', 'asr', 'one of asr or lm, the training type')
 FLAGS = tf.app.flags.FLAGS
+if FLAGS.type not in ['asr', 'lm']:
+    raise Exception('type shoud be on of asr or lang, received %s' % FLAGS.type)
 
 def main(_):
     '''main function'''
 
     #pointers to the config files
     computing_cfg_file = 'config/computing/non-distributed.cfg'
-    database_cfg_file = 'config/databases/TIMIT.conf'
-    feat_cfg_file = 'config/features/fbank.cfg'
-    nnet_cfg_file = 'config/asr/LAS.cfg'
+    database_cfg_file = 'config/asr_databases/aurora4.conf'
+    if FLAGS.type == 'asr':
+        feat_cfg_file = 'config/features/fbank.cfg'
+    classifier_cfg_file = 'config/asr/LAS.cfg'
     trainer_cfg_file = 'config/trainer/cross_entropytrainer.cfg'
     decoder_cfg_file = 'config/decoder/BeamSearchDecoder.cfg'
 
@@ -42,37 +47,54 @@ def main(_):
                             'False if you want to start a new training process'
                             % FLAGS.expdir)
     else:
-        if os.path.isdir(FLAGS.expdir + '/logdir'):
-            shutil.rmtree(FLAGS.expdir + '/logdir')
+        if os.path.isdir(os.path.join(FLAGS.expdir, 'logdir')):
+            shutil.rmtree(os.path.join(FLAGS.expdir, 'logdir'))
 
         if not os.path.isdir(FLAGS.expdir):
             os.mkdir(FLAGS.expdir)
 
+        if not os.path.isdir(os.path.join(FLAGS.expdir, 'model')):
+            os.mkdir(os.path.join(FLAGS.expdir, 'model'))
+
         #copy the configs to the expdir so they can be read there and the
         #experiment information is stored
-        shutil.copyfile(database_cfg_file, FLAGS.expdir + '/database.cfg')
-        shutil.copyfile(feat_cfg_file, FLAGS.expdir + '/features.cfg')
-        shutil.copyfile(nnet_cfg_file, FLAGS.expdir + '/asr.cfg')
+        shutil.copyfile(database_cfg_file,
+                        os.path.join(FLAGS.expdir, 'database.cfg'))
+        if FLAGS.type == 'asr':
+            shutil.copyfile(feat_cfg_file,
+                            os.path.join(FLAGS.expdir, 'model', 'features.cfg'))
+        shutil.copyfile(classifier_cfg_file,
+                        os.path.join(FLAGS.expdir, 'model',
+                                     '%s.cfg' % FLAGS.type))
 
-    shutil.copyfile(computing_cfg_file, FLAGS.expdir + '/computing.cfg')
-    shutil.copyfile(trainer_cfg_file, FLAGS.expdir + '/trainer.cfg')
-    shutil.copyfile(decoder_cfg_file, FLAGS.expdir + '/decoder.cfg')
+
+    shutil.copyfile(computing_cfg_file,
+                    os.path.join(FLAGS.expdir, 'computing.cfg'))
+    shutil.copyfile(trainer_cfg_file, os.path.join(FLAGS.expdir, 'trainer.cfg'))
+    shutil.copyfile(decoder_cfg_file,
+                    os.path.join(FLAGS.expdir, 'model', 'decoder.cfg'))
 
     if computing_cfg['distributed'] == 'non-distributed':
 
-        train(clusterfile=None,
-              job_name=None,
-              task_index=None,
-              expdir=FLAGS.expdir)
+        if FLAGS.type == 'asr':
+            train_asr(clusterfile=None,
+                      job_name=None,
+                      task_index=None,
+                      expdir=FLAGS.expdir)
+        else:
+            train_lm(clusterfile=None,
+                     job_name=None,
+                     task_index=None,
+                     expdir=FLAGS.expdir)
 
     elif computing_cfg['distributed'] == 'local':
 
         #create the directories
-        if not os.path.isdir(FLAGS.expdir + '/outputs'):
-            os.mkdir(FLAGS.expdir + '/outputs')
+        if not os.path.isdir(os.path.join(FLAGS.expdir, 'outputs')):
+            os.mkdir(os.path.join(FLAGS.expdir, 'outputs'))
 
         #create the cluster file
-        with open(FLAGS.expdir + '/cluster', 'w') as fid:
+        with open(os.path.join(FLAGS.expdir, 'cluster'), 'w') as fid:
             port = 1024
             for _ in range(int(computing_cfg['numps'])):
                 while not cluster.port_available(port):
@@ -86,7 +108,7 @@ def main(_):
                 port += 1
 
         #start the training
-        local_cluster.local_cluster(FLAGS.expdir)
+        local_cluster.local_cluster(FLAGS.expdir, FLAGS.type)
 
     elif computing_cfg['distributed'] == 'static':
 
@@ -101,8 +123,8 @@ def main(_):
                     machines[split[0]].append(split[1])
 
         #create the outputs directory
-        if not os.path.isdir(FLAGS.expdir + '/outputs'):
-            os.mkdir(FLAGS.expdir + '/outputs')
+        if not os.path.isdir(os.path.join(FLAGS.expdir, 'outputs')):
+            os.mkdir(os.path.join(FLAGS.expdir, 'outputs'))
 
         #run all the jobs
         processes = dict()
@@ -111,10 +133,10 @@ def main(_):
         for job in machines:
             task_index = 0
             for machine in machines[job]:
-                command = ('python train.py --clusterfile=%s --job_name=%s '
-                           '--task_index=%d --expdir=%s') % (
-                               computing_cfg['clusterfile'], job, task_index,
-                               FLAGS.expdir)
+                command = ('python train_%s.py --clusterfile=%s --job_name=%s '
+                           '--task_index=%d --expdir=%s --type=%s') % (
+                               FLAGS.type, computing_cfg['clusterfile'], job,
+                               task_index, FLAGS.expdir, FLAGS.type)
                 processes[job].append(run_remote.run_remote(
                     command=command,
                     host=machine,
@@ -141,21 +163,23 @@ def main(_):
     elif computing_cfg['distributed'] == 'condor':
 
         #create the directories
-        if not os.path.isdir(FLAGS.expdir + '/outputs'):
-            os.mkdir(FLAGS.expdir + '/outputs')
-        if os.path.isdir(FLAGS.expdir + '/cluster'):
-            shutil.rmtree(FLAGS.expdir + '/cluster')
-        os.mkdir(FLAGS.expdir + '/cluster')
+        if not os.path.isdir(os.path.join(FLAGS.expdir, 'outputs')):
+            os.mkdir(os.path.join(FLAGS.expdir, 'outputs'))
+        if os.path.isdir(os.path.join(FLAGS.expdir, 'cluster')):
+            shutil.rmtree(os.path.join(FLAGS.expdir, 'cluster'))
+        os.mkdir(os.path.join(FLAGS.expdir, 'cluster'))
 
         #submit the parameter server jobs
         subprocess.call(['condor_submit', 'expdir=%s' % FLAGS.expdir,
                          'numjobs=%s' % computing_cfg['numps'],
+                         'type=%s' % FLAGS.type,
                          'distributed/condor/ps.job'])
 
         #submit the worker jobs
         subprocess.call(['condor_submit', 'expdir=%s' % FLAGS.expdir,
                          'numjobs=%s' % computing_cfg['numworkers'],
                          'memory=%s' % computing_cfg['minmemory'],
+                         'type=%s' % FLAGS.type,
                          'distributed/condor/worker.job'])
 
         ready = False
@@ -167,7 +191,7 @@ def main(_):
             while not ready:
                 #check the machines in the cluster
                 machines = cluster.get_machines(
-                    FLAGS.expdir + '/cluster')
+                    os.path.join(FLAGS.expdir, 'cluster'))
 
                 if (len(machines['ps']) > numps
                         or len(machines['worker']) > numworkers):
@@ -207,7 +231,8 @@ def main(_):
                (len(machines['ps']), len(machines['worker'])))
 
         #create the cluster file
-        with open(FLAGS.expdir + '/cluster/cluster', 'w') as cfid:
+        with open(os.path.join(FLAGS.expdir, 'cluster', 'cluster'),
+                  'w') as cfid:
             for job in machines:
                 task_index = 0
                 if job == 'ps':
@@ -256,6 +281,7 @@ def main(_):
                                       int(computing_cfg['numps'])),
                          'GPUs=%d' % (int(computing_cfg['numworkers'])),
                          'memory=%s' % computing_cfg['minmemory'],
+                         'type=%s' % FLAGS.type,
                          'distributed/condor/local.job'])
 
         print ('job submitted look in %s/outputs for the job outputs' %

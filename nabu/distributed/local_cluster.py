@@ -6,7 +6,7 @@ import subprocess
 import tensorflow as tf
 
 
-def local_cluster(expdir):
+def local_cluster(expdir, class_type):
     '''main function'''
 
     #read the cluster file
@@ -27,7 +27,8 @@ def local_cluster(expdir):
         task_index = 0
         for _ in machines[job]:
             processes.append(subprocess.Popen(
-                ['python', 'train.py', '--clusterfile=%s' % clusterfile,
+                ['python', 'train_%s.py' % class_type,
+                 '--clusterfile=%s' % clusterfile,
                  '--job_name=%s' % job, '--task_index=%d' % task_index,
                  '--expdir=%s' % expdir],
                 stdout=open(expdir + '/outputs/%s-%d' % (job, task_index),
@@ -45,6 +46,8 @@ def local_cluster(expdir):
 
 if __name__ == '__main__':
     tf.app.flags.DEFINE_string('expdir', 'expdir', 'The experiments directory')
+    tf.app.flags.DEFINE_string('type', 'asr',
+                               'one of asr or lm, the training type')
     FLAGS = tf.app.flags.FLAGS
 
-    local_cluster(FLAGS.expdir)
+    local_cluster(FLAGS.expdir, FLAGS.type)

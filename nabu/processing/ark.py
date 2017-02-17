@@ -100,11 +100,13 @@ class ArkReader(object):
 
         Returns:
             the utterance ID of the utterance that was read, the utterance data,
-            bool that is true if the reader looped back to the beginning
+            bool that is true if the read utterance was the last one in the file
         '''
 
-        if len(self.scp_data) == 0:
-            return None, None, True
+        utt_id = self.utt_ids[self.scp_position]
+        utt_data = self.read_utt_data(self.scp_position)
+
+        self.scp_position += 1
 
         #if at end of file loop around
         if self.scp_position >= len(self.scp_data):
@@ -113,10 +115,7 @@ class ArkReader(object):
         else:
             looped = False
 
-        self.scp_position += 1
-
-        return (self.utt_ids[self.scp_position-1],
-                self.read_utt_data(self.scp_position-1), looped)
+        return (utt_id, utt_data, looped)
 
     def read_next_scp(self):
         '''

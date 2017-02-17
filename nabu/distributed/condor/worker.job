@@ -19,7 +19,8 @@ Notification = Error
 initialdir = .
 
 #Run he build cluster script for the worker
-Arguments = "python -m distributed.condor.build_cluster --job_name=worker --expdir=$(expdir)"
+Arguments = "python -m distributed.condor.build_cluster --job_name=worker \
+  --expdir=$(expdir) --type=$(type)"
 #Run the condor job wapper to adjust the environment
 executable = distributed/condor/create_environment.sh
 

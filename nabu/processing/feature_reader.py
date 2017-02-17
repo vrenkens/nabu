@@ -10,8 +10,7 @@ class FeatureReader(object):
     '''Class that can read features from a Kaldi archive and process
     them (cmvn and splicing)'''
 
-    def __init__(self, scpfile, cmvnfile, utt2spkfile,
-                 context_width, max_input_length):
+    def __init__(self, scpfile, cmvnfile, utt2spkfile, max_length):
         '''
         create a FeatureReader object
 
@@ -20,8 +19,7 @@ class FeatureReader(object):
             cmvnfile: path to the cmvn file
             utt2spkfile:path to the file containing the mapping from utterance
                 ID to speaker ID
-            context_width: context width for splicing the features
-            max_input_length: the maximum length of all the utterances in the
+            max_length: the maximum length of all the utterances in the
                 scp file
         '''
 
@@ -34,11 +32,8 @@ class FeatureReader(object):
         #save the utterance to speaker mapping
         self.utt2spk = readfiles.read_utt2spk(utt2spkfile)
 
-        #store the context width
-        self.context_width = context_width
-
         #store the max length
-        self.max_input_length = max_input_length
+        self.max_length = max_length
 
     def get_utt(self):
         '''
@@ -55,35 +50,7 @@ class FeatureReader(object):
         cmvn_stats = self.reader_cmvn.read_utt(self.utt2spk[utt_id])
         utt_mat = apply_cmvn(utt_mat, cmvn_stats)
 
-        #splice the utterance
-        if self.context_width > 0:
-            utt_mat = splice(utt_mat, self.context_width)
-
         return utt_id, utt_mat, looped
-
-    def next_id(self):
-        '''
-        only gets the ID of the next utterance
-
-        moves forward in the reader
-
-        Returns:
-            the ID of the uterance
-        '''
-
-        return self.reader.read_next_scp()
-
-    def prev_id(self):
-        '''
-        only gets the ID of the previous utterance
-
-        moves backward in the reader
-
-        Returns:
-            the ID of the uterance
-        '''
-
-        return self.reader.read_previous_scp()
 
     def split(self, num_utt):
         '''take a number of utterances from the feature reader to make a new one
@@ -144,39 +111,3 @@ def apply_cmvn(utt, stats):
 
     #return mean and variance normalised utterance
     return np.divide(np.subtract(utt, mean), np.sqrt(variance))
-
-def splice(utt, context_width):
-    '''
-    splice the utterance
-
-    Args:
-        utt: numpy matrix containing the utterance features to be spliced
-        context_width: how many frames to the left and right should
-            be concatenated
-
-    Returns:
-        a numpy array containing the spliced features
-    '''
-
-    #create spliced utterance holder
-    utt_spliced = np.zeros(
-        shape=[utt.shape[0], utt.shape[1]*(1+2*context_width)],
-        dtype=np.float32)
-
-    #middle part is just the uttarnce
-    utt_spliced[:, context_width*utt.shape[1]:
-                (context_width+1)*utt.shape[1]] = utt
-
-    for i in range(context_width):
-
-        #add left context
-        utt_spliced[i+1:utt_spliced.shape[0],
-                    (context_width-i-1)*utt.shape[1]:
-                    (context_width-i)*utt.shape[1]] = utt[0:utt.shape[0]-i-1, :]
-
-         #add right context
-        utt_spliced[0:utt_spliced.shape[0]-i-1,
-                    (context_width+i+1)*utt.shape[1]:
-                    (context_width+i+2)*utt.shape[1]] = utt[i+1:utt.shape[0], :]
-
-    return utt_spliced

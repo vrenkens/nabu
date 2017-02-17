@@ -1,19 +1,15 @@
-'''@file test.py
-this file will test the asr combined with an lm'''
+'''@file test_asr.py
+this file will test the asr on its own'''
 
 import os
 from six.moves import configparser
 import tensorflow as tf
-from tensorflow.contrib.framework.python.framework import checkpoint_utils
-from nabu.neuralnetworks.classifiers import asr_lm_classifier
+from nabu.neuralnetworks.classifiers.asr import asr_factory
 from nabu.neuralnetworks.decoders import decoder_factory
 from nabu.processing import feature_reader, target_coder
 
 
-tf.app.flags.DEFINE_string('asr_expdir', 'expdir',
-                           'The asr experiments directory')
-tf.app.flags.DEFINE_string('lm_expdir', 'expdir',
-                           'The lm experiments directory')
+tf.app.flags.DEFINE_string('expdir', 'expdir', 'The experiments directory')
 FLAGS = tf.app.flags.FLAGS
 
 def main(_):
@@ -23,34 +19,22 @@ def main(_):
 
     #read the database config file
     parsed_database_cfg = configparser.ConfigParser()
-    parsed_database_cfg.read(os.path.join(FLAGS.asr_expdir, 'database.cfg'))
+    parsed_database_cfg.read(os.path.join(FLAGS.expdir, 'database.cfg'))
     database_cfg = dict(parsed_database_cfg.items('database'))
 
     #read the features config file
     parsed_feat_cfg = configparser.ConfigParser()
-    parsed_feat_cfg.read(
-        os.path.join(FLAGS.asr_expdir, 'model', 'features.cfg'))
+    parsed_feat_cfg.read(os.path.join(FLAGS.expdir, 'model', 'features.cfg'))
     feat_cfg = dict(parsed_feat_cfg.items('features'))
 
     #read the asr config file
-    parsed_asr_cfg = configparser.ConfigParser()
-    parsed_asr_cfg.read(os.path.join(FLAGS.asr_expdir, 'model', 'asr.cfg'))
-    asr_cfg = dict(parsed_asr_cfg.items('asr'))
-
-    #read the lm config file
-    parsed_lm_cfg = configparser.ConfigParser()
-    parsed_lm_cfg.read(os.path.join(FLAGS.lm_expdir, 'model', 'lm.cfg'))
-    lm_cfg = dict(parsed_lm_cfg.items('lm'))
-
-    #read the asr-lm config file
-    parsed_asr_lm_cfg = configparser.ConfigParser()
-    parsed_asr_lm_cfg.read('config/asr_lm.cfg')
-    asr_lm_cfg = dict(parsed_asr_lm_cfg.items('lm'))
+    parsed_nnet_cfg = configparser.ConfigParser()
+    parsed_nnet_cfg.read(os.path.join(FLAGS.expdir, 'model', 'asr.cfg'))
+    nnet_cfg = dict(parsed_nnet_cfg.items('asr'))
 
     #read the decoder config file
     if decoder_cfg_file is None:
-        decoder_cfg_file = os.path.join(FLAGS.asr_expdir, 'model',
-                                        'decoder.cfg')
+        decoder_cfg_file = os.path.join(FLAGS.expdir, 'model', 'decoder.cfg')
     parsed_decoder_cfg = configparser.ConfigParser()
     parsed_decoder_cfg.read(decoder_cfg_file)
     decoder_cfg = dict(parsed_decoder_cfg.items('decoder'))
@@ -82,10 +66,8 @@ def main(_):
 
 
     #create the classifier
-    classifier = asr_lm_classifier.AsrLmClassifier(
-        conf=asr_lm_cfg,
-        asr_conf=asr_cfg,
-        lm_conf=lm_cfg,
+    classifier = asr_factory.factory(
+        conf=nnet_cfg,
         output_dim=coder.num_labels)
 
     #create a decoder
@@ -97,28 +79,17 @@ def main(_):
             input_dim=input_dim,
             max_input_length=reader.max_length,
             coder=coder,
-            expdir=FLAGS.asr_expdir)
+            expdir=FLAGS.expdir)
 
-        #create the lm saver
-        lm_saver = tf.train.Saver(checkpoint_utils.list_variables(os.path.join(
-            FLAGS.lm_expdir, 'model', 'network.ckpt')))
-
-        #create the asr saver
-        asr_saver = tf.train.Saver(checkpoint_utils.list_variables(os.path.join(
-            FLAGS.asr_expdir, 'model', 'network.ckpt')))
+        saver = tf.train.Saver(tf.trainable_variables())
 
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True #pylint: disable=E1101
     config.allow_soft_placement = True
 
     with tf.Session(graph=graph, config=config) as sess:
-        #load the lm model
-        lm_saver.restore(
-            sess, os.path.join(FLAGS.lm_expdir, 'model', 'network.ckpt'))
-
-        #load the asr model
-        asr_saver.restore(
-            sess, os.path.join(FLAGS.asr_expdir, 'model', 'network.ckpt'))
+        #load the model
+        saver.restore(sess, os.path.join(FLAGS.expdir, 'model', 'network.ckpt'))
 
         #decode with te neural net
         decoded = decoder.decode(reader, sess)

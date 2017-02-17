@@ -4,14 +4,14 @@ contains the decoder factory'''
 import ctc_decoder
 import beam_search_decoder
 import attention_visualizer
+import lm_confidence_decoder
 
 def factory(conf,
             classifier,
             input_dim,
             max_input_length,
             coder,
-            expdir,
-            decoder_type):
+            expdir):
     '''
     creates a decoder object
 
@@ -23,17 +23,18 @@ def factory(conf,
         coder: a TargetCoder object
         expdir: the location where the models were saved and the results
             will be written
-        decoder_type: the decoder type
     '''
 
-    if decoder_type == 'ctcdecoder':
+    if conf['decoder'] == 'ctcdecoder':
         decoder_class = ctc_decoder.CTCDecoder
-    elif decoder_type == 'beamsearchdecoder':
+    elif conf['decoder'] == 'beamsearchdecoder':
         decoder_class = beam_search_decoder.BeamSearchDecoder
-    elif decoder_type == 'attention_visualizer':
+    elif conf['decoder'] == 'attention_visualizer':
         decoder_class = attention_visualizer.AttentionVisiualizer
+    elif conf['decoder'] == 'lm_confidence_decoder':
+        decoder_class = lm_confidence_decoder.LmConfidenceDecoder
     else:
-        raise Exception('Undefined decoder type: %s' % decoder_type)
+        raise Exception('Undefined decoder type: %s' % conf['decoder'])
 
     return decoder_class(conf,
                          classifier,

@@ -24,7 +24,7 @@ class LstmDecoder(object):
 
     def __call__(self, encoder_inputs, numlabels, initial_state=None,
                  is_training=False):
-        """
+        '''
         Create the variables and do the forward computation in training mode
 
         Args:
@@ -39,7 +39,7 @@ class LstmDecoder(object):
             - the output logits of the listener as a
                 [batch_size x target_seq_length x numlabels] tensor
             - the final state of the listener
-        """
+        '''
 
         with tf.variable_scope(self.scope):
 
@@ -97,6 +97,9 @@ class LstmDecoder(object):
 
     def zero_state(self, batch_size):
         '''get the listener zero state
+
+        Args:
+            batch_size: the batch size
 
         Returns:
             an rnn_cell zero state'''

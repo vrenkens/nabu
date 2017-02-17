@@ -2,7 +2,6 @@
 The DNN neural network classifier'''
 
 import tensorflow as tf
-from nabu.neuralnetworks import ops
 from nabu.neuralnetworks.classifiers import classifier, layer, activation
 
 class DNN(classifier.Classifier):
@@ -60,31 +59,21 @@ class DNN(classifier.Classifier):
             act = activation.Dropout(act, float(self.conf['dropout']))
 
         #input and hidden layer
-        hidlayer = layer.FFLayer(int(self.conf['num_units']), act)
+        hidlayer = layer.Linear(int(self.conf['num_units']))
 
         #output layer
-        outlayer = layer.FFLayer(self.output_dim,
-                           activation.TfActivation(None, lambda(x): x), 0)
+        outlayer = layer.Linear(self.output_dim)
 
         #do the forward computation
 
-        #convert the sequential data to non sequential data
-        nonseq_inputs = ops.seq2nonseq(inputs, input_seq_length)
-
         activations = [None]*int(self.conf['num_layers'])
-        activations[0] = hidlayer(nonseq_inputs, is_training, 'layer0')
+        activations[0] = act(hidlayer(inputs, 'layer0'), is_training)
         for l in range(1, int(self.conf['num_layers'])):
-            activations[l] = hidlayer(activations[l-1], is_training,
-                                   'layer' + str(l))
+            activations[l] = act(hidlayer(activations[l-1],
+                                          'layer' + str(l)), is_training)
 
         logits = activations[-1]
 
-        logits = outlayer(logits, is_training,
-                          'layer' + self.conf['num_layers'])
+        logits = outlayer(logits, 'layer' + self.conf['num_layers'])
 
-        #convert the logits to sequence logits to match expected output
-        seq_logits = ops.nonseq2seq(logits, input_seq_length,
-                                    int(inputs.get_shape()[1]))
-
-
-        return seq_logits, input_seq_length
+        return logits, input_seq_length

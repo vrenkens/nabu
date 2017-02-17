@@ -1,54 +1,92 @@
 '''@file aurora4.py
 contains the timit target normalizer'''
 
-def aurora4(transcription, alphabet):
-    '''
-    normalizer for Aurora 4 training transcriptions
+import normalizer
 
-    Args:
-        transcription: the input transcription
-        alphabet: the known characters alphabet
+class Aurora4(normalizer.Normalizer):
+    '''normalize for the Aurora 4 database'''
 
-    Returns:
-        the normalized transcription as a string
-    '''
+    def __call__(self, transcription):
+        '''normalize a transcription
 
-    #create a dictionary of words that should be replaced
-    replacements = {
-        ',COMMA':'COMMA',
-        '\"DOUBLE-QUOTE':'DOUBLE-QUOTE',
-        '!EXCLAMATION-POINT':'EXCLAMATION-POINT',
-        '&AMPERSAND':'AMPERSAND',
-        '\'SINGLE-QUOTE':'SINGLE-QUOTE',
-        '(LEFT-PAREN':'LEFT-PAREN',
-        ')RIGHT-PAREN':'RIGHT-PAREN',
-        '-DASH':'DASH',
-        '-HYPHEN':'HYPHEN',
-        '...ELLIPSIS':'ELLIPSIS',
-        '.PERIOD':'PERIOD',
-        '/SLASH':'SLASH',
-        ':COLON':'COLON',
-        ';SEMI-COLON':'SEMI-COLON',
-        '<NOISE>': '',
-        '?QUESTION-MARK': 'QUESTION-MARK',
-        '{LEFT-BRACE': 'LEFT-BRACE',
-        '}RIGHT-BRACE': 'RIGHT-BRACE'
-        }
+        Args:
+            transcription: the transcription to be normalized as a string
 
-    #replace the words in the transcription
-    replaced = ' '.join([word if word not in replacements
-                         else replacements[word]
-                         for word in transcription.split(' ')])
+        Returns:
+            the normalized transcription as a string space seperated per
+            character'''
 
-    #make the transcription lower case and put it into a list
-    normalized = list(replaced.lower())
+        #create a dictionary of words that should be replaced
+        replacements = {
+            ',COMMA':'COMMA',
+            '\"DOUBLE-QUOTE':'DOUBLE-QUOTE',
+            '!EXCLAMATION-POINT':'EXCLAMATION-POINT',
+            '&AMPERSAND':'AMPERSAND',
+            '\'SINGLE-QUOTE':'SINGLE-QUOTE',
+            '(LEFT-PAREN':'LEFT-PAREN',
+            ')RIGHT-PAREN':'RIGHT-PAREN',
+            '-DASH':'DASH',
+            '-HYPHEN':'HYPHEN',
+            '...ELLIPSIS':'ELLIPSIS',
+            '.PERIOD':'PERIOD',
+            '/SLASH':'SLASH',
+            ':COLON':'COLON',
+            ';SEMI-COLON':'SEMI-COLON',
+            '<NOISE>': '',
+            '?QUESTION-MARK': 'QUESTION-MARK',
+            '{LEFT-BRACE': 'LEFT-BRACE',
+            '}RIGHT-BRACE': 'RIGHT-BRACE'
+            }
 
-    #replace the spaces with <space>
-    normalized = [character if character is not ' ' else '<space>'
-                  for character in normalized]
+        #replace the words in the transcription
+        replaced = ' '.join([word if word not in replacements
+                             else replacements[word]
+                             for word in transcription.split(' ')])
 
-    #replace unknown characters with <unk>
-    normalized = [character if character in alphabet else '<unk>'
-                  for character in normalized]
+        #make the transcription lower case and put it into a list
+        normalized = list(replaced.lower())
 
-    return ' '.join(normalized)
+        #replace the spaces with <space>
+        normalized = [character if character is not ' ' else '<space>'
+                      for character in normalized]
+
+        #replace unknown characters with <unk>
+        normalized = [character if character in self.alphabet else '<unk>'
+                      for character in normalized]
+
+        return ' '.join(normalized)
+
+    def _create_alphabet(self):
+        '''create the alphabet that is used in the normalizer
+
+        Returns:
+            the alphabet as a list of strings'''
+
+        alphabet = []
+
+        #space
+        alphabet.append('<space>')
+
+        #comma
+        alphabet.append(',')
+
+        #period
+        alphabet.append('.')
+
+        #apostrophy
+        alphabet.append('\'')
+
+        #hyphen
+        alphabet.append('-')
+
+        #question mark
+        alphabet.append('?')
+
+        #unknown character
+        alphabet.append('<unk>')
+
+        #letters in the alphabet
+        for letter in range(ord('a'), ord('z')+1):
+            alphabet.append(chr(letter))
+
+        return alphabet
