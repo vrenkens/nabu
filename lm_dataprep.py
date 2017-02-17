@@ -17,7 +17,7 @@ database_cfg = dict(database_cfg.items('database'))
 normalizer = normalizer_factory.factory(database_cfg['normalizer'])
 
 print '------- normalizing training text -----------'
-sourcefiles = database_cfg['trainfiles'].split(' ')
+sourcefiles = database_cfg['train_data'].split(' ')
 if not os.path.isdir(database_cfg['train_dir']):
     os.makedirs(database_cfg['train_dir'])
 target_fid = open(os.path.join(database_cfg['train_dir'], 'text'), 'w')
@@ -48,7 +48,7 @@ with open(os.path.join(database_cfg['train_dir'], 'numlines'), 'w') as fid:
 target_fid.close()
 
 print '------- normalizing testing text -----------'
-sourcefiles = database_cfg['testfiles'].split(' ')
+sourcefiles = database_cfg['test_data'].split(' ')
 if not os.path.isdir(database_cfg['test_dir']):
     os.makedirs(database_cfg['test_dir'])
 target_fid = open(os.path.join(database_cfg['test_dir'], 'text'), 'w')
@@ -80,7 +80,7 @@ target_fid.close()
 
 if 'devfiles' in database_cfg:
     print '------- normalizing dev text -----------'
-    sourcefiles = database_cfg['devfiles'].split(' ')
+    sourcefiles = database_cfg['dev_data'].split(' ')
     if not os.path.isdir(database_cfg['dev_dir']):
         os.makedirs(database_cfg['dev_dir'])
     target_fid = open(os.path.join(database_cfg['dev_dir'], 'text'), 'w')

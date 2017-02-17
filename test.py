@@ -56,7 +56,7 @@ def main(_):
     decoder_cfg = dict(parsed_decoder_cfg.items('decoder'))
 
     #create a feature reader
-    featdir = os.path.join(database_cfg['test_features'], feat_cfg['name'])
+    featdir = os.path.join(database_cfg['test_dir'], feat_cfg['name'])
 
     with open(os.path.join(featdir, 'maxlength'), 'r') as fid:
         max_length = int(fid.read())
@@ -69,14 +69,14 @@ def main(_):
 
     #read the feature dimension
     with open(
-        os.path.join(database_cfg['train_features'], feat_cfg['name'],
+        os.path.join(database_cfg['train_dir'], feat_cfg['name'],
                      'dim'),
         'r') as fid:
 
         input_dim = int(fid.read())
 
     #create the coder
-    with open(os.path.join(database_cfg['train_features'], 'alphabet')) as fid:
+    with open(os.path.join(database_cfg['train_dir'], 'alphabet')) as fid:
         alphabet = fid.read().split(' ')
     coder = target_coder.TargetCoder(alphabet)
 

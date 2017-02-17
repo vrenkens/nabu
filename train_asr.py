@@ -61,10 +61,10 @@ def train_asr(clusterfile,
         trainer.wait(server, task_index, len(cluster.as_dict()['worker']))
         return
 
-    featdir = os.path.join(database_cfg['train_features'], feat_cfg['name'])
+    featdir = os.path.join(database_cfg['train_dir'], feat_cfg['name'])
 
     #create the coder
-    with open(os.path.join(database_cfg['train_features'], 'alphabet')) as fid:
+    with open(os.path.join(database_cfg['train_dir'], 'alphabet')) as fid:
         alphabet = fid.read().split(' ')
     coder = target_coder.TargetCoder(alphabet)
 
@@ -83,7 +83,7 @@ def train_asr(clusterfile,
         input_dim = int(fid.read())
 
     #the path to the text file
-    textfile = os.path.join(database_cfg['train_features'], 'targets')
+    textfile = os.path.join(database_cfg['train_dir'], 'targets')
 
     #create a batch dispenser for the training data
     dispenser = batchdispenser.AsrBatchDispenser(
@@ -94,7 +94,7 @@ def train_asr(clusterfile,
 
     #create a reader for the validation data
     if 'dev_data' in database_cfg:
-        featdir = database_cfg['dev_features'] + '/' +  feat_cfg['name']
+        featdir = database_cfg['dev_dir'] + '/' +  feat_cfg['name']
 
         with open(featdir + '/maxlength', 'r') as fid:
             max_length = int(fid.read())
@@ -105,7 +105,7 @@ def train_asr(clusterfile,
             utt2spkfile=featdir + '/utt2spk',
             max_length=max_length)
 
-        textfile = os.path.join(database_cfg['dev_features'], 'targets')
+        textfile = os.path.join(database_cfg['dev_dir'], 'targets')
 
         #read the validation targets
         with open(textfile) as fid:

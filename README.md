@@ -6,11 +6,11 @@ Please find the documentation page [here](http://vrenkens.github.io/nabu)
 - [About](#about)
 - [Dependencies](#dependencies)
 - [Usage](#usage)
-  - [Using the recognizers](#using-the-recognizers)
+  - [Database preperation](#database-preperation)
+    - [ASR Database preparation](#asr-data-preparation)
+    - [LM Database preparation](#lm-data-preparation)
+  - [Data preperation](#database-preperation)
   - [Training a model](#training-a-model)
-    - [Data preparation](#data-preparation)
-      - [Database preparation](#database-preparation)
-      - [Feature computation](#feature-computation)
     - [Configuration](#configuration)
     - [Running the training script](#running-the-training-script)
     - [Visualization](#visualization)
@@ -55,30 +55,11 @@ models and methodologies.
 
 ##Usage
 
-##Using the recognizers
+###Database preperation
 
-Nabu contains some pre-trained models, that you can easily use to perform
-recognition as follows:
+####ASR Database preparation
 
-```
-import nabu
-import scipy
-
-recognizer = nabu.models.model.Model('/path/to/model/dir')
-rate, sig = scipy.io.wavfile.read('/path/to/file.wav')
-
-transcription = recognizer(sig, rate)
-```
-
-The transcription will be a string containing the recognized output. the model
-directories for the pre-trained models can be found in nabu/models/ or are
-created after [training a model](#training-a-model).
-
-###Data preparation
-
-####Database preparation
-
-Nabu's data format is the same as the [Kaldi](http://kaldi-asr.org/)
+Nabu's data format for asr is the same as the [Kaldi](http://kaldi-asr.org/)
 toolkit. To prepare a database for training you should run Kaldi's data
 preparation scripts, these scripts can be found on the Kaldi Github.
 You can find more information on the Kaldi data preparation
@@ -102,56 +83,81 @@ information is given just put all utterances on a single line. Example:
 the utterance ID and the speaker ID. Example:
   - utt1 speaker1
 
-Next you should create a database normalizer in
-nabu/processing/target_normalizers/. This is a method that takes a transcription
-and an alphabet as input and returns the normalized transcription. You can find
-already implemented normalizers in nabu/processing/target_normalizers/, you
-should use these as examples. Once you implemented your normalizer you should
-add it in nabu/processing/target_normalizers/normalizer_factory.py in the
-factory method (with a name of your choosing). You should also import your new
-file in nabu/processing/target_normalizers/\__init\__.py.
-
-Next you should create a target coder in nabu/processing/target_coders/. A
-target coder converts a normalized transcription string into a numpy array of
-labels. To create your own coder you should create a class that inherits from
-TargetCoder (defined in nabu/processing/target_coders/targetcoder.py). You
-should then overwrite the create_alphabet method that returns your desired
-alphabet. Some coders have been implemented and can be found in
-nabu/processing/target_coders/. Once you implemented your coder you should add
-it in nabu/processing/target_coders/coder_factory.py in the factory method (with
-a name of your choosing). You should also import your new file in
-nabu/processing/target_coders/\__init\__.py.
-
 Finally, you should create a config file for your database in
-nabu/config/databases/. You can base your config on
-nabu/config/databases/template.cfg:
+config/asr_databases/. You can base your config on
+config/asr_databases/template.cfg:
 
 - _data fields should point to the directories created in the database
 preparations
-- _features fields should contain writable directories where your features
+- _dir fields should contain writable directories where your features
 should be stored
 - Text fields should point to the transcription text files created in the
 database preparation.
-- The coder field should be the name of your target coder (defined in the
-factory).
-- The normalizer field should be the name of your target normalizer (defined in
-the factory).
+- The normalizer field should be the name of the target normalizer (defined in
+the normalizer factory). Look at the
+[Target normalizer section](#target-normalizer).
 
-####Feature computation
+####LM Database preparation
 
-To compute the features you can use the featprep.py script. For the feature
-configuration you can modify/create a file in nabu/config/features/ or use a
-default config file. Look at the
-[Designing features section](#designing-features) to design your own features.
+For training a language model the only thing that is required is a (or multiple)
+text file(s) where each line in the file is a seperate sentence.
 
-In the script you should modify the database_cfg_file variable to point to the
-desired database config file and the feat_cfg_file to point to the desired
-feature config file.
+Finally, you should create a config file for your database in
+config/lm_databases/. You can base your config on
+config/lm_databases/template.cfg:
 
-Then you can compute the features with:
+- _data fields should point to the text files created in the database
+preparations, this is a space seperated list of files
+- _dir fields should contain writable directories where data can be stored
+- The normalizer field should be the name of the target normalizer (defined in
+the normalizer factory). Look at the
+[Target normalizer section](#target-normalizer).
+
+####Target normalizer
+
+For every database you should create a target normalizer in
+nabu/processing/target_normalizers. The Normalizer class is defined in
+nabu/processing/target_normalizers/normalizer.py. To create the normalizer you
+should inhererit from the Normalizer class and overwrite the \__call\__ method
+and the _create_alphabet method.
+
+The _create_alphabet method creates the alphabet of targets. It returns a list
+of target strings. spaces are not allowed in the target strings.
+
+The \__call\__ method takes a transcription string from the text file  as input
+and returns the normalized transcription as a string. The normalized
+transcription should contain only targets from the alphabet seperated by spaces.
+An example normalized transcription:
+
+> i &lt;space> a m &lt;space> a &lt;space> t r a n s c r i p t i o n
+
+An example normalizer can be found in
+nabu/processing/target_normalizers/aurora4.py. Once you've created your
+normalizer you should import it in
+nabu/processing/target_normalizers/\__init\__.py and add it to the factory
+method in nabu/processing/target_normalizers/normalizer_factory.py with a name
+that matches the name in the database config file.
+
+###Data preperation
+
+To to the asr or lm data preperation (feature computation, text normalization
+etc.) you can use the asr_dataprep.py and lm_dataprep.py scripts. You should
+first make sure that the database_cfg_file variable at the top of the scripts
+point to the config that you created in the
+[database preperation](#database-preperation). For the asr database preperation
+you should also point the feat_cfg_file variable to a feature config file in
+config/features/.
+To design your own features look into the
+[Designing features section](#designing-features).
+
+You can then do the data preperation with
 
 ```
-python featprep
+python asr_dataprep.py
+```
+or
+```
+python lm_dataprep.py
 ```
 
 ###Training a model
@@ -166,11 +172,16 @@ For configuration you can modify the following config files:
 - nabu/config/computing/: The computing mode configuration, this will be
 explained more in the [Distributed training section](#distributed-training)
 (stick to non-distributed.cfg for now).
-- nabu/config/nnet/: The neural network configuration. The content of this
-configuration depends on the type of model. In this section you can choose
+- nabu/config/asr/: The asr neural network configuration. The content of this
+configuration depends on the type of asr. In this section you can choose
 the number of layers, the dimensionality of the layers etc. Look at the
 [Designing a model section](#designing-a-model) if you want to design
-your own type of model.
+your own type of asr.
+- nabu/config/lm/: The lm neural network configuration. The content of this
+configuration depends on the type of lm. In this section you can choose
+the number of layers, the dimensionality of the layers etc. Look at the
+[Designing a model section](#designing-a-model) if you want to design
+your own type of lm.
 - nabu/config/trainer/: The trainer configuration, this config contains the type
 of trainer and its configuration. Select the type of trainer that is appropriate
 for your model (e.g. cross_entropy for encoder-decoder nets).You can also set
@@ -190,10 +201,16 @@ they point to the appropriate config files.
 
 ####Running the training script
 
-You can start training with:
+You can then train an asr by running:
 
 ```
-python run_train.py --expdir=path/to/expdir
+python run_train.py --expdir=path/to/expdir --type=asr
+```
+
+and a lm with
+
+```
+python run_train.py --expdir=path/to/expdir --type=lm
 ```
 
 The expdir argument should point to the directory where you want all your
@@ -227,14 +244,28 @@ the logdir is created in the expdir.
 
 ###Testing a model
 
-To test a trained model you can use the test.py script. You can use a different
-decoder configuration then you used during training. You should modify the
-decoder_cfg_file variable at the top of test.py, so it points to the correct
-config file. If you want to use the config file that you used during training
-set the variable to None. You can then test the model with:
+To test a trained model you can use the test_asr.py, test_lm.py and test.py
+scripts. You can use a different decoder configuration then you used during
+training. You should modify the decoder_cfg_file variable at the top of scrip,
+so it points to the correct config file. If you want to use the config file that
+you used during training set the variable to None.
+
+You can measure the perplexity of a lm on the test set with:
 
 ```
-python test.py --expdir=path/to/expdir
+python test_lm.py --expdir=path/to/expdir
+```
+
+You can test an asr without lm with:
+
+```
+python test_asr.py --expdir=path/to/expdir
+```
+
+Finally, you can test an asr with lm with:
+
+```
+python test.py --asr_expdir=path/to/asr/expdir --lm_expdir=path/to/lm/expdir
 ```
 
 ##Design
@@ -243,13 +274,15 @@ python test.py --expdir=path/to/expdir
 
 ####Creating the classifier
 
-The classifier is the core of the model. The general Classifier class is defined
-in nabu/neuralnetworks/classifiers/classifier.py. To create your own classifier
+The classifier is the core of the model, and can be either an asr or a language
+model. The general Classifier class is defined in
+nabu/neuralnetworks/classifiers/classifier.py. To create your own classifier
 create a class in nabu/neuralnetworks/classifiers/ that inherits from Classifier
 and overwrite the \__call\__ method. This method takes the following inputs:
 
 - inputs: the inputs to the neural network, this is a
-    [batch_size x max_input_length x feature_dim] tensor
+    [batch_size x max_input_length x feature_dim] tensor. If the classifier
+    is a language model the feature_dim will be 1
 - input_seq_length: The sequence lengths of the input utterances, this
     is a [batch_size] vector
 - targets: the targets to the neural network, this is a
@@ -262,8 +295,8 @@ and overwrite the \__call\__ method. This method takes the following inputs:
 The method should return the output logits (probabilities before softmax) and
 the output sequence lengths. Some example Classifiers:
 
-- nabu/neuralnetworks/classifiers/las.py: Listen Attend and Spell model
-- nabu/neuralnetworks/classifiers/dblstm.py: Deep Biderictional LSTM model
+- nabu/neuralnetworks/classifiers/las.py: Listen Attend and Spell asr
+- nabu/neuralnetworks/classifiers/dblstm.py: Deep Biderictional LSTM asr
 
 Once you've created your classifier you should add it in the factory method in
 nabu/neuralnetworks/classifiers/classifier_factory.py (with any name) and you
