@@ -84,29 +84,26 @@ Inheritance diagram for nabu.processing.feature_reader.FeatureReader:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a5e89d6c16e0bdf1357bb41a4cd35d984"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html#a5e89d6c16e0bdf1357bb41a4cd35d984">__init__</a> (self, scpfile, cmvnfile, utt2spkfile, context_width, max_input_length)</td></tr>
-<tr class="memdesc:a5e89d6c16e0bdf1357bb41a4cd35d984"><td class="mdescLeft">&#160;</td><td class="mdescRight">create a <a class="el" href="classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html" title="Class that can read features from a Kaldi archive and process them (cmvn and splicing) ...">FeatureReader</a> object  <a href="#a5e89d6c16e0bdf1357bb41a4cd35d984">More...</a><br /></td></tr>
-<tr class="separator:a5e89d6c16e0bdf1357bb41a4cd35d984"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0790263d73b60cea80fd85fe23b3abe"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html#ac0790263d73b60cea80fd85fe23b3abe">__init__</a> (self, scpfile, cmvnfile, utt2spkfile, max_length)</td></tr>
+<tr class="memdesc:ac0790263d73b60cea80fd85fe23b3abe"><td class="mdescLeft">&#160;</td><td class="mdescRight">create a <a class="el" href="classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html" title="Class that can read features from a Kaldi archive and process them (cmvn and splicing) ...">FeatureReader</a> object  <a href="#ac0790263d73b60cea80fd85fe23b3abe">More...</a><br /></td></tr>
+<tr class="separator:ac0790263d73b60cea80fd85fe23b3abe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5820f14930eae0653d27b7726416d7b6"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html#a5820f14930eae0653d27b7726416d7b6">get_utt</a> (self)</td></tr>
 <tr class="memdesc:a5820f14930eae0653d27b7726416d7b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">read the next features from the archive, normalize and splice them  <a href="#a5820f14930eae0653d27b7726416d7b6">More...</a><br /></td></tr>
 <tr class="separator:a5820f14930eae0653d27b7726416d7b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ada4ce6c270136fff9cf582209856b65e"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html#ada4ce6c270136fff9cf582209856b65e">next_id</a> (self)</td></tr>
-<tr class="memdesc:ada4ce6c270136fff9cf582209856b65e"><td class="mdescLeft">&#160;</td><td class="mdescRight">only gets the ID of the next utterance  <a href="#ada4ce6c270136fff9cf582209856b65e">More...</a><br /></td></tr>
-<tr class="separator:ada4ce6c270136fff9cf582209856b65e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a50a41199e4b5afa837e7cd9caea91bf6"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html#a50a41199e4b5afa837e7cd9caea91bf6">prev_id</a> (self)</td></tr>
-<tr class="memdesc:a50a41199e4b5afa837e7cd9caea91bf6"><td class="mdescLeft">&#160;</td><td class="mdescRight">only gets the ID of the previous utterance  <a href="#a50a41199e4b5afa837e7cd9caea91bf6">More...</a><br /></td></tr>
-<tr class="separator:a50a41199e4b5afa837e7cd9caea91bf6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a203789a3c231845ba87a9f2b7027a7f2"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html#a203789a3c231845ba87a9f2b7027a7f2">split</a> (self, num_utt)</td></tr>
+<tr class="memitem:a203789a3c231845ba87a9f2b7027a7f2"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html#a203789a3c231845ba87a9f2b7027a7f2">split</a> (self, <a class="el" href="classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html#a75e73a2090d2b89253bd0bfaf3002b6a">num_utt</a>)</td></tr>
 <tr class="memdesc:a203789a3c231845ba87a9f2b7027a7f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">take a number of utterances from the feature reader to make a new one  <a href="#a203789a3c231845ba87a9f2b7027a7f2">More...</a><br /></td></tr>
 <tr class="separator:a203789a3c231845ba87a9f2b7027a7f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a75e73a2090d2b89253bd0bfaf3002b6a"><td class="memItemLeft" align="right" valign="top"><a id="a75e73a2090d2b89253bd0bfaf3002b6a"></a>
-def&#160;</td><td class="memItemRight" valign="bottom"><b>num_utt</b> (self)</td></tr>
+def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html#a75e73a2090d2b89253bd0bfaf3002b6a">num_utt</a> (self)</td></tr>
+<tr class="memdesc:a75e73a2090d2b89253bd0bfaf3002b6a"><td class="mdescLeft">&#160;</td><td class="mdescRight">number of utterances in the reade <br /></td></tr>
 <tr class="separator:a75e73a2090d2b89253bd0bfaf3002b6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f957cffb9e118d3a2eeba0e2e4f4386"><td class="memItemLeft" align="right" valign="top"><a id="a4f957cffb9e118d3a2eeba0e2e4f4386"></a>
-def&#160;</td><td class="memItemRight" valign="bottom"><b>pos</b> (self)</td></tr>
+def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html#a4f957cffb9e118d3a2eeba0e2e4f4386">pos</a> (self)</td></tr>
+<tr class="memdesc:a4f957cffb9e118d3a2eeba0e2e4f4386"><td class="mdescLeft">&#160;</td><td class="mdescRight">the position in the reade <br /></td></tr>
 <tr class="separator:a4f957cffb9e118d3a2eeba0e2e4f4386"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5ad0744d757ae6880a8b9abd73ae63c1"><td class="memItemLeft" align="right" valign="top"><a id="a5ad0744d757ae6880a8b9abd73ae63c1"></a>
-def&#160;</td><td class="memItemRight" valign="bottom"><b>pos</b> (self, pos)</td></tr>
+def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html#a5ad0744d757ae6880a8b9abd73ae63c1">pos</a> (self, pos)</td></tr>
+<tr class="memdesc:a5ad0744d757ae6880a8b9abd73ae63c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">the position sette <br /></td></tr>
 <tr class="separator:a5ad0744d757ae6880a8b9abd73ae63c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
@@ -120,18 +117,15 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a776d89b450cacffb02a1a2871f9075ab"><td class="memItemLeft" align="right" valign="top"><a id="a776d89b450cacffb02a1a2871f9075ab"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>utt2spk</b></td></tr>
 <tr class="separator:a776d89b450cacffb02a1a2871f9075ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4ea453fd400021d1a13f619f1541b367"><td class="memItemLeft" align="right" valign="top"><a id="a4ea453fd400021d1a13f619f1541b367"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>context_width</b></td></tr>
-<tr class="separator:a4ea453fd400021d1a13f619f1541b367"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a847023a59c535ab568ab50ad350f6576"><td class="memItemLeft" align="right" valign="top"><a id="a847023a59c535ab568ab50ad350f6576"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>max_input_length</b></td></tr>
-<tr class="separator:a847023a59c535ab568ab50ad350f6576"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af0445457ebae6eba28cb8cdd07ab665c"><td class="memItemLeft" align="right" valign="top"><a id="af0445457ebae6eba28cb8cdd07ab665c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>max_length</b></td></tr>
+<tr class="separator:af0445457ebae6eba28cb8cdd07ab665c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Class that can read features from a Kaldi archive and process them (cmvn and splicing) </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a5e89d6c16e0bdf1357bb41a4cd35d984"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5e89d6c16e0bdf1357bb41a4cd35d984">&sect;&nbsp;</a></span>__init__()</h2>
+<a id="ac0790263d73b60cea80fd85fe23b3abe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac0790263d73b60cea80fd85fe23b3abe">&sect;&nbsp;</a></span>__init__()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -164,13 +158,7 @@ Public Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>context_width</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>max_input_length</em>&#160;</td>
+          <td class="paramname"><em>max_length</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -185,8 +173,7 @@ Public Attributes</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">scpfile</td><td>path to the features .scp file </td></tr>
     <tr><td class="paramname">cmvnfile</td><td>path to the cmvn file utt2spkfile:path to the file containing the mapping from utterance ID to speaker ID </td></tr>
-    <tr><td class="paramname">context_width</td><td>context width for splicing the features </td></tr>
-    <tr><td class="paramname">max_input_length</td><td>the maximum length of all the utterances in the scp file </td></tr>
+    <tr><td class="paramname">max_length</td><td>the maximum length of all the utterances in the scp file </td></tr>
   </table>
   </dd>
 </dl>
@@ -212,50 +199,6 @@ Public Attributes</h2></td></tr>
 
 <p>read the next features from the archive, normalize and splice them </p>
 <dl class="section return"><dt>Returns</dt><dd>the normalized and spliced features </dd></dl>
-
-</div>
-</div>
-<a id="ada4ce6c270136fff9cf582209856b65e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ada4ce6c270136fff9cf582209856b65e">&sect;&nbsp;</a></span>next_id()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">def nabu.processing.feature_reader.FeatureReader.next_id </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>only gets the ID of the next utterance </p>
-<p>moves forward in the reader</p>
-<dl class="section return"><dt>Returns</dt><dd>the ID of the uterance </dd></dl>
-
-</div>
-</div>
-<a id="a50a41199e4b5afa837e7cd9caea91bf6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a50a41199e4b5afa837e7cd9caea91bf6">&sect;&nbsp;</a></span>prev_id()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">def nabu.processing.feature_reader.FeatureReader.prev_id </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>only gets the ID of the previous utterance </p>
-<p>moves backward in the reader</p>
-<dl class="section return"><dt>Returns</dt><dd>the ID of the uterance </dd></dl>
 
 </div>
 </div>

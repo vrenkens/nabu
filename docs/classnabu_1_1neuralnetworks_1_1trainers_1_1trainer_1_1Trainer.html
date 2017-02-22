@@ -86,9 +86,9 @@ Inheritance diagram for nabu.neuralnetworks.trainers.trainer.Trainer:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a80366e14b39030afb0e9d435e4dadbcc"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a80366e14b39030afb0e9d435e4dadbcc">__init__</a> (self, conf, decoder_conf, classifier, input_dim, max_input_length, max_target_length, dispenser, val_reader=None, val_targets=None, expdir=None, server=None, cluster=None, task_index=0)</td></tr>
-<tr class="memdesc:a80366e14b39030afb0e9d435e4dadbcc"><td class="mdescLeft">&#160;</td><td class="mdescRight">NnetTrainer constructor, creates the training graph.  <a href="#a80366e14b39030afb0e9d435e4dadbcc">More...</a><br /></td></tr>
-<tr class="separator:a80366e14b39030afb0e9d435e4dadbcc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4021e986993d4645cd5e01dd2bebfa46"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a4021e986993d4645cd5e01dd2bebfa46">__init__</a> (self, conf, decoder, classifier, input_dim, dispenser, val_reader, val_targets, expdir, server=None, cluster=None, task_index=0)</td></tr>
+<tr class="memdesc:a4021e986993d4645cd5e01dd2bebfa46"><td class="mdescLeft">&#160;</td><td class="mdescRight">NnetTrainer constructor, creates the training graph.  <a href="#a4021e986993d4645cd5e01dd2bebfa46">More...</a><br /></td></tr>
+<tr class="separator:a4021e986993d4645cd5e01dd2bebfa46"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a796e6aad934cc361e487df85ccc2eac5"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a796e6aad934cc361e487df85ccc2eac5">compute_loss</a> (self, targets, logits, logit_seq_length, target_seq_length)</td></tr>
 <tr class="memdesc:a796e6aad934cc361e487df85ccc2eac5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the loss.  <a href="#a796e6aad934cc361e487df85ccc2eac5">More...</a><br /></td></tr>
 <tr class="separator:a796e6aad934cc361e487df85ccc2eac5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -111,12 +111,6 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:ac51e5e1d63f8639b11b8954317b8d33b"><td class="memItemLeft" align="right" valign="top"><a id="ac51e5e1d63f8639b11b8954317b8d33b"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>dispenser</b></td></tr>
 <tr class="separator:ac51e5e1d63f8639b11b8954317b8d33b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a42dd47d5185aa4e8bb2c15e14231c257"><td class="memItemLeft" align="right" valign="top"><a id="a42dd47d5185aa4e8bb2c15e14231c257"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>max_input_length</b></td></tr>
-<tr class="separator:a42dd47d5185aa4e8bb2c15e14231c257"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a80c0805decb5c8f95fe99def91cb8f71"><td class="memItemLeft" align="right" valign="top"><a id="a80c0805decb5c8f95fe99def91cb8f71"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>max_target_length</b></td></tr>
-<tr class="separator:a80c0805decb5c8f95fe99def91cb8f71"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7eb07239e53745d5d013570dbc5fdd6f"><td class="memItemLeft" align="right" valign="top"><a id="a7eb07239e53745d5d013570dbc5fdd6f"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>num_steps</b></td></tr>
 <tr class="separator:a7eb07239e53745d5d013570dbc5fdd6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -135,6 +129,12 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a35eafb539ddb75d63da80847ef353415"><td class="memItemLeft" align="right" valign="top"><a id="a35eafb539ddb75d63da80847ef353415"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>cluster</b></td></tr>
 <tr class="separator:a35eafb539ddb75d63da80847ef353415"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80c0805decb5c8f95fe99def91cb8f71"><td class="memItemLeft" align="right" valign="top"><a id="a80c0805decb5c8f95fe99def91cb8f71"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>max_target_length</b></td></tr>
+<tr class="separator:a80c0805decb5c8f95fe99def91cb8f71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42dd47d5185aa4e8bb2c15e14231c257"><td class="memItemLeft" align="right" valign="top"><a id="a42dd47d5185aa4e8bb2c15e14231c257"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>max_input_length</b></td></tr>
+<tr class="separator:a42dd47d5185aa4e8bb2c15e14231c257"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac7cc9bc7f7678e0546c01dcc2a1d11d7"><td class="memItemLeft" align="right" valign="top"><a id="ac7cc9bc7f7678e0546c01dcc2a1d11d7"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>graph</b></td></tr>
 <tr class="separator:ac7cc9bc7f7678e0546c01dcc2a1d11d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -226,8 +226,8 @@ Public Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>General class outlining the training environment of a classifier. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a80366e14b39030afb0e9d435e4dadbcc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a80366e14b39030afb0e9d435e4dadbcc">&sect;&nbsp;</a></span>__init__()</h2>
+<a id="a4021e986993d4645cd5e01dd2bebfa46"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4021e986993d4645cd5e01dd2bebfa46">&sect;&nbsp;</a></span>__init__()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -248,7 +248,7 @@ Public Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>decoder_conf</em>, </td>
+          <td class="paramname"><em>decoder</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -266,37 +266,25 @@ Public Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>max_input_length</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>max_target_length</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
           <td class="paramname"><em>dispenser</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>val_reader</em> = <code>None</code>, </td>
+          <td class="paramname"><em>val_reader</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>val_targets</em> = <code>None</code>, </td>
+          <td class="paramname"><em>val_targets</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>expdir</em> = <code>None</code>, </td>
+          <td class="paramname"><em>expdir</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -329,10 +317,8 @@ Public Attributes</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">classifier</td><td>the neural net classifier that will be trained </td></tr>
     <tr><td class="paramname">conf</td><td>the trainer config </td></tr>
-    <tr><td class="paramname">decoder_conf</td><td>the decoder config used for validation </td></tr>
+    <tr><td class="paramname">decoder</td><td>a callable that will create a decoder </td></tr>
     <tr><td class="paramname">input_dim</td><td>the input dimension to the nnnetgraph </td></tr>
-    <tr><td class="paramname">max_input_length</td><td>the maximal length of the input sequences </td></tr>
-    <tr><td class="paramname">max_target_length</td><td>the maximal length of the target sequences </td></tr>
     <tr><td class="paramname">num_steps</td><td>the total number of steps that will be taken </td></tr>
     <tr><td class="paramname">dispenser</td><td>a Batchdispenser object </td></tr>
     <tr><td class="paramname">cluster</td><td>the optional cluster used for distributed training, it should contain at least one parmeter server and one worker </td></tr>
@@ -453,7 +439,7 @@ Public Attributes</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">inputs</td><td>the inputs to the neural net, this should be a list containing an NxF matrix for each utterance in the batch where N is the number of frames in the utterance </td></tr>
-    <tr><td class="paramname">targets</td><td>the targets for neural nnet, this should be a list containing an N-dimensional vector for each utterance </td></tr>
+    <tr><td class="paramname">targets</td><td>the targets for neural net, this should be a list containing an N-dimensional vector for each utterance </td></tr>
     <tr><td class="paramname">sess</td><td>the session</td></tr>
   </table>
   </dd>

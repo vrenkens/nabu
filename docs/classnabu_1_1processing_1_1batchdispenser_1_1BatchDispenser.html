@@ -79,39 +79,26 @@ Inheritance diagram for nabu.processing.batchdispenser.BatchDispenser:</div>
  <div class="center">
   <img src="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.png" usemap="#nabu.processing.batchdispenser.BatchDispenser_map" alt=""/>
   <map id="nabu.processing.batchdispenser.BatchDispenser_map" name="nabu.processing.batchdispenser.BatchDispenser_map">
-<area href="classnabu_1_1processing_1_1batchdispenser_1_1AlignmentBatchDispenser.html" title="a batch dispenser, which uses state alignment targets. " alt="nabu.processing.batchdispenser.AlignmentBatchDispenser" shape="rect" coords="0,112,344,136"/>
-<area href="classnabu_1_1processing_1_1batchdispenser_1_1TextBatchDispenser.html" title="a batch dispenser, which uses text targets. " alt="nabu.processing.batchdispenser.TextBatchDispenser" shape="rect" coords="354,112,698,136"/>
+<area href="classnabu_1_1processing_1_1batchdispenser_1_1AsrBatchDispenser.html" title="a batch dispenser, used for ASR training " alt="nabu.processing.batchdispenser.AsrBatchDispenser" shape="rect" coords="0,112,309,136"/>
+<area href="classnabu_1_1processing_1_1batchdispenser_1_1LmBatchDispenser.html" title="a batch dispenser, used for language model training " alt="nabu.processing.batchdispenser.LmBatchDispenser" shape="rect" coords="319,112,628,136"/>
 </map>
  </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a1bff41b81b32cbcbf147b398b5d96ec4"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#a1bff41b81b32cbcbf147b398b5d96ec4">read_target_file</a> (self, target_path)</td></tr>
-<tr class="memdesc:a1bff41b81b32cbcbf147b398b5d96ec4"><td class="mdescLeft">&#160;</td><td class="mdescRight">read the file containing the targets  <a href="#a1bff41b81b32cbcbf147b398b5d96ec4">More...</a><br /></td></tr>
-<tr class="separator:a1bff41b81b32cbcbf147b398b5d96ec4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac0f614cc1780dc1f238537d4709c8e88"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#ac0f614cc1780dc1f238537d4709c8e88">__init__</a> (self, feature_reader, target_coder, size, target_path)</td></tr>
-<tr class="memdesc:ac0f614cc1780dc1f238537d4709c8e88"><td class="mdescLeft">&#160;</td><td class="mdescRight">batchDispenser constructor TODO: move encoding to the constructor  <a href="#ac0f614cc1780dc1f238537d4709c8e88">More...</a><br /></td></tr>
-<tr class="separator:ac0f614cc1780dc1f238537d4709c8e88"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3024a841bdfc8048479098492c4c4582"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#a3024a841bdfc8048479098492c4c4582">get_batch</a> (self, pos=None, stop_at_end=False)</td></tr>
-<tr class="memdesc:a3024a841bdfc8048479098492c4c4582"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a batch of features and targets.  <a href="#a3024a841bdfc8048479098492c4c4582">More...</a><br /></td></tr>
-<tr class="separator:a3024a841bdfc8048479098492c4c4582"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a903b449fbea9fe704172c81bbaec3bc7"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#a903b449fbea9fe704172c81bbaec3bc7">get_all_data</a> (self)</td></tr>
-<tr class="memdesc:a903b449fbea9fe704172c81bbaec3bc7"><td class="mdescLeft">&#160;</td><td class="mdescRight">read all data in a single batch  <a href="#a903b449fbea9fe704172c81bbaec3bc7">More...</a><br /></td></tr>
-<tr class="separator:a903b449fbea9fe704172c81bbaec3bc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad72d5aed77a4d880b206a5fdcf3c8a85"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#ad72d5aed77a4d880b206a5fdcf3c8a85">__init__</a> (self, size)</td></tr>
+<tr class="memdesc:ad72d5aed77a4d880b206a5fdcf3c8a85"><td class="mdescLeft">&#160;</td><td class="mdescRight">batchDispenser constructor  <a href="#ad72d5aed77a4d880b206a5fdcf3c8a85">More...</a><br /></td></tr>
+<tr class="separator:ad72d5aed77a4d880b206a5fdcf3c8a85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5bfecd9ec10851ac5705cff9a307cda3"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#a5bfecd9ec10851ac5705cff9a307cda3">get_batch</a> (self, pos=None)</td></tr>
+<tr class="memdesc:a5bfecd9ec10851ac5705cff9a307cda3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a batch of features and targets.  <a href="#a5bfecd9ec10851ac5705cff9a307cda3">More...</a><br /></td></tr>
+<tr class="separator:a5bfecd9ec10851ac5705cff9a307cda3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa7dd1fa046fe1cb7656a4d5923a245d2"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#aa7dd1fa046fe1cb7656a4d5923a245d2">split</a> (self, <a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#a9d84000e95a84acff0aed60d9f29deaf">num_utt</a>)</td></tr>
 <tr class="memdesc:aa7dd1fa046fe1cb7656a4d5923a245d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">take a number of utterances from the batchdispenser to make a new one  <a href="#aa7dd1fa046fe1cb7656a4d5923a245d2">More...</a><br /></td></tr>
 <tr class="separator:aa7dd1fa046fe1cb7656a4d5923a245d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9761cc911e8d4ee86e9c3c4c6e5e406d"><td class="memItemLeft" align="right" valign="top"><a id="a9761cc911e8d4ee86e9c3c4c6e5e406d"></a>
-def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#a9761cc911e8d4ee86e9c3c4c6e5e406d">skip_batch</a> (self)</td></tr>
-<tr class="memdesc:a9761cc911e8d4ee86e9c3c4c6e5e406d"><td class="mdescLeft">&#160;</td><td class="mdescRight">skip a batch <br /></td></tr>
-<tr class="separator:a9761cc911e8d4ee86e9c3c4c6e5e406d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a07cbe534bb4c389a5d90744a15c1de4f"><td class="memItemLeft" align="right" valign="top"><a id="a07cbe534bb4c389a5d90744a15c1de4f"></a>
-def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#a07cbe534bb4c389a5d90744a15c1de4f">return_batch</a> (self)</td></tr>
-<tr class="memdesc:a07cbe534bb4c389a5d90744a15c1de4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset to previous batch. <br /></td></tr>
-<tr class="separator:a07cbe534bb4c389a5d90744a15c1de4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9763e94c57060ea79355dba182526166"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#a9763e94c57060ea79355dba182526166">compute_target_count</a> (self)</td></tr>
-<tr class="memdesc:a9763e94c57060ea79355dba182526166"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the count of the targets in the data  <a href="#a9763e94c57060ea79355dba182526166">More...</a><br /></td></tr>
-<tr class="separator:a9763e94c57060ea79355dba182526166"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a843ee682e08d2b94be0c733d03ff996e"><td class="memItemLeft" align="right" valign="top"><a id="a843ee682e08d2b94be0c733d03ff996e"></a>
+def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#a843ee682e08d2b94be0c733d03ff996e">get_pair</a> (self)</td></tr>
+<tr class="memdesc:a843ee682e08d2b94be0c733d03ff996e"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the next input-target pai <br /></td></tr>
+<tr class="separator:a843ee682e08d2b94be0c733d03ff996e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc67b3f90dbfee38334f40dc8ed64957"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#abc67b3f90dbfee38334f40dc8ed64957">num_batches</a> (self)</td></tr>
 <tr class="memdesc:abc67b3f90dbfee38334f40dc8ed64957"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of batches in the given data.  <a href="#abc67b3f90dbfee38334f40dc8ed64957">More...</a><br /></td></tr>
 <tr class="separator:abc67b3f90dbfee38334f40dc8ed64957"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -127,33 +114,33 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#a5fed740d2cd8dae880ceaeebaab36e6b">max_input_length</a> (self)</td></tr>
 <tr class="memdesc:a5fed740d2cd8dae880ceaeebaab36e6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">the maximal sequence length of the features <br /></td></tr>
 <tr class="separator:a5fed740d2cd8dae880ceaeebaab36e6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab75e23cf5c2eaf5f3766185a97d7b31"><td class="memItemLeft" align="right" valign="top"><a id="aab75e23cf5c2eaf5f3766185a97d7b31"></a>
+def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#aab75e23cf5c2eaf5f3766185a97d7b31">max_target_length</a> (self)</td></tr>
+<tr class="memdesc:aab75e23cf5c2eaf5f3766185a97d7b31"><td class="mdescLeft">&#160;</td><td class="mdescRight">the maximal length of the targets <br /></td></tr>
+<tr class="separator:aab75e23cf5c2eaf5f3766185a97d7b31"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a77d0512281b3aac1412d9a4b3bcc4599"><td class="memItemLeft" align="right" valign="top"><a id="a77d0512281b3aac1412d9a4b3bcc4599"></a>
-def&#160;</td><td class="memItemRight" valign="bottom"><b>pos</b> (self)</td></tr>
+def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#a77d0512281b3aac1412d9a4b3bcc4599">pos</a> (self)</td></tr>
+<tr class="memdesc:a77d0512281b3aac1412d9a4b3bcc4599"><td class="mdescLeft">&#160;</td><td class="mdescRight">the current position in the data <br /></td></tr>
 <tr class="separator:a77d0512281b3aac1412d9a4b3bcc4599"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad86287592b6e9eadf28b3cbeb0f43f41"><td class="memItemLeft" align="right" valign="top"><a id="ad86287592b6e9eadf28b3cbeb0f43f41"></a>
+def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#ad86287592b6e9eadf28b3cbeb0f43f41">pos</a> (self, pos)</td></tr>
+<tr class="memdesc:ad86287592b6e9eadf28b3cbeb0f43f41"><td class="mdescLeft">&#160;</td><td class="mdescRight">setter for the current position in the data <br /></td></tr>
+<tr class="separator:ad86287592b6e9eadf28b3cbeb0f43f41"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a68dce12f124c3f67ca59b5c7e0a2229a"><td class="memItemLeft" align="right" valign="top"><a id="a68dce12f124c3f67ca59b5c7e0a2229a"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>feature_reader</b></td></tr>
-<tr class="separator:a68dce12f124c3f67ca59b5c7e0a2229a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afd4e136aa5ab107bf07debb719bed9f7"><td class="memItemLeft" align="right" valign="top"><a id="afd4e136aa5ab107bf07debb719bed9f7"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>target_dict</b></td></tr>
-<tr class="separator:afd4e136aa5ab107bf07debb719bed9f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adb2d9b0bdab728a570c337f1474c2ead"><td class="memItemLeft" align="right" valign="top"><a id="adb2d9b0bdab728a570c337f1474c2ead"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>max_target_length</b></td></tr>
-<tr class="separator:adb2d9b0bdab728a570c337f1474c2ead"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a92cebad1c54f5296730ccd63ba12b317"><td class="memItemLeft" align="right" valign="top"><a id="a92cebad1c54f5296730ccd63ba12b317"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>size</b></td></tr>
 <tr class="separator:a92cebad1c54f5296730ccd63ba12b317"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5414a071763a10b1521679b889606fcd"><td class="memItemLeft" align="right" valign="top"><a id="a5414a071763a10b1521679b889606fcd"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>target_coder</b></td></tr>
-<tr class="separator:a5414a071763a10b1521679b889606fcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab94de7b2e278265aa5f1ee97c408f9d1"><td class="memItemLeft" align="right" valign="top"><a id="ab94de7b2e278265aa5f1ee97c408f9d1"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>pos</b></td></tr>
+<tr class="separator:ab94de7b2e278265aa5f1ee97c408f9d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Class that dispenses batches of data for mini-batch training <a class="el" href="classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html" title="Class that dispenses batches of data for mini-batch training BatchDispenser interface cannot be creat...">BatchDispenser</a> interface cannot be created but gives methods to its child classes. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="ac0f614cc1780dc1f238537d4709c8e88"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac0f614cc1780dc1f238537d4709c8e88">&sect;&nbsp;</a></span>__init__()</h2>
+<a id="ad72d5aed77a4d880b206a5fdcf3c8a85"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad72d5aed77a4d880b206a5fdcf3c8a85">&sect;&nbsp;</a></span>__init__()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -168,25 +155,7 @@ Public Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>feature_reader</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>target_coder</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>size</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>target_path</em>&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -196,14 +165,10 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>batchDispenser constructor TODO: move encoding to the constructor </p>
+<p>batchDispenser constructor </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">feature_reader</td><td>Kaldi ark-file feature reader instance. </td></tr>
-    <tr><td class="paramname">target_coder</td><td>a TargetCoder object to encode and decode the target </td></tr>
-    <tr><td class="paramname">sequences</td><td></td></tr>
     <tr><td class="paramname">size</td><td>Specifies how many utterances should be contained in each batch. </td></tr>
-    <tr><td class="paramname">target_path</td><td>path to the file containing the targets </td></tr>
   </table>
   </dd>
 </dl>
@@ -211,54 +176,8 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a9763e94c57060ea79355dba182526166"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9763e94c57060ea79355dba182526166">&sect;&nbsp;</a></span>compute_target_count()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">def nabu.processing.batchdispenser.BatchDispenser.compute_target_count </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>compute the count of the targets in the data </p>
-<dl class="section return"><dt>Returns</dt><dd>a numpy array containing the counts of the targets </dd></dl>
-
-</div>
-</div>
-<a id="a903b449fbea9fe704172c81bbaec3bc7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a903b449fbea9fe704172c81bbaec3bc7">&sect;&nbsp;</a></span>get_all_data()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">def nabu.processing.batchdispenser.BatchDispenser.get_all_data </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>read all data in a single batch </p>
-<dl class="section return"><dt>Returns</dt><dd>A pair containing:<ul>
-<li>The features: a list of feature matrices</li>
-<li>The targets: a list of target vectors </li>
-</ul>
-</dd></dl>
-
-</div>
-</div>
-<a id="a3024a841bdfc8048479098492c4c4582"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3024a841bdfc8048479098492c4c4582">&sect;&nbsp;</a></span>get_batch()</h2>
+<a id="a5bfecd9ec10851ac5705cff9a307cda3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5bfecd9ec10851ac5705cff9a307cda3">&sect;&nbsp;</a></span>get_batch()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -273,13 +192,7 @@ Public Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>pos</em> = <code>None</code>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>stop_at_end</em> = <code>False</code>&#160;</td>
+          <td class="paramname"><em>pos</em> = <code>None</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -292,8 +205,7 @@ Public Attributes</h2></td></tr>
 <p>Get a batch of features and targets. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">pos</td><td>position in the feature reader, if None will remain unchanged </td></tr>
-    <tr><td class="paramname">stop_at_end</td><td>boolean, if False the batchdispenser will loop around otherwise the batchdispenser will stop at the end</td></tr>
+    <tr><td class="paramname">pos</td><td>position in the reader, if None will remain unchanged</td></tr>
   </table>
   </dd>
 </dl>
@@ -323,47 +235,6 @@ Public Attributes</h2></td></tr>
 
 <p>The number of batches in the given data. </p>
 <p>The number of batches is not necessarily a whole number </p>
-
-</div>
-</div>
-<a id="a1bff41b81b32cbcbf147b398b5d96ec4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1bff41b81b32cbcbf147b398b5d96ec4">&sect;&nbsp;</a></span>read_target_file()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">def nabu.processing.batchdispenser.BatchDispenser.read_target_file </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>target_path</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>read the file containing the targets </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">target_path</td><td>path to the targets file</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A dictionary containing<ul>
-<li>Key: Utterance ID</li>
-<li>Value: The target sequence as a string </li>
-</ul>
-</dd></dl>
 
 </div>
 </div>

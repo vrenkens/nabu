@@ -83,12 +83,12 @@ Inheritance diagram for nabu.neuralnetworks.decoders.beam_search_decoder.Beam:</
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a8fa348767c50c5e1c75e04b1b6be74b5"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1beam__search__decoder_1_1Beam.html#a8fa348767c50c5e1c75e04b1b6be74b5">update</a> (self, logits, states, step)</td></tr>
-<tr class="memdesc:a8fa348767c50c5e1c75e04b1b6be74b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">update the beam by expanding the beam with new hypothesis and selecting the best ones.  <a href="#a8fa348767c50c5e1c75e04b1b6be74b5">More...</a><br /></td></tr>
-<tr class="separator:a8fa348767c50c5e1c75e04b1b6be74b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2f44c90b4eafb319d2d9d428f0e388ff"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1beam__search__decoder_1_1Beam.html#a2f44c90b4eafb319d2d9d428f0e388ff">all_terminated</a> (self, step)</td></tr>
-<tr class="memdesc:a2f44c90b4eafb319d2d9d428f0e388ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">check if all elements in the beam have terminated  <a href="#a2f44c90b4eafb319d2d9d428f0e388ff">More...</a><br /></td></tr>
-<tr class="separator:a2f44c90b4eafb319d2d9d428f0e388ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a16a559e318942efa41d03ae46bdce270"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1beam__search__decoder_1_1Beam.html#a16a559e318942efa41d03ae46bdce270">update</a> (self, logits, states, step, check_finished)</td></tr>
+<tr class="memdesc:a16a559e318942efa41d03ae46bdce270"><td class="mdescLeft">&#160;</td><td class="mdescRight">update the beam by expanding the beam with new hypothesis and selecting the best ones.  <a href="#a16a559e318942efa41d03ae46bdce270">More...</a><br /></td></tr>
+<tr class="separator:a16a559e318942efa41d03ae46bdce270"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7bcf3d23f89ead44ecf08c12890544b"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1beam__search__decoder_1_1Beam.html#ad7bcf3d23f89ead44ecf08c12890544b">all_terminated</a> (self, step, s_label)</td></tr>
+<tr class="memdesc:ad7bcf3d23f89ead44ecf08c12890544b"><td class="mdescLeft">&#160;</td><td class="mdescRight">check if all elements in the beam have terminated  <a href="#ad7bcf3d23f89ead44ecf08c12890544b">More...</a><br /></td></tr>
+<tr class="separator:ad7bcf3d23f89ead44ecf08c12890544b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9aae35a2a2475dbc116df8ff1723272e"><td class="memItemLeft" align="right" valign="top"><a id="a9aae35a2a2475dbc116df8ff1723272e"></a>
 def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1beam__search__decoder_1_1Beam.html#a9aae35a2a2475dbc116df8ff1723272e">beam_width</a> (self)</td></tr>
 <tr class="memdesc:a9aae35a2a2475dbc116df8ff1723272e"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the size of the beam <br /></td></tr>
@@ -107,8 +107,8 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 <li>scores: the score of the beam element as a [batch_size x beam_width] tensor </li>
 </ul>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a2f44c90b4eafb319d2d9d428f0e388ff"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2f44c90b4eafb319d2d9d428f0e388ff">&sect;&nbsp;</a></span>all_terminated()</h2>
+<a id="ad7bcf3d23f89ead44ecf08c12890544b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7bcf3d23f89ead44ecf08c12890544b">&sect;&nbsp;</a></span>all_terminated()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -123,7 +123,13 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>step</em>&#160;</td>
+          <td class="paramname"><em>step</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>s_label</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -136,7 +142,8 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 <p>check if all elements in the beam have terminated </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">step</td><td>the current step</td></tr>
+    <tr><td class="paramname">step</td><td>the current step </td></tr>
+    <tr><td class="paramname">s_label</td><td>the value of the sentence border label (sould be last label)</td></tr>
   </table>
   </dd>
 </dl>
@@ -144,8 +151,8 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 
 </div>
 </div>
-<a id="a8fa348767c50c5e1c75e04b1b6be74b5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8fa348767c50c5e1c75e04b1b6be74b5">&sect;&nbsp;</a></span>update()</h2>
+<a id="a16a559e318942efa41d03ae46bdce270"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a16a559e318942efa41d03ae46bdce270">&sect;&nbsp;</a></span>update()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -172,7 +179,13 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>step</em>&#160;</td>
+          <td class="paramname"><em>step</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>check_finished</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -188,11 +201,11 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
   <table class="params">
     <tr><td class="paramname">logits</td><td>the decoder output logits as a [batch_size x beam_width x numlabels] tensor </td></tr>
     <tr><td class="paramname">states</td><td>the decoder output states as a possibly nested tuple of [batch_size x beam_width x state_dim] tensor </td></tr>
-    <tr><td class="paramname">step</td><td>the current step</td></tr>
+    <tr><td class="paramname">step</td><td>the current step </td></tr>
+    <tr><td class="paramname">check_finished</td><td>finish a beam element if a sentence border <div class="fragment"><div class="line">               token <span class="keywordflow">is</span> observed</div><div class="line"></div><div class="line">@<span class="keywordflow">return</span></div></div><!-- fragment --> a new updated <a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1beam__search__decoder_1_1Beam.html" title="a named tuple class for a beam ">Beam</a> as a <a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1beam__search__decoder_1_1Beam.html" title="a named tuple class for a beam ">Beam</a> object </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>a new updated <a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1beam__search__decoder_1_1Beam.html" title="a named tuple class for a beam ">Beam</a> as a <a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1beam__search__decoder_1_1Beam.html" title="a named tuple class for a beam ">Beam</a> object </dd></dl>
 
 </div>
 </div>

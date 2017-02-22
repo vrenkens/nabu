@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['wait',['wait',['../trainer_8py.html#aa609ab16adc94e201c3c7a2b3308681d',1,'nabu::neuralnetworks::trainers::trainer']]],
-  ['write_5fnext_5futt',['write_next_utt',['../classnabu_1_1processing_1_1ark_1_1ArkWriter.html#a38642b848aeed07f71f6f822742d574e',1,'nabu::processing::ark::ArkWriter']]]
+  ['update',['update',['../classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1Beam.html#ab2c4710a45f6eb08cc37125d8f6e897b',1,'nabu.neuralnetworks.decoders.attention_visualizer.Beam.update()'],['../classnabu_1_1neuralnetworks_1_1decoders_1_1beam__search__decoder_1_1Beam.html#a16a559e318942efa41d03ae46bdce270',1,'nabu.neuralnetworks.decoders.beam_search_decoder.Beam.update()'],['../classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a101b3452d140b427f8a4ef0c4540c028',1,'nabu.neuralnetworks.trainers.trainer.Trainer.update()']]]
 ];

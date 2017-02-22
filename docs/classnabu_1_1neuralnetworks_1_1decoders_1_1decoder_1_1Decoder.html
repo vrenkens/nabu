@@ -79,20 +79,21 @@ Inheritance diagram for nabu.neuralnetworks.decoders.decoder.Decoder:</div>
  <div class="center">
   <img src="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.png" usemap="#nabu.neuralnetworks.decoders.decoder.Decoder_map" alt=""/>
   <map id="nabu.neuralnetworks.decoders.decoder.Decoder_map" name="nabu.neuralnetworks.decoders.decoder.Decoder_map">
-<area href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1AttentionVisiualizer.html" title="Decoder for attention visualisation. " alt="nabu.neuralnetworks.decoders.attention_visualizer.AttentionVisiualizer" shape="rect" coords="0,112,446,136"/>
-<area href="classnabu_1_1neuralnetworks_1_1decoders_1_1beam__search__decoder_1_1BeamSearchDecoder.html" title="Beam search decode. " alt="nabu.neuralnetworks.decoders.beam_search_decoder.BeamSearchDecoder" shape="rect" coords="456,112,902,136"/>
-<area href="classnabu_1_1neuralnetworks_1_1decoders_1_1ctc__decoder_1_1CTCDecoder.html" title="CTC Decode. " alt="nabu.neuralnetworks.decoders.ctc_decoder.CTCDecoder" shape="rect" coords="912,112,1358,136"/>
+<area href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1AttentionVisiualizer.html" title="Decoder for attention visualisation. " alt="nabu.neuralnetworks.decoders.attention_visualizer.AttentionVisiualizer" shape="rect" coords="0,112,461,136"/>
+<area href="classnabu_1_1neuralnetworks_1_1decoders_1_1beam__search__decoder_1_1BeamSearchDecoder.html" title="Beam search decode. " alt="nabu.neuralnetworks.decoders.beam_search_decoder.BeamSearchDecoder" shape="rect" coords="471,112,932,136"/>
+<area href="classnabu_1_1neuralnetworks_1_1decoders_1_1ctc__decoder_1_1CTCDecoder.html" title="CTC Decode. " alt="nabu.neuralnetworks.decoders.ctc_decoder.CTCDecoder" shape="rect" coords="942,112,1403,136"/>
+<area href="classnabu_1_1neuralnetworks_1_1decoders_1_1lm__confidence__decoder_1_1LmConfidenceDecoder.html" title="a decoder that will be used to evaluate the language model, it will generate a confidence score for t..." alt="nabu.neuralnetworks.decoders.lm_confidence_decoder.LmConfidenceDecoder" shape="rect" coords="1413,112,1874,136"/>
 </map>
  </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a3275a228427eaf0120949c94153f2f01"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#a3275a228427eaf0120949c94153f2f01">__init__</a> (self, conf, classifier, classifier_scope, input_dim, max_input_length, coder, expdir)</td></tr>
-<tr class="memdesc:a3275a228427eaf0120949c94153f2f01"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html" title="the abstract class for a decode ">Decoder</a> constructor, creates the decoding graph.  <a href="#a3275a228427eaf0120949c94153f2f01">More...</a><br /></td></tr>
-<tr class="separator:a3275a228427eaf0120949c94153f2f01"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac72631baedd79ae4bf8e37dd3d04180d"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#ac72631baedd79ae4bf8e37dd3d04180d">get_outputs</a> (self, inputs, input_seq_length, classifier, classifier_scope)</td></tr>
-<tr class="memdesc:ac72631baedd79ae4bf8e37dd3d04180d"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the outputs of the decoder  <a href="#ac72631baedd79ae4bf8e37dd3d04180d">More...</a><br /></td></tr>
-<tr class="separator:ac72631baedd79ae4bf8e37dd3d04180d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5dc9b874577e3b8cd58bbf53e8223ab4"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#a5dc9b874577e3b8cd58bbf53e8223ab4">__init__</a> (self, conf, classifier, input_dim, max_input_length, coder, expdir)</td></tr>
+<tr class="memdesc:a5dc9b874577e3b8cd58bbf53e8223ab4"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html" title="the abstract class for a decode ">Decoder</a> constructor, creates the decoding graph.  <a href="#a5dc9b874577e3b8cd58bbf53e8223ab4">More...</a><br /></td></tr>
+<tr class="separator:a5dc9b874577e3b8cd58bbf53e8223ab4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afba0bd8bc3a72cab5f0c5f5012c4fec2"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#afba0bd8bc3a72cab5f0c5f5012c4fec2">get_outputs</a> (self, inputs, input_seq_length, classifier)</td></tr>
+<tr class="memdesc:afba0bd8bc3a72cab5f0c5f5012c4fec2"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the outputs of the decoder  <a href="#afba0bd8bc3a72cab5f0c5f5012c4fec2">More...</a><br /></td></tr>
+<tr class="separator:afba0bd8bc3a72cab5f0c5f5012c4fec2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7db4cd19c3d73b329c5edf6c851650cb"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#a7db4cd19c3d73b329c5edf6c851650cb">score</a> (self, outputs, targets)</td></tr>
 <tr class="memdesc:a7db4cd19c3d73b329c5edf6c851650cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">score the performance  <a href="#a7db4cd19c3d73b329c5edf6c851650cb">More...</a><br /></td></tr>
 <tr class="separator:a7db4cd19c3d73b329c5edf6c851650cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -133,8 +134,8 @@ Public Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>the abstract class for a decode </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a3275a228427eaf0120949c94153f2f01"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3275a228427eaf0120949c94153f2f01">&sect;&nbsp;</a></span>__init__()</h2>
+<a id="a5dc9b874577e3b8cd58bbf53e8223ab4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5dc9b874577e3b8cd58bbf53e8223ab4">&sect;&nbsp;</a></span>__init__()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -156,12 +157,6 @@ Public Attributes</h2></td></tr>
           <td></td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>classifier</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>classifier_scope</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -200,7 +195,6 @@ Public Attributes</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">conf</td><td>the decoder config </td></tr>
     <tr><td class="paramname">classifier</td><td>the classifier that will be used for decoding </td></tr>
-    <tr><td class="paramname">classifier_scope</td><td>the scope where the classier should be created/loaded from </td></tr>
     <tr><td class="paramname">input_dim</td><td>the input dimension to the nnnetgraph </td></tr>
     <tr><td class="paramname">max_input_length</td><td>the maximum length of the inputs </td></tr>
     <tr><td class="paramname">batch_size</td><td>the decoder batch size </td></tr>
@@ -301,8 +295,8 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="ac72631baedd79ae4bf8e37dd3d04180d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac72631baedd79ae4bf8e37dd3d04180d">&sect;&nbsp;</a></span>get_outputs()</h2>
+<a id="afba0bd8bc3a72cab5f0c5f5012c4fec2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afba0bd8bc3a72cab5f0c5f5012c4fec2">&sect;&nbsp;</a></span>get_outputs()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -329,13 +323,7 @@ Public Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>classifier</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>classifier_scope</em>&#160;</td>
+          <td class="paramname"><em>classifier</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -350,8 +338,7 @@ Public Attributes</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">inputs</td><td>The inputs to the network as a [batch_size x max_input_length x input_dim] tensor </td></tr>
     <tr><td class="paramname">input_seq_length</td><td>The sequence length of the inputs as a [batch_size] vector </td></tr>
-    <tr><td class="paramname">classifier</td><td>The classifier object that will be used in decoding </td></tr>
-    <tr><td class="paramname">classifier_scope</td><td>the scope where the classifier was defined</td></tr>
+    <tr><td class="paramname">classifier</td><td>The classifier object that will be used in decoding</td></tr>
   </table>
   </dd>
 </dl>

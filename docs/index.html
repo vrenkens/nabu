@@ -69,13 +69,13 @@ $(function() {
 <li><a href="#about">About</a></li>
 <li><a href="#dependencies">Dependencies</a></li>
 <li><a href="#usage">Usage</a><ul>
-<li><a href="#using-the-recognizers">Using the recognizers</a></li>
-<li><a href="#training-a-model">Training a model</a><ul>
-<li><a href="#data-preparation">Data preparation</a><ul>
-<li><a href="#database-preparation">Database preparation</a></li>
-<li><a href="#feature-computation">Feature computation</a></li>
+<li><a href="#database-preperation">Database preperation</a><ul>
+<li><a href="#asr-database-preparation">ASR Database preparation</a></li>
+<li><a href="#lm-database-preparation">LM Database preparation</a></li>
 </ul>
 </li>
+<li><a href="#database-preperation">Data preperation</a></li>
+<li><a href="#training-a-model">Training a model</a><ul>
 <li><a href="#configuration">Configuration</a></li>
 <li><a href="#running-the-training-script">Running the training script</a></li>
 <li><a href="#visualization">Visualization</a></li>
@@ -128,12 +128,9 @@ $(function() {
 <li><a href="https://www.tensorflow.org">TensorFlow</a>.</li>
 </ul>
 <h2>Usage</h2>
-<h2>Using the recognizers</h2>
-<p>Nabu contains some pre-trained models, that you can esaily use to perform recognition as follows:</p>
-<div class="fragment"><div class="line">import nabu</div><div class="line">import scipy</div><div class="line"></div><div class="line">recognizer = nabu.models.model.Model(&#39;/path/to/model/dir&#39;)</div><div class="line">rate, sig = scipy.io.wavfile.read(&#39;/path/to/file.wav&#39;)</div><div class="line"></div><div class="line">transcription = recognizer(sig, rate)</div></div><!-- fragment --><p>The transcription will be a string containing the recognized output. the model directories for the pre-trained models can be found in nabu/models/ or are created after <a href="#training-a-model">training a model</a>.</p>
-<h3>Data preparation</h3>
-<h4>Database preparation</h4>
-<p>Nabu's data format is the same as the <a href="http://kaldi-asr.org/">Kaldi</a> toolkit. To prepare a database for training you should run Kaldi's data preparation scripts, these scripts can be found on the Kaldi Github. You can find more information on the Kaldi data preparation <a href="http://kaldi-asr.org/doc/data_prep.html">here</a>.</p>
+<h3>Database preperation</h3>
+<h4>ASR Database preparation</h4>
+<p>Nabu's data format for asr is the same as the <a href="http://kaldi-asr.org/">Kaldi</a> toolkit. To prepare a database for training you should run Kaldi's data preparation scripts, these scripts can be found on the Kaldi Github. You can find more information on the Kaldi data preparation <a href="http://kaldi-asr.org/doc/data_prep.html">here</a>.</p>
 <p>The resulting data directories should contain:</p>
 <ul>
 <li>wav.scp: a text file with a line per utterance, this line should contain the ID of the utterance and either a wav filename or a command to read the audio file and pipe the results. Examples:<ul>
@@ -154,47 +151,64 @@ $(function() {
 </ul>
 </li>
 </ul>
-<p>Next you should create a database normalizer in nabu/processing/target_normalizers/. This is a method that takes a transcription and an alphabet as input and returns the normalized transcription. You can find already implemented normalizers in nabu/processing/target_normalizers/, you should use these as examples. Once you implemented your normalizer you should add it in <a class="el" href="normalizer__factory_8py.html" title="Contains the normalizer factory. ">nabu/processing/target_normalizers/normalizer_factory.py</a> in the factory method (with a name of your choosing). You should also import your new file in nabu/processing/target_normalizers/__init__.py.</p>
-<p>Next you should create a target coder in nabu/processing/target_coders/. A target coder converts a normalized transcription string into a numpy array of labels. To create your own coder you should create a class that inherits from TargetCoder (defined in <a class="el" href="targetcoder_8py.html" title="contains the TargetCoder class ">nabu/processing/target_coders/targetcoder.py</a>). You should then overwrite the create_alphabet method that returns your desired alphabet. Some coders have been implemented and can be found in nabu/processing/target_coders/. Once you implemented your coder you should add it in <a class="el" href="coder__factory_8py.html" title="contain the coder factory ">nabu/processing/target_coders/coder_factory.py</a> in the factory method (with a name of your choosing). You should also import your new file in nabu/processing/target_coders/__init__.py.</p>
-<p>Finally, you should create a config file for your database in nabu/config/databases/. You can base your config on nabu/config/databases/template.cfg:</p>
+<p>Finally, you should create a config file for your database in config/asr_databases/. You can base your config on config/asr_databases/template.cfg:</p>
 <ul>
 <li>_data fields should point to the directories created in the database preparations</li>
-<li>_features fields should contain writable directories where your features should be stored</li>
+<li>_dir fields should contain writable directories where your features should be stored</li>
 <li>Text fields should point to the transcription text files created in the database preparation.</li>
-<li>The coder field should be the name of your target coder (defined in the factory).</li>
-<li>The normalizer field should be the name of your target normalizer (defined in the factory).</li>
+<li>The normalizer field should be the name of the target normalizer (defined in the normalizer factory). Look at the <a href="#target-normalizer">Target normalizer section</a>.</li>
 </ul>
-<h4>Feature computation</h4>
-<p>To compute the features you can use the featprep.py script. For the feature configuration you can modify/create a file in nabu/config/features/ or use a default config file. Look at the <a href="#designing-features">Designing features section</a> to design your own features.</p>
-<p>In the script you should modify the database_cfg_file variable to point to the desired database config file and the feat_cfg_file to point to the desired feature config file.</p>
-<p>Then you can compute the features with:</p>
-<div class="fragment"><div class="line">python featprep</div></div><!-- fragment --><h3>Training a model</h3>
+<h4>LM Database preparation</h4>
+<p>For training a language model the only thing that is required is a (or multiple) text file(s) where each line in the file is a seperate sentence.</p>
+<p>Finally, you should create a config file for your database in config/lm_databases/. You can base your config on config/lm_databases/template.cfg:</p>
+<ul>
+<li>_data fields should point to the text files created in the database preparations, this is a space seperated list of files</li>
+<li>_dir fields should contain writable directories where data can be stored</li>
+<li>The normalizer field should be the name of the target normalizer (defined in the normalizer factory). Look at the <a href="#target-normalizer">Target normalizer section</a>.</li>
+</ul>
+<h4>Target normalizer</h4>
+<p>For every database you should create a target normalizer in nabu/processing/target_normalizers. The Normalizer class is defined in <a class="el" href="normalizer_8py.html" title="contains the Normalizer class ">nabu/processing/target_normalizers/normalizer.py</a>. To create the normalizer you should inhererit from the Normalizer class and overwrite the __call__ method and the _create_alphabet method.</p>
+<p>The _create_alphabet method creates the alphabet of targets. It returns a list of target strings. spaces are not allowed in the target strings.</p>
+<p>The __call__ method takes a transcription string from the text file as input and returns the normalized transcription as a string. The normalized transcription should contain only targets from the alphabet seperated by spaces. An example normalized transcription:</p>
+<blockquote class="doxtable">
+<p>i &lt;space&gt; a m &lt;space&gt; a &lt;space&gt; t r a n s c r i p t i o n </p>
+</blockquote>
+<p>An example normalizer can be found in <a class="el" href="aurora4_8py.html" title="contains the timit target normalize ">nabu/processing/target_normalizers/aurora4.py</a>. Once you've created your normalizer you should import it in nabu/processing/target_normalizers/__init__.py and add it to the factory method in <a class="el" href="normalizer__factory_8py.html" title="Contains the normalizer factory. ">nabu/processing/target_normalizers/normalizer_factory.py</a> with a name that matches the name in the database config file.</p>
+<h3>Data preperation</h3>
+<p>To to the asr or lm data preperation (feature computation, text normalization etc.) you can use the asr_dataprep.py and <a class="el" href="lm__dataprep_8py.html" title="this file will do the dataprep for lm training ">lm_dataprep.py</a> scripts. You should first make sure that the database_cfg_file variable at the top of the scripts point to the config that you created in the <a href="#database-preperation">database preperation</a>. For the asr database preperation you should also point the feat_cfg_file variable to a feature config file in config/features/. To design your own features look into the <a href="#designing-features">Designing features section</a>.</p>
+<p>You can then do the data preperation with</p>
+<div class="fragment"><div class="line">python asr_dataprep.py</div></div><!-- fragment --><p> or </p><div class="fragment"><div class="line">python lm_dataprep.py</div></div><!-- fragment --><h3>Training a model</h3>
 <p>To train a pre-designed model (see <a href="#designing-a-model">Designing a model</a> to design your own) you can use the run_train.py script.</p>
 <h4>Configuration</h4>
 <p>For configuration you can modify the following config files:</p>
 <ul>
 <li>nabu/config/computing/: The computing mode configuration, this will be explained more in the <a href="#distributed-training">Distributed training section</a> (stick to non-distributed.cfg for now).</li>
-<li>nabu/config/nnet/: The neural network configuration. The content of this configuration depends on the type of model. In this section you can choose the number of layers, the dimensionality of the layers etc. Look at the <a href="#designing-a-model">Designing a model section</a> if you want to design your own type of model.</li>
+<li>nabu/config/asr/: The asr neural network configuration. The content of this configuration depends on the type of asr. In this section you can choose the number of layers, the dimensionality of the layers etc. Look at the <a href="#designing-a-model">Designing a model section</a> if you want to design your own type of asr.</li>
+<li>nabu/config/lm/: The lm neural network configuration. The content of this configuration depends on the type of lm. In this section you can choose the number of layers, the dimensionality of the layers etc. Look at the <a href="#designing-a-model">Designing a model section</a> if you want to design your own type of lm.</li>
 <li>nabu/config/trainer/: The trainer configuration, this config contains the type of trainer and its configuration. Select the type of trainer that is appropriate for your model (e.g. cross_entropy for encoder-decoder nets).You can also set the training parameters like learning rate, batch size etc. Look at the <a href="#designing-a-trainer">Designing a trainer section</a> if you want to design your own type of trainer.</li>
-<li>nabu/config/decoder/: this configuration contains the type of decoder that will be used during validation. Choose the type that is appropriate for your model (e.g. beamsearchdecoder for encoder-decoder nets). You can also modify some decoding parameters like beam width and batch size. Look at the <a href="#designing-a-decoder">Designing a decoder section</a> if you want to design your own type of decoder.</li>
+<li>nabu/config/decoder/: this configuration contains the type of decoder that will be used during validation. Choose the type that is appropriate for your model (e.g. BeamSearchDecoder for encoder-decoder nets). You can also modify some decoding parameters like beam width and batch size. Look at the <a href="#designing-a-decoder">Designing a decoder section</a> if you want to design your own type of decoder.</li>
 </ul>
 <p>When all configuration files have been edited/created to your liking you should should modify the _cfg_file variables at the top of the run_train.py script so they point to the appropriate config files.</p>
 <h4>Running the training script</h4>
-<p>You can start training with:</p>
-<div class="fragment"><div class="line">python run_train.py --expdir=path/to/expdir</div></div><!-- fragment --><p>The expdir argument should point to the directory where you want all your experiment files to be written (model checkpoints, config files, event files etc).</p>
+<p>You can then train an asr by running:</p>
+<div class="fragment"><div class="line">python run_train.py --expdir=path/to/expdir --type=asr</div></div><!-- fragment --><p>and a lm with</p>
+<div class="fragment"><div class="line">python run_train.py --expdir=path/to/expdir --type=lm</div></div><!-- fragment --><p>The expdir argument should point to the directory where you want all your experiment files to be written (model checkpoints, config files, event files etc).</p>
 <p>If you have a validation set, training will start by measuring the initial performance. Next, the iterative training will start until the required number of steps have been taken. If your process stopped for some reason, you can resume training by setting the resume_training field to True in the trainer config and using the same experiments directory.</p>
 <h4>Visualization</h4>
 <p>During training you can visualize the network, its parameters, performance on the validation set etc. using <a href="https://www.tensorflow.org/how_tos/summaries_and_tensorboard/">Tensorboard</a>. You can start Tensorboard with:</p>
 <div class="fragment"><div class="line">tensorboard --logdir=path/to/expdir/logdir</div></div><!-- fragment --><p>or</p>
 <div class="fragment"><div class="line">python -m tensorflow.tensorboard --logdir=path/to/expdir/logdir</div></div><!-- fragment --><p>the logdir is created in the expdir.</p>
 <h3>Testing a model</h3>
-<p>To test a trained model you can use the <a class="el" href="test_8py.html" title="this file will do the neural net testing ">test.py</a> script. You can use a different decoder configuration then you used during training. You should modify the decoder_cfg_file variable at the top of <a class="el" href="test_8py.html" title="this file will do the neural net testing ">test.py</a>, so it points to the correct config file. If you want to use the config file that you used during training set the variable to None. You can then test the model with:</p>
-<div class="fragment"><div class="line">python test.py --expdir=path/to/expdir</div></div><!-- fragment --><h2>Design</h2>
+<p>To test a trained model you can use the <a class="el" href="test__asr_8py.html" title="this file will test the asr on its own ">test_asr.py</a>, test_lm.py and <a class="el" href="test_8py.html" title="this file will test the asr combined with an lm ">test.py</a> scripts. You can use a different decoder configuration then you used during training. You should modify the decoder_cfg_file variable at the top of scrip, so it points to the correct config file. If you want to use the config file that you used during training set the variable to None.</p>
+<p>You can measure the perplexity of a lm on the test set with:</p>
+<div class="fragment"><div class="line">python test_lm.py --expdir=path/to/expdir</div></div><!-- fragment --><p>You can test an asr without lm with:</p>
+<div class="fragment"><div class="line">python test_asr.py --expdir=path/to/expdir</div></div><!-- fragment --><p>Finally, you can test an asr with lm with:</p>
+<div class="fragment"><div class="line">python test.py --asr_expdir=path/to/asr/expdir --lm_expdir=path/to/lm/expdir</div></div><!-- fragment --><h2>Design</h2>
 <h3>Designing a model</h3>
 <h4>Creating the classifier</h4>
-<p>The classifier is the core of the model. The general Classifier class is defined in <a class="el" href="classifier_8py.html" title="The abstract class for a neural network classifie. ">nabu/neuralnetworks/classifiers/classifier.py</a>. To create your own classifier create a class in nabu/neuralnetworks/classifiers/ that inherits from Classifier and overwrite the __call__ method. This method takes the following inputs:</p>
+<p>The classifier is the core of the model, and can be either an asr or a language model. The general Classifier class is defined in <a class="el" href="classifier_8py.html" title="The abstract class for a neural network classifie. ">nabu/neuralnetworks/classifiers/classifier.py</a>. To create your own classifier create a class in nabu/neuralnetworks/classifiers/ that inherits from Classifier and overwrite the _get_outputs method. This method takes the following inputs:</p>
 <ul>
-<li>inputs: the inputs to the neural network, this is a [batch_size x max_input_length x feature_dim] tensor</li>
+<li>inputs: the inputs to the neural network, this is a [batch_size x max_input_length x feature_dim] tensor. If the classifier is a language model the feature_dim will be 1</li>
 <li>input_seq_length: The sequence lengths of the input utterances, this is a [batch_size] vector</li>
 <li>targets: the targets to the neural network, this is a [batch_size x max_output_length x 1] tensor. The targets can be used during training</li>
 <li>target_seq_length: The sequence lengths of the target utterances, this is a [batch_size] vector</li>
@@ -202,8 +216,8 @@ $(function() {
 </ul>
 <p>The method should return the output logits (probabilities before softmax) and the output sequence lengths. Some example Classifiers:</p>
 <ul>
-<li>nabu/neuralnetworks/classifiers/las.py: Listen Attend and Spell model</li>
-<li><a class="el" href="dblstm_8py.html" title="contains de DBLSTM class ">nabu/neuralnetworks/classifiers/dblstm.py</a>: Deep Biderictional LSTM model</li>
+<li>nabu/neuralnetworks/classifiers/las.py: Listen Attend and Spell asr</li>
+<li>nabu/neuralnetworks/classifiers/dblstm.py: Deep Biderictional LSTM asr</li>
 </ul>
 <p>Once you've created your classifier you should add it in the factory method in nabu/neuralnetworks/classifiers/classifier_factory.py (with any name) and you should import it in nabu/neuralnetworks/classifiers/__init__.py.</p>
 <h4>Classifier configuration file</h4>
@@ -241,7 +255,7 @@ $(function() {
 <li>nabu/neuralnetworks/trainers/cross_entropytrainer.py: minimizes cross-entropy</li>
 <li><a class="el" href="ctctrainer_8py.html" title="contains the CTCTraine ">nabu/neuralnetworks/trainers/ctctrainer.py</a>: minimizes CTC loss</li>
 </ul>
-<p>Once your trainer is created you should add it in the factory method in nabu/neuralnetworks/trainers/trainer_factory.py (with any name) and you should import it in nabu/neuralnetworks/trainers/__init__.py.</p>
+<p>Once your trainer is created you should add it in the factory method in <a class="el" href="trainer__factory_8py.html" title="contains the Trainer factory mehod ">nabu/neuralnetworks/trainers/trainer_factory.py</a> (with any name) and you should import it in nabu/neuralnetworks/trainers/__init__.py.</p>
 <h4>Training configuration file</h4>
 <p>After creating your trainer you should also create a configuration file for it in nabu/config/trainer/. The Trainer object will have access to this configuration as a dictionary of strings in self.conf. You can use this configuration to set some parameters for your trainer. As a minimum it should contain the fields that are defined in nabu/config/trainer/cross_entropytrainer.cfg. And you should change the trainer field to the name that you defined in the factory method.</p>
 <h3>Designing a decoder</h3>
@@ -279,7 +293,7 @@ $(function() {
 <p>To choose this computing configuration you should set the computing_cfg_file to 'nabu/config/computing/local.cfg' at the top of run_train.py. Local computing will run on the machine where it is called from but runs on multiple devices. You can choose the number of devices in the config file.</p>
 <h3>Static</h3>
 <p>To choose this computing configuration you should set the computing_cfg_file to 'nabu/config/computing/static.cfg' at the top of run_train.py. Static computing runs on a statically defined cluster over possibly multiple machines. The cluster should be defined in a cluster file (the clusterfile field in the config should point to this file). Every line in the cluster file defines a task in the cluster. Every line contains the job, the machine, the network port for communication and the GPU index the task should run on (may be empty). All seperated by commas. An example cluster file:</p>
-<div class="fragment"><div class="line">ps,ps1.example.com,1024,</div><div class="line">ps,ps2.example.com,1024,</div><div class="line">worker,worker1.example.com,1024,0</div><div class="line">worker,worker1.example.com,1024,1</div><div class="line">worker,worker2.example.com,1024,0</div></div><!-- fragment --><h3>Condor local</h3>
+<div class="fragment"><div class="line">ps,ps1.example.com,1024,</div><div class="line">ps,ps2.example.com,1024,</div><div class="line">worker,worker1.example.com,1024,0</div><div class="line">worker,worker1.example.com,1025,1</div><div class="line">worker,worker2.example.com,1024,0</div></div><!-- fragment --><h3>Condor local</h3>
 <p>To choose this computing configuration you should set the computing_cfg_file to 'nabu/config/computing/condor-local.cfg' at the top of run_train.py. This configuration is the same as the <a href="#local">Local</a> configuration, but an appropriate machine is found with condor.</p>
 <h3>Condor</h3>
 <p>To choose this computing configuration you should set the computing_cfg_file to 'nabu/config/computing/condor.cfg' at the top of run_train.py. This configuration is the same as the <a href="#static">Static</a> configuration, but instead of using a statically defined cluster, a cluster will be created using Condor.</p>

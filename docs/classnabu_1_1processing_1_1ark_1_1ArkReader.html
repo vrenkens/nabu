@@ -70,6 +70,9 @@ $(function() {
 <div class="title">nabu.processing.ark.ArkReader Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Class to read Kaldi ark format.  
+ <a href="classnabu_1_1processing_1_1ark_1_1ArkReader.html#details">More...</a></p>
 <div class="dynheader">
 Inheritance diagram for nabu.processing.ark.ArkReader:</div>
 <div class="dyncontent">
@@ -82,28 +85,20 @@ Inheritance diagram for nabu.processing.ark.ArkReader:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:aa3e6b1e3f8550abed50fc71db01b47cb"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1ark_1_1ArkReader.html#aa3e6b1e3f8550abed50fc71db01b47cb">__init__</a> (self, scp_path)</td></tr>
-<tr class="memdesc:aa3e6b1e3f8550abed50fc71db01b47cb"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classnabu_1_1processing_1_1ark_1_1ArkReader.html">ArkReader</a> constructor.  <a href="#aa3e6b1e3f8550abed50fc71db01b47cb">More...</a><br /></td></tr>
+<tr class="memdesc:aa3e6b1e3f8550abed50fc71db01b47cb"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classnabu_1_1processing_1_1ark_1_1ArkReader.html" title="Class to read Kaldi ark format. ">ArkReader</a> constructor.  <a href="#aa3e6b1e3f8550abed50fc71db01b47cb">More...</a><br /></td></tr>
 <tr class="separator:aa3e6b1e3f8550abed50fc71db01b47cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a503bc245d480c53bd205fbedfbbef390"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1ark_1_1ArkReader.html#a503bc245d480c53bd205fbedfbbef390">read_utt_data</a> (self, index)</td></tr>
-<tr class="memdesc:a503bc245d480c53bd205fbedfbbef390"><td class="mdescLeft">&#160;</td><td class="mdescRight">read data from the archive  <a href="#a503bc245d480c53bd205fbedfbbef390">More...</a><br /></td></tr>
-<tr class="separator:a503bc245d480c53bd205fbedfbbef390"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad84fbf4a350895f8746baa62432e4ec0"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1ark_1_1ArkReader.html#ad84fbf4a350895f8746baa62432e4ec0">read_utt_data</a> (self, utt_id)</td></tr>
+<tr class="memdesc:ad84fbf4a350895f8746baa62432e4ec0"><td class="mdescLeft">&#160;</td><td class="mdescRight">read data from the archive  <a href="#ad84fbf4a350895f8746baa62432e4ec0">More...</a><br /></td></tr>
+<tr class="separator:ad84fbf4a350895f8746baa62432e4ec0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a55a0c43e2c62d42deb0c4f5d81ad4176"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1ark_1_1ArkReader.html#a55a0c43e2c62d42deb0c4f5d81ad4176">read_next_utt</a> (self)</td></tr>
 <tr class="memdesc:a55a0c43e2c62d42deb0c4f5d81ad4176"><td class="mdescLeft">&#160;</td><td class="mdescRight">read the next utterance in the scp file  <a href="#a55a0c43e2c62d42deb0c4f5d81ad4176">More...</a><br /></td></tr>
 <tr class="separator:a55a0c43e2c62d42deb0c4f5d81ad4176"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae259a52f3ea0a08e42727c9e4fbb130e"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1ark_1_1ArkReader.html#ae259a52f3ea0a08e42727c9e4fbb130e">read_next_scp</a> (self)</td></tr>
-<tr class="memdesc:ae259a52f3ea0a08e42727c9e4fbb130e"><td class="mdescLeft">&#160;</td><td class="mdescRight">read the next utterance ID but don't read the data  <a href="#ae259a52f3ea0a08e42727c9e4fbb130e">More...</a><br /></td></tr>
-<tr class="separator:ae259a52f3ea0a08e42727c9e4fbb130e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a884cd1bf36304d8aecfce9e27ce2e45e"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1ark_1_1ArkReader.html#a884cd1bf36304d8aecfce9e27ce2e45e">read_previous_scp</a> (self)</td></tr>
-<tr class="memdesc:a884cd1bf36304d8aecfce9e27ce2e45e"><td class="mdescLeft">&#160;</td><td class="mdescRight">read the previous utterance ID but don't read the data  <a href="#a884cd1bf36304d8aecfce9e27ce2e45e">More...</a><br /></td></tr>
-<tr class="separator:a884cd1bf36304d8aecfce9e27ce2e45e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adeee8e60521e5883b7704096994f7dea"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1ark_1_1ArkReader.html#adeee8e60521e5883b7704096994f7dea">read_utt</a> (self, utt_id)</td></tr>
-<tr class="memdesc:adeee8e60521e5883b7704096994f7dea"><td class="mdescLeft">&#160;</td><td class="mdescRight">read the data of a certain utterance ID  <a href="#adeee8e60521e5883b7704096994f7dea">More...</a><br /></td></tr>
-<tr class="separator:adeee8e60521e5883b7704096994f7dea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeaae26092724288d4151a18f26ea3c37"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1ark_1_1ArkReader.html#aeaae26092724288d4151a18f26ea3c37">split</a> (self, num_utt)</td></tr>
+<tr class="memitem:aeaae26092724288d4151a18f26ea3c37"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1ark_1_1ArkReader.html#aeaae26092724288d4151a18f26ea3c37">split</a> (self, <a class="el" href="classnabu_1_1processing_1_1ark_1_1ArkReader.html#a2af678e0c1058d96ab6580168e1f8ef0">num_utt</a>)</td></tr>
 <tr class="memdesc:aeaae26092724288d4151a18f26ea3c37"><td class="mdescLeft">&#160;</td><td class="mdescRight">take a number of utterances from the ark reader to make a new one  <a href="#aeaae26092724288d4151a18f26ea3c37">More...</a><br /></td></tr>
 <tr class="separator:aeaae26092724288d4151a18f26ea3c37"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2af678e0c1058d96ab6580168e1f8ef0"><td class="memItemLeft" align="right" valign="top"><a id="a2af678e0c1058d96ab6580168e1f8ef0"></a>
-def&#160;</td><td class="memItemRight" valign="bottom"><b>num_utt</b> (self)</td></tr>
+def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1processing_1_1ark_1_1ArkReader.html#a2af678e0c1058d96ab6580168e1f8ef0">num_utt</a> (self)</td></tr>
+<tr class="memdesc:a2af678e0c1058d96ab6580168e1f8ef0"><td class="mdescLeft">&#160;</td><td class="mdescRight">the number of utterances in the reade <br /></td></tr>
 <tr class="separator:a2af678e0c1058d96ab6580168e1f8ef0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
@@ -111,14 +106,13 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a07ef420a73105020d8f1208b0814c497"><td class="memItemLeft" align="right" valign="top"><a id="a07ef420a73105020d8f1208b0814c497"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>scp_position</b></td></tr>
 <tr class="separator:a07ef420a73105020d8f1208b0814c497"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac3b5cf571d64f9d5176f19a5b2f37c35"><td class="memItemLeft" align="right" valign="top"><a id="ac3b5cf571d64f9d5176f19a5b2f37c35"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>utt_ids</b></td></tr>
-<tr class="separator:ac3b5cf571d64f9d5176f19a5b2f37c35"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2aa58d4dd5ebf4bc06826462b3c63ae0"><td class="memItemLeft" align="right" valign="top"><a id="a2aa58d4dd5ebf4bc06826462b3c63ae0"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>scp_data</b></td></tr>
 <tr class="separator:a2aa58d4dd5ebf4bc06826462b3c63ae0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Class to read Kaldi ark format. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="aa3e6b1e3f8550abed50fc71db01b47cb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa3e6b1e3f8550abed50fc71db01b47cb">&sect;&nbsp;</a></span>__init__()</h2>
 
@@ -145,7 +139,7 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p><a class="el" href="classnabu_1_1processing_1_1ark_1_1ArkReader.html">ArkReader</a> constructor. </p>
+<p><a class="el" href="classnabu_1_1processing_1_1ark_1_1ArkReader.html" title="Class to read Kaldi ark format. ">ArkReader</a> constructor. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">scp_path</td><td>path to the .scp file </td></tr>
@@ -156,27 +150,6 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="ae259a52f3ea0a08e42727c9e4fbb130e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae259a52f3ea0a08e42727c9e4fbb130e">&sect;&nbsp;</a></span>read_next_scp()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">def nabu.processing.ark.ArkReader.read_next_scp </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>read the next utterance ID but don't read the data </p>
-<dl class="section return"><dt>Returns</dt><dd>the utterance ID of the utterance that was read </dd></dl>
-
-</div>
-</div>
 <a id="a55a0c43e2c62d42deb0c4f5d81ad4176"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a55a0c43e2c62d42deb0c4f5d81ad4176">&sect;&nbsp;</a></span>read_next_utt()</h2>
 
@@ -194,39 +167,18 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>read the next utterance in the scp file </p>
-<dl class="section return"><dt>Returns</dt><dd>the utterance ID of the utterance that was read, the utterance data, bool that is true if the reader looped back to the beginning </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>the utterance ID of the utterance that was read, the utterance data, bool that is true if the read utterance was the last one in the file </dd></dl>
 
 </div>
 </div>
-<a id="a884cd1bf36304d8aecfce9e27ce2e45e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a884cd1bf36304d8aecfce9e27ce2e45e">&sect;&nbsp;</a></span>read_previous_scp()</h2>
+<a id="ad84fbf4a350895f8746baa62432e4ec0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad84fbf4a350895f8746baa62432e4ec0">&sect;&nbsp;</a></span>read_utt_data()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">def nabu.processing.ark.ArkReader.read_previous_scp </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>read the previous utterance ID but don't read the data </p>
-<dl class="section return"><dt>Returns</dt><dd>the utterance ID of the utterance that was read </dd></dl>
-
-</div>
-</div>
-<a id="adeee8e60521e5883b7704096994f7dea"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adeee8e60521e5883b7704096994f7dea">&sect;&nbsp;</a></span>read_utt()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">def nabu.processing.ark.ArkReader.read_utt </td>
+          <td class="memname">def nabu.processing.ark.ArkReader.read_utt_data </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -245,41 +197,10 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>read the data of a certain utterance ID </p>
-<dl class="section return"><dt>Returns</dt><dd>the utterance data corresponding to the ID </dd></dl>
-
-</div>
-</div>
-<a id="a503bc245d480c53bd205fbedfbbef390"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a503bc245d480c53bd205fbedfbbef390">&sect;&nbsp;</a></span>read_utt_data()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">def nabu.processing.ark.ArkReader.read_utt_data </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>index</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
 <p>read data from the archive </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">index</td><td>index of the utterance that will be read</td></tr>
+    <tr><td class="paramname">utt_id</td><td>index of the utterance identifier that will be read</td></tr>
   </table>
   </dd>
 </dl>
@@ -325,7 +246,7 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>ark.py</li>
+<li><a class="el" href="ark_8py.html">ark.py</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

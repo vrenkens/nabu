@@ -1,10 +1,7 @@
 var searchData=
 [
-  ['pad',['pad',['../trainer_8py.html#a639ef37232ea741a5b466f8669291ff3',1,'nabu::neuralnetworks::trainers::trainer']]],
-  ['port_5favailable',['port_available',['../cluster_8py.html#a65758067e78d738f03408c556484859e',1,'nabu::distributed::cluster']]],
-  ['powspec',['powspec',['../sigproc_8py.html#a74a8fc5b11a091c381a312f371655628',1,'nabu::processing::feature_computers::sigproc']]],
-  ['preemphasis',['preemphasis',['../sigproc_8py.html#abf072de2e67f9c8ee1144679133798d5',1,'nabu::processing::feature_computers::sigproc']]],
-  ['prepare_5fdata',['prepare_data',['../prepare__data_8py.html#a2d37abb66ea6afb268d4648e587e6fc6',1,'nabu::processing::prepare_data']]],
-  ['prev_5fid',['prev_id',['../classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html#a50a41199e4b5afa837e7cd9caea91bf6',1,'nabu::processing::feature_reader::FeatureReader']]],
-  ['pyramid_5fstack',['pyramid_stack',['../ops_8py.html#a034c2a0c03bcccaff3ac220c6dc3b735',1,'nabu::neuralnetworks::ops']]]
+  ['nonseq2seq',['nonseq2seq',['../ops_8py.html#ad1903f826b25adbf8223c4a2cbb038cb',1,'nabu::neuralnetworks::ops']]],
+  ['num_5fbatches',['num_batches',['../classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#abc67b3f90dbfee38334f40dc8ed64957',1,'nabu::processing::batchdispenser::BatchDispenser']]],
+  ['num_5flabels',['num_labels',['../classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#a499b02426488e83fc920541d9eaba465',1,'nabu.processing.batchdispenser.BatchDispenser.num_labels()'],['../classnabu_1_1processing_1_1batchdispenser_1_1AsrBatchDispenser.html#a9a85a23371e2fd43e6841e094f3a4b36',1,'nabu.processing.batchdispenser.AsrBatchDispenser.num_labels()'],['../classnabu_1_1processing_1_1batchdispenser_1_1LmBatchDispenser.html#a3e9fc8f800d9065f9516dabaa8a17a89',1,'nabu.processing.batchdispenser.LmBatchDispenser.num_labels()'],['../classnabu_1_1processing_1_1target__coder_1_1TargetCoder.html#a2dc822a1ef51abfcf82352022c339397',1,'nabu.processing.target_coder.TargetCoder.num_labels()']]],
+  ['num_5futt',['num_utt',['../classnabu_1_1processing_1_1ark_1_1ArkReader.html#a2af678e0c1058d96ab6580168e1f8ef0',1,'nabu.processing.ark.ArkReader.num_utt()'],['../classnabu_1_1processing_1_1batchdispenser_1_1BatchDispenser.html#a9d84000e95a84acff0aed60d9f29deaf',1,'nabu.processing.batchdispenser.BatchDispenser.num_utt()'],['../classnabu_1_1processing_1_1batchdispenser_1_1AsrBatchDispenser.html#a7f1366ae0350425ae8f619486ac81df7',1,'nabu.processing.batchdispenser.AsrBatchDispenser.num_utt()'],['../classnabu_1_1processing_1_1batchdispenser_1_1LmBatchDispenser.html#ac69b5f0e380012497814f7628854e6b7',1,'nabu.processing.batchdispenser.LmBatchDispenser.num_utt()'],['../classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html#a75e73a2090d2b89253bd0bfaf3002b6a',1,'nabu.processing.feature_reader.FeatureReader.num_utt()']]]
 ];

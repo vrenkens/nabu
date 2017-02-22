@@ -278,7 +278,7 @@ The classifier is the core of the model, and can be either an asr or a language
 model. The general Classifier class is defined in
 nabu/neuralnetworks/classifiers/classifier.py. To create your own classifier
 create a class in nabu/neuralnetworks/classifiers/ that inherits from Classifier
-and overwrite the \_\_call\_\_ method. This method takes the following inputs:
+and overwrite the \_get\_outputs method. This method takes the following inputs:
 
 - inputs: the inputs to the neural network, this is a
     [batch_size x max_input_length x feature_dim] tensor. If the classifier
