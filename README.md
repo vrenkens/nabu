@@ -326,7 +326,7 @@ comp_feat method takes the following inputs:
 - rate: the sampling rate
 
 It returns the computed features as a [seq_length x feature_dim] numpy array.
-The get_utt method shpuld return the dimension of the computed features. Some
+The get_dim method should return the dimension of the computed features. Some
 implemented feature computers:
 
 - nabu/processing/feature_computers/fbank.py

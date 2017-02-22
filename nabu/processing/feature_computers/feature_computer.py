@@ -29,10 +29,6 @@ class FeatureComputer(object):
             the features as a [seq_length x feature_dim] numpy array
         '''
 
-        #snip the edges
-        sig = snip(sig, rate, float(self.conf['winlen']),
-                   float(self.conf['winstep']))
-
         #compute the features and energy
         feat = self.comp_feat(sig, rate)
 
@@ -54,25 +50,3 @@ class FeatureComputer(object):
     @abstractmethod
     def get_dim(self):
         '''the feature dimemsion'''
-
-
-def snip(sig, rate, winlen, winstep):
-    '''
-    snip the edges of the utterance to fit the sliding window
-
-    Args:
-        sig: audio signal
-        rate: sampling rate
-        winlen: length of the sliding window [s]
-        winstep: stepsize of the sliding window [s]
-
-    Returns:
-        the snipped signal
-    '''
-    # calculate the number of frames in the utterance as number of samples in
-    #the utterance / number of samples in the frame
-    num_frames = int((len(sig)-winlen*rate)/(winstep*rate))
-    # cut of the edges to fit the number of frames
-    sig = sig[0:int(num_frames*winstep*rate + winlen*rate)]
-
-    return sig

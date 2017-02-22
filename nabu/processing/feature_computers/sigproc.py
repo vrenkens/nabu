@@ -189,3 +189,24 @@ def preemphasis(signal, coeff=0.95):
         the filtered signal.
     '''
     return numpy.append(signal[0], signal[1:]-coeff*signal[:-1])
+
+def snip(sig, rate, winlen, winstep):
+    '''
+    snip the edges of the utterance to fit the sliding window
+
+    Args:
+        sig: audio signal
+        rate: sampling rate
+        winlen: length of the sliding window [s]
+        winstep: stepsize of the sliding window [s]
+
+    Returns:
+        the snipped signal
+    '''
+    # calculate the number of frames in the utterance as number of samples in
+    #the utterance / number of samples in the frame
+    num_frames = int((len(sig)-winlen*rate)/(winstep*rate))
+    # cut of the edges to fit the number of frames
+    sig = sig[0:int(num_frames*winstep*rate + winlen*rate)]
+
+    return sig

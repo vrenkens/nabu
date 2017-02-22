@@ -4,6 +4,7 @@ contains the fbank feature computer'''
 import numpy as np
 import base
 import feature_computer
+from sigproc import snip
 
 class Fbank(feature_computer.FeatureComputer):
     '''the feature computer class to compute fbank features'''
@@ -19,6 +20,10 @@ class Fbank(feature_computer.FeatureComputer):
         Returns:
             the features as a [seq_length x feature_dim] numpy array
         '''
+
+        #snip the edges
+        sig = snip(sig, rate, float(self.conf['winlen']),
+                   float(self.conf['winstep']))
 
         feat, energy = base.logfbank(sig, rate, self.conf)
 
