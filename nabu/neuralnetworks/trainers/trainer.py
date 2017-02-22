@@ -52,6 +52,7 @@ class Trainer(object):
                              /max(1, int(conf['numbatches_to_aggregate'])))
         self.val_reader = val_reader
         self.val_targets = val_targets
+
         self.expdir = expdir
         self.server = server
         self.cluster = cluster
