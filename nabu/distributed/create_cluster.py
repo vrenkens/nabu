@@ -3,17 +3,19 @@ contains the create_cluster method'''
 
 import os
 import subprocess
-import atexit
 import tensorflow as tf
 from nabu.distributed import cluster
 
-def create_cluster(clusterfile, job_name, task_index):
+def create_cluster(clusterfile, job_name, task_index, expdir, ssh_tunnel):
     '''creates the tensorflow cluster and server based on the clusterfile
 
     Args:
         clusterfile: the path to the clusterfile
         job_name: the name of the job
         task_index: the task index
+        expdir: the experiments directory
+        ssh_tunnel: wheter or not communication should happen through an ssh
+            tunnel
 
     Returns: a tensorflow cluster and server'''
 
@@ -40,6 +42,11 @@ def create_cluster(clusterfile, job_name, task_index):
         clusterdict['ps'] = []
         localmachine = machines[job_name][task_index][0]
 
+        #report that this job is running
+        open(os.path.join(
+            expdir, 'processes', '%s-%d' % (localmachine, os.getpid()))
+             , 'w').close()
+
         #specify the GPU that should be used
         localGPU = machines[job_name][task_index][2]
         os.environ['CUDA_VISIBLE_DEVICES'] = localGPU
@@ -57,7 +64,7 @@ def create_cluster(clusterfile, job_name, task_index):
 
                 #create an ssh tunnel if the local machine is not the same as
                 #the remote machine
-                if localmachine != remote[0]:
+                if localmachine != remote[0] and ssh_tunnel:
 
                     #look for an available port
                     while (port in localports
@@ -72,8 +79,10 @@ def create_cluster(clusterfile, job_name, task_index):
                          '%d:localhost:%d' % (port, remote[1]), '-N',
                          remote[0]])
 
-                    #make sure the ssh tunnel is closed at exit
-                    atexit.register(p.terminate)
+                    #report that the ssh tunnel is running
+                    open(os.path.join(
+                        expdir, 'processes', '%s-%d' % (localmachine, p.pid)),
+                         'w').close()
 
                     #add the machine to the cluster
                     clusterdict[job].append('localhost:%d' % port)
@@ -81,7 +90,7 @@ def create_cluster(clusterfile, job_name, task_index):
                     port += 1
 
                 else:
-                    clusterdict[job].append('localhost:%d' % remote[1])
+                    clusterdict[job].append('%s:%d' % (remote[0], remote[1]))
 
         #create the cluster
         tfcluster = tf.train.ClusterSpec(clusterdict)

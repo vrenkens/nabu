@@ -6,7 +6,7 @@ from six.moves import configparser
 from nabu.processing.target_normalizers import normalizer_factory
 
 #pointer to the confif file
-database_cfg_file = 'config/lm_databases/aurora4.conf'
+database_cfg_file = 'config/lm_databases/TIMIT.conf'
 
 #read the database config file
 database_cfg = configparser.ConfigParser()
@@ -78,7 +78,7 @@ with open(os.path.join(database_cfg['test_dir'], 'numlines'), 'w') as fid:
 
 target_fid.close()
 
-if 'devfiles' in database_cfg:
+if 'dev_data' in database_cfg:
     print '------- normalizing dev text -----------'
     sourcefiles = database_cfg['dev_data'].split(' ')
     if not os.path.isdir(database_cfg['dev_dir']):

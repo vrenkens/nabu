@@ -7,6 +7,7 @@ import socket
 from time import sleep
 from nabu.distributed import cluster
 from train_asr import train_asr
+from train_lm import train_lm
 import tensorflow as tf
 
 def main(_):
@@ -53,7 +54,14 @@ def main(_):
         train_asr(clusterfile=cluster_dir + '/cluster',
                   job_name=FLAGS.job_name,
                   task_index=int(task_index),
+                  ssh_tunnel=FLAGS.ssh_tunnel == 'True',
                   expdir=FLAGS.expdir)
+    else:
+        train_lm(clusterfile=cluster_dir + '/cluster',
+                 job_name=FLAGS.job_name,
+                 task_index=int(task_index),
+                 ssh_tunnel=FLAGS.ssh_tunnel == 'True',
+                 expdir=FLAGS.expdir)
 
     #delete the file to notify that the porcess has finished
     os.remove(machine_file)
@@ -65,6 +73,9 @@ if __name__ == '__main__':
                                'the experimental directory')
     tf.app.flags.DEFINE_string('type', 'asr',
                                'one of asr or lm, the training type')
+    tf.app.flags.DEFINE_string(
+        'ssh_tunnel', 'False',
+        'wheter or not communication should happen through an ssh tunnel')
     FLAGS = tf.app.flags.FLAGS
 
     tf.app.run()

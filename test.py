@@ -45,7 +45,7 @@ def main(_):
     #read the asr-lm config file
     parsed_asr_lm_cfg = configparser.ConfigParser()
     parsed_asr_lm_cfg.read('config/asr_lm.cfg')
-    asr_lm_cfg = dict(parsed_asr_lm_cfg.items('lm'))
+    asr_lm_cfg = dict(parsed_asr_lm_cfg.items('asr-lm'))
 
     #read the decoder config file
     if decoder_cfg_file is None:
@@ -99,13 +99,20 @@ def main(_):
             coder=coder,
             expdir=FLAGS.asr_expdir)
 
+
         #create the lm saver
-        lm_saver = tf.train.Saver(checkpoint_utils.list_variables(os.path.join(
-            FLAGS.lm_expdir, 'model', 'network.ckpt')))
+        varnames = zip(*checkpoint_utils.list_variables(os.path.join(
+            FLAGS.lm_expdir, 'model', 'network.ckpt')))[0]
+        variables = [v for v in tf.all_variables()
+                     if v.name.split(':')[0] in varnames]
+        lm_saver = tf.train.Saver(variables)
 
         #create the asr saver
-        asr_saver = tf.train.Saver(checkpoint_utils.list_variables(os.path.join(
-            FLAGS.asr_expdir, 'model', 'network.ckpt')))
+        varnames = zip(*checkpoint_utils.list_variables(os.path.join(
+            FLAGS.asr_expdir, 'model', 'network.ckpt')))[0]
+        variables = [v for v in tf.all_variables()
+                     if v.name.split(':')[0] in varnames]
+        asr_saver = tf.train.Saver(variables)
 
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True #pylint: disable=E1101

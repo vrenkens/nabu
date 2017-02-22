@@ -155,8 +155,8 @@ class AsrBatchDispenser(BatchDispenser):
         dispenser.feature_reader = self.feature_reader.split(num_utt)
 
         #get a list of keys in the featutre readers
-        dispenser_ids = dispenser.feature_reader.reader.utt_ids
-        self_ids = self.feature_reader.reader.utt_ids
+        dispenser_ids = dispenser.feature_reader.reader.scp_data.keys()
+        self_ids = self.feature_reader.reader.scp_data.keys()
 
         #split the target dicts
         dispenser.target_dict = {key: dispenser.target_dict[key] for key in
@@ -265,7 +265,7 @@ class LmBatchDispenser(BatchDispenser):
 
         _, targets, _ = self.textreader.get_utt()
 
-        return targets, targets[:,0]
+        return targets, targets[:, 0]
 
     @property
     def num_labels(self):

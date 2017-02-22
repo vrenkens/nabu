@@ -7,7 +7,7 @@ from nabu.processing import ark, prepare_data
 from nabu.processing.target_normalizers import normalizer_factory
 
 #pointers to the config files
-database_cfg_file = 'config/asr_databases/TIMIT.conf'
+database_cfg_file = 'config/asr_databases/aurora4.conf'
 feat_cfg_file = 'config/features/fbank.cfg'
 
 #read the database config file

@@ -422,7 +422,7 @@ class Trainer(object):
 
                     #save the network
                     self.modelsaver.save(
-                        sess, os.path.join(self.expdir, 'final', 'network.ckpt')
+                        sess, os.path.join(self.expdir, 'model', 'network.ckpt')
                         )
 
                 #notify the parameter server that he worker has terminated

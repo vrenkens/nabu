@@ -10,6 +10,7 @@ import tensorflow as tf
 from six.moves import configparser
 from nabu.distributed import cluster, local_cluster
 from nabu.distributed.static import run_remote
+from nabu.distributed.static import kill_processes
 from train_asr import train_asr
 from train_lm import train_lm
 
@@ -41,6 +42,9 @@ def main(_):
     parsed_trainer_cfg.read(trainer_cfg_file)
     trainer_cfg = dict(parsed_trainer_cfg.items('trainer'))
 
+    if os.path.isdir(os.path.join(FLAGS.expdir, 'processes')):
+        shutil.rmtree(os.path.join(FLAGS.expdir, 'processes'))
+
     if trainer_cfg['resume_training'] == 'True':
         if not os.path.isdir(FLAGS.expdir):
             raise Exception('cannot find %s, please set resume_training to '
@@ -52,6 +56,7 @@ def main(_):
 
         if not os.path.isdir(FLAGS.expdir):
             os.mkdir(FLAGS.expdir)
+        os.mkdir(os.path.join(FLAGS.expdir, 'processes'))
 
         if not os.path.isdir(os.path.join(FLAGS.expdir, 'model')):
             os.mkdir(os.path.join(FLAGS.expdir, 'model'))
@@ -80,11 +85,13 @@ def main(_):
             train_asr(clusterfile=None,
                       job_name=None,
                       task_index=None,
+                      ssh_tunnel=False,
                       expdir=FLAGS.expdir)
         else:
             train_lm(clusterfile=None,
                      job_name=None,
                      task_index=None,
+                     ssh_tunnel=False,
                      expdir=FLAGS.expdir)
 
     elif computing_cfg['distributed'] == 'local':
@@ -133,15 +140,15 @@ def main(_):
         for job in machines:
             task_index = 0
             for machine in machines[job]:
-                command = ('python train_%s.py --clusterfile=%s --job_name=%s '
-                           '--task_index=%d --expdir=%s --type=%s') % (
+                command = ('python -u train_%s.py --clusterfile=%s '
+                           '--job_name=%s --task_index=%d --ssh_tunnel=%s '
+                           '--expdir=%s') % (
                                FLAGS.type, computing_cfg['clusterfile'], job,
-                               task_index, FLAGS.expdir, FLAGS.type)
+                               task_index, computing_cfg['ssh_tunnel'],
+                               FLAGS.expdir)
                 processes[job].append(run_remote.run_remote(
                     command=command,
-                    host=machine,
-                    out=open('%s/outputs/%s-%d' % (FLAGS.expdir, job,
-                                                   task_index), 'w', 0)
+                    host=machine
                     ))
                 task_index += 1
 
@@ -150,8 +157,9 @@ def main(_):
             for process in processes[job]:
                 atexit.register(process.terminate)
 
-        print ('training has started look in %s/outputs for the job outputs' %
-               FLAGS.expdir)
+        #make sure all remotely created processes are terminated at exit
+        atexit.register(kill_processes.kill_processes,
+                        processdir=os.path.join(FLAGS.expdir, 'processes'))
 
         #wait for all processes to finish
         for job in processes:
@@ -173,14 +181,16 @@ def main(_):
         subprocess.call(['condor_submit', 'expdir=%s' % FLAGS.expdir,
                          'numjobs=%s' % computing_cfg['numps'],
                          'type=%s' % FLAGS.type,
-                         'distributed/condor/ps.job'])
+                         'ssh_tunnel=%s' % computing_cfg['ssh_tunnel'],
+                         'nabu/distributed/condor/ps.job'])
 
         #submit the worker jobs
         subprocess.call(['condor_submit', 'expdir=%s' % FLAGS.expdir,
                          'numjobs=%s' % computing_cfg['numworkers'],
                          'memory=%s' % computing_cfg['minmemory'],
                          'type=%s' % FLAGS.type,
-                         'distributed/condor/worker.job'])
+                         'ssh_tunnel=%s' % computing_cfg['ssh_tunnel'],
+                         'nabu/distributed/condor/worker.job'])
 
         ready = False
 
@@ -282,7 +292,7 @@ def main(_):
                          'GPUs=%d' % (int(computing_cfg['numworkers'])),
                          'memory=%s' % computing_cfg['minmemory'],
                          'type=%s' % FLAGS.type,
-                         'distributed/condor/local.job'])
+                         'nabu/distributed/condor/local.job'])
 
         print ('job submitted look in %s/outputs for the job outputs' %
                FLAGS.expdir)

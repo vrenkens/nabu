@@ -45,8 +45,15 @@ class Linear(object):
                 'biases', [self.output_dim],
                 initializer=tf.constant_initializer(0))
 
+            input_dim = int(inputs.get_shape()[-1])
+            flat_inputs = tf.reshape(inputs, [-1, input_dim])
+
             #apply weights and biases
-            outputs = tf.matmul(inputs, weights) + biases
+            flat_outputs = tf.matmul(flat_inputs, weights) + biases
+
+            outputs = tf.reshape(
+                flat_outputs,
+                inputs.get_shape().as_list()[:-1] + [self.output_dim])
 
         return outputs
 

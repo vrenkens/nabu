@@ -99,11 +99,11 @@ def compute_cmvn(featdir):
         split = line.split(' ')
 
         #get first speaker utterance
-        spk_data = reader.read_utt(split[1])
+        spk_data = reader.read_utt_data(split[1])
 
         #get the rest of the utterances
         for utt_id in split[2:len(split)]:
-            spk_data = np.append(spk_data, reader.read_utt(utt_id), axis=0)
+            spk_data = np.append(spk_data, reader.read_utt_data(utt_id), axis=0)
 
         #compute mean and variance
         stats = np.zeros([2, spk_data.shape[1]+1])

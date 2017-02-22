@@ -20,10 +20,10 @@ Notification = Error
 initialdir = .
 
 #Run he build cluster script for the parameter server
-Arguments = "python -m distributed.local_cluster --expdir=$(expdir) \
+Arguments = "python -m nabu.distributed.local_cluster --expdir=$(expdir) \
   --type=$(type)"
 # This is the executable or script I want to run
-executable = distributed/condor/create_environment.sh
+executable = nabu/distributed/condor/create_environment.sh
 
 #Output of condors handling of the jobs, will be in 'initialdir'
 Log          = $(expdir)/outputs/main.log

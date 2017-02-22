@@ -148,7 +148,7 @@ class AsrLmDecoder(object):
         lm_logits, lm_state = self.lm_decoder(
             encoder_inputs=encoder_inputs,
             numlabels=numlabels,
-            initial_state=initial_state,
+            initial_state=initial_state.lm,
             is_training=is_training)
 
         #combine the two logits

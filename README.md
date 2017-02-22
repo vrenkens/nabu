@@ -7,8 +7,8 @@ Please find the documentation page [here](http://vrenkens.github.io/nabu)
 - [Dependencies](#dependencies)
 - [Usage](#usage)
   - [Database preperation](#database-preperation)
-    - [ASR Database preparation](#asr-data-preparation)
-    - [LM Database preparation](#lm-data-preparation)
+    - [ASR Database preparation](#asr-database-preparation)
+    - [LM Database preparation](#lm-database-preparation)
   - [Data preperation](#database-preperation)
   - [Training a model](#training-a-model)
     - [Configuration](#configuration)
@@ -118,13 +118,13 @@ the normalizer factory). Look at the
 For every database you should create a target normalizer in
 nabu/processing/target_normalizers. The Normalizer class is defined in
 nabu/processing/target_normalizers/normalizer.py. To create the normalizer you
-should inhererit from the Normalizer class and overwrite the \__call\__ method
+should inhererit from the Normalizer class and overwrite the \_\_call\_\_ method
 and the _create_alphabet method.
 
 The _create_alphabet method creates the alphabet of targets. It returns a list
 of target strings. spaces are not allowed in the target strings.
 
-The \__call\__ method takes a transcription string from the text file  as input
+The \_\_call\_\_ method takes a transcription string from the text file  as input
 and returns the normalized transcription as a string. The normalized
 transcription should contain only targets from the alphabet seperated by spaces.
 An example normalized transcription:
@@ -134,7 +134,7 @@ An example normalized transcription:
 An example normalizer can be found in
 nabu/processing/target_normalizers/aurora4.py. Once you've created your
 normalizer you should import it in
-nabu/processing/target_normalizers/\__init\__.py and add it to the factory
+nabu/processing/target_normalizers/\_\_init\_\_.py and add it to the factory
 method in nabu/processing/target_normalizers/normalizer_factory.py with a name
 that matches the name in the database config file.
 
@@ -278,7 +278,7 @@ The classifier is the core of the model, and can be either an asr or a language
 model. The general Classifier class is defined in
 nabu/neuralnetworks/classifiers/classifier.py. To create your own classifier
 create a class in nabu/neuralnetworks/classifiers/ that inherits from Classifier
-and overwrite the \__call\__ method. This method takes the following inputs:
+and overwrite the \_\_call\_\_ method. This method takes the following inputs:
 
 - inputs: the inputs to the neural network, this is a
     [batch_size x max_input_length x feature_dim] tensor. If the classifier
@@ -300,7 +300,7 @@ the output sequence lengths. Some example Classifiers:
 
 Once you've created your classifier you should add it in the factory method in
 nabu/neuralnetworks/classifiers/classifier_factory.py (with any name) and you
-should import it in nabu/neuralnetworks/classifiers/\__init\__.py.
+should import it in nabu/neuralnetworks/classifiers/\_\_init\_\_.py.
 
 ####Classifier configuration file
 
@@ -334,7 +334,7 @@ implemented feature computers:
 
 Once your feature computer is created you should add it in the factory method in
 nabu/processing/feature_computers/feature_computer_factory.py (with any name)
-and you should import it in nabu/processing/feature_computers/\__init\__.py.
+and you should import it in nabu/processing/feature_computers/\_\_init\_\_.py.
 
 ####Feature configuration file
 
@@ -372,7 +372,7 @@ implemented trainers:
 
 Once your trainer is created you should add it in the factory method in
 nabu/neuralnetworks/trainers/trainer_factory.py (with any name) and you should
-import it in nabu/neuralnetworks/trainers/\__init\__.py.
+import it in nabu/neuralnetworks/trainers/\_\_init\_\_.py.
 
 ####Training configuration file
 
@@ -426,7 +426,7 @@ Error Rate). Some example decoders:
 
 Once your decoder is created you should add it in the factory method in
 nabu/neuralnetworks/decoders/decoder_factory.py (with any name) and you should
-import it in nabu/neuralnetworks/decoders/\__init\__.py.
+import it in nabu/neuralnetworks/decoders/\_\_init\_\_.py.
 
 ####Decoder configuration file
 

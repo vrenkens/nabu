@@ -2,8 +2,9 @@
 Universe         = vanilla
 # just 1 GPU for the worker
 request_GPUs      = 1
+requestCpus      = 1
 # only need a little RAM because the GPU will be used
-RequestMemory    = 100M
+RequestMemory    = 1G
 #specify that the cuda capability should be at least 3.0 and set the memory
 #requirement
 Requirements = (CUDACapability >= 3.0)\
@@ -19,10 +20,10 @@ Notification = Error
 initialdir = .
 
 #Run he build cluster script for the worker
-Arguments = "python -m distributed.condor.build_cluster --job_name=worker \
-  --expdir=$(expdir) --type=$(type)"
+Arguments = "python -m nabu.distributed.condor.build_cluster --job_name=worker \
+  --expdir=$(expdir) --type=$(type) --ssh_tunnel=$(ssh_tunnel)"
 #Run the condor job wapper to adjust the environment
-executable = distributed/condor/create_environment.sh
+executable = nabu/distributed/condor/create_environment.sh
 
 #Output of condors handling of the jobs, will be in 'initialdir'
 Log          = $(expdir)/outputs/worker-$(Process).log

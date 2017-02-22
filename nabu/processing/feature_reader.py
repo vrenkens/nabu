@@ -47,7 +47,7 @@ class FeatureReader(object):
         (utt_id, utt_mat, looped) = self.reader.read_next_utt()
 
         #apply cmvn
-        cmvn_stats = self.reader_cmvn.read_utt(self.utt2spk[utt_id])
+        cmvn_stats = self.reader_cmvn.read_utt_data(self.utt2spk[utt_id])
         utt_mat = apply_cmvn(utt_mat, cmvn_stats)
 
         return utt_id, utt_mat, looped

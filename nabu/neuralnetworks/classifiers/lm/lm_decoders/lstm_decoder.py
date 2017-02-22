@@ -2,6 +2,7 @@
 contains the LstmDecoder class'''
 
 import tensorflow as tf
+from nabu.neuralnetworks.classifiers.layer import Linear
 
 class LstmDecoder(object):
     '''The decoder object used in a LSTM language model'''
@@ -59,6 +60,9 @@ class LstmDecoder(object):
             #create the rnn cell
             rnn_cell = self.create_rnn(is_training)
 
+            #create the output layer
+            outlayer = Linear(numlabels)
+
             if initial_state is None:
                 initial_state = rnn_cell.zero_state(batch_size, tf.float32)
 
@@ -70,6 +74,8 @@ class LstmDecoder(object):
                 scope='rnn_decoder')
 
             logits = tf.transpose(tf.pack(logit_list), [1, 0, 2])
+
+            logits = outlayer(logits)
 
         self.scope.reuse_variables()
 

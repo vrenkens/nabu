@@ -1,38 +1,17 @@
-'''
-@file ark.py
-contains the .ark io functionality
-
-Copyright 2014    Yajie Miao    Carnegie Mellon University
-           2015    Yun Wang      Carnegie Mellon University
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-THIS CODE IS PROVIDED *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-MERCHANTABLITY OR NON-INFRINGEMENT.
-See the Apache 2 License for the specific language governing permissions and
-limitations under the License.
-'''
+'''@file ark.py
+contains io functionality for Kaldi ark format'''
 
 import struct
-import numpy as np
 import copy
+from collections import OrderedDict
+import numpy as np
 
 np.set_printoptions(threshold=np.nan)
 np.set_printoptions(linewidth=np.nan)
 
 class ArkReader(object):
     '''
-    Class to read Kaldi ark format. Each time, it reads one line of the .scp
-    file and reads in the corresponding features into a numpy matrix. It only
-    supports binary-formatted .ark files. Text and compressed .ark files are not
-    supported. The inspiration for this class came from pdnn toolkit (see
-    licence at the top of this file) (https://github.com/yajiemiao/pdnn)
+    Class to read Kaldi ark format.
     '''
 
     def __init__(self, scp_path):
@@ -45,31 +24,29 @@ class ArkReader(object):
 
         self.scp_position = 0
         fin = open(scp_path, "r")
-        self.utt_ids = []
-        self.scp_data = []
+        self.scp_data = OrderedDict()
         line = fin.readline()
         while line != '' and line != None:
             utt_id, path_pos = line.replace('\n', '').split(' ')
             path, pos = path_pos.split(':')
-            self.utt_ids.append(utt_id)
-            self.scp_data.append((path, pos))
+            self.scp_data[utt_id] = (path, pos)
             line = fin.readline()
 
         fin.close()
 
-    def read_utt_data(self, index):
+    def read_utt_data(self, utt_id):
         '''
         read data from the archive
 
         Args:
-            index: index of the utterance that will be read
+            utt_id: index of the utterance identifier that will be read
 
         Returns:
             a numpy array containing the data from the utterance
         '''
 
-        ark_read_buffer = open(self.scp_data[index][0], 'rb')
-        ark_read_buffer.seek(int(self.scp_data[index][1]), 0)
+        ark_read_buffer = open(self.scp_data[utt_id][0], 'rb')
+        ark_read_buffer.seek(int(self.scp_data[utt_id][1]), 0)
         header = struct.unpack('<xcccc', ark_read_buffer.read(5))
         if header[0] != "B":
             print "Input .ark file is not binary"
@@ -103,8 +80,8 @@ class ArkReader(object):
             bool that is true if the read utterance was the last one in the file
         '''
 
-        utt_id = self.utt_ids[self.scp_position]
-        utt_data = self.read_utt_data(self.scp_position)
+        utt_id = self.scp_data.keys()[self.scp_position]
+        utt_data = self.read_utt_data(utt_id)
 
         self.scp_position += 1
 
@@ -117,47 +94,6 @@ class ArkReader(object):
 
         return (utt_id, utt_data, looped)
 
-    def read_next_scp(self):
-        '''
-        read the next utterance ID but don't read the data
-
-        Returns:
-            the utterance ID of the utterance that was read
-        '''
-
-        #if at end of file loop around
-        if self.scp_position >= len(self.scp_data):
-            self.scp_position = 0
-
-        self.scp_position += 1
-
-        return self.utt_ids[self.scp_position-1]
-
-    def read_previous_scp(self):
-        '''
-        read the previous utterance ID but don't read the data
-
-        Returns:
-            the utterance ID of the utterance that was read
-        '''
-
-        if self.scp_position < 0: #if at beginning of file loop around
-            self.scp_position = len(self.scp_data) - 1
-
-        self.scp_position -= 1
-
-        return self.utt_ids[self.scp_position+1]
-
-    def read_utt(self, utt_id):
-        '''
-        read the data of a certain utterance ID
-
-        Returns:
-            the utterance data corresponding to the ID
-        '''
-
-        return self.read_utt_data(self.utt_ids.index(utt_id))
-
     def split(self, num_utt):
         '''take a number of utterances from the ark reader to make a new one
 
@@ -168,24 +104,21 @@ class ArkReader(object):
             an ark reader with the requested number of utterances'''
 
         reader = copy.deepcopy(self)
-        reader.scp_data = reader.scp_data[:num_utt]
-        reader.utt_ids = reader.utt_ids[:num_utt]
-        self.scp_data = self.scp_data[num_utt:]
-        self.utt_ids = self.utt_ids[num_utt:]
+        keys = reader.scp_data.keys()[:num_utt]
+        reader.scp_data = {key: reader.scp_data[key] for key in keys}
+        keys = self.scp_data.keys()[num_utt:]
+        self.scp_data = {key: self.scp_data[key] for key in keys}
 
         return reader
 
     @property
     def num_utt(self):
+        '''the number of utterances in the reader'''
         return len(self.scp_data)
 
 class ArkWriter(object):
     '''
-    Class to write numpy matrices into Kaldi .ark file and create the
-    corresponding .scp file. It only supports binary-formatted .ark files. Text
-    and compressed .ark files are not supported. The inspiration for this class
-    came from pdnn toolkit (see licence at the top of this file)
-    (https://github.com/yajiemiao/pdnn)
+    Class to write to Kaldi ark format
     '''
 
     def __init__(self, scp_path, default_ark):
@@ -204,7 +137,7 @@ class ArkWriter(object):
 
     def write_next_utt(self, utt_id, utt_mat, ark_path=None):
         '''
-        read an utterance to the archive
+        write an utterance to the file
 
         Args:
             ark_path: path to the .ark file that will be used for writing

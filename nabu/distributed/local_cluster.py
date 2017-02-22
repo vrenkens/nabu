@@ -30,16 +30,11 @@ def local_cluster(expdir, class_type):
                 ['python', 'train_%s.py' % class_type,
                  '--clusterfile=%s' % clusterfile,
                  '--job_name=%s' % job, '--task_index=%d' % task_index,
-                 '--expdir=%s' % expdir],
-                stdout=open(expdir + '/outputs/%s-%d' % (job, task_index),
-                            'w', 0),
-                stderr=subprocess.STDOUT))
+                 '--ssh_tunnel=False', '--expdir=%s' % expdir]))
             task_index += 1
 
     for process in processes:
         atexit.register(process.terminate)
-
-    print 'job submitted look in %s/outputs for the job outputs' % expdir
 
     for process in processes:
         process.wait()

@@ -4,7 +4,7 @@ contains the run_remote function'''
 import os
 import subprocess
 
-def run_remote(host, command, out):
+def run_remote(host, command):
     '''run a command remotely over ssh
 
     Args:
@@ -17,8 +17,6 @@ def run_remote(host, command, out):
 
     pid = subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-o',
                             'UserKnownHostsFile=/dev/null',
-                            host, 'cd %s && %s' % (os.getcwd(), command)],
-                           stdout=out,
-                           stderr=subprocess.STDOUT)
+                            host, 'cd %s && %s' % (os.getcwd(), command)])
 
     return pid

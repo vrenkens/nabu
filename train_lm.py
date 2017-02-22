@@ -16,6 +16,7 @@ from nabu.neuralnetworks.trainers import trainer
 def train_lm(clusterfile,
              job_name,
              task_index,
+             ssh_tunnel,
              expdir):
 
     ''' does everything for language model training
@@ -25,6 +26,8 @@ def train_lm(clusterfile,
             specified if None, local training will be done
         job_name: one of ps or worker in the case of distributed training
         task_index: the task index in this job
+        ssh_tunnel: wheter or not communication should happen through an ssh
+            tunnel
         expdir: the experiments directory
     '''
     #read the database config file
@@ -48,8 +51,12 @@ def train_lm(clusterfile,
     decoder_cfg = dict(parsed_decoder_cfg.items('decoder'))
 
     #create the cluster and server
-    cluster, server = create_cluster.create_cluster(clusterfile, job_name,
-                                                    task_index)
+    cluster, server = create_cluster.create_cluster(
+        clusterfile=clusterfile,
+        job_name=job_name,
+        task_index=task_index,
+        expdir=expdir,
+        ssh_tunnel=ssh_tunnel)
 
     #copy the alphabet to the model
     if (job_name == 'ps' and task_index == 0) or cluster is not None:
@@ -146,6 +153,9 @@ if __name__ == '__main__':
                                'The file containing the cluster')
     tf.app.flags.DEFINE_string('job_name', None, 'One of ps, worker')
     tf.app.flags.DEFINE_integer('task_index', None, 'The task index')
+    tf.app.flags.DEFINE_string(
+        'ssh_tunnel', 'False',
+        'wheter or not communication should happen through an ssh tunnel')
     tf.app.flags.DEFINE_string('expdir', 'expdir', 'The experimental directory')
     FLAGS = tf.app.flags.FLAGS
 
@@ -153,4 +163,5 @@ if __name__ == '__main__':
         clusterfile=FLAGS.clusterfile,
         job_name=FLAGS.job_name,
         task_index=FLAGS.task_index,
+        ssh_tunnel=FLAGS.ssh_tunnel == 'True',
         expdir=FLAGS.expdir)

@@ -15,6 +15,7 @@ from nabu.neuralnetworks.trainers import trainer
 def train_asr(clusterfile,
               job_name,
               task_index,
+              ssh_tunnel,
               expdir):
 
     ''' does everything for asr training
@@ -24,6 +25,8 @@ def train_asr(clusterfile,
             specified if None, local training will be done
         job_name: one of ps or worker in the case of distributed training
         task_index: the task index in this job
+        ssh_tunnel: wheter or not communication should happen through an ssh
+            tunnel
         expdir: the experiments directory
     '''
 
@@ -53,8 +56,12 @@ def train_asr(clusterfile,
     decoder_cfg = dict(parsed_decoder_cfg.items('decoder'))
 
     #create the cluster and server
-    cluster, server = create_cluster.create_cluster(clusterfile, job_name,
-                                                    task_index)
+    cluster, server = create_cluster.create_cluster(
+        clusterfile=clusterfile,
+        job_name=job_name,
+        task_index=task_index,
+        expdir=expdir,
+        ssh_tunnel=ssh_tunnel)
 
     #the ps should just wait
     if cluster is not None  and job_name == 'ps':
@@ -154,6 +161,8 @@ def train_asr(clusterfile,
         cluster=cluster,
         task_index=task_index)
 
+    print 'starting training'
+
     #train the classifier
     tr.train()
 
@@ -164,11 +173,16 @@ if __name__ == '__main__':
                                'The file containing the cluster')
     tf.app.flags.DEFINE_string('job_name', None, 'One of ps, worker')
     tf.app.flags.DEFINE_integer('task_index', None, 'The task index')
+    tf.app.flags.DEFINE_string(
+        'ssh_tunnel', 'False',
+        'wheter or not communication should happen through an ssh tunnel')
     tf.app.flags.DEFINE_string('expdir', 'expdir', 'The experimental directory')
+
     FLAGS = tf.app.flags.FLAGS
 
     train_asr(
         clusterfile=FLAGS.clusterfile,
         job_name=FLAGS.job_name,
         task_index=FLAGS.task_index,
+        ssh_tunnel=FLAGS.ssh_tunnel == 'True',
         expdir=FLAGS.expdir)
