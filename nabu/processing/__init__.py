@@ -7,4 +7,4 @@ This package contains all the functionality for data processing:
 
 from . import ark, batchdispenser, feature_reader, prepare_data,\
 readfiles, score, target_coder, target_normalizers, feature_computers,\
-textreader
+text_reader
