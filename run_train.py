@@ -55,11 +55,11 @@ def main(_):
             shutil.rmtree(os.path.join(FLAGS.expdir, 'logdir'))
 
         if not os.path.isdir(FLAGS.expdir):
-            os.mkdir(FLAGS.expdir)
-        os.mkdir(os.path.join(FLAGS.expdir, 'processes'))
+            os.makedirs(FLAGS.expdir)
+        os.makedirs(os.path.join(FLAGS.expdir, 'processes'))
 
         if not os.path.isdir(os.path.join(FLAGS.expdir, 'model')):
-            os.mkdir(os.path.join(FLAGS.expdir, 'model'))
+            os.makedirs(os.path.join(FLAGS.expdir, 'model'))
 
         #copy the configs to the expdir so they can be read there and the
         #experiment information is stored
@@ -98,7 +98,7 @@ def main(_):
 
         #create the directories
         if not os.path.isdir(os.path.join(FLAGS.expdir, 'outputs')):
-            os.mkdir(os.path.join(FLAGS.expdir, 'outputs'))
+            os.makedirs(os.path.join(FLAGS.expdir, 'outputs'))
 
         #create the cluster file
         with open(os.path.join(FLAGS.expdir, 'cluster'), 'w') as fid:
@@ -131,7 +131,7 @@ def main(_):
 
         #create the outputs directory
         if not os.path.isdir(os.path.join(FLAGS.expdir, 'outputs')):
-            os.mkdir(os.path.join(FLAGS.expdir, 'outputs'))
+            os.makedirs(os.path.join(FLAGS.expdir, 'outputs'))
 
         #run all the jobs
         processes = dict()
@@ -172,10 +172,10 @@ def main(_):
 
         #create the directories
         if not os.path.isdir(os.path.join(FLAGS.expdir, 'outputs')):
-            os.mkdir(os.path.join(FLAGS.expdir, 'outputs'))
+            os.makedirs(os.path.join(FLAGS.expdir, 'outputs'))
         if os.path.isdir(os.path.join(FLAGS.expdir, 'cluster')):
             shutil.rmtree(os.path.join(FLAGS.expdir, 'cluster'))
-        os.mkdir(os.path.join(FLAGS.expdir, 'cluster'))
+        os.makedirs(os.path.join(FLAGS.expdir, 'cluster'))
 
         #submit the parameter server jobs
         subprocess.call(['condor_submit', 'expdir=%s' % FLAGS.expdir,
@@ -269,7 +269,7 @@ def main(_):
 
         #create the directories
         if not os.path.isdir(FLAGS.expdir + '/outputs'):
-            os.mkdir(FLAGS.expdir + '/outputs')
+            os.makedirs(FLAGS.expdir + '/outputs')
 
         #create the cluster file
         with open(FLAGS.expdir + '/cluster', 'w') as fid:
