@@ -5,9 +5,6 @@ requestCpus      = 1
 # need enough RAM to store the parameters
 RequestMemory    = 2G
 
-#Run on Visics machines
-Requirements = MachineOwner == "Visics"
-
 #Specfy nice user behavior
 NiceUser = true
 #Send an email in case of an error

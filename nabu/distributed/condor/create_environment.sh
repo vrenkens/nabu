@@ -15,6 +15,11 @@ export PYTHONPATH=/users/spraak/vrenkens/.local/lib/python2.7/site-packages:$PYT
 export NVIDIA_CUDA=/usr/local/cuda-8.0/
 export PATH=$PATH:/usr/local/cuda-8.0/bin:/usr/bin
 
+#copy the ssh binary to enable ssh tunnels
+cp /usr/bin/ssh /tmp
+
+#create an alias so the copied ssh binary is used
+alias ssh='/tmp/ssh'
 
 #run the original
 $@
