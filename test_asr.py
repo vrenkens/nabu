@@ -111,5 +111,14 @@ def main(_):
 
     print 'score: %f' % score
 
+    #write the resulting beams to disk
+    decodedir = os.path.join(FLAGS.expdir, 'decoded')
+    if not os.path.isdir(decodedir):
+        os.makedirs(decodedir)
+    for utt in decoded:
+        with open(os.path.join(decodedir, utt), 'w') as fid:
+            for hypothesis in decoded[utt]:
+                fid.write('%f\t%s\n' % (hypothesis[0], hypothesis[1]))
+
 if __name__ == '__main__':
     tf.app.run()

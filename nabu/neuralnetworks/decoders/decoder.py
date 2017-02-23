@@ -129,6 +129,7 @@ class Decoder(object):
                 decoded[utt_id] = [(p[0], self.coder.decode(p[1]))
                                    for p in output[i]]
 
+
         return decoded
 
     def decode_utt(self, features, sess):

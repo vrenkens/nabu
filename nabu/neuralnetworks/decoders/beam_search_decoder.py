@@ -37,14 +37,12 @@ class BeamSearchDecoder(decoder.Decoder):
                              int(hlfeat.get_shape()[2])])
 
 
-        def body(step, beam, initial_state_attention=True,
-                 check_finished=True):
+        def body(step, beam, first_step=False, check_finished=True):
             '''the body of the decoding while loop
 
             Args:
                 beam: a Beam object containing the current beam
-                initial_state_attention: whether attention has to be applied
-                    to the initital state to ge an initial context
+                first_step: whether or not this is the first step in decoding
                 check_finished: finish a beam element if a sentence border
                     token is observed
 
@@ -71,9 +69,8 @@ class BeamSearchDecoder(decoder.Decoder):
                 logits, states = classifier.decoder(
                     hlfeat=hlfeat,
                     encoder_inputs=prev_output,
-                    numlabels=classifier.output_dim,
                     initial_state=states,
-                    initial_state_attention=initial_state_attention,
+                    first_step=first_step,
                     is_training=False)
 
                 #put the states and logits in the format for the beam
@@ -145,7 +142,7 @@ class BeamSearchDecoder(decoder.Decoder):
 
         #do the first step because the initial state should not be used
         #to compute a context
-        step, beam = body(step, beam, False, False)
+        step, beam = body(step, beam, True, False)
 
         #run the rest of the decoding loop
         _, beam = tf.while_loop(

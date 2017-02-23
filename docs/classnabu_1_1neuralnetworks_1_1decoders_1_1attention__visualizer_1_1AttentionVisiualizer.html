@@ -64,14 +64,13 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1AttentionVisiualizer-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">nabu.neuralnetworks.decoders.attention_visualizer.AttentionVisiualizer Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Decoder for attention visualisation.  
+<p><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1Beam.html" title="a named tuple class for a beam ">Beam</a> search decoder for attention visualization.  
  <a href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1AttentionVisiualizer.html#details">More...</a></p>
 <div class="dynheader">
 Inheritance diagram for nabu.neuralnetworks.decoders.attention_visualizer.AttentionVisiualizer:</div>
@@ -85,10 +84,10 @@ Inheritance diagram for nabu.neuralnetworks.decoders.attention_visualizer.Attent
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a5bdf9c046408aee5bc4e63aa9fe0f8d8"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1AttentionVisiualizer.html#a5bdf9c046408aee5bc4e63aa9fe0f8d8">get_outputs</a> (self, inputs, input_seq_length, classifier, classifier_scope)</td></tr>
-<tr class="memdesc:a5bdf9c046408aee5bc4e63aa9fe0f8d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the outputs of the decoder  <a href="#a5bdf9c046408aee5bc4e63aa9fe0f8d8">More...</a><br /></td></tr>
-<tr class="separator:a5bdf9c046408aee5bc4e63aa9fe0f8d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a771313ebdee2f4f7af650146fcea43ff"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1AttentionVisiualizer.html#a771313ebdee2f4f7af650146fcea43ff">score</a> (self, <a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1AttentionVisiualizer.html#abc570903aa64adfea30fbf4f176dcd1f">outputs</a>, targets)</td></tr>
+<tr class="memitem:a95ef09c9649e72cd61d49e91b0642612"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1AttentionVisiualizer.html#a95ef09c9649e72cd61d49e91b0642612">get_outputs</a> (self, inputs, input_seq_length, classifier)</td></tr>
+<tr class="memdesc:a95ef09c9649e72cd61d49e91b0642612"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the outputs of the decoder  <a href="#a95ef09c9649e72cd61d49e91b0642612">More...</a><br /></td></tr>
+<tr class="separator:a95ef09c9649e72cd61d49e91b0642612"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a771313ebdee2f4f7af650146fcea43ff"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1AttentionVisiualizer.html#a771313ebdee2f4f7af650146fcea43ff">score</a> (self, outputs, targets)</td></tr>
 <tr class="memdesc:a771313ebdee2f4f7af650146fcea43ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">score the performance  <a href="#a771313ebdee2f4f7af650146fcea43ff">More...</a><br /></td></tr>
 <tr class="separator:a771313ebdee2f4f7af650146fcea43ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html">nabu.neuralnetworks.decoders.decoder.Decoder</a></td></tr>
@@ -108,14 +107,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:ae8c14d282720cf28ddc88e01510e0b2b inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="mdescLeft">&#160;</td><td class="mdescRight">decode a list of utterances  <a href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#ae8c14d282720cf28ddc88e01510e0b2b">More...</a><br /></td></tr>
 <tr class="separator:ae8c14d282720cf28ddc88e01510e0b2b inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
-Public Attributes</h2></td></tr>
-<tr class="memitem:aeb7c1f93f981f9869ea1804070efa4c5"><td class="memItemLeft" align="right" valign="top"><a id="aeb7c1f93f981f9869ea1804070efa4c5"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>input_seq_length</b></td></tr>
-<tr class="separator:aeb7c1f93f981f9869ea1804070efa4c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abc570903aa64adfea30fbf4f176dcd1f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1AttentionVisiualizer.html#abc570903aa64adfea30fbf4f176dcd1f">outputs</a></td></tr>
-<tr class="memdesc:abc570903aa64adfea30fbf4f176dcd1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">the body of the decoding while loop  <a href="#abc570903aa64adfea30fbf4f176dcd1f">More...</a><br /></td></tr>
-<tr class="separator:abc570903aa64adfea30fbf4f176dcd1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pub_attribs_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder')"><img src="closed.png" alt="-"/>&#160;Public Attributes inherited from <a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html">nabu.neuralnetworks.decoders.decoder.Decoder</a></td></tr>
 <tr class="memitem:a47ce23a06a6c39ec60dba15f293fa323 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="memItemLeft" align="right" valign="top"><a id="a47ce23a06a6c39ec60dba15f293fa323"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>conf</b></td></tr>
@@ -143,10 +136,10 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a764c5d6fbcb012828e73ec84c6d262f6 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Decoder for attention visualisation. </p>
+<div class="textblock"><p><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1Beam.html" title="a named tuple class for a beam ">Beam</a> search decoder for attention visualization. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a5bdf9c046408aee5bc4e63aa9fe0f8d8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5bdf9c046408aee5bc4e63aa9fe0f8d8">&sect;&nbsp;</a></span>get_outputs()</h2>
+<a id="a95ef09c9649e72cd61d49e91b0642612"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95ef09c9649e72cd61d49e91b0642612">&sect;&nbsp;</a></span>get_outputs()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -173,13 +166,7 @@ Public Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>classifier</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>classifier_scope</em>&#160;</td>
+          <td class="paramname"><em>classifier</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -194,8 +181,7 @@ Public Attributes</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">inputs</td><td>The inputs to the network as a [batch_size x max_input_length x input_dim] tensor </td></tr>
     <tr><td class="paramname">input_seq_length</td><td>The sequence length of the inputs as a [batch_size] vector </td></tr>
-    <tr><td class="paramname">classifier</td><td>The classifier object that will be used in decoding </td></tr>
-    <tr><td class="paramname">classifier_scope</td><td>the scope where the classifier was defined</td></tr>
+    <tr><td class="paramname">classifier</td><td>The classifier object that will be used in decoding</td></tr>
   </table>
   </dd>
 </dl>
@@ -247,44 +233,8 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a id="abc570903aa64adfea30fbf4f176dcd1f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abc570903aa64adfea30fbf4f176dcd1f">&sect;&nbsp;</a></span>outputs</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">nabu.neuralnetworks.decoders.attention_visualizer.AttentionVisiualizer.outputs</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>the body of the decoding while loop </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">beam</td><td>a <a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1Beam.html" title="a named tuple class for a beam ">Beam</a> object containing the current beam </td></tr>
-    <tr><td class="paramname">reuse</td><td>set to True to reuse the classifier </td></tr>
-    <tr><td class="paramname">initial_state_attention</td><td>whether attention has to be applied to the initital state to ge an initial context</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>the loop vars the condition of the decoding while loop</dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">step</td><td>the decoding step </td></tr>
-    <tr><td class="paramname">beam</td><td>a <a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1Beam.html" title="a named tuple class for a beam ">Beam</a> object containing the current beam</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>a boolean that evaluates to True if the loop should </dd>
-<dd>
-continue </dd></dl>
-
-</div>
-</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li><a class="el" href="attention__visualizer_8py.html">attention_visualizer.py</a></li>
+<li>attention_visualizer.py</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

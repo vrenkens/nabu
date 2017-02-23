@@ -92,6 +92,9 @@ Functions</h2></td></tr>
 <tr class="memitem:abf072de2e67f9c8ee1144679133798d5"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sigproc_8py.html#abf072de2e67f9c8ee1144679133798d5">nabu.processing.feature_computers.sigproc.preemphasis</a> (signal, coeff=0.95)</td></tr>
 <tr class="memdesc:abf072de2e67f9c8ee1144679133798d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">perform preemphasis on the input signal.  <a href="sigproc_8py.html#abf072de2e67f9c8ee1144679133798d5">More...</a><br /></td></tr>
 <tr class="separator:abf072de2e67f9c8ee1144679133798d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad071a0ab973f9ae7ea510c61be76ae75"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sigproc_8py.html#ad071a0ab973f9ae7ea510c61be76ae75">nabu.processing.feature_computers.sigproc.snip</a> (sig, rate, winlen, winstep)</td></tr>
+<tr class="memdesc:ad071a0ab973f9ae7ea510c61be76ae75"><td class="mdescLeft">&#160;</td><td class="mdescRight">snip the edges of the utterance to fit the sliding window  <a href="sigproc_8py.html#ad071a0ab973f9ae7ea510c61be76ae75">More...</a><br /></td></tr>
+<tr class="separator:ad071a0ab973f9ae7ea510c61be76ae75"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>contains the signal processing functionality </p>
@@ -372,6 +375,58 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the filtered signal. </dd></dl>
+
+</div>
+</div>
+<a id="file_ad071a0ab973f9ae7ea510c61be76ae75"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_ad071a0ab973f9ae7ea510c61be76ae75">&sect;&nbsp;</a></span>snip()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def nabu.processing.feature_computers.sigproc.snip </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>sig</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>rate</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>winlen</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>winstep</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>snip the edges of the utterance to fit the sliding window </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sig</td><td>audio signal </td></tr>
+    <tr><td class="paramname">rate</td><td>sampling rate </td></tr>
+    <tr><td class="paramname">winlen</td><td>length of the sliding window [s] </td></tr>
+    <tr><td class="paramname">winstep</td><td>stepsize of the sliding window [s]</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>the snipped signal </dd></dl>
 
 </div>
 </div>

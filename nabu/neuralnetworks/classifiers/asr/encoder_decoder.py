@@ -3,11 +3,11 @@ contains de LAS class'''
 
 import tensorflow as tf
 from nabu.neuralnetworks.classifiers import classifier
-import encoders
-import asr_decoders
+from encoders import encoder_factory
+from asr_decoders import asr_decoder_factory
 
-class LAS(classifier.Classifier):
-    '''a listen attend and spell classifier'''
+class EncoderDecoder(classifier.Classifier):
+    '''a general class for an encoder decoder system'''
     def __init__(self, conf, output_dim, name=None):
         '''LAS constructor
 
@@ -17,20 +17,13 @@ class LAS(classifier.Classifier):
             name: the classifier name
         '''
 
+        super(EncoderDecoder, self).__init__(conf, output_dim, name)
+
         #create the listener
-        self.encoder = encoders.listener.Listener(
-            numlayers=int(conf['listener_layers']),
-            numunits=int(conf['listener_units']),
-            dropout=float(conf['listener_dropout']))
+        self.encoder = encoder_factory.factory(conf)
 
         #create the speller
-        self.decoder = asr_decoders.speller.Speller(
-            numlayers=int(conf['speller_layers']),
-            numunits=int(conf['speller_units']),
-            dropout=float(conf['speller_dropout']),
-            sample_prob=float(conf['sample_prob']))
-
-        super(LAS, self).__init__(conf, output_dim, name)
+        self.decoder = asr_decoder_factory.factory(conf, self.output_dim)
 
     def _get_outputs(self, inputs, input_seq_length, targets=None,
                      target_seq_length=None, is_training=False):
@@ -81,8 +74,8 @@ class LAS(classifier.Classifier):
         logits, _ = self.decoder(
             hlfeat=hlfeat,
             encoder_inputs=encoder_inputs,
-            numlabels=self.output_dim,
-            initial_state=None,
+            initial_state=self.decoder.zero_state(batch_size),
+            first_step=True,
             is_training=is_training)
 
         return logits, target_seq_length + 1

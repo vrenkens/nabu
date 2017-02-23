@@ -9,5 +9,6 @@ var searchData=
   ['feature_5freader_2epy',['feature_reader.py',['../feature__reader_8py.html',1,'']]],
   ['featurecomputer',['FeatureComputer',['../classnabu_1_1processing_1_1feature__computers_1_1feature__computer_1_1FeatureComputer.html',1,'nabu::processing::feature_computers::feature_computer']]],
   ['featurereader',['FeatureReader',['../classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html',1,'nabu::processing::feature_reader']]],
+  ['fflistener',['FfListener',['../classnabu_1_1neuralnetworks_1_1classifiers_1_1asr_1_1encoders_1_1ff__lisener_1_1FfListener.html',1,'nabu::neuralnetworks::classifiers::asr::encoders::ff_lisener']]],
   ['framesig',['framesig',['../sigproc_8py.html#ae8f46c7fc11e88549d9b6c51933c88f4',1,'nabu::processing::feature_computers::sigproc']]]
 ];

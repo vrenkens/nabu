@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['fbank',['Fbank',['../classnabu_1_1processing_1_1feature__computers_1_1fbank_1_1Fbank.html',1,'nabu::processing::feature_computers::fbank']]],
-  ['featurecomputer',['FeatureComputer',['../classnabu_1_1processing_1_1feature__computers_1_1feature__computer_1_1FeatureComputer.html',1,'nabu::processing::feature_computers::feature_computer']]],
-  ['featurereader',['FeatureReader',['../classnabu_1_1processing_1_1feature__reader_1_1FeatureReader.html',1,'nabu::processing::feature_reader']]]
+  ['encoder',['Encoder',['../classnabu_1_1neuralnetworks_1_1classifiers_1_1asr_1_1encoders_1_1encoder_1_1Encoder.html',1,'nabu::neuralnetworks::classifiers::asr::encoders::encoder']]],
+  ['encoderdecoder',['EncoderDecoder',['../classnabu_1_1neuralnetworks_1_1classifiers_1_1asr_1_1encoder__decoder_1_1EncoderDecoder.html',1,'nabu::neuralnetworks::classifiers::asr::encoder_decoder']]]
 ];

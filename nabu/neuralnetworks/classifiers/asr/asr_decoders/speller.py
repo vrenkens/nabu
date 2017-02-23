@@ -3,95 +3,62 @@ contains the speller functionality'''
 
 from functools import partial
 import tensorflow as tf
+import asr_decoder
 
 
-class Speller(object):
-    '''a speller object
+class Speller(asr_decoder.AsrDecoder):
+    '''a speller decoder for the LAS architecture'''
 
-    converts the high level features into output logits'''
-    def __init__(self, numlayers, numunits, dropout=1, sample_prob=0,
-                 name=None):
-        '''speller constructor
-
-        Args:
-            numlayers: number of layers in rge rnn
-            numunits: number of units in each layer
-            dropout: the dropout rate
-            sample_prob: the probability that the network will sample from the
-                output during training
-            name: the speller name'''
-
-
-        #save the parameters
-        self.numlayers = numlayers
-        self.numunits = numunits
-        self.dropout = dropout
-        self.sample_prob = sample_prob
-
-        self.scope = tf.VariableScope(False, name or type(self).__name__)
-
-
-    def __call__(self, hlfeat, encoder_inputs, numlabels, initial_state=None,
-                 initial_state_attention=False, is_training=False):
-        """
-        Create the variables and do the forward computation
+    def decode(self, hlfeat, encoder_inputs, initial_state, first_step,
+               is_training):
+        '''
+        Get the logits and the output state
 
         Args:
             hlfeat: the high level features of shape
                 [batch_size x hl_seq_length x feat_dim]
             encoder_inputs: the one-hot encoded training targets of shape
                 [batch_size x target_seq_length].
-            numlabels: number of output labels
             initial_state: the initial decoder state, could be usefull for
                 decoding
-            initial_state_attention: whether attention has to be applied
-                to the initital state to ge an initial context
+            first_step: bool that determines if this is the first step
             is_training: whether or not the network is in training mode
 
         Returns:
             - the output logits of the listener as a
                 [batch_size x target_seq_length x numlabels] tensor
             - the final state of the listener
-        """
+        '''
 
-        with tf.variable_scope(self.scope):
+        #one hot encode the targets
+        one_hot_inputs = tf.one_hot(encoder_inputs, self.output_dim,
+                                    dtype=tf.float32)
 
-            #get the batch size
-            batch_size = hlfeat.get_shape()[0]
+        #put targets in time major
+        time_major_inputs = tf.transpose(one_hot_inputs, [1, 0, 2])
 
-            #one hot encode the targets
-            one_hot_inputs = tf.one_hot(encoder_inputs, numlabels,
-                                        dtype=tf.float32)
+        #convert targets to list
+        input_list = tf.unpack(time_major_inputs)
 
-            #put targets in time major
-            time_major_inputs = tf.transpose(one_hot_inputs, [1, 0, 2])
+        #create the rnn cell
+        rnn_cell = self.create_rnn(is_training)
 
-            #convert targets to list
-            input_list = tf.unpack(time_major_inputs)
+        #create the loop functions
+        lf = partial(loop_function, time_major_inputs,
+                     float(self.conf['speller_sample_prob']))
 
-            #create the rnn cell
-            rnn_cell = self.create_rnn(is_training)
+        #use the attention decoder
+        logit_list, state = tf.nn.seq2seq.attention_decoder(
+            decoder_inputs=input_list,
+            initial_state=initial_state,
+            attention_states=hlfeat,
+            cell=rnn_cell,
+            output_size=self.output_dim,
+            loop_function=lf,
+            scope='attention_decoder',
+            initial_state_attention=not first_step)
 
-            if initial_state is None:
-                initial_state = rnn_cell.zero_state(batch_size, tf.float32)
-
-            #create the loop functions
-            lf = partial(loop_function, time_major_inputs, self.sample_prob)
-
-            #use the attention decoder
-            logit_list, state = tf.nn.seq2seq.attention_decoder(
-                decoder_inputs=input_list,
-                initial_state=initial_state,
-                attention_states=hlfeat,
-                cell=rnn_cell,
-                output_size=numlabels,
-                loop_function=lf,
-                scope='attention_decoder',
-                initial_state_attention=initial_state_attention)
-
-            logits = tf.transpose(tf.pack(logit_list), [1, 0, 2])
-
-        self.scope.reuse_variables()
+        logits = tf.transpose(tf.pack(logit_list), [1, 0, 2])
 
         return logits, state
 
@@ -105,13 +72,15 @@ class Speller(object):
             an rnn cell'''
 
         #create the multilayered rnn cell
-        rnn_cell = tf.nn.rnn_cell.BasicLSTMCell(self.numunits)
+        rnn_cell = tf.nn.rnn_cell.BasicLSTMCell(
+            int(self.conf['speller_numunits']))
 
-        if self.dropout < 1 and is_training:
+        if float(self.conf['speller_dropout']) < 1 and is_training:
             rnn_cell = tf.nn.rnn_cell.DropoutWrapper(
-                rnn_cell, output_keep_prob=self.dropout)
+                rnn_cell, output_keep_prob=float(self.conf['speller_dropout']))
 
-        rnn_cell = tf.nn.rnn_cell.MultiRNNCell([rnn_cell]*self.numlayers)
+        rnn_cell = tf.nn.rnn_cell.MultiRNNCell(
+            [rnn_cell]*int(self.conf['speller_numlayers']))
 
         return rnn_cell
 

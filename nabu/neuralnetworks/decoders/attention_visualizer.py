@@ -1,6 +1,5 @@
-'''@file attention_visualizer.py
-This decoder is only for visualizing the attention in attention based encoder
-decoder systems'''
+'''@file beam_search_decoder.py
+contains the BeamSearchDecoder'''
 
 from collections import namedtuple
 import tensorflow as tf
@@ -9,10 +8,9 @@ import decoder
 from nabu.processing import score
 
 class AttentionVisiualizer(decoder.Decoder):
-    '''Decoder for attention visualisation'''
+    '''Beam search decoder for attention visualization'''
 
-    def get_outputs(self, inputs, input_seq_length, classifier,
-                    classifier_scope):
+    def get_outputs(self, inputs, input_seq_length, classifier):
 
         '''compute the outputs of the decoder
 
@@ -22,21 +20,14 @@ class AttentionVisiualizer(decoder.Decoder):
             input_seq_length: The sequence length of the inputs as a
                 [batch_size] vector
             classifier: The classifier object that will be used in decoding
-            classifier_scope: the scope where the classifier was defined
 
         Returns:
             A list with batch_size elements containing nbest lists with elements
             containing pairs of score and output labels
         '''
 
-        #create the sequence length placeholder
-        self.input_seq_length = tf.placeholder(
-            tf.int32, shape=[self.batch_size], name='seq_length')
-
         #encode the inputs [batch_size x output_length x output_dim]
-        with tf.variable_scope(classifier_scope):
-            hlfeat = classifier.encoder(self.inputs, self.input_seq_length,
-                                        False, False)
+        hlfeat = classifier.encoder(self.inputs, self.input_seq_length, False)
 
         #repeat the high level features for all beam elements
         hlfeat = tf.reshape(tf.tile(tf.expand_dims(hlfeat, 1),
@@ -46,14 +37,14 @@ class AttentionVisiualizer(decoder.Decoder):
                              int(hlfeat.get_shape()[2])])
 
 
-        def body(step, beam, reuse=True, initial_state_attention=True):
+        def body(step, beam, first_step=False, check_finished=True):
             '''the body of the decoding while loop
 
             Args:
                 beam: a Beam object containing the current beam
-                reuse: set to True to reuse the classifier
-                initial_state_attention: whether attention has to be applied
-                    to the initital state to ge an initial context
+                first_step: whether or not this is the first step in decoding
+                check_finished: finish a beam element if a sentence border
+                    token is observed
 
             returns:
                 the loop vars'''
@@ -75,35 +66,30 @@ class AttentionVisiualizer(decoder.Decoder):
                 states = nest.pack_sequence_as(beam.states, states)
 
                 #compute the next state and logits
-                with tf.variable_scope(classifier_scope) as scope:
-                    if reuse:
-                        scope.reuse_variables()
-                    logits, states = classifier.decoder(
-                        hlfeat=hlfeat,
-                        encoder_inputs=prev_output,
-                        numlabels=classifier.output_dim,
-                        initial_state=states,
-                        initial_state_attention=initial_state_attention,
-                        is_training=False)
+                logits, states = classifier.decoder(
+                    hlfeat=hlfeat,
+                    encoder_inputs=prev_output,
+                    initial_state=states,
+                    first_step=first_step,
+                    is_training=False)
 
-                    #get the attenion tensor
-                    if initial_state_attention:
-                        attention_name = (
-                            tf.get_default_graph()._name_stack
-                            + '/' + type(classifier.decoder).__name__
-                            + '/attention_decoder/attention_decoder/' +
-                            'Attention_0/Softmax:0')
-                    else:
-                        attention_name = (
-                            tf.get_default_graph()._name_stack
-                            + '/' + type(classifier.decoder).__name__ +
-                            '/attention_decoder/Attention_0/Softmax:0')
+                #get the attenion tensor
+                if first_step:
+                    attention_name = (
+                        tf.get_default_graph()._name_stack
+                        + '/' + type(classifier.decoder).__name__ +
+                        '/attention_decoder/Attention_0/Softmax:0')
+                else:
+                    attention_name = (
+                        tf.get_default_graph()._name_stack
+                        + '/' + type(classifier.decoder).__name__
+                        + '/attention_decoder/attention_decoder/' +
+                        'Attention_0/Softmax:0')
 
-                    attention = tf.get_default_graph().get_tensor_by_name(
-                        attention_name)
+                attention = tf.get_default_graph().get_tensor_by_name(
+                    attention_name)
 
-                #put the states, logits and attention in the format for the
-                #beam
+                #put the states and logits in the format for the beam
                 states = [tf.reshape(s,
                                      [self.batch_size,
                                       int(self.conf['beam_width']),
@@ -121,92 +107,98 @@ class AttentionVisiualizer(decoder.Decoder):
                                         int(attention.get_shape()[1])])
 
                 #update the beam
-                beam = beam.update(logits, states, attention, step)
+                beam = beam.update(logits, states, attention, step,
+                                   check_finished)
 
                 step = step + 1
 
-                return step, beam
+            return step, beam
 
-            def cb_cond(step, beam):
-                '''the condition of the decoding while loop
+        def cb_cond(step, beam):
+            '''the condition of the decoding while loop
 
-                Args:
-                    step: the decoding step
-                    beam: a Beam object containing the current beam
+            Args:
+                step: the decoding step
+                beam: a Beam object containing the current beam
 
-                returns:
-                    a boolean that evaluates to True if the loop should
-                    continue'''
+            returns:
+                a boolean that evaluates to True if the loop should
+                continue'''
 
-                with tf.variable_scope('cond'):
+            with tf.variable_scope('cond'):
 
-                    #check if all beam elements have terminated
-                    cont = tf.logical_and(
-                        tf.logical_not(beam.all_terminated(step)),
-                        tf.less(step, int(self.conf['max_steps'])))
+                #check if all beam elements have terminated
+                cont = tf.logical_and(
+                    tf.logical_not(beam.all_terminated(
+                        step, classifier.output_dim - 1)),
+                    tf.less(step, int(self.conf['max_steps'])))
 
-                return cont
+            return cont
 
 
-            #initialise the loop variables
-            negmax = tf.tile(
-                [[-tf.float32.max]],
-                [self.batch_size, int(self.conf['beam_width'])-1])
-            scores = tf.concat(
-                1, [tf.zeros([self.batch_size, 1]), negmax])
-            lengths = tf.ones(
-                [self.batch_size, int(self.conf['beam_width'])],
-                dtype=tf.int32)
-            sequences = tf.ones(
-                [self.batch_size, int(self.conf['beam_width']),
-                 int(self.conf['max_steps'])],
-                dtype=tf.int32)
-            states = classifier.decoder.zero_state(
-                int(self.conf['beam_width'])*self.batch_size)
-            flat_states = [tf.reshape(s,
-                                      [self.batch_size,
-                                       int(self.conf['beam_width']),
-                                       int(s.get_shape()[1])])
-                           for s in nest.flatten(states)]
-            states = nest.pack_sequence_as(states, flat_states)
-            attention = tf.zeros([self.batch_size, int(self.conf['beam_width']),
-                                  int(hlfeat.get_shape()[1]),
-                                  int(self.conf['max_steps'])])
+        #initialise the loop variables
+        negmax = tf.tile(
+            [[-tf.float32.max]],
+            [self.batch_size, int(self.conf['beam_width'])-1])
+        scores = tf.concat(
+            1, [tf.zeros([self.batch_size, 1]), negmax])
+        lengths = tf.ones(
+            [self.batch_size, int(self.conf['beam_width'])],
+            dtype=tf.int32)
+        sequences = tf.constant(
+            classifier.output_dim-1,
+            shape=[self.batch_size, int(self.conf['beam_width']),
+                   int(self.conf['max_steps'])],
+            dtype=tf.int32)
+        states = classifier.decoder.zero_state(
+            int(self.conf['beam_width'])*self.batch_size)
+        flat_states = [tf.reshape(s,
+                                  [self.batch_size,
+                                   int(self.conf['beam_width']),
+                                   int(s.get_shape()[1])])
+                       for s in nest.flatten(states)]
+        states = nest.pack_sequence_as(states, flat_states)
+        attention = tf.zeros([self.batch_size, int(self.conf['beam_width']),
+                              int(hlfeat.get_shape()[1]),
+                              int(self.conf['max_steps'])])
 
-            beam = Beam(sequences, lengths, states, scores, attention)
-            step = tf.constant(0)
+        beam = Beam(sequences, lengths, states, scores, attention)
+        step = tf.constant(0)
 
-            #do the first step because the initial state should not be used
-            #to compute a context and reuse should be False
-            step, beam = body(step, beam, False, False)
+        #do the first step because the initial state should not be used
+        #to compute a context
+        step, beam = body(step, beam, True, False)
 
-            #run the rest of the decoding loop
-            _, beam = tf.while_loop(
-                cond=cb_cond,
-                body=body,
-                loop_vars=[step, beam],
-                parallel_iterations=1,
-                back_prop=False)
+        #run the rest of the decoding loop
+        _, beam = tf.while_loop(
+            cond=cb_cond,
+            body=body,
+            loop_vars=[step, beam],
+            parallel_iterations=1,
+            back_prop=False)
 
-            with tf.variable_scope('cut_sequences'):
-                #get the beam scores
-                scores = [tf.unpack(s) for s in tf.unpack(beam.scores)]
+        with tf.variable_scope('cut_sequences'):
+            #get the beam scores
+            scores = [tf.unpack(s) for s in tf.unpack(beam.scores)]
 
-                #cut the beam sequences to the correct length and take of
-                #the start of sequence token
-                sequences = [tf.unpack(s) for s in tf.unpack(beam.sequences)]
-                lengths = [tf.unpack(l) for l in tf.unpack(beam.lengths)]
-                attention = [tf.unpack(a) for a in tf.unpack(beam.attention)]
-                sequences = [[sequences[i][j][1:lengths[i][j]]
-                              for j in range(len(lengths[i]))]
-                             for i in range(len(lengths))]
-                attention = [[attention[i][j][:, 1:lengths[i][j]]
-                              for j in range(len(lengths[i]))]
-                             for i in range(len(lengths))]
+            #cut the beam sequences to the correct length and take of
+            #the sequence border tokens
+            sequences = [tf.unpack(s) for s in tf.unpack(beam.sequences)]
+            lengths = [tf.unpack(l) for l in tf.unpack(beam.lengths)]
+            attention = [tf.unpack(a) for a in tf.unpack(beam.attention)]
+            hlfeat = tf.unpack(hlfeat)
+            sequences = [[sequences[i][j][1:lengths[i][j]-1]
+                          for j in range(len(lengths[i]))]
+                         for i in range(len(lengths))]
+            attention = [[attention[i][j][:, 1:lengths[i][j]]
+                          for j in range(len(lengths[i]))]
+                         for i in range(len(lengths))]
 
-            self.outputs = [[(scores[i][j], sequences[i][j], attention[i][j])
-                             for j in range(len(sequences[i]))]
-                            for i in range(len(sequences))]
+        outputs = [[(scores[i][j], sequences[i][j], attention[i][j], hlfeat[i])
+                    for j in range(len(sequences[i]))]
+                   for i in range(len(sequences))]
+
+        return outputs
 
     def score(self, outputs, targets):
         '''score the performance
@@ -217,7 +209,6 @@ class AttentionVisiualizer(decoder.Decoder):
 
         Returns:
             the score'''
-
         return score.cer(outputs, targets)
 
 
@@ -234,11 +225,9 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores',
             [batch_size x beam_width x state_dim] tensors
         - scores: the score of the beam element as a [batch_size x beam_width]
             tensor
-        - attention: the attention for all sequences as a
-            [batch_size x beam_width x input_length x max_steps] tensor
         '''
 
-    def update(self, logits, states, attention, step):
+    def update(self, logits, states, attention, step, check_finished):
         '''update the beam by expanding the beam with new hypothesis
         and selecting the best ones. Use as beam = beam.update(...)
 
@@ -250,6 +239,8 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores',
             attention: the attention for this decoding step as a
                 [batch_size x beam_width x input_length] tensor
             step: the current step
+            check_finished: finish a beam element if a sentence border
+                token is observed
 
         Returns:
             a new updated Beam as a Beam object'''
@@ -263,7 +254,11 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores',
             input_length = int(self.attention.get_shape()[2])
 
             #get flags for finished beam elements: [batch_size x beam_width]
-            finished = tf.equal(self.sequences[:, :, step], 0)
+            if check_finished:
+                finished = tf.equal(self.sequences[:, :, step], numlabels-1)
+            else:
+                finished = tf.constant(False, dtype=tf.bool,
+                                       shape=[batch_size, beam_width])
 
             with tf.variable_scope('scores'):
 
@@ -343,7 +338,7 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores',
                                      expanded_elements)
                 labels = tf.select(
                     finished,
-                    tf.tile([[0]], [batch_size, beam_width]),
+                    tf.tile([[numlabels-1]], [batch_size, beam_width]),
                     labels)
 
                 #select the best lengths and scores
@@ -401,15 +396,18 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores',
 
             return Beam(sequences, lengths, states, scores, new_attention)
 
-    def all_terminated(self, step):
+    def all_terminated(self, step, s_label):
         '''check if all elements in the beam have terminated
         Args:
             step: the current step
+            s_label: the value of the sentence border label
+                (sould be last label)
 
         Returns:
             a bool tensor'''
         with tf.variable_scope('all_terminated'):
-            return tf.equal(tf.reduce_sum(self.sequences[:, :, step]), 0)
+            return tf.equal(tf.reduce_sum(self.sequences[:, :, step]),
+                            s_label*self.beam_width)
 
     @property
     def beam_width(self):

@@ -83,12 +83,12 @@ Inheritance diagram for nabu.neuralnetworks.decoders.attention_visualizer.Beam:<
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ab2c4710a45f6eb08cc37125d8f6e897b"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1Beam.html#ab2c4710a45f6eb08cc37125d8f6e897b">update</a> (self, logits, states, attention, step)</td></tr>
-<tr class="memdesc:ab2c4710a45f6eb08cc37125d8f6e897b"><td class="mdescLeft">&#160;</td><td class="mdescRight">update the beam by expanding the beam with new hypothesis and selecting the best ones.  <a href="#ab2c4710a45f6eb08cc37125d8f6e897b">More...</a><br /></td></tr>
-<tr class="separator:ab2c4710a45f6eb08cc37125d8f6e897b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa0e0ae6872700df3f7d948b39f39823a"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1Beam.html#aa0e0ae6872700df3f7d948b39f39823a">all_terminated</a> (self, step)</td></tr>
-<tr class="memdesc:aa0e0ae6872700df3f7d948b39f39823a"><td class="mdescLeft">&#160;</td><td class="mdescRight">check if all elements in the beam have terminated  <a href="#aa0e0ae6872700df3f7d948b39f39823a">More...</a><br /></td></tr>
-<tr class="separator:aa0e0ae6872700df3f7d948b39f39823a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9112cbb6d393be54608bf084eb2a3d4e"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1Beam.html#a9112cbb6d393be54608bf084eb2a3d4e">update</a> (self, logits, states, attention, step, check_finished)</td></tr>
+<tr class="memdesc:a9112cbb6d393be54608bf084eb2a3d4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">update the beam by expanding the beam with new hypothesis and selecting the best ones.  <a href="#a9112cbb6d393be54608bf084eb2a3d4e">More...</a><br /></td></tr>
+<tr class="separator:a9112cbb6d393be54608bf084eb2a3d4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4da79b36f47f8977b26d059e1dd5ee97"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1Beam.html#a4da79b36f47f8977b26d059e1dd5ee97">all_terminated</a> (self, step, s_label)</td></tr>
+<tr class="memdesc:a4da79b36f47f8977b26d059e1dd5ee97"><td class="mdescLeft">&#160;</td><td class="mdescRight">check if all elements in the beam have terminated  <a href="#a4da79b36f47f8977b26d059e1dd5ee97">More...</a><br /></td></tr>
+<tr class="separator:a4da79b36f47f8977b26d059e1dd5ee97"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a99effcd46f960dce068a384403a43874"><td class="memItemLeft" align="right" valign="top"><a id="a99effcd46f960dce068a384403a43874"></a>
 def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1Beam.html#a99effcd46f960dce068a384403a43874">beam_width</a> (self)</td></tr>
 <tr class="memdesc:a99effcd46f960dce068a384403a43874"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the size of the beam <br /></td></tr>
@@ -104,12 +104,11 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 <li>sequences: the sequences as a [batch_size x beam_width x max_steps] tensor</li>
 <li>lengths: the length of the sequences as a [batch_size x beam_width] tensor</li>
 <li>states: the state of the decoder as a possibly nested tuple of [batch_size x beam_width x state_dim] tensors</li>
-<li>scores: the score of the beam element as a [batch_size x beam_width] tensor</li>
-<li>attention: the attention for all sequences as a [batch_size x beam_width x input_length x max_steps] tensor </li>
+<li>scores: the score of the beam element as a [batch_size x beam_width] tensor </li>
 </ul>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="aa0e0ae6872700df3f7d948b39f39823a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa0e0ae6872700df3f7d948b39f39823a">&sect;&nbsp;</a></span>all_terminated()</h2>
+<a id="a4da79b36f47f8977b26d059e1dd5ee97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4da79b36f47f8977b26d059e1dd5ee97">&sect;&nbsp;</a></span>all_terminated()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -124,7 +123,13 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>step</em>&#160;</td>
+          <td class="paramname"><em>step</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>s_label</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -137,7 +142,8 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 <p>check if all elements in the beam have terminated </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">step</td><td>the current step</td></tr>
+    <tr><td class="paramname">step</td><td>the current step </td></tr>
+    <tr><td class="paramname">s_label</td><td>the value of the sentence border label (sould be last label)</td></tr>
   </table>
   </dd>
 </dl>
@@ -145,8 +151,8 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 
 </div>
 </div>
-<a id="ab2c4710a45f6eb08cc37125d8f6e897b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab2c4710a45f6eb08cc37125d8f6e897b">&sect;&nbsp;</a></span>update()</h2>
+<a id="a9112cbb6d393be54608bf084eb2a3d4e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9112cbb6d393be54608bf084eb2a3d4e">&sect;&nbsp;</a></span>update()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -179,7 +185,13 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>step</em>&#160;</td>
+          <td class="paramname"><em>step</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>check_finished</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -196,16 +208,16 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
     <tr><td class="paramname">logits</td><td>the decoder output logits as a [batch_size x beam_width x numlabels] tensor </td></tr>
     <tr><td class="paramname">states</td><td>the decoder output states as a possibly nested tuple of [batch_size x beam_width x state_dim] tensor </td></tr>
     <tr><td class="paramname">attention</td><td>the attention for this decoding step as a [batch_size x beam_width x input_length] tensor </td></tr>
-    <tr><td class="paramname">step</td><td>the current step</td></tr>
+    <tr><td class="paramname">step</td><td>the current step </td></tr>
+    <tr><td class="paramname">check_finished</td><td>finish a beam element if a sentence border <div class="fragment"><div class="line">               token <span class="keywordflow">is</span> observed</div><div class="line"></div><div class="line">@<span class="keywordflow">return</span></div></div><!-- fragment --> a new updated <a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1Beam.html" title="a named tuple class for a beam ">Beam</a> as a <a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1Beam.html" title="a named tuple class for a beam ">Beam</a> object </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>a new updated <a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1Beam.html" title="a named tuple class for a beam ">Beam</a> as a <a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1attention__visualizer_1_1Beam.html" title="a named tuple class for a beam ">Beam</a> object </dd></dl>
 
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li><a class="el" href="attention__visualizer_8py.html">attention_visualizer.py</a></li>
+<li>attention_visualizer.py</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
