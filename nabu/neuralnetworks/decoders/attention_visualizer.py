@@ -209,6 +209,10 @@ class AttentionVisiualizer(decoder.Decoder):
 
         Returns:
             the score'''
+        #decode the targets
+        for utt in targets:
+            targets[utt] = self.coder.decode(targets[utt])
+
         return score.cer(outputs, targets)
 
 

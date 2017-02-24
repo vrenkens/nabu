@@ -140,7 +140,22 @@ class Trainer(object):
                 self.modelsaver = tf.train.Saver(tf.trainable_variables())
 
                 #create a decoder object for validation
-                self.decoder = decoder()
+                if self.conf['validation_mode'] == 'decode':
+                    self.decoder = decoder()
+                elif self.conf['validation_mode'] == 'loss':
+                    vallogits, val_logit_seq_length = classifier(
+                        inputs=self.inputs,
+                        input_seq_length=self.input_seq_length,
+                        targets=self.targets,
+                        target_seq_length=self.target_seq_length,
+                        is_training=False)
+
+                    self.decoder_loss = self.compute_loss(
+                        self.targets, vallogits, val_logit_seq_length,
+                        self.target_seq_length)
+                else:
+                    raise Exception('unknown validation mode %s' %
+                                    self.conf['validation_mode'])
 
                 if cluster is not None:
                     #create a done queue for each parameter server
@@ -487,9 +502,14 @@ class Trainer(object):
         #update the validated step
         sess.run([self.set_val_step])
 
-        outputs = self.decoder.decode(self.val_reader, sess)
+        if self.conf['validation_mode'] == 'decode':
+            outputs = self.decoder.decode(self.val_reader, sess)
 
-        val_loss = self.decoder.score(outputs, self.val_targets)
+            val_loss = self.decoder.score(outputs, self.val_targets)
+
+        else:
+            val_loss = self.compute_val_loss(self.val_reader, self.val_targets,
+                                             sess)
 
         print 'validation loss: %f' % val_loss
 
@@ -499,6 +519,72 @@ class Trainer(object):
             sess.run([self.halve_learningrate_op])
 
         sess.run(self.set_val_loss, feed_dict={self.val_loss_in:val_loss})
+
+    def compute_val_loss(self, reader, targets, sess):
+        '''compute the validation loss on a set in the reader
+
+        Args:
+            reader: a reader to read the data
+            targets: the ground truth targets as a dictionary
+            sess: a tensorflow session
+
+        Returns:
+            the loss'''
+
+        looped = False
+        avrg_loss = 0.0
+        total_elements = 0
+
+        while not looped:
+
+            inputs = []
+            labels = []
+
+            for _ in range(self.dispenser.size):
+                #read a batch of data
+                (utt_id, inp, looped) = reader.get_utt()
+
+                inputs.append(inp)
+                labels.append(targets[utt_id])
+
+                if looped:
+                    break
+
+            num_elements = len(inputs)
+
+            #add empty elements to the inputs to get a full batch
+            feat_dim = inputs[0].shape[1]
+            inputs += [np.zeros([0, feat_dim])]*(
+                self.dispenser.size-len(inputs))
+            labels += [np.zeros([0])]*(
+                self.dispenser.size-len(inputs))
+
+            #get the sequence length
+            input_seq_length = [inp.shape[0] for inp in inputs]
+            label_seq_length = [lab.shape[0] for lab in labels]
+
+            #pad and put in a tensor
+            input_tensor = np.array([np.append(
+                inp, np.zeros([self.max_input_length-inp.shape[0],
+                               inp.shape[1]]), 0) for inp in inputs])
+            label_tensor = np.array([np.append(
+                lab, np.zeros([self.max_target_length-lab.shape[0]]), 0)
+                                     for lab in labels])
+
+            #pylint: disable=E1101
+            loss = sess.run(
+                self.decoder_loss,
+                feed_dict={self.inputs:input_tensor,
+                           self.input_seq_length:input_seq_length,
+                           self.targets:label_tensor,
+                           self.target_seq_length:label_seq_length})
+
+            avrg_loss = ((total_elements*avrg_loss + num_elements*loss)/
+                         (num_elements + total_elements))
+            total_elements += num_elements
+
+        return avrg_loss
+
 
 def pad(inputs, length):
     '''

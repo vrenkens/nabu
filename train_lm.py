@@ -114,6 +114,12 @@ def train_lm(clusterfile,
             val_reader = None
             val_targets = None
 
+    #encode the validation targets
+    if val_targets is not None:
+        for utt in val_targets:
+            val_targets[utt] = dispenser.target_coder.encode(
+                val_targets[utt])
+
     #create the classifier
     classifier = lm_factory.factory(
         conf=nnet_cfg,

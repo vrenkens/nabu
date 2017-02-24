@@ -6,6 +6,7 @@ import encoder
 from nabu.neuralnetworks.classifiers import layer
 from nabu.neuralnetworks.ops import pyramid_stack
 
+
 class FfListener(encoder.Encoder):
     '''a feedforward listener object
 
@@ -46,22 +47,22 @@ class FfListener(encoder.Encoder):
         output_seq_lengths = sequence_lengths
         for l in range(int(self.conf['listener_numlayers'])):
 
-            #apply the linear layer
-            outputs = self.layer(outputs, 'layer%d' % l)
+            with tf.variable_scope('layer%d' % l):
+                #apply the linear layer
+                outputs = self.layer(outputs)
 
-            #apply the nonlinearity
-            outputs = tf.nn.relu(outputs)
+                #apply the nonlinearity
+                outputs = tf.nn.tanh(outputs)
 
-            #apply the pyramid stack
-            outputs, output_seq_lengths = pyramid_stack(outputs,
-                                                        output_seq_lengths)
+                #apply the pyramid stack
+                outputs, output_seq_lengths = pyramid_stack(outputs,
+                                                            output_seq_lengths)
 
-            if float(self.conf['listener_dropout']) < 1 and is_training:
-                outputs = tf.nn.dropout(
-                    outputs, float(self.conf['listener_dropout']))
+                if float(self.conf['listener_dropout']) < 1 and is_training:
+                    outputs = tf.nn.dropout(
+                        outputs, float(self.conf['listener_dropout']))
 
-        outputs = self.layer(outputs,
-                             'layer%d' % int(self.conf['listener_numlayers']))
+        outputs = self.layer(outputs)
 
         if float(self.conf['listener_dropout']) < 1 and is_training:
             outputs = tf.nn.dropout(outputs,
