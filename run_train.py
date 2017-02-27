@@ -44,6 +44,7 @@ def main(_):
 
     if os.path.isdir(os.path.join(FLAGS.expdir, 'processes')):
         shutil.rmtree(os.path.join(FLAGS.expdir, 'processes'))
+    os.makedirs(os.path.join(FLAGS.expdir, 'processes'))
 
     if trainer_cfg['resume_training'] == 'True':
         if not os.path.isdir(FLAGS.expdir):
@@ -56,7 +57,6 @@ def main(_):
 
         if not os.path.isdir(FLAGS.expdir):
             os.makedirs(FLAGS.expdir)
-        os.makedirs(os.path.join(FLAGS.expdir, 'processes'))
 
         if not os.path.isdir(os.path.join(FLAGS.expdir, 'model')):
             os.makedirs(os.path.join(FLAGS.expdir, 'model'))
