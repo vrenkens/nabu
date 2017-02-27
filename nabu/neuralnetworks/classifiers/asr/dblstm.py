@@ -36,8 +36,7 @@ class DBLSTM(classifier.Classifier):
         blstm = layer.BLSTMLayer(int(self.conf['num_units']))
 
         #the linear output layer
-        outlayer = layer.FFLayer(self.output_dim,
-                                 activation.TfActivation(None, lambda(x): x), 0)
+        outlayer = layer.Linear(self.output_dim)
 
         #do the forward computation
 
@@ -51,11 +50,6 @@ class DBLSTM(classifier.Classifier):
         for l in range(int(self.conf['num_layers'])):
             logits = blstm(logits, input_seq_length, 'layer' + str(l))
 
-        logits = ops.seq2nonseq(logits, input_seq_length)
-
-        logits = outlayer(logits, is_training, 'outlayer')
-
-        logits = ops.nonseq2seq(logits, input_seq_length,
-                                int(inputs.get_shape()[1]))
+        logits = outlayer(logits, 'outlayer')
 
         return logits, input_seq_length
