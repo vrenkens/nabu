@@ -2,8 +2,7 @@
 contains de DBLSTM class'''
 
 import tensorflow as tf
-from nabu.neuralnetworks.classifiers import classifier, layer, activation
-from nabu.neuralnetworks import ops
+from nabu.neuralnetworks.classifiers import classifier, layer
 
 
 class DBLSTM(classifier.Classifier):
