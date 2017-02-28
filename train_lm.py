@@ -117,7 +117,7 @@ def train_lm(clusterfile,
     #encode the validation targets
     if val_targets is not None:
         for utt in val_targets:
-            val_targets[utt] = dispenser.target_coder.encode(
+            val_targets[utt] = dispenser.textreader.coder.encode(
                 val_targets[utt])
 
     #create the classifier
