@@ -11,13 +11,16 @@ import tensorflow as tf
 
 def main(_):
     '''main function'''
-
     cluster_dir = os.path.join(FLAGS.expdir, 'cluster')
+
+    #the chief of the job should write the cluster id
+    if int(FLAGS.pid) == 0:
+        with open(os.path.join(cluster_dir, '%s-cid' % FLAGS.job_name)
+                  , 'w') as fid:
+            fid.write(FLAGS.cid)
 
     #wait for the preceeding cluster tasks to report
     machines = cluster.get_machines(cluster_dir)
-
-    print 'pid = %s' % FLAGS.pid
 
     while len(machines[FLAGS.job_name]) < int(FLAGS.pid):
         machines = cluster.get_machines(cluster_dir)
@@ -27,7 +30,7 @@ def main(_):
     machine_file = '%s/%s-%d' % (cluster_dir, socket.gethostname(), port)
 
     #look for an available port
-    while (os.path.exists(machine_file) or not cluster.port_available(port)):
+    while os.path.exists(machine_file) or not cluster.port_available(port):
 
         port += 1
         machine_file = '%s/%s-%d' % (cluster_dir, socket.gethostname(), port)
@@ -71,6 +74,8 @@ if __name__ == '__main__':
                                'one of asr or lm, the training type')
     tf.app.flags.DEFINE_string('pid', '0',
                                'the process id of this job')
+    tf.app.flags.DEFINE_string('cid', '0',
+                               'the cluster id of this job')
     tf.app.flags.DEFINE_string(
         'ssh_command', 'None',
         'the command that should be used to create ssh tunnels')

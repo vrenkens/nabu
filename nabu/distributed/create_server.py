@@ -100,7 +100,11 @@ def create_server(clusterfile, job_name, task_index, expdir, ssh_command):
                             sleep(0.1)
 
                         else:
-                            fid.write('%s,%s,%s,%s\n' % (job, remote[0],
+                            if localmachine == remote[0]:
+                                host = 'localhost'
+                            else:
+                                host = remote[0]
+                            fid.write('%s,%s,%s,%s\n' % (job, host,
                                                          remote[1], remote[2]))
 
             #notify that the cluster is ready

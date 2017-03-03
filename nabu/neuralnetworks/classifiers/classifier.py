@@ -24,7 +24,10 @@ class Classifier(object):
         self.output_dim += int(conf['add_labels'])
 
         #create the variable scope for the classifier
-        self.scope = tf.VariableScope(False, name or type(self).__name__)
+        self.scope = tf.VariableScope(
+            reuse=False,
+            name=name or type(self).__name__,
+            caching_device=lambda op: op.device)
 
     def __call__(self, inputs, input_seq_length, targets,
                  target_seq_length, is_training):

@@ -230,7 +230,21 @@ def main(_):
 
             #check if enough machines are available
             if len(machines['worker']) == 0 or len(machines['ps']) == 0:
-                os.system('condor_rm -all')
+
+                #stop the ps jobs
+                cidfile = os.path.join(FLAGS.expdir, 'cluster', 'ps-cid')
+                if os.path.exists(cidfile):
+                    with open(cidfile) as fid:
+                        cid = fid.read()
+                    subprocess.call(['condor_rm', cid])
+
+                #stop the worker jobs
+                cidfile = os.path.join(FLAGS.expdir, 'cluster', 'worker-cid')
+                if os.path.exists(cidfile):
+                    with open(cidfile) as fid:
+                        cid = fid.read()
+                    subprocess.call(['condor_rm', cid])
+
                 raise Exception('at leat one ps and one worker needed')
 
 
@@ -256,6 +270,20 @@ def main(_):
         print ('training has started look in %s/outputs for the job outputs' %
                FLAGS.expdir)
 
+        print 'waiting for worker jobs to finish'
+
+        for machine in machines['worker']:
+            machine_file = os.path.join(FLAGS.expdir, 'cluster',
+                                        '%s-%d' % (machine[0], machine[1]))
+            while os.path.exists(machine_file):
+                sleep(1)
+
+        #stop the ps jobs
+        with open(os.path.join(FLAGS.expdir, 'cluster', 'ps-cid')) as fid:
+            cid = fid.read()
+
+        subprocess.call(['condor_rm', cid])
+
     elif computing_cfg['distributed'] == 'condor_local':
 
         #create the directories
@@ -263,7 +291,7 @@ def main(_):
             os.makedirs(FLAGS.expdir + '/outputs')
 
         #create the cluster file
-        with open(FLAGS.expdir + '/cluster', 'w') as fid:
+        with open(FLAGS.expdir + '/clusterfile', 'w') as fid:
             port = 1024
             for _ in range(int(computing_cfg['numps'])):
                 while not cluster.port_available(port):

@@ -23,7 +23,7 @@ initialdir = .
 
 #Run he build cluster script for the worker
 Arguments = "python -um nabu.distributed.condor.build_cluster --job_name=worker \
-  --expdir=$(expdir) --type=$(type) --pid=$(Process) \
+  --expdir=$(expdir) --type=$(type) --pid=$(Process) --cid=$(Cluster) \
   --ssh_command=$(ssh_command)"
 #Run the condor job wapper to adjust the environment
 executable = nabu/distributed/condor/create_environment.sh

@@ -50,7 +50,7 @@ class Trainer(object):
 
         self.expdir = expdir
         self.server = server
-        cluster = tf.train.ClusterSpec(server.server_def.cluster).as_dict()
+        cluster = tf.train.ClusterSpec(server.server_def.cluster)
 
         #save the max lengths
         self.max_target_length = dispenser.max_target_length
@@ -59,19 +59,16 @@ class Trainer(object):
         #create the graph
         self.graph = tf.Graph()
 
-        if 'local' in cluster:
+        if 'local' in cluster.as_dict():
             num_replicas = 1
         else:
             #distributed training
-            num_replicas = len(cluster['worker'])
+            num_replicas = len(cluster.as_dict()['worker'])
 
         self.is_chief = task_index == 0
         device = tf.train.replica_device_setter(
             cluster=cluster,
             worker_device='/job:worker/task:%d' % task_index)
-
-        print device
-        print task_index
 
         #define the placeholders in the graph
         with self.graph.as_default():
@@ -253,23 +250,22 @@ class Trainer(object):
                         grads = [(tf.clip_by_value(grad, -1., 1.), var)
                                  for grad, var in grads]
 
-                    with tf.variable_scope('apply_gradients'):
 
-                        #opperation to apply the gradients
-                        apply_gradients_op = optimizer.apply_gradients(
-                            grads_and_vars=grads,
-                            global_step=self.global_step,
-                            name='apply_gradients')
+                    #opperation to apply the gradients
+                    apply_gradients_op = optimizer.apply_gradients(
+                        grads_and_vars=grads,
+                        global_step=self.global_step,
+                        name='apply_gradients')
 
-                        #all remaining operations with the UPDATE_OPS GraphKeys
-                        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+                    #all remaining operations with the UPDATE_OPS GraphKeys
+                    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
-                        #create an operation to update the gradients, the batch_loss
-                        #and do all other update ops
-                        #pylint: disable=E1101
-                        self.update_op = tf.group(
-                            *([apply_gradients_op] + update_ops),
-                            name='update')
+                    #create an operation to update the gradients, the batch_loss
+                    #and do all other update ops
+                    #pylint: disable=E1101
+                    self.update_op = tf.group(
+                        *([apply_gradients_op] + update_ops),
+                        name='update')
 
                 #create the summaries for visualisation
                 tf.summary.scalar('validation loss', self.val_loss)
@@ -319,6 +315,7 @@ class Trainer(object):
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True #pylint: disable=E1101
         #config.allow_soft_placement = True
+        #config.log_device_placement = True
 
         with self.graph.as_default():
             with tf.train.MonitoredTrainingSession(

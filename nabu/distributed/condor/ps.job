@@ -17,7 +17,7 @@ initialdir = .
 
 #Run he build cluster script for the parameter server
 Arguments = "python -um nabu.distributed.condor.build_cluster --job_name=ps \
-  --expdir=$(expdir) --type=$(type) --pid=$(Process) \
+  --expdir=$(expdir) --type=$(type) --pid=$(Process) --cid=$(Cluster) \
   --ssh_command=$(ssh_command)"
 # This is the executable or script I want to run
 executable = nabu/distributed/condor/create_environment.sh
