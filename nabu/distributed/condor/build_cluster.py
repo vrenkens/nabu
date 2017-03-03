@@ -2,7 +2,6 @@
 this file will be ran for all machines to build the cluster'''
 
 import os
-import sys
 import socket
 from time import sleep
 from nabu.distributed import cluster
@@ -13,17 +12,22 @@ import tensorflow as tf
 def main(_):
     '''main function'''
 
-    #unbuffer stdout
-    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+    cluster_dir = os.path.join(FLAGS.expdir, 'cluster')
 
-    cluster_dir = FLAGS.expdir + '/cluster'
+    #wait for the preceeding cluster tasks to report
+    machines = cluster.get_machines(cluster_dir)
+
+    print 'pid = %s' % FLAGS.pid
+
+    while len(machines[FLAGS.job_name]) < int(FLAGS.pid):
+        machines = cluster.get_machines(cluster_dir)
+        sleep(1)
 
     port = 1024
     machine_file = '%s/%s-%d' % (cluster_dir, socket.gethostname(), port)
 
     #look for an available port
-    while (os.path.exists(machine_file)
-           and not cluster.port_available(port)):
+    while (os.path.exists(machine_file) or not cluster.port_available(port)):
 
         port += 1
         machine_file = '%s/%s-%d' % (cluster_dir, socket.gethostname(), port)
@@ -36,31 +40,23 @@ def main(_):
     print 'waiting for cluster to be ready...'
 
     #read the task_index in the created file
-    task_index = ''
-    while (task_index == FLAGS.job_name
-           or not os.path.exists(cluster_dir + '/ready')):
-
-        with open(machine_file) as fid:
-            task_index = fid.read()
-
+    while not os.path.exists(cluster_dir + '/ready'):
         sleep(1)
 
     print 'cluster is ready'
-
-    print 'task index is %s' % task_index
 
     #start the training process
     if FLAGS.type == 'asr':
         train_asr(clusterfile=cluster_dir + '/cluster',
                   job_name=FLAGS.job_name,
-                  task_index=int(task_index),
-                  ssh_tunnel=FLAGS.ssh_tunnel == 'True',
+                  task_index=int(FLAGS.pid),
+                  ssh_command=FLAGS.ssh_command,
                   expdir=FLAGS.expdir)
     else:
         train_lm(clusterfile=cluster_dir + '/cluster',
                  job_name=FLAGS.job_name,
-                 task_index=int(task_index),
-                 ssh_tunnel=FLAGS.ssh_tunnel == 'True',
+                 task_index=int(FLAGS.pid),
+                 ssh_command=FLAGS.ssh_command,
                  expdir=FLAGS.expdir)
 
     #delete the file to notify that the porcess has finished
@@ -73,9 +69,11 @@ if __name__ == '__main__':
                                'the experimental directory')
     tf.app.flags.DEFINE_string('type', 'asr',
                                'one of asr or lm, the training type')
+    tf.app.flags.DEFINE_string('pid', '0',
+                               'the process id of this job')
     tf.app.flags.DEFINE_string(
-        'ssh_tunnel', 'False',
-        'wheter or not communication should happen through an ssh tunnel')
+        'ssh_command', 'None',
+        'the command that should be used to create ssh tunnels')
     FLAGS = tf.app.flags.FLAGS
 
     tf.app.run()

@@ -37,10 +37,13 @@ class CTCDecoder(decoder.Decoder):
         sparse_outputs, logprobs = tf.nn.ctc_greedy_decoder(
             logits, logits_seq_length)
         sparse_outputs = sparse_outputs[0]
-        logprobs = tf.unpack(tf.reshape(logprobs, [-1]))
+        logprobs = tf.unstack(tf.reshape(logprobs, [-1]))
 
         #split the sparse tensors into the seperate utterances
-        output_list = tf.sparse_split(0, self.batch_size, sparse_outputs)
+        output_list = tf.sparse_split(
+            axis=0,
+            num_split=self.batch_size,
+            sp_input=sparse_outputs)
         outputs = [tf.reshape(tf.sparse_tensor_to_dense(o), [-1])
                    for o in output_list]
 
@@ -60,7 +63,7 @@ class CTCDecoder(decoder.Decoder):
             the score'''
 
         #decode the targets
-        for utt in targets:
-            targets[utt] = self.coder.decode(targets[utt])
+        decoded_targets = {utt:self.coder.decode(targets[utt])
+                                for utt in targets}
 
-        return score.cer(outputs, targets)
+        return score.cer(outputs, decoded_targets)

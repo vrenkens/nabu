@@ -50,7 +50,7 @@ def causal_aconv1d(inputs, filt, dilation_rate, scope=None):
         #pad zeros to the input to make the convolution causal
         padding_shape = inputs_shape
         padding_shape[1] = dilation_rate*(filter_size-1)
-        padded = tf.concat(1, [tf.zeros(padding_shape), inputs])
+        padded = tf.concat([tf.zeros(padding_shape), inputs], 1)
 
         #do the convolution
         out = aconv1d(padded, filt, dilation_rate)
@@ -112,7 +112,7 @@ def pyramid_stack(inputs, sequence_lengths, scope=None):
         even_inputs = tf.gather(time_major_input, range(0, length, 2))
 
         #concatenate odd and even inputs
-        time_major_outputs = tf.concat(2, [even_inputs, odd_inputs])
+        time_major_outputs = tf.concat([even_inputs, odd_inputs], 2)
 
         #convert back to time minor
         outputs = tf.transpose(time_major_outputs, [1, 0, 2])
@@ -141,14 +141,14 @@ def seq2nonseq(sequential, seq_length, name=None):
 
     with tf.name_scope(name or 'seq2nonseq'):
         #convert the list for each time step to a list for each sequence
-        sequences = tf.unpack(sequential)
+        sequences = tf.unstack(sequential)
 
         #remove the padding from sequences
         sequences = [tf.gather(sequences[s], tf.range(seq_length[s]))
                      for s in range(len(sequences))]
 
         #concatenate the sequences
-        tensor = tf.concat(0, sequences)
+        tensor = tf.concat(sequences, 0)
 
     return tensor
 
@@ -170,7 +170,7 @@ def nonseq2seq(tensor, seq_length, length, name=None):
 
     with tf.name_scope(name or'nonseq2seq'):
         #get the cumulated sequence lengths to specify the positions in tensor
-        cum_seq_length = tf.concat(0, [tf.constant([0]), tf.cumsum(seq_length)])
+        cum_seq_length = tf.concat([tf.constant([0]), tf.cumsum(seq_length)], 0)
 
         #get the indices in the tensor for each sequence
         indices = [tf.range(cum_seq_length[l], cum_seq_length[l+1])
@@ -187,7 +187,7 @@ def nonseq2seq(tensor, seq_length, length, name=None):
         for seq in sequences:
             seq.set_shape([length, int(tensor.get_shape()[1])])
 
-        #pack the sequences into a tensor
-        sequential = tf.pack(sequences)
+        #stack the sequences into a tensor
+        sequential = tf.stack(sequences)
 
     return sequential

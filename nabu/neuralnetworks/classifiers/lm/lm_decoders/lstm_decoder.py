@@ -67,7 +67,7 @@ class LstmDecoder(object):
                 initial_state = rnn_cell.zero_state(batch_size, tf.float32)
 
             #use the attention decoder
-            logit_list, state = tf.nn.seq2seq.rnn_decoder(
+            logit_list, state = tf.contrib.legacy_seq2seq.rnn_decoder(
                 decoder_inputs=input_list,
                 initial_state=initial_state,
                 cell=rnn_cell,

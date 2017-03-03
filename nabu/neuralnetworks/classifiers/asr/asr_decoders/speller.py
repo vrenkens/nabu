@@ -38,7 +38,7 @@ class Speller(asr_decoder.AsrDecoder):
         time_major_inputs = tf.transpose(one_hot_inputs, [1, 0, 2])
 
         #convert targets to list
-        input_list = tf.unpack(time_major_inputs)
+        input_list = tf.unstack(time_major_inputs)
 
         #create the rnn cell
         rnn_cell = self.create_rnn(is_training)
@@ -48,7 +48,7 @@ class Speller(asr_decoder.AsrDecoder):
                      float(self.conf['speller_sample_prob']))
 
         #use the attention decoder
-        logit_list, state = tf.nn.seq2seq.attention_decoder(
+        logit_list, state = tf.contrib.legacy_seq2seq.attention_decoder(
             decoder_inputs=input_list,
             initial_state=initial_state,
             attention_states=hlfeat,
@@ -58,7 +58,7 @@ class Speller(asr_decoder.AsrDecoder):
             scope='attention_decoder',
             initial_state_attention=not first_step)
 
-        logits = tf.transpose(tf.pack(logit_list), [1, 0, 2])
+        logits = tf.transpose(tf.stack(logit_list), [1, 0, 2])
 
         return logits, state
 
@@ -72,14 +72,14 @@ class Speller(asr_decoder.AsrDecoder):
             an rnn cell'''
 
         #create the multilayered rnn cell
-        rnn_cell = tf.nn.rnn_cell.BasicLSTMCell(
+        rnn_cell = tf.contrib.rnn.BasicLSTMCell(
             int(self.conf['speller_numunits']))
 
         if float(self.conf['speller_dropout']) < 1 and is_training:
-            rnn_cell = tf.nn.rnn_cell.DropoutWrapper(
+            rnn_cell = tf.contrib.rnn.DropoutWrapper(
                 rnn_cell, output_keep_prob=float(self.conf['speller_dropout']))
 
-        rnn_cell = tf.nn.rnn_cell.MultiRNNCell(
+        rnn_cell = tf.contrib.rnn.MultiRNNCell(
             [rnn_cell]*int(self.conf['speller_numlayers']))
 
         return rnn_cell
@@ -119,6 +119,6 @@ def loop_function(decoder_inputs, sample_prob, prev, i):
     #creat a boolean vector of where to sample
     sample = tf.less(tf.random_uniform([batch_size]), sample_prob)
 
-    next_input = tf.select(sample, next_input_sampled, next_input_truth)
+    next_input = tf.where(sample, next_input_sampled, next_input_truth)
 
     return next_input

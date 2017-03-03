@@ -13,7 +13,6 @@ def factory(conf,
             val_targets,
             expdir,
             server,
-            cluster,
             task_index):
     '''Create a Trainer object
 
@@ -24,8 +23,6 @@ def factory(conf,
         input_dim: the input dimension to the nnnetgraph
         num_steps: the total number of steps that will be taken
         dispenser: a Batchdispenser object
-        cluster: the optional cluster used for distributed training, it
-            should contain at least one parmeter server and one worker
         val_reader: a feature reader for the validation data if None
             validation will not be used
         val_targets: a dictionary containing the targets of the validation set
@@ -53,5 +50,4 @@ def factory(conf,
                          val_targets,
                          expdir,
                          server,
-                         cluster,
                          task_index)

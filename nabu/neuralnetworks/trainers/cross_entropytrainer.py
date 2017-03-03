@@ -36,17 +36,17 @@ class CrossEntropyTrainer(trainer.Trainer):
             output_dim = int(logits.get_shape()[2])
 
             #put all the tragets on top of each other
-            split_targets = tf.unpack(targets)
+            split_targets = tf.unstack(targets)
             for i, target in enumerate(split_targets):
                 #only use the real data
                 split_targets[i] = target[:target_seq_length[i]]
 
                 #append an end of sequence label
                 split_targets[i] = tf.concat(
-                    0, [split_targets[i], [output_dim-1]])
+                    [split_targets[i], [output_dim-1]], 0)
 
             #concatenate the targets
-            nonseq_targets = tf.concat(0, split_targets)
+            nonseq_targets = tf.concat(split_targets, 0)
 
             #convert the logits to non sequential data
             nonseq_logits = ops.seq2nonseq(logits, logit_seq_length)
@@ -57,6 +57,6 @@ class CrossEntropyTrainer(trainer.Trainer):
 
             #compute the cross-enthropy loss
             loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
-                nonseq_logits, nonseq_targets))
+                logits=nonseq_logits, labels=nonseq_targets))
 
         return loss

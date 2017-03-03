@@ -15,7 +15,7 @@ FLAGS = tf.app.flags.FLAGS
 def main(_):
     '''does everything for testing'''
 
-    decoder_cfg_file = None
+    decoder_cfg_file = 'config/decoder/attention_visualizer.cfg'
 
     #read the database config file
     parsed_database_cfg = configparser.ConfigParser()
@@ -104,7 +104,7 @@ def main(_):
     references = dict()
     for line in lines:
         splitline = line.strip().split(' ')
-        references[splitline[0]] = ' '.join(splitline[1:])
+        references[splitline[0]] = coder.encode(' '.join(splitline[1:]))
 
     #compute the character error rate
     score = decoder.score(decoded, references)

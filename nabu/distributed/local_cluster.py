@@ -10,7 +10,7 @@ def local_cluster(expdir, class_type):
     '''main function'''
 
     #read the cluster file
-    clusterfile = expdir + '/cluster'
+    clusterfile = expdir + '/clusterfile'
     machines = dict()
     machines['worker'] = []
     machines['ps'] = []
@@ -30,7 +30,7 @@ def local_cluster(expdir, class_type):
                 ['python', 'train_%s.py' % class_type,
                  '--clusterfile=%s' % clusterfile,
                  '--job_name=%s' % job, '--task_index=%d' % task_index,
-                 '--ssh_tunnel=False', '--expdir=%s' % expdir]))
+                 '--ssh_command=None', '--expdir=%s' % expdir]))
             task_index += 1
 
     for process in processes:

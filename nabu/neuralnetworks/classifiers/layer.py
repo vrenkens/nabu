@@ -2,7 +2,6 @@
 Neural network layers '''
 
 import tensorflow as tf
-from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn
 from nabu.neuralnetworks import ops
 
@@ -93,14 +92,14 @@ class BLSTMLayer(object):
 
             #create the lstm cell that will be used for the forward and backward
             #pass
-            lstm_cell = rnn_cell.BasicLSTMCell(self.num_units)
+            lstm_cell = tf.contrib.rnn.BasicLSTMCell(self.num_units)
 
             #do the forward computation
             outputs_tupple, _ = bidirectional_dynamic_rnn(
                 lstm_cell, lstm_cell, inputs, dtype=tf.float32,
                 sequence_length=sequence_length)
 
-            outputs = tf.concat(2, outputs_tupple)
+            outputs = tf.concat(outputs_tupple, 2)
 
             return outputs
 

@@ -56,7 +56,7 @@ class LstmLm(classifier.Classifier):
         s_labels = tf.constant(self.output_dim-1,
                                dtype=tf.int32,
                                shape=[batch_size, 1])
-        encoder_inputs = tf.concat(1, [s_labels, formatted_inputs])
+        encoder_inputs = tf.concat([s_labels, formatted_inputs], 1)
 
         #compute the output logits
         logits, _ = self.decoder(

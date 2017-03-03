@@ -29,6 +29,28 @@ def get_machines(machine_dir):
 
     return machines
 
+def read_cluster(filename):
+    '''read a cluster file
+
+    Args:
+        filename: the cluster file
+
+    Returns:
+        a dictionary with ps and worker containing a list of machines'''
+
+    machines = dict()
+    machines['worker'] = []
+    machines['ps'] = []
+
+    with open(filename) as fid:
+        for line in fid:
+            if len(line.strip()) > 0:
+                split = line.strip().split(',')
+                machines[split[0]].append(
+                    (split[1], int(split[2]), split[3]))
+
+    return machines
+
 def port_available(port):
     '''check if port is available'''
 
