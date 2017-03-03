@@ -66,7 +66,12 @@ class Trainer(object):
             num_replicas = len(cluster['worker'])
 
         self.is_chief = task_index == 0
-        device = tf.train.replica_device_setter(cluster=cluster)
+        device = tf.train.replica_device_setter(
+            cluster=cluster,
+            worker_device='/job:worker/task:%d' % task_index)
+
+        print device
+        print task_index
 
         #define the placeholders in the graph
         with self.graph.as_default():
