@@ -24,10 +24,7 @@ class AsrDecoder(object):
         self.conf = conf
         self.output_dim = output_dim
 
-        self.scope = tf.VariableScope(
-            reuse=False,
-            name=name or type(self).__name__,
-            caching_device=lambda op: op.device)
+        self.scope = tf.VariableScope(False, name or type(self).__name__)
 
 
     def __call__(self, hlfeat, encoder_inputs, initial_state, first_step,
