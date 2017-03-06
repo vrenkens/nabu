@@ -230,7 +230,7 @@ class Trainer(object):
 
                     #create an optimizer that aggregates gradients
                     if int(conf['numbatches_to_aggregate']) > 0:
-                        optimizer = tf.train.SyncReplicasOptimizerV2(
+                        optimizer = tf.train.SyncReplicasOptimizer(
                             opt=optimizer,
                             replicas_to_aggregate=int(
                                 conf['numbatches_to_aggregate']),
@@ -262,7 +262,6 @@ class Trainer(object):
 
                     #create an operation to update the gradients, the batch_loss
                     #and do all other update ops
-                    #pylint: disable=E1101
                     self.update_op = tf.group(
                         *([apply_gradients_op] + update_ops),
                         name='update')
@@ -313,7 +312,7 @@ class Trainer(object):
 
         #start the session and standart servises
         config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True #pylint: disable=E1101
+        config.gpu_options.allow_growth = True
         #config.allow_soft_placement = True
         #config.log_device_placement = True
 
@@ -329,6 +328,7 @@ class Trainer(object):
                 sess.run(self.release_reader)
 
                 #start the training loop
+                #pylint: disable=E1101
                 while (not sess.should_stop()
                        and self.global_step.eval(sess) < self.num_steps):
 
@@ -344,6 +344,7 @@ class Trainer(object):
                     start = time()
 
                     #wait until the reader is free
+                    #pylint: disable=E1101
                     while self.reading.eval(sess):
                         sleep(1)
 
@@ -351,6 +352,7 @@ class Trainer(object):
                     sess.run(self.block_reader)
 
                     #read a batch of data
+                    #pylint: disable=E1101
                     batch_data, batch_labels = self.dispenser.get_batch(
                         self.pos.eval(sess))
 
@@ -406,7 +408,6 @@ class Trainer(object):
         padded_inputs = np.array(pad(inputs, self.max_input_length))
         padded_targets = np.array(pad(targets, self.max_target_length))
 
-        #pylint: disable=E1101
         _, loss, lr = sess.run(
             fetches=[self.update_op,
                      self.loss,
@@ -447,6 +448,7 @@ class Trainer(object):
 
         print 'validation loss: %f' % val_loss
 
+        #pylint: disable=E1101
         if (val_loss > self.val_loss.eval(session=sess)
                 and self.conf['valid_adapt'] == 'True'):
             print 'halving learning rate'
@@ -505,7 +507,6 @@ class Trainer(object):
                 lab, np.zeros([self.max_target_length-lab.shape[0]]), 0)
                                      for lab in labels])
 
-            #pylint: disable=E1101
             loss = sess.run(
                 self.decoder_loss,
                 feed_dict={self.inputs:input_tensor,
