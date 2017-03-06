@@ -71,9 +71,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a9bae5ea897441ea78d443afee32f7c0b"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="train__asr_8py.html#a9bae5ea897441ea78d443afee32f7c0b">train_asr.train_asr</a> (clusterfile, job_name, task_index, ssh_tunnel, expdir)</td></tr>
-<tr class="memdesc:a9bae5ea897441ea78d443afee32f7c0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">does everything for asr training  <a href="train__asr_8py.html#a9bae5ea897441ea78d443afee32f7c0b">More...</a><br /></td></tr>
-<tr class="separator:a9bae5ea897441ea78d443afee32f7c0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaae91aa33a35ab622d4e9328f62ecbd6"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="train__asr_8py.html#aaae91aa33a35ab622d4e9328f62ecbd6">train_asr.train_asr</a> (clusterfile, job_name, task_index, ssh_command, expdir)</td></tr>
+<tr class="memdesc:aaae91aa33a35ab622d4e9328f62ecbd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">does everything for asr training  <a href="train__asr_8py.html#aaae91aa33a35ab622d4e9328f62ecbd6">More...</a><br /></td></tr>
+<tr class="separator:aaae91aa33a35ab622d4e9328f62ecbd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -89,9 +89,9 @@ Variables</h2></td></tr>
 <tr class="memitem:a864b6504fa211de0a5ce8f9f826c27ff"><td class="memItemLeft" align="right" valign="top"><a id="a864b6504fa211de0a5ce8f9f826c27ff"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>train_asr.task_index</b></td></tr>
 <tr class="separator:a864b6504fa211de0a5ce8f9f826c27ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6d9f7431448a34d48e11eb885a493963"><td class="memItemLeft" align="right" valign="top"><a id="a6d9f7431448a34d48e11eb885a493963"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>train_asr.ssh_tunnel</b></td></tr>
-<tr class="separator:a6d9f7431448a34d48e11eb885a493963"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a74d8dd4f3ff3b1656d7846a95505b3"><td class="memItemLeft" align="right" valign="top"><a id="a2a74d8dd4f3ff3b1656d7846a95505b3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>train_asr.ssh_command</b></td></tr>
+<tr class="separator:a2a74d8dd4f3ff3b1656d7846a95505b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adec2cf4ed554b7a361df757ec47d4746"><td class="memItemLeft" align="right" valign="top"><a id="adec2cf4ed554b7a361df757ec47d4746"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>train_asr.expdir</b></td></tr>
 <tr class="separator:adec2cf4ed554b7a361df757ec47d4746"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -99,8 +99,8 @@ Variables</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>this file will do the asr training </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="file_a9bae5ea897441ea78d443afee32f7c0b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a9bae5ea897441ea78d443afee32f7c0b">&sect;&nbsp;</a></span>train_asr()</h2>
+<a id="file_aaae91aa33a35ab622d4e9328f62ecbd6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_aaae91aa33a35ab622d4e9328f62ecbd6">&sect;&nbsp;</a></span>train_asr()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -127,7 +127,7 @@ Variables</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>ssh_tunnel</em>, </td>
+          <td class="paramname"><em>ssh_command</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -149,8 +149,8 @@ Variables</h2></td></tr>
     <tr><td class="paramname">clusterfile</td><td>the file where all the machines in the cluster are specified if None, local training will be done </td></tr>
     <tr><td class="paramname">job_name</td><td>one of ps or worker in the case of distributed training </td></tr>
     <tr><td class="paramname">task_index</td><td>the task index in this job </td></tr>
-    <tr><td class="paramname">ssh_tunnel</td><td>wheter or not communication should happen through an ssh </td></tr>
-    <tr><td class="paramname">tunnel</td><td></td></tr>
+    <tr><td class="paramname">ssh_command</td><td>the command to use for ssh, if 'None' no tunnel will be </td></tr>
+    <tr><td class="paramname">created</td><td></td></tr>
     <tr><td class="paramname">expdir</td><td>the experiments directory </td></tr>
   </table>
   </dd>

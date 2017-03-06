@@ -88,9 +88,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a6d92016edce64188954ddb427a63a9be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the loss.  <a href="#a6d92016edce64188954ddb427a63a9be">More...</a><br /></td></tr>
 <tr class="separator:a6d92016edce64188954ddb427a63a9be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html">nabu.neuralnetworks.trainers.trainer.Trainer</a></td></tr>
-<tr class="memitem:a4021e986993d4645cd5e01dd2bebfa46 inherit pub_methods_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a4021e986993d4645cd5e01dd2bebfa46">__init__</a> (self, conf, decoder, classifier, input_dim, dispenser, val_reader, val_targets, expdir, server=None, cluster=None, task_index=0)</td></tr>
-<tr class="memdesc:a4021e986993d4645cd5e01dd2bebfa46 inherit pub_methods_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="mdescLeft">&#160;</td><td class="mdescRight">NnetTrainer constructor, creates the training graph.  <a href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a4021e986993d4645cd5e01dd2bebfa46">More...</a><br /></td></tr>
-<tr class="separator:a4021e986993d4645cd5e01dd2bebfa46 inherit pub_methods_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84542f0fb6f1df27d3c563206365a697 inherit pub_methods_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a84542f0fb6f1df27d3c563206365a697">__init__</a> (self, conf, decoder, classifier, input_dim, dispenser, val_reader, val_targets, expdir, server, task_index)</td></tr>
+<tr class="memdesc:a84542f0fb6f1df27d3c563206365a697 inherit pub_methods_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="mdescLeft">&#160;</td><td class="mdescRight">NnetTrainer constructor, creates the training graph.  <a href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a84542f0fb6f1df27d3c563206365a697">More...</a><br /></td></tr>
+<tr class="separator:a84542f0fb6f1df27d3c563206365a697 inherit pub_methods_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a796e6aad934cc361e487df85ccc2eac5 inherit pub_methods_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a796e6aad934cc361e487df85ccc2eac5">compute_loss</a> (self, targets, logits, logit_seq_length, target_seq_length)</td></tr>
 <tr class="memdesc:a796e6aad934cc361e487df85ccc2eac5 inherit pub_methods_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the loss.  <a href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a796e6aad934cc361e487df85ccc2eac5">More...</a><br /></td></tr>
 <tr class="separator:a796e6aad934cc361e487df85ccc2eac5 inherit pub_methods_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -104,6 +104,9 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 <tr class="memitem:a8fd73a9315649d686cf5e674782b747a inherit pub_methods_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="a8fd73a9315649d686cf5e674782b747a"></a>
 def&#160;</td><td class="memItemRight" valign="bottom"><b>validate</b> (self, sess)</td></tr>
 <tr class="separator:a8fd73a9315649d686cf5e674782b747a inherit pub_methods_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa61eda58787aa91d1fa1e1c906e50646 inherit pub_methods_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#aa61eda58787aa91d1fa1e1c906e50646">compute_val_loss</a> (self, reader, targets, sess)</td></tr>
+<tr class="memdesc:aa61eda58787aa91d1fa1e1c906e50646 inherit pub_methods_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the validation loss on a set in the reader  <a href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#aa61eda58787aa91d1fa1e1c906e50646">More...</a><br /></td></tr>
+<tr class="separator:aa61eda58787aa91d1fa1e1c906e50646 inherit pub_methods_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -129,9 +132,6 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memitem:a8f132a7a6800fd2711513af11030ee96 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="a8f132a7a6800fd2711513af11030ee96"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>server</b></td></tr>
 <tr class="separator:a8f132a7a6800fd2711513af11030ee96 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a35eafb539ddb75d63da80847ef353415 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="a35eafb539ddb75d63da80847ef353415"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>cluster</b></td></tr>
-<tr class="separator:a35eafb539ddb75d63da80847ef353415 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a80c0805decb5c8f95fe99def91cb8f71 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="a80c0805decb5c8f95fe99def91cb8f71"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>max_target_length</b></td></tr>
 <tr class="separator:a80c0805decb5c8f95fe99def91cb8f71 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -141,6 +141,9 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memitem:ac7cc9bc7f7678e0546c01dcc2a1d11d7 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="ac7cc9bc7f7678e0546c01dcc2a1d11d7"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>graph</b></td></tr>
 <tr class="separator:ac7cc9bc7f7678e0546c01dcc2a1d11d7 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c709479b98f2b7aac2e6026124c455d inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="a8c709479b98f2b7aac2e6026124c455d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>is_chief</b></td></tr>
+<tr class="separator:a8c709479b98f2b7aac2e6026124c455d inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aedf4487057698dd08a2d5f5734f24e06 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="aedf4487057698dd08a2d5f5734f24e06"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>inputs</b></td></tr>
 <tr class="separator:aedf4487057698dd08a2d5f5734f24e06 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -165,9 +168,9 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memitem:a6bf0f9ce43fafd8e73cf0909960f8423 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="a6bf0f9ce43fafd8e73cf0909960f8423"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>decoder</b></td></tr>
 <tr class="separator:a6bf0f9ce43fafd8e73cf0909960f8423 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a921cb2f4ae643e4473fe31b174ccd53c inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="a921cb2f4ae643e4473fe31b174ccd53c"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>done</b></td></tr>
-<tr class="separator:a921cb2f4ae643e4473fe31b174ccd53c inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8fc6625fd23b61265cf43f37e892e87 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="ac8fc6625fd23b61265cf43f37e892e87"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>decoder_loss</b></td></tr>
+<tr class="separator:ac8fc6625fd23b61265cf43f37e892e87 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5297915b5c965ad74509e27c5ac3d298 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="a5297915b5c965ad74509e27c5ac3d298"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>global_step</b></td></tr>
 <tr class="separator:a5297915b5c965ad74509e27c5ac3d298 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -210,21 +213,9 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memitem:a60bde58d2ea3049d908174061c43495f inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="a60bde58d2ea3049d908174061c43495f"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>update_op</b></td></tr>
 <tr class="separator:a60bde58d2ea3049d908174061c43495f inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af1fc95bdb318eb31fa492e007fb8507c inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="af1fc95bdb318eb31fa492e007fb8507c"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>init_op</b></td></tr>
-<tr class="separator:af1fc95bdb318eb31fa492e007fb8507c inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a35f700cd0803ecd72a997925b57d7577 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="a35f700cd0803ecd72a997925b57d7577"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>init_token_op</b></td></tr>
-<tr class="separator:a35f700cd0803ecd72a997925b57d7577 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acf43ce75567b81d559346ac5368dc37c inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="acf43ce75567b81d559346ac5368dc37c"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>chief_queue_runner</b></td></tr>
-<tr class="separator:acf43ce75567b81d559346ac5368dc37c inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2cf49945fc0536a323a409ba3aadcd6f inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="a2cf49945fc0536a323a409ba3aadcd6f"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>trainsaver</b></td></tr>
-<tr class="separator:a2cf49945fc0536a323a409ba3aadcd6f inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a724a4dfe667914c2f0cc8577544ced1a inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="a724a4dfe667914c2f0cc8577544ced1a"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>supervisor</b></td></tr>
-<tr class="separator:a724a4dfe667914c2f0cc8577544ced1a inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a466024d4d94184c47dd6236b9fd0b033 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memItemLeft" align="right" valign="top"><a id="a466024d4d94184c47dd6236b9fd0b033"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>scaffold</b></td></tr>
+<tr class="separator:a466024d4d94184c47dd6236b9fd0b033 inherit pub_attribs_classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A trainer that minimises the cross-enthropy loss, the output sequences must be of the same length as the input sequences. </p>

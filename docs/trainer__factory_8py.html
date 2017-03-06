@@ -74,15 +74,15 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a36c9794f54c9a71840e4d18a613c3c1d"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trainer__factory_8py.html#a36c9794f54c9a71840e4d18a613c3c1d">nabu.neuralnetworks.trainers.trainer_factory.factory</a> (conf, decoder, classifier, input_dim, dispenser, val_reader, val_targets, expdir, server, cluster, task_index)</td></tr>
-<tr class="memdesc:a36c9794f54c9a71840e4d18a613c3c1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a Trainer object.  <a href="trainer__factory_8py.html#a36c9794f54c9a71840e4d18a613c3c1d">More...</a><br /></td></tr>
-<tr class="separator:a36c9794f54c9a71840e4d18a613c3c1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82ab77ede4eee8bdbd6975d587ec0d98"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trainer__factory_8py.html#a82ab77ede4eee8bdbd6975d587ec0d98">nabu.neuralnetworks.trainers.trainer_factory.factory</a> (conf, decoder, classifier, input_dim, dispenser, val_reader, val_targets, expdir, server, task_index)</td></tr>
+<tr class="memdesc:a82ab77ede4eee8bdbd6975d587ec0d98"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a Trainer object.  <a href="trainer__factory_8py.html#a82ab77ede4eee8bdbd6975d587ec0d98">More...</a><br /></td></tr>
+<tr class="separator:a82ab77ede4eee8bdbd6975d587ec0d98"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>contains the Trainer factory mehod </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="file_a36c9794f54c9a71840e4d18a613c3c1d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a36c9794f54c9a71840e4d18a613c3c1d">&sect;&nbsp;</a></span>factory()</h2>
+<a id="file_a82ab77ede4eee8bdbd6975d587ec0d98"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a82ab77ede4eee8bdbd6975d587ec0d98">&sect;&nbsp;</a></span>factory()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -145,12 +145,6 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>cluster</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
           <td class="paramname"><em>task_index</em>&#160;</td>
         </tr>
         <tr>
@@ -170,7 +164,6 @@ Functions</h2></td></tr>
     <tr><td class="paramname">input_dim</td><td>the input dimension to the nnnetgraph </td></tr>
     <tr><td class="paramname">num_steps</td><td>the total number of steps that will be taken </td></tr>
     <tr><td class="paramname">dispenser</td><td>a Batchdispenser object </td></tr>
-    <tr><td class="paramname">cluster</td><td>the optional cluster used for distributed training, it should contain at least one parmeter server and one worker </td></tr>
     <tr><td class="paramname">val_reader</td><td>a feature reader for the validation data if None validation will not be used </td></tr>
     <tr><td class="paramname">val_targets</td><td>a dictionary containing the targets of the validation set </td></tr>
     <tr><td class="paramname">logdir</td><td>directory where the summaries will be written </td></tr>

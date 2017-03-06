@@ -1,6 +1,7 @@
 var searchData=
 [
   ['read_5falignments',['read_alignments',['../readfiles_8py.html#ab1b1b88ad6e4f5cd03e05096bcef19f2',1,'nabu::processing::readfiles']]],
+  ['read_5fcluster',['read_cluster',['../cluster_8py.html#ad116d15292bed36d58d7d3f2653fdbb9',1,'nabu::distributed::cluster']]],
   ['read_5fline',['read_line',['../classnabu_1_1processing_1_1text__reader_1_1TextReader.html#a44721d3baf02df680ce8f0b06cd5b236',1,'nabu::processing::text_reader::TextReader']]],
   ['read_5fnext_5futt',['read_next_utt',['../classnabu_1_1processing_1_1ark_1_1ArkReader.html#a55a0c43e2c62d42deb0c4f5d81ad4176',1,'nabu::processing::ark::ArkReader']]],
   ['read_5fsegments',['read_segments',['../readfiles_8py.html#a9e9a7bee561ed00c1ae3d27131023d39',1,'nabu::processing::readfiles']]],
