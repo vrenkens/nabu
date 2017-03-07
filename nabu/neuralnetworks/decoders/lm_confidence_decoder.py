@@ -35,8 +35,8 @@ class LmConfidenceDecoder(decoder.Decoder):
             output_dim = int(logits.get_shape()[2])
 
             #put all the tragets on top of each other
-            split_targets = tf.unpack(tf.cast(inputs, tf.int32)[:, :, 0])
-            split_logits = tf.unpack(logits)
+            split_targets = tf.unstack(tf.cast(inputs, tf.int32)[:, :, 0])
+            split_logits = tf.unstack(logits)
             outputs = []
             for i, target in enumerate(split_targets):
                 #only use the real data
@@ -44,7 +44,7 @@ class LmConfidenceDecoder(decoder.Decoder):
                 logit = split_logits[i][:logit_seq_length[i]]
 
                 #append an end of sequence label
-                starget = tf.concat(0, [target, [output_dim-1]])
+                starget = tf.concat([target, [output_dim-1]], 0)
 
                 #one hot encode the targets
                 #pylint: disable=E1101
@@ -52,7 +52,8 @@ class LmConfidenceDecoder(decoder.Decoder):
 
                 #compute the perplexity
                 loss = tf.exp(tf.reduce_mean(
-                    tf.nn.softmax_cross_entropy_with_logits(logit, starget)))
+                    tf.nn.softmax_cross_entropy_with_logits(
+                        logits=logit, labels=starget)))
 
                 outputs.append([(loss, target)])
 

@@ -55,7 +55,7 @@ class LstmDecoder(object):
             time_major_inputs = tf.transpose(one_hot_inputs, [1, 0, 2])
 
             #convert targets to list
-            input_list = tf.unpack(time_major_inputs)
+            input_list = tf.unstack(time_major_inputs)
 
             #create the rnn cell
             rnn_cell = self.create_rnn(is_training)
@@ -73,7 +73,7 @@ class LstmDecoder(object):
                 cell=rnn_cell,
                 scope='rnn_decoder')
 
-            logits = tf.transpose(tf.pack(logit_list), [1, 0, 2])
+            logits = tf.transpose(tf.stack(logit_list), [1, 0, 2])
 
             logits = outlayer(logits)
 
@@ -91,13 +91,13 @@ class LstmDecoder(object):
             an rnn cell'''
 
         #create the multilayered rnn cell
-        rnn_cell = tf.nn.rnn_cell.BasicLSTMCell(self.numunits)
+        rnn_cell = tf.contrib.rnn.BasicLSTMCell(self.numunits)
 
         if self.dropout < 1 and is_training:
-            rnn_cell = tf.nn.rnn_cell.DropoutWrapper(
+            rnn_cell = tf.contrib.rnn.DropoutWrapper(
                 rnn_cell, output_keep_prob=self.dropout)
 
-        rnn_cell = tf.nn.rnn_cell.MultiRNNCell([rnn_cell]*self.numlayers)
+        rnn_cell = tf.contrib.rnn.MultiRNNCell([rnn_cell]*self.numlayers)
 
         return rnn_cell
 
