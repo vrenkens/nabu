@@ -285,7 +285,7 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores',
                 full_finished = tf.reshape(
                     tf.tile(tf.expand_dims(finished, 2), [1, 1, numlabels]),
                     [batch_size, -1])
-                scores = tf.select(full_finished, oldscores, newscores)
+                scores = tf.where(full_finished, oldscores, newscores)
 
                 #set the scores of expanded beams from finished elements to
                 #negative maximum [batch_size x beam_width*numlabels]
@@ -295,7 +295,7 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores',
                                 [1, 1, numlabels-1])])
                                                , [batch_size, -1])
 
-                scores = tf.select(
+                scores = tf.where(
                     expanded_finished,
                     tf.tile([[-scores.dtype.max]],
                             [batch_size, numlabels*beam_width]),
@@ -305,7 +305,7 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores',
             with tf.variable_scope('lengths'):
                 #update the sequence lengths for the unfinshed beam elements
                 #[batch_size x beam_width]
-                lengths = tf.select(finished, self.lengths, self.lengths+1)
+                lengths = tf.where(finished, self.lengths, self.lengths+1)
 
                 #repeat the lengths for all expanded elements
                 #[batch_size x beam_width*numlabels]
@@ -340,7 +340,7 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores',
                 #put the selected label for the finished elements to zero
                 finished = tf.gather(tf.reshape(finished, [-1]),
                                      expanded_elements)
-                labels = tf.select(
+                labels = tf.where(
                     finished,
                     tf.tile([[numlabels-1]], [batch_size, beam_width]),
                     labels)
