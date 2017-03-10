@@ -6,7 +6,7 @@ requestCpus      = 1
 RequestMemory    = 2G
 #request a week of wall time
 +RequestWalltime = 604800
-#Requirements = machineowner == "Visics"
+Requirements = machineowner == "Visics"
 
 #Specfy nice user behavior
 NiceUser = true

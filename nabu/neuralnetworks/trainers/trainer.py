@@ -313,7 +313,7 @@ class Trainer(object):
         #start the session and standart servises
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
-        #config.allow_soft_placement = True
+        config.allow_soft_placement = True
         #config.log_device_placement = True
 
         with self.graph.as_default():
