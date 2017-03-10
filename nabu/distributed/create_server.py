@@ -70,7 +70,8 @@ def create_server(clusterfile, job_name, task_index, expdir, ssh_command):
 
                         #create an ssh tunnel if the local machine is not the
                         #same as the remote machine
-                        if localmachine != remote[0] and ssh_command != 'None':
+                        if (localmachine != remote[0] and ssh_command != 'None'
+                            and remote[0] != 'localhost'):
 
                             #look for an available port
                             while (port in localports
