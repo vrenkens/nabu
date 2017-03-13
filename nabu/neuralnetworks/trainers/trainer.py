@@ -379,7 +379,8 @@ class Trainer(object):
 
                     #save the network
                     self.modelsaver.save(
-                        sess, os.path.join(self.expdir, 'model', 'network.ckpt')
+                        tf.get_default_session(),
+                        os.path.join(self.expdir, 'model', 'network.ckpt')
                         )
 
     def update(self, inputs, targets, sess):

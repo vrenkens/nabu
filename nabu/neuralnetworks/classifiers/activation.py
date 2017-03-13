@@ -103,7 +103,7 @@ class L2Norm(Activation):
 
             #if the mean squared value is larger then one select the normalized
             #value otherwise select the unnormalised one
-            return tf.select(tf.greater(tf.reshape(sig, [-1]), 1),
+            return tf.where(tf.greater(tf.reshape(sig, [-1]), 1),
                              normalized, activations)
 
 class Dropout(Activation):
