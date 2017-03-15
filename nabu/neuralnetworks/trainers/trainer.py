@@ -6,7 +6,6 @@ from abc import ABCMeta, abstractmethod
 from time import time, sleep
 import tensorflow as tf
 import numpy as np
-import pdb
 
 class Trainer(object):
     '''General class outlining the training environment of a classifier.'''
@@ -324,8 +323,6 @@ class Trainer(object):
                 checkpoint_dir=os.path.join(self.expdir, 'logdir'),
                 scaffold=self.scaffold,
                 config=config) as sess:
-
-                pdb.set_trace()
 
                 #set the reading flag to false
                 sess.run(self.release_reader)
