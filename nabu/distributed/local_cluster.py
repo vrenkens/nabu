@@ -1,6 +1,7 @@
 '''@file main.py
 this function is used to run distributed training on a local cluster'''
 
+import os
 import atexit
 import subprocess
 import tensorflow as tf
@@ -10,7 +11,7 @@ def local_cluster(expdir, class_type):
     '''main function'''
 
     #read the cluster file
-    clusterfile = expdir + '/clusterfile'
+    clusterfile = os.path.join(expdir, 'cluster', 'cluster')
     machines = dict()
     machines['worker'] = []
     machines['ps'] = []

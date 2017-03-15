@@ -99,9 +99,11 @@ def main(_):
         #create the directories
         if not os.path.isdir(os.path.join(FLAGS.expdir, 'outputs')):
             os.makedirs(os.path.join(FLAGS.expdir, 'outputs'))
+        if not os.path.isdir(os.path.join(FLAGS.expdir, 'cluster')):
+            os.makedirs(os.path.join(FLAGS.expdir, 'cluster'))
 
         #create the cluster file
-        with open(os.path.join(FLAGS.expdir, 'cluster'), 'w') as fid:
+        with open(os.path.join(FLAGS.expdir, 'cluster', 'cluster'), 'w') as fid:
             port = 1024
             for _ in range(int(computing_cfg['numps'])):
                 while not cluster.port_available(port):
@@ -294,7 +296,7 @@ def main(_):
 
 
         #create the cluster file
-        with open(FLAGS.expdir + '/clusterfile', 'w') as fid:
+        with open(os.path.join(FLAGS.expdir, 'cluster', 'cluster'), 'w') as fid:
             port = 1024
             for _ in range(int(computing_cfg['numps'])):
                 while not cluster.port_available(port):
