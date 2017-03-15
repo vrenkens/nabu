@@ -6,6 +6,7 @@ from abc import ABCMeta, abstractmethod
 from time import time, sleep
 import tensorflow as tf
 import numpy as np
+import pdb
 
 class Trainer(object):
     '''General class outlining the training environment of a classifier.'''
@@ -324,6 +325,8 @@ class Trainer(object):
                 scaffold=self.scaffold,
                 config=config) as sess:
 
+                pdb.set_trace()
+
                 #set the reading flag to false
                 sess.run(self.release_reader)
 
@@ -378,10 +381,7 @@ class Trainer(object):
                         os.mkdir(os.path.join(self.expdir, 'model'))
 
                     #save the network
-                    self.modelsaver.save(
-                        tf.get_default_session(),
-                        os.path.join(self.expdir, 'model', 'network.ckpt')
-                        )
+                    self.modelsaver.save(get_session(sess), os.path.join(self.expdir, 'model', 'network.ckpt'))
 
     def update(self, inputs, targets, sess):
         '''
@@ -539,3 +539,10 @@ def pad(inputs, length):
                      for i in inputs]
 
     return padded_inputs
+
+def get_session(sess):
+    session = sess
+    while type(session).__name__ != 'Session':
+        #pylint: disable=W0212
+        session = session._sess
+    return session
