@@ -1,9 +1,9 @@
 # Normal execution
 Universe         = vanilla
 # need enough RAM to store the parameters
-RequestMemory    = 2G
+RequestMemory    = 1G
 #number of GPUs equal to the number of workers
-request_GPUs      = $(GPUs)
+request_GPUs      = 1
 #request a week of wall time
 +RequestWalltime = 604800
 #specify that the cuda capability should be at least 3.0 and set the memory
@@ -20,8 +20,7 @@ Notification = Error
 initialdir = .
 
 #Run he build cluster script for the parameter server
-Arguments = "python -um nabu.distributed.local_cluster --expdir=$(expdir) \
-  --type=$(type)"
+Arguments = "python -u train_$(type).py --expdir=$(expdir)"
 # This is the executable or script I want to run
 executable = nabu/distributed/condor/create_environment.sh
 

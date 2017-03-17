@@ -28,7 +28,7 @@ def local_cluster(expdir, class_type):
         task_index = 0
         for _ in machines[job]:
             processes.append(subprocess.Popen(
-                ['python', 'train_%s.py' % class_type,
+                ['python', '-u', 'train_%s.py' % class_type,
                  '--clusterfile=%s' % clusterfile,
                  '--job_name=%s' % job, '--task_index=%d' % task_index,
                  '--ssh_command=None', '--expdir=%s' % expdir]))

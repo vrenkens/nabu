@@ -119,10 +119,6 @@ class Trainer(object):
                     target_seq_length=self.target_seq_length,
                     is_training=True)
 
-                #create a saver for the classifier
-                self.modelsaver = tf.train.Saver(tf.trainable_variables(),
-                                                 sharded=True)
-
                 #create a decoder object for validation
                 if self.conf['validation_mode'] == 'decode':
                     self.decoder = decoder()
@@ -277,8 +273,6 @@ class Trainer(object):
                 #create the schaffold
                 self.scaffold = tf.train.Scaffold()
 
-                #finalize
-                self.scaffold.finalize()
     @abstractmethod
     def compute_loss(self, targets, logits, logit_seq_length,
                      target_seq_length):
@@ -316,12 +310,17 @@ class Trainer(object):
         config.allow_soft_placement = True
         #config.log_device_placement = True
 
+        #create a hook for saving the final model
+        save_hook = SaveAtEnd(os.path.join(self.expdir, 'model',
+                                           'network.ckpt'))
+
         with self.graph.as_default():
             with tf.train.MonitoredTrainingSession(
                 master=master,
                 is_chief=self.is_chief,
                 checkpoint_dir=os.path.join(self.expdir, 'logdir'),
                 scaffold=self.scaffold,
+                chief_only_hooks=[save_hook],
                 config=config) as sess:
 
                 #set the reading flag to false
@@ -376,9 +375,6 @@ class Trainer(object):
                 if self.is_chief:
                     if not os.path.isdir(os.path.join(self.expdir, 'model')):
                         os.mkdir(os.path.join(self.expdir, 'model'))
-
-                    #save the network
-                    self.modelsaver.save(get_session(sess), os.path.join(self.expdir, 'model', 'network.ckpt'))
 
     def update(self, inputs, targets, sess):
         '''
@@ -537,9 +533,24 @@ def pad(inputs, length):
 
     return padded_inputs
 
-def get_session(sess):
-    session = sess
-    while type(session).__name__ != 'Session':
-        #pylint: disable=W0212
-        session = session._sess
-    return session
+class SaveAtEnd(tf.train.SessionRunHook):
+    '''a training hook for saving the final model'''
+
+    def __init__(self, filename):
+        '''hook constructor
+
+        Args:
+            filename: where the model will be saved'''
+
+        self.filename = filename
+
+    def begin(self):
+        '''this will be run at session creation'''
+
+        #pylint: disable=W0201
+        self._saver = tf.train.Saver(tf.trainable_variables(), sharded=True)
+
+    def end(self, session):
+        '''this will be run at session closing'''
+
+        self._saver.save(session, self.filename)
