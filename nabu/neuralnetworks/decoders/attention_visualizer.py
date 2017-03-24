@@ -82,7 +82,7 @@ class AttentionVisiualizer(decoder.Decoder):
                 else:
                     attention_name = (
                         tf.get_default_graph()._name_stack
-                        + '/' + type(self.classifier.decoder).__name__
+                        + '/' + type(classifier.decoder).__name__
                         + '/attention_decoder/attention_decoder_1/' +
                         'Attention_0/Softmax:0')
 
@@ -179,14 +179,14 @@ class AttentionVisiualizer(decoder.Decoder):
 
         with tf.variable_scope('cut_sequences'):
             #get the beam scores
-            scores = [tf.unpack(s) for s in tf.unpack(beam.scores)]
+            scores = [tf.unstack(s) for s in tf.unstack(beam.scores)]
 
             #cut the beam sequences to the correct length and take of
             #the sequence border tokens
-            sequences = [tf.unpack(s) for s in tf.unpack(beam.sequences)]
-            lengths = [tf.unpack(l) for l in tf.unpack(beam.lengths)]
-            attention = [tf.unpack(a) for a in tf.unpack(beam.attention)]
-            hlfeat = tf.unpack(hlfeat)
+            sequences = [tf.unstack(s) for s in tf.unstack(beam.sequences)]
+            lengths = [tf.unstack(l) for l in tf.unstack(beam.lengths)]
+            attention = [tf.unstack(a) for a in tf.unstack(beam.attention)]
+            hlfeat = tf.unstack(hlfeat)
             sequences = [[sequences[i][j][1:lengths[i][j]-1]
                           for j in range(len(lengths[i]))]
                          for i in range(len(lengths))]
@@ -290,9 +290,9 @@ class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores',
                 #set the scores of expanded beams from finished elements to
                 #negative maximum [batch_size x beam_width*numlabels]
                 expanded_finished = tf.reshape(tf.concat(
-                    [tf.tile([[[False]]], [batch_size, beam_width, 1], 2),
-                        tf.tile(tf.expand_dims(finished, 2),
-                                [1, 1, numlabels-1])])
+                    [tf.tile([[[False]]], [batch_size, beam_width, 1]),
+                     tf.tile(tf.expand_dims(finished, 2),
+                             [1, 1, numlabels-1])], 2)
                                                , [batch_size, -1])
 
                 scores = tf.where(
