@@ -92,11 +92,16 @@ class BLSTMLayer(object):
 
             #create the lstm cell that will be used for the forward and backward
             #pass
-            lstm_cell = tf.contrib.rnn.BasicLSTMCell(self.num_units)
+            lstm_cell_fw = tf.contrib.rnn.BasicLSTMCell(
+                self.num_units,
+                reuse=tf.get_variable_scope().reuse)
+            lstm_cell_bw = tf.contrib.rnn.BasicLSTMCell(
+                self.num_units,
+                reuse=tf.get_variable_scope().reuse)
 
             #do the forward computation
             outputs_tupple, _ = bidirectional_dynamic_rnn(
-                lstm_cell, lstm_cell, inputs, dtype=tf.float32,
+                lstm_cell_fw, lstm_cell_bw, inputs, dtype=tf.float32,
                 sequence_length=sequence_length)
 
             outputs = tf.concat(outputs_tupple, 2)

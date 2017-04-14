@@ -3,7 +3,7 @@ contains the speller functionality'''
 
 from functools import partial
 import tensorflow as tf
-import asr_decoder
+from nabu.neuralnetworks.classifiers.asr.asr_decoders import asr_decoder
 
 
 class Speller(asr_decoder.AsrDecoder):
@@ -71,16 +71,23 @@ class Speller(asr_decoder.AsrDecoder):
         Returns:
             an rnn cell'''
 
-        #create the multilayered rnn cell
-        rnn_cell = tf.contrib.rnn.BasicLSTMCell(
-            int(self.conf['speller_numunits']))
+        rnn_cells = []
 
-        if float(self.conf['speller_dropout']) < 1 and is_training:
-            rnn_cell = tf.contrib.rnn.DropoutWrapper(
-                rnn_cell, output_keep_prob=float(self.conf['speller_dropout']))
+        for _ in range(int(self.conf['speller_numlayers'])):
 
-        rnn_cell = tf.contrib.rnn.MultiRNNCell(
-            [rnn_cell]*int(self.conf['speller_numlayers']))
+            #create the multilayered rnn cell
+            rnn_cell = tf.contrib.rnn.BasicLSTMCell(
+                int(self.conf['speller_numunits']),
+                reuse=tf.get_variable_scope().reuse)
+
+            if float(self.conf['speller_dropout']) < 1 and is_training:
+                rnn_cell = tf.contrib.rnn.DropoutWrapper(
+                    rnn_cell,
+                    output_keep_prob=float(self.conf['speller_dropout']))
+
+            rnn_cells.append(rnn_cell)
+
+        rnn_cell = tf.contrib.rnn.MultiRNNCell(rnn_cells)
 
         return rnn_cell
 

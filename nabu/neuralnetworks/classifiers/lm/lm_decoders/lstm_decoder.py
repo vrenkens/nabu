@@ -90,14 +90,23 @@ class LstmDecoder(object):
         Returns:
             an rnn cell'''
 
-        #create the multilayered rnn cell
-        rnn_cell = tf.contrib.rnn.BasicLSTMCell(self.numunits)
+        rnn_cells = []
 
-        if self.dropout < 1 and is_training:
-            rnn_cell = tf.contrib.rnn.DropoutWrapper(
-                rnn_cell, output_keep_prob=self.dropout)
+        for _ in range(self.numlayers):
 
-        rnn_cell = tf.contrib.rnn.MultiRNNCell([rnn_cell]*self.numlayers)
+            #create the multilayered rnn cell
+            rnn_cell = tf.contrib.rnn.BasicLSTMCell(
+                self.numunits,
+                reuse=tf.get_variable_scope().reuse)
+
+            if self.dropout < 1 and is_training:
+                rnn_cell = tf.contrib.rnn.DropoutWrapper(
+                    rnn_cell,
+                    output_keep_prob=self.dropout)
+
+            rnn_cells.append(rnn_cell)
+
+        rnn_cell = tf.contrib.rnn.MultiRNNCell(rnn_cells)
 
         return rnn_cell
 
