@@ -131,7 +131,7 @@ def main(_):
         decoded = decoder.decode(reader, sess)
 
     #the path to the text file
-    textfile = database_cfg['testtext']
+    textfile = os.path.join(database_cfg['test_dir'], 'targets')
 
     #read all the reference transcriptions
     with open(textfile) as fid:
