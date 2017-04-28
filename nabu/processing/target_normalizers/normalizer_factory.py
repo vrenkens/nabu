@@ -2,21 +2,22 @@
 Contains the normalizer factory
 '''
 
-import aurora4
-import timit
+from . import timit, aurora4, librispeech
 
-def factory(normalizer_type):
-    '''create a normalizer_type
+def factory(normalizer):
+    '''get a normalizer class
 
     Args:
         normalizer_type: the type of normalizer_type
 
     Returns:
-        a normalizer function'''
+        a normalizer class'''
 
-    if normalizer_type == 'aurora4_normalizer':
-        return aurora4.Aurora4()
-    elif normalizer_type == 'timit_phone_norm':
-        return timit.Timit()
+    if normalizer == 'aurora4_normalizer':
+        return aurora4.Aurora4
+    elif normalizer == 'timit_phone_norm':
+        return timit.Timit
+    elif normalizer == 'librispeech':
+        return librispeech.Librispeech
     else:
-        raise Exception('Undefined normalizer: %s' % normalizer_type)
+        raise Exception('Undefined normalizer: %s' % normalizer)

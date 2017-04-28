@@ -1,0 +1,36 @@
+# Normal execution
+Universe         = vanilla
+# need enough RAM to store the parameters
+RequestMemory    = 1G
+#number of GPUs equal to the number of workers
+request_GPUs      = 1
+#request a week of wall time
++RequestWalltime = 604800
+#specify that the cuda capability should be at least 3.0 and set the memory
+#requirement
+Requirements = (CUDACapability >= 3.0)\
+  &&(CUDAGlobalMemoryMb >= $(memory))\
+  &&(machine =!= LastRemoteHost)
+
+
+#Specfy nice user behavior
+NiceUser = true
+#Send an email in case of an error
+Notification = Error
+
+initialdir = .
+
+#Run he build cluster script for the parameter server
+Arguments = "python -u $(script) --expdir=$(expdir)"
+# This is the executable or script I want to run
+executable = nabu/computing/condor/create_environment.sh
+
+#Output of condors handling of the jobs, will be in 'initialdir'
+Log          = $(expdir)/outputs/main.log
+#Standard output of the 'executable', in 'initialdir'
+Output       = $(expdir)/outputs/main.out
+#Standard error of the 'executable', in 'initialdir'
+Error        = $(expdir)/outputs/main.err
+
+# Queue the job
+Queue

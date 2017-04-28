@@ -1,53 +1,22 @@
 '''@file trainer_factory.py
 contains the Trainer factory mehod'''
 
-import cross_entropytrainer
-import ctctrainer
+from . import cross_entropy_trainer, ctc_trainer, eos_cross_entropy_trainer
 
-def factory(conf,
-            decoder,
-            classifier,
-            input_dim,
-            dispenser,
-            val_reader,
-            val_targets,
-            expdir,
-            server,
-            task_index):
-    '''Create a Trainer object
+def factory(trainer):
+    '''gets a Trainer class
 
     Args:
-        classifier: the neural net classifier that will be trained
-        conf: the trainer config
-        decoder: a callable that will create a decoder
-        input_dim: the input dimension to the nnnetgraph
-        num_steps: the total number of steps that will be taken
-        dispenser: a Batchdispenser object
-        val_reader: a feature reader for the validation data if None
-            validation will not be used
-        val_targets: a dictionary containing the targets of the validation set
-        logdir: directory where the summaries will be written
-        server: optional server to be used for distributed training
-        cluster: optional cluster to be used for distributed training
-        task_index: optional index of the worker task in the cluster
+        trainer: the trainer type
 
-    Returns: a Trainer object
+    Returns: a Trainer class
     '''
 
-    if conf['trainer'] == 'ctc':
-        trainer_class = ctctrainer.CTCTrainer
-    elif conf['trainer'] == 'cross_entropy':
-        trainer_class = cross_entropytrainer.CrossEntropyTrainer
+    if trainer == 'ctc':
+        return ctc_trainer.CTCTrainer
+    elif trainer == 'cross_entropy':
+        return cross_entropy_trainer.CrossEntropyTrainer
+    elif trainer == 'eos_cross_entropy':
+        return eos_cross_entropy_trainer.EosCrossEntropyTrainer
     else:
-        raise Exception('Undefined trainer type: %s' % conf['trainer'])
-
-    return trainer_class(conf,
-                         decoder,
-                         classifier,
-                         input_dim,
-                         dispenser,
-                         val_reader,
-                         val_targets,
-                         expdir,
-                         server,
-                         task_index)
+        raise Exception('Undefined trainer type: %s' % trainer)

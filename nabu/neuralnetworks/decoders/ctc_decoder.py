@@ -3,67 +3,53 @@ contains the CTCDecoder'''
 
 import tensorflow as tf
 import decoder
-from nabu.processing import score
 
 class CTCDecoder(decoder.Decoder):
     '''CTC Decoder'''
 
-    def get_outputs(self, inputs, input_seq_length, classifier):
-
-        '''compute the outputs of the decoder
+    def __call__(self, inputs, input_seq_length):
+        '''decode a batch of data
 
         Args:
-            inputs: The inputs to the network as a
-                [batch_size x max_input_length x input_dim] tensor
-            input_seq_length: The sequence length of the inputs as a
-                [batch_size] vector
-            classifier: The classifier object that will be used in decoding
+            inputs: the inputs as a list of [batch_size x ...] tensors
+            input_seq_length: the input sequence lengths as a list of
+                [batch_size] vectors
 
         Returns:
-            A list with batch_size elements containing nbest lists with elements
-            containing pairs of score and output labels
+            - the decoded sequences as a list of length beam_width
+                containing [batch_size x ...] sparse tensors, the beam elements
+                are sorted from best to worst
+            - the sequence scores as a [batch_size x beam_width] tensor
         '''
 
-        #create the decoding graph
-        logits, logits_seq_length =\
-            classifier(
-                inputs, input_seq_length, targets=None,
-                target_seq_length=None, is_training=False)
+        with tf.name_scope('ctc_decoder'):
 
-        #Convert logits to time major
-        logits = tf.transpose(logits, [1, 0, 2])
+            #create the decoding graph
+            logits, logits_seq_length =\
+                self.model(
+                    inputs, input_seq_length, targets=[],
+                    target_seq_length=[], is_training=False)
 
-        #do the CTC beam search
-        sparse_outputs, logprobs = tf.nn.ctc_greedy_decoder(
-            logits, logits_seq_length)
-        sparse_outputs = sparse_outputs[0]
-        logprobs = tf.unstack(tf.reshape(logprobs, [-1]))
+            #Convert logits to time major
+            logits = tf.transpose(logits[0], [1, 0, 2])
 
-        #split the sparse tensors into the seperate utterances
-        output_list = tf.sparse_split(
-            axis=0,
-            num_split=self.batch_size,
-            sp_input=sparse_outputs)
-        outputs = [tf.reshape(tf.sparse_tensor_to_dense(o), [-1])
-                   for o in output_list]
+            #do the CTC beam search
+            outputs, logprobs = tf.nn.ctc_greedy_decoder(
+                logits, logits_seq_length[0])
+            outputs[0] = tf.cast(outputs[0], tf.int32)
 
-        outputs = [[(logprobs[i], outputs[i])]
-                   for i in range(self.batch_size)]
+        return outputs, logprobs
 
-        return outputs
-
-    def score(self, outputs, targets):
-        '''score the performance
+    @staticmethod
+    def get_output_dims(output_dims):
+        '''
+        Adjust the output dimensions of the model (blank label, eos...)
 
         Args:
-            outputs: a dictionary containing the decoder outputs
-            targets: a dictionary containing the targets
+            a list containing the original model output dimensions
 
         Returns:
-            the score'''
+            a list containing the new model output dimensions
+        '''
 
-        #decode the targets
-        decoded_targets = {utt:self.coder.decode(targets[utt])
-                                for utt in targets}
-
-        return score.cer(outputs, decoded_targets)
+        return [output_dim + 1 for output_dim in output_dims]

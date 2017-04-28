@@ -3,22 +3,22 @@ neural network trainer environment'''
 
 import os
 from abc import ABCMeta, abstractmethod
-from time import time, sleep
+from time import time
 import tensorflow as tf
-import numpy as np
+from nabu.processing import input_pipeline
+from nabu.neuralnetworks.models.model import Model
+from nabu.neuralnetworks.evaluators import evaluator_factory
+from nabu.neuralnetworks.components.hooks import SaveAtEnd
 
 class Trainer(object):
-    '''General class outlining the training environment of a classifier.'''
+    '''General class outlining the training environment of a model.'''
     __metaclass__ = ABCMeta
 
     def __init__(self,
                  conf,
-                 decoder,
-                 classifier,
-                 input_dim,
-                 dispenser,
-                 val_reader,
-                 val_targets,
+                 dataconf,
+                 modelconf,
+                 evaluatorconf,
                  expdir,
                  server,
                  task_index):
@@ -26,121 +26,160 @@ class Trainer(object):
         NnetTrainer constructor, creates the training graph
 
         Args:
-            classifier: the neural net classifier that will be trained
             conf: the trainer config
-            decoder: a callable that will create a decoder
-            input_dim: the input dimension to the nnnetgraph
-            num_steps: the total number of steps that will be taken
-            dispenser: a Batchdispenser object
-            val_reader: the feature reader for the validation data if None
-                validation will not be used
-            val_targets: a dictionary containing the targets of the validation
-                set
+            dataconf: the data configuration as a ConfigParser
+            modelconf: the neural net model configuration
+            evaluatorconf: the evaluator configuration for evaluating
+                if None no evaluation will be done
             expdir: directory where the summaries will be written
             server: optional server to be used for distributed training
             task_index: optional index of the worker task in the cluster
         '''
 
-        self.conf = conf
-        self.dispenser = dispenser
-        self.num_steps = int(dispenser.num_batches*int(conf['num_epochs'])
-                             /max(1, int(conf['numbatches_to_aggregate'])))
-        self.val_reader = val_reader
-        self.val_targets = val_targets
-
         self.expdir = expdir
         self.server = server
-        cluster = tf.train.ClusterSpec(server.server_def.cluster)
 
-        #save the max lengths
-        self.max_target_length = dispenser.max_target_length
-        self.max_input_length = dispenser.max_input_length
+        cluster = tf.train.ClusterSpec(server.server_def.cluster)
 
         #create the graph
         self.graph = tf.Graph()
 
+        #get the database configurations
+        inputs = modelconf.get('io', 'inputs').split(' ')
+        if inputs == ['']:
+            inputs = []
+        input_sections = [conf[i] for i in inputs]
+        input_dataconfs = []
+        for section in input_sections:
+            input_dataconfs.append(dict(dataconf.items(section)))
+        outputs = modelconf.get('io', 'outputs').split(' ')
+        if outputs == ['']:
+            outputs = []
+        target_sections = [conf[o] for o in outputs]
+        target_dataconfs = []
+        for section in target_sections:
+            target_dataconfs.append(dict(dataconf.items(section)))
+
+        #get the dimensions of all the targets
+        output_dims = []
+        for c in target_dataconfs:
+            with open(os.path.join(c['dir'], 'dim')) as fid:
+                output_dims.append(int(fid.read()))
+
+        #adjust the output dimensions if necesary
+        output_dims = self.get_output_dims(output_dims)
+
+        #create the model
+        self.model = Model(
+            conf=modelconf,
+            output_dims=output_dims)
+
+        #create the evaluator
+        evaltype = evaluatorconf.get('evaluator', 'evaluator')
+        if evaltype != 'None':
+            evaluator = evaluator_factory.factory(evaltype)(
+                conf=evaluatorconf,
+                dataconf=dataconf,
+                model_or_conf=self.model
+            )
+
         if 'local' in cluster.as_dict():
             num_replicas = 1
+            device = tf.DeviceSpec(job='local')
         else:
             #distributed training
             num_replicas = len(cluster.as_dict()['worker'])
+            num_servers = len(cluster.as_dict()['ps'])
+            ps_strategy = tf.contrib.training.GreedyLoadBalancingStrategy(
+                num_tasks=num_servers,
+                load_fn=tf.contrib.training.byte_size_load_fn
+            )
+            device = tf.train.replica_device_setter(
+                ps_tasks=num_servers,
+                ps_strategy=ps_strategy)
+            chief_ps = tf.DeviceSpec(
+                job='ps',
+                task=0)
 
         self.is_chief = task_index == 0
-        device = tf.train.replica_device_setter(
-            cluster=cluster,
-            worker_device='/job:worker/task:%d' % task_index)
 
         #define the placeholders in the graph
         with self.graph.as_default():
 
+            #create a local num_steps variable
+            self.num_steps = tf.get_variable(
+                name='num_steps',
+                shape=[],
+                dtype=tf.int32,
+                initializer=tf.constant_initializer(0),
+                trainable=False
+            )
+
             with tf.device(device):
 
-                #create the inputs placeholder
-                self.inputs = tf.placeholder(
-                    dtype=tf.float32,
-                    shape=[dispenser.size, self.max_input_length,
-                           input_dim],
-                    name='inputs')
+                #check if running in distributed model
+                if 'local' in cluster.as_dict():
 
-                #reference labels
-                self.targets = tf.placeholder(
-                    dtype=tf.int32,
-                    shape=[dispenser.size, self.max_target_length],
-                    name='targets')
+                    #get the filenames
+                    data_queue_elements, _ = input_pipeline.get_filenames(
+                        input_dataconfs + target_dataconfs)
 
-                #the length of all the input sequences
-                self.input_seq_length = tf.placeholder(
-                    dtype=tf.int32,
-                    shape=[dispenser.size],
-                    name='input_seq_length')
+                    #create the data queue and queue runners
+                    data_queue = tf.train.string_input_producer(
+                        string_tensor=data_queue_elements,
+                        shuffle=True,
+                        seed=None,
+                        capacity=int(conf['batch_size'])*2,
+                        shared_name='data_queue')
 
-                #the length of all the output sequences
-                self.target_seq_length = tf.placeholder(
-                    dtype=tf.int32,
-                    shape=[dispenser.size],
-                    name='output_seq_length')
+                    #compute the number of steps
+                    num_steps = (int(conf['num_epochs'])*
+                                 len(data_queue_elements)/
+                                 int(conf['batch_size']))
 
-                #a placeholder to set the position
-                self.pos_in = tf.placeholder(
-                    dtype=tf.int32,
-                    shape=[],
-                    name='pos_in')
+                    #set the number of steps
+                    self.set_num_steps = self.num_steps.assign(num_steps).op
+                    self.done = tf.no_op()
 
-                self.val_loss_in = tf.placeholder(
-                    dtype=tf.float32,
-                    shape=[],
-                    name='val_loss_in')
-
-                #compute the training outputs of the classifier
-                trainlogits, logit_seq_length = classifier(
-                    inputs=self.inputs,
-                    input_seq_length=self.input_seq_length,
-                    targets=self.targets,
-                    target_seq_length=self.target_seq_length,
-                    is_training=True)
-
-                #create a saver for the classifier
-                self.modelsaver = tf.train.Saver(tf.trainable_variables(),
-                                                 sharded=True)
-
-                #create a decoder object for validation
-                if self.conf['validation_mode'] == 'decode':
-                    self.decoder = decoder()
-                elif self.conf['validation_mode'] == 'loss':
-                    vallogits, val_logit_seq_length = classifier(
-                        inputs=self.inputs,
-                        input_seq_length=self.input_seq_length,
-                        targets=self.targets,
-                        target_seq_length=self.target_seq_length,
-                        is_training=False)
-
-                    self.decoder_loss = self.compute_loss(
-                        self.targets, vallogits, val_logit_seq_length,
-                        self.target_seq_length)
                 else:
-                    raise Exception('unknown validation mode %s' %
-                                    self.conf['validation_mode'])
+                    with tf.device(chief_ps):
 
+                        #get the data queue
+                        data_queue = tf.FIFOQueue(
+                            capacity=int(conf['batch_size'])*(num_replicas+1),
+                            shared_name='data_queue',
+                            name='data_queue',
+                            dtypes=[tf.string],
+                            shapes=[[]])
+
+                        #get the number of steps from the parameter server
+                        num_steps_queue = tf.FIFOQueue(
+                            capacity=1,
+                            dtypes=[tf.int32],
+                            shared_name='num_steps_queue',
+                            name='num_steps_queue',
+                            shapes=[[]]
+                        )
+
+                        #set the number of steps
+                        self.set_num_steps = self.num_steps.assign(
+                            num_steps_queue.dequeue()).op
+
+                    #get the done queues
+                    done_ops = []
+                    for i in range(num_servers):
+                        with tf.device('job:ps/task:%d' % i):
+                            done_queue = tf.FIFOQueue(
+                                capacity=1,
+                                dtypes=[tf.bool],
+                                shapes=[[]],
+                                shared_name='done_queue%d' % task_index,
+                                name='done_queue%d' % task_index
+                            )
+
+                            done_ops.append(done_queue.enqueue(True))
+
+                    self.done = tf.group(*done_ops)
 
                 #a variable to hold the amount of steps already taken
                 self.global_step = tf.get_variable(
@@ -150,59 +189,37 @@ class Trainer(object):
                     initializer=tf.constant_initializer(0),
                     trainable=False)
 
+                #create a check if training should continue
+                self.should_stop = tf.greater_equal(self.global_step,
+                                                    self.num_steps)
+
+                #training part
                 with tf.variable_scope('train'):
 
-                    #a variable that indicates if features are being read
-                    self.reading = tf.get_variable(
-                        name='reading',
-                        shape=[],
-                        dtype=tf.bool,
-                        initializer=tf.constant_initializer(False),
-                        trainable=False)
+                    #create the input pipeline
+                    data, seq_length = input_pipeline.input_pipeline(
+                        data_queue=data_queue,
+                        batch_size=int(conf['batch_size']),
+                        numbuckets=int(conf['numbuckets']),
+                        dataconfs=input_dataconfs + target_dataconfs
+                    )
 
-                    #the position in the feature reader
-                    self.pos = tf.get_variable(
-                        name='position',
-                        shape=[],
-                        dtype=tf.int32,
-                        initializer=tf.constant_initializer(0),
-                        trainable=False)
+                    inputs = data[:len(input_sections)]
+                    input_seq_length = seq_length[:len(input_sections)]
+                    targets = data[len(input_sections):]
+                    target_seq_length = seq_length[len(input_sections):]
 
-                    #the current validation loss
-                    self.val_loss = tf.get_variable(
-                        name='validation_loss',
-                        shape=[],
-                        dtype=tf.float32,
-                        initializer=tf.constant_initializer(1.79e+308),
-                        trainable=False)
+                    #store the inputs for creating the decoding graph
+                    self.inputs = inputs
+                    self.input_seq_length = input_seq_length
 
-                    #a variable that specifies when the model was last validated
-                    self.validated_step = tf.get_variable(
-                        name='validated_step',
-                        shape=[],
-                        dtype=tf.int32,
-                        initializer=tf.constant_initializer(
-                            -int(conf['valid_frequency'])),
-                        trainable=False)
-
-                    #operation to start reading
-                    self.block_reader = self.reading.assign(True).op
-
-                    #operation to release the reader
-                    self.release_reader = self.reading.assign(False).op
-
-                    #operation to set the position
-                    self.set_pos = self.pos.assign(self.pos_in).op
-
-                    #operation to update the validated steps
-                    self.set_val_step = self.validated_step.assign(
-                        self.global_step).op
-
-                    #operation to set the validation loss
-                    self.set_val_loss = self.val_loss.assign(
-                        self.val_loss_in).op
-
-
+                    #compute the training outputs of the model
+                    logits, logit_seq_length = self.model(
+                        inputs=inputs,
+                        input_seq_length=input_seq_length,
+                        targets=targets,
+                        target_seq_length=target_seq_length,
+                        is_training=True)
 
                     #a variable to scale the learning rate (used to reduce the
                     #learning rate in case validation performance drops)
@@ -211,10 +228,6 @@ class Trainer(object):
                         shape=[],
                         initializer=tf.constant_initializer(1.0),
                         trainable=False)
-
-                    #operation to half the learning rate
-                    self.halve_learningrate_op = learning_rate_fact.assign(
-                        learning_rate_fact/2).op
 
                     #compute the learning rate with exponential decay and scale
                     #with the learning rate factor
@@ -239,8 +252,7 @@ class Trainer(object):
 
                     #compute the loss
                     self.loss = self.compute_loss(
-                        self.targets, trainlogits, logit_seq_length,
-                        self.target_seq_length)
+                        targets, logits, logit_seq_length, target_seq_length)
 
                     #compute the gradients
                     grads = optimizer.compute_gradients(self.loss)
@@ -266,43 +278,103 @@ class Trainer(object):
                         *([apply_gradients_op] + update_ops),
                         name='update')
 
-                #create the summaries for visualisation
-                tf.summary.scalar('validation loss', self.val_loss)
+                if self.is_chief and evaltype != 'None':
+
+                    #validation part
+                    with tf.variable_scope('validate'):
+
+                        #create a variable to hold the validation loss
+                        self.validation_loss = tf.get_variable(
+                            name='validation_loss',
+                            shape=[],
+                            dtype=tf.float32,
+                            initializer=tf.constant_initializer(1.79e+308),
+                            trainable=False)
+
+                        #create an op to reset the validation loss
+                        self.reset_val_loss = self.validation_loss.assign(0).op
+
+                        #create a variable to save the last step where the model
+                        #was validated
+                        validated_step = tf.get_variable(
+                            name='validated_step',
+                            shape=[],
+                            dtype=tf.int32,
+                            initializer=tf.constant_initializer(
+                                -int(conf['valid_frequency'])),
+                            trainable=False)
+
+                        #a check if validation is due
+                        self.should_validate = tf.greater_equal(
+                            self.global_step - validated_step,
+                            int(conf['valid_frequency']))
+
+                        #compute the loss
+                        val_batch_loss, self.valbatches = evaluator.evaluate()
+
+                        self.update_loss = self.validation_loss.assign(
+                            self.validation_loss +
+                            val_batch_loss/self.valbatches
+                        ).op
+
+                        #update the learning rate factor
+                        self.half_lr = learning_rate_fact.assign(
+                            learning_rate_fact/2).op
+
+                        #create an operation to updated the validated step
+                        self.update_validated_step = validated_step.assign(
+                            self.global_step).op
+
+                        tf.summary.scalar('validation loss',
+                                          self.validation_loss)
+                else:
+                    self.update_loss = None
+
                 tf.summary.scalar('learning rate', self.learning_rate)
 
                 #create a histogram for all trainable parameters
                 for param in tf.trainable_variables():
                     tf.summary.histogram(param.name, param)
 
-                #create the schaffold
+                #create the scaffold
                 self.scaffold = tf.train.Scaffold()
 
-                #finalize
-                self.scaffold.finalize()
+
     @abstractmethod
     def compute_loss(self, targets, logits, logit_seq_length,
                      target_seq_length):
         '''
         Compute the loss
 
-        Creates the operation to compute the loss, this is specific to each
-        trainer
+        Creates the operation to compute the cross-enthropy loss for every input
+        frame (if you want to have a different loss function, overwrite this
+        method)
 
         Args:
-            targets: a [batch_size, max_target_length] tensor containing the
+            targets: a list of [batch_size x ...] tensor containing the
                 targets
-            logits: a [batch_size, max_logit_length, dim] tensor containing the
+            logits: a list of [batch_size x ... tensor containing the
                 logits
-            logit_seq_length: the length of all the logit sequences as a
-                [batch_size] vector
-            target_seq_length: the length of all the target sequences as a
-                [batch_size] vector
+            logit_seq_length: a list of [batch_size] vectors containing the
+                logit sequence lengths
+            target_seq_length: a list of [batch_size] vectors containing the
+                target sequence lengths
 
         Returns:
-            a scalar value containing the total loss
+            a scalar value containing the loss
         '''
 
-        raise NotImplementedError('Abstract method')
+    @abstractmethod
+    def get_output_dims(self, output_dims):
+        '''
+        Adjust the output dimensions of the model (blank label, eos...)
+
+        Args:
+            a list containing the original model output dimensions
+
+        Returns:
+            a list containing the new model output dimensions
+        '''
 
     def train(self):
         '''train the model'''
@@ -313,8 +385,12 @@ class Trainer(object):
         #start the session and standart servises
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
-        #config.allow_soft_placement = True
+        config.allow_soft_placement = True
         #config.log_device_placement = True
+
+        #create a hook for saving the final model
+        save_hook = SaveAtEnd(os.path.join(self.expdir, 'model',
+                                           'network.ckpt'))
 
         with self.graph.as_default():
             with tf.train.MonitoredTrainingSession(
@@ -322,219 +398,154 @@ class Trainer(object):
                 is_chief=self.is_chief,
                 checkpoint_dir=os.path.join(self.expdir, 'logdir'),
                 scaffold=self.scaffold,
+                chief_only_hooks=[save_hook],
                 config=config) as sess:
 
-                #set the reading flag to false
-                sess.run(self.release_reader)
+                #set the number of steps
+                self.set_num_steps.run(session=sess)
 
                 #start the training loop
                 #pylint: disable=E1101
-                while (not sess.should_stop()
-                       and self.global_step.eval(sess) < self.num_steps):
+                while not (sess.should_stop() or
+                           self.should_stop.eval(session=sess)):
 
                     #check if validation is due
-                    [step, val_step] = sess.run(
-                        [self.global_step, self.validated_step])
-                    if (step - val_step >= int(self.conf['valid_frequency'])
-                            and int(self.conf['valid_frequency']) > 0):
+                    if (self.update_loss is not None
+                            and self.should_validate.eval(session=sess)):
 
-                        self.validate(sess)
+                        #get the previous validation loss
+                        prev_val_loss = self.validation_loss.eval(
+                            session=sess)
+
+                        #set the validated step
+                        self.update_validated_step.run(session=sess)
+
+                        #reset the validation loss
+                        self.reset_val_loss.run(session=sess)
+
+                        #compute the validation loss
+                        for _ in range(self.valbatches):
+                            self.update_loss.run(session=sess)
+
+                        #get the current validation loss
+                        validation_loss = self.validation_loss.eval(
+                            session=sess)
+
+                        print 'validation loss: %f' % validation_loss
+
+                        #check if the validation loss is better
+                        if validation_loss > prev_val_loss:
+                            print ('validation loss is worse halving '
+                                   'learning rate')
+                            self.half_lr.run(session=sess)
 
                     #start time
                     start = time()
 
-                    #wait until the reader is free
-                    #pylint: disable=E1101
-                    while self.reading.eval(sess):
-                        sleep(1)
-
-                    #block the reader
-                    sess.run(self.block_reader)
-
-                    #read a batch of data
-                    #pylint: disable=E1101
-                    batch_data, batch_labels = self.dispenser.get_batch(
-                        self.pos.eval(sess))
-
-                    #update the position
-                    self.set_pos.run(
-                        session=sess,
-                        feed_dict={self.pos_in:self.dispenser.pos})
-
-                    #release the reader
-                    sess.run(self.release_reader)
-
                     #update the model
-                    loss, lr = self.update(batch_data, batch_labels, sess)
+                    _, loss, lr, global_step, num_steps = sess.run(
+                        fetches=[self.update_op,
+                                 self.loss,
+                                 self.learning_rate,
+                                 self.global_step,
+                                 self.num_steps])
 
                     print(('step %d/%d loss: %f, learning rate: %f, '
                            'time elapsed: %f sec')
-                          %(self.global_step.eval(sess), self.num_steps,
+                          %(global_step,
+                            num_steps,
                             loss, lr, time()-start))
 
-                #the chief will create the final model
-                if self.is_chief:
-                    if not os.path.isdir(os.path.join(self.expdir, 'model')):
-                        os.mkdir(os.path.join(self.expdir, 'model'))
+                self.done.run(session=sess)
 
-                    #save the network
-                    self.modelsaver.save(
-                        sess, os.path.join(self.expdir, 'model', 'network.ckpt')
-                        )
+class ParameterServer(object):
+    '''a class for parameter servers'''
 
-    def update(self, inputs, targets, sess):
+    def __init__(self,
+                 conf,
+                 dataconf,
+                 server,
+                 task_index):
         '''
-        update the neural model with a batch or training data
+        NnetTrainer constructor, creates the training graph
 
         Args:
-            inputs: the inputs to the neural net, this should be a list
-                containing an NxF matrix for each utterance in the batch where
-                N is the number of frames in the utterance
-            targets: the targets for neural net, this should be
-                a list containing an N-dimensional vector for each utterance
-            sess: the session
-
-        Returns:
-            a pair containing:
-                - the loss at this step
-                - the learning rate used at this step
+            conf: the trainer config
+            dataconf: the data configuration as a ConfigParser
+            server: optional server to be used for distributed training
+            task_index: optional index of the worker task in the cluster
         '''
 
-        #get a list of sequence lengths
-        input_seq_length = [i.shape[0] for i in inputs]
-        target_seq_length = [t.shape[0] for t in targets]
+        self.graph = tf.Graph()
+        self.server = server
+        self.task_index = task_index
 
-        #pad the inputs and targets untill the maximum lengths
-        padded_inputs = np.array(pad(inputs, self.max_input_length))
-        padded_targets = np.array(pad(targets, self.max_target_length))
+        #distributed training
+        cluster = tf.train.ClusterSpec(server.server_def.cluster)
+        num_replicas = len(cluster.as_dict()['worker'])
 
-        _, loss, lr = sess.run(
-            fetches=[self.update_op,
-                     self.loss,
-                     self.learning_rate],
-            feed_dict={self.inputs:padded_inputs,
-                       self.targets:padded_targets,
-                       self.input_seq_length:input_seq_length,
-                       self.target_seq_length:target_seq_length})
+        with self.graph.as_default():
 
-        return loss, lr
+            #the chief parameter server should create the data queue
+            if task_index == 0:
+                train_input_sections = conf['train_inputs'].split(' ')
+                train_input_dataconfs = []
+                for section in train_input_sections:
+                    train_input_dataconfs.append(dict(dataconf.items(section)))
+                train_target_sections = conf['train_targets'].split(' ')
+                train_target_dataconfs = []
+                for section in train_target_sections:
+                    train_target_dataconfs.append(dict(dataconf.items(section)))
 
-    def validate(self, sess):
-        '''
-        Evaluate the performance of the neural net and halves the learning rate
-        if it is worse
+                data_queue_elements, _ = input_pipeline.get_filenames(
+                    train_input_dataconfs + train_target_dataconfs)
 
-        Args:
-            inputs: the inputs to the neural net, this should be a list
-                containing NxF matrices for each utterance in the batch where
-                N is the number of frames in the utterance
-            targets: the one-hot encoded targets for neural net, this should be
-            a list containing an NxO matrix for each utterance where O is
-                the output dimension of the neural net
+                tf.train.string_input_producer(
+                    string_tensor=data_queue_elements,
+                    shuffle=True,
+                    seed=None,
+                    capacity=int(conf['batch_size'])*(num_replicas+1),
+                    shared_name='data_queue')
 
-        '''
+                num_steps = (int(conf['num_epochs'])*len(data_queue_elements)/
+                             int(conf['batch_size']))
 
-        #update the validated step
-        sess.run([self.set_val_step])
+                #create a queue to communicate the number of steps
+                num_steps_queue = tf.FIFOQueue(
+                    capacity=num_replicas,
+                    dtypes=[tf.int32],
+                    shapes=[[]],
+                    shared_name='num_steps_queue',
+                    name='num_steps_queue'
+                )
 
-        if self.conf['validation_mode'] == 'decode':
-            outputs = self.decoder.decode(self.val_reader, sess)
-
-            val_loss = self.decoder.score(outputs, self.val_targets)
-
-        else:
-            val_loss = self.compute_val_loss(self.val_reader, self.val_targets,
-                                             sess)
-
-        print 'validation loss: %f' % val_loss
-
-        #pylint: disable=E1101
-        if (val_loss > self.val_loss.eval(session=sess)
-                and self.conf['valid_adapt'] == 'True'):
-            print 'halving learning rate'
-            sess.run([self.halve_learningrate_op])
-
-        sess.run(self.set_val_loss, feed_dict={self.val_loss_in:val_loss})
-
-    def compute_val_loss(self, reader, targets, sess):
-        '''compute the validation loss on a set in the reader
-
-        Args:
-            reader: a reader to read the data
-            targets: the ground truth targets as a dictionary
-            sess: a tensorflow session
-
-        Returns:
-            the loss'''
-
-        looped = False
-        avrg_loss = 0.0
-        total_elements = 0
-
-        while not looped:
-
-            inputs = []
-            labels = []
-
-            for _ in range(self.dispenser.size):
-                #read a batch of data
-                (utt_id, inp, looped) = reader.get_utt()
-
-                inputs.append(inp)
-                labels.append(targets[utt_id])
-
-                if looped:
-                    break
-
-            num_elements = len(inputs)
-
-            #add empty elements to the inputs to get a full batch
-            feat_dim = inputs[0].shape[1]
-            inputs += [np.zeros([0, feat_dim])]*(
-                self.dispenser.size-len(inputs))
-            labels += [np.zeros([0])]*(
-                self.dispenser.size-len(labels))
-
-            #get the sequence length
-            input_seq_length = [inp.shape[0] for inp in inputs]
-            label_seq_length = [lab.shape[0] for lab in labels]
-
-            #pad and put in a tensor
-            input_tensor = np.array([np.append(
-                inp, np.zeros([self.max_input_length-inp.shape[0],
-                               inp.shape[1]]), 0) for inp in inputs])
-            label_tensor = np.array([np.append(
-                lab, np.zeros([self.max_target_length-lab.shape[0]]), 0)
-                                     for lab in labels])
-
-            loss = sess.run(
-                self.decoder_loss,
-                feed_dict={self.inputs:input_tensor,
-                           self.input_seq_length:input_seq_length,
-                           self.targets:label_tensor,
-                           self.target_seq_length:label_seq_length})
-
-            avrg_loss = ((total_elements*avrg_loss + num_elements*loss)/
-                         (num_elements + total_elements))
-            total_elements += num_elements
-
-        return avrg_loss
+                self.set_num_steps = num_steps_queue.enqueue_many(
+                    tf.constant([num_steps]*num_replicas)
+                )
 
 
-def pad(inputs, length):
-    '''
-    Pad the inputs so they have the maximum length
+            #create a queue for the workers to signiy that they are done
+            done_queue = tf.FIFOQueue(
+                capacity=num_replicas,
+                dtypes=[tf.bool],
+                shapes=[[]],
+                shared_name='done_queue%d' % task_index,
+                name='done_queue%d' % task_index
+            )
 
-    Args:
-        inputs: the inputs, this should be a list containing time major
-            tenors
-        length: the length that will be used for padding the inputs
+            self.wait_op = done_queue.dequeue_many(num_replicas).op
 
-    Returns:
-        the padded inputs
-    '''
-    padded_inputs = [np.append(
-        i, np.zeros([length-i.shape[0]] + list(i.shape[1:])), 0)
-                     for i in inputs]
+            self.scaffold = tf.train.Scaffold()
 
-    return padded_inputs
+    def join(self):
+        '''wait for the workers to finish'''
+
+        with self.graph.as_default():
+            with tf.train.MonitoredTrainingSession(
+                master=self.server.target,
+                is_chief=self.task_index == 0,
+                scaffold=self.scaffold) as sess:
+
+                if self.task_index == 0:
+                    self.set_num_steps.run(session=sess)
+                self.wait_op.run(session=sess)

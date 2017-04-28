@@ -1,44 +1,24 @@
 '''@file decoder_factory.py
 contains the decoder factory'''
 
-import ctc_decoder
-import beam_search_decoder
-import attention_visualizer
-import lm_confidence_decoder
+from . import ctc_decoder, beam_search_decoder, attention_visualizer
 
-def factory(conf,
-            classifier,
-            input_dim,
-            max_input_length,
-            coder,
-            expdir):
+def factory(decoder):
     '''
-    creates a decoder object
+    gets a decoder class
 
     Args:
-        conf: the decoder config
-        classifier: the classifier that will be used for decoding
-        input_dim: the input dimension to the nnnetgraph
-        max_input_length: the maximum length of the inputs
-        coder: a TargetCoder object
-        expdir: the location where the models were saved and the results
-            will be written
+        decoder: the decoder type
+
+    Returns:
+        a decoder class
     '''
 
-    if conf['decoder'] == 'ctcdecoder':
-        decoder_class = ctc_decoder.CTCDecoder
-    elif conf['decoder'] == 'beamsearchdecoder':
-        decoder_class = beam_search_decoder.BeamSearchDecoder
-    elif conf['decoder'] == 'attention_visualizer':
-        decoder_class = attention_visualizer.AttentionVisiualizer
-    elif conf['decoder'] == 'lm_confidence_decoder':
-        decoder_class = lm_confidence_decoder.LmConfidenceDecoder
+    if decoder == 'ctc_decoder':
+        return ctc_decoder.CTCDecoder
+    elif decoder == 'beam_search_decoder':
+        return beam_search_decoder.BeamSearchDecoder
+    elif decoder == 'attention_visualizer':
+        return attention_visualizer.AttentionVisiualizer
     else:
-        raise Exception('Undefined decoder type: %s' % conf['decoder'])
-
-    return decoder_class(conf,
-                         classifier,
-                         input_dim,
-                         max_input_length,
-                         coder,
-                         expdir)
+        raise Exception('Undefined decoder type: %s' % decoder)

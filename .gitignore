@@ -2,3 +2,4 @@
 *.pyc
 *.conf
 cluster
+nabu/computing/condor/create_environment.sh

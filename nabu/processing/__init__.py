@@ -5,6 +5,5 @@ This package contains all the functionality for data processing:
 - file interpretation
 '''
 
-from . import ark, batchdispenser, feature_reader, prepare_data,\
-readfiles, score, target_coder, target_normalizers, feature_computers,\
-text_reader
+from . import target_normalizers, feature_computers, processors, \
+tfreaders, tfwriters, post_processors

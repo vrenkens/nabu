@@ -1,0 +1,33 @@
+# Normal execution
+Universe         = vanilla
+# just 1 CPU
+requestCpus      = 1
+# need enough RAM to store the parameters
+RequestMemory    = 2G
+#request a week of wall time
++RequestWalltime = 604800
+Requirements = machineowner == "Visics"
+
+#Specfy nice user behavior
+NiceUser = true
+#Send an email in case of an error
+Notification = Error
+
+initialdir = .
+
+#Run he build cluster script for the parameter server
+Arguments = "python -um nabu.computing.condor.build_cluster --job_name=ps \
+  --expdir=$(expdir) --pid=$(Process) --cid=$(Cluster) \
+  --ssh_command=$(ssh_command)"
+# This is the executable or script I want to run
+executable = nabu/computing/condor/create_environment.sh
+
+#Output of condors handling of the jobs, will be in 'initialdir'
+Log          = $(expdir)/outputs/ps-$(Process).log
+#Standard output of the 'executable', in 'initialdir'
+Output       = $(expdir)/outputs/ps-$(Process).out
+#Standard error of the 'executable', in 'initialdir'
+Error        = $(expdir)/outputs/ps-$(Process).err
+
+# Queue however many parameter servers were requested
+Queue $(numjobs)

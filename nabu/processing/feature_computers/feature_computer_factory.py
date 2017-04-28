@@ -4,17 +4,17 @@ contains the FeatureComputer factory'''
 import mfcc
 import fbank
 
-def factory(conf):
+def factory(feature):
     '''
     create a FeatureComputer
 
     Args:
-        conf: the feature configuration
+        feature: the feature computer type
     '''
 
-    if conf['feature'] == 'fbank':
-        return fbank.Fbank(conf)
-    elif conf['feature'] == 'mfcc':
-        return mfcc.Mfcc(conf)
+    if feature == 'fbank':
+        return fbank.Fbank
+    elif feature == 'mfcc':
+        return mfcc.Mfcc
     else:
-        raise Exception('Undefined feature type: %s' % conf['feature'])
+        raise Exception('Undefined feature type: %s' % feature)

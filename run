@@ -1,0 +1,15 @@
+#!/bin/sh
+
+command=$1
+arguments="${@:2}"
+basedir=$(dirname "$0")
+pwd=$(pwd)
+
+allowed="train test decode data"
+
+if ! [[ $allowed =~ (^|[[:space:]])"$command"($|[[:space:]]) ]]; then
+  echo "ERROR: unknown command $command"
+  exit 1
+fi
+
+python nabu/scripts/prepare_$command.py $arguments
