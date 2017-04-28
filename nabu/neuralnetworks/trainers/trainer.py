@@ -463,6 +463,7 @@ class ParameterServer(object):
 
     def __init__(self,
                  conf,
+                 modelconf,
                  dataconf,
                  server,
                  task_index):
@@ -471,6 +472,7 @@ class ParameterServer(object):
 
         Args:
             conf: the trainer config
+            modelconf: the model configuration
             dataconf: the data configuration as a ConfigParser
             server: optional server to be used for distributed training
             task_index: optional index of the worker task in the cluster
@@ -488,17 +490,24 @@ class ParameterServer(object):
 
             #the chief parameter server should create the data queue
             if task_index == 0:
-                train_input_sections = conf['train_inputs'].split(' ')
-                train_input_dataconfs = []
-                for section in train_input_sections:
-                    train_input_dataconfs.append(dict(dataconf.items(section)))
-                train_target_sections = conf['train_targets'].split(' ')
-                train_target_dataconfs = []
-                for section in train_target_sections:
-                    train_target_dataconfs.append(dict(dataconf.items(section)))
+                #get the database configurations
+                inputs = modelconf.get('io', 'inputs').split(' ')
+                if inputs == ['']:
+                    inputs = []
+                input_sections = [conf[i] for i in inputs]
+                input_dataconfs = []
+                for section in input_sections:
+                    input_dataconfs.append(dict(dataconf.items(section)))
+                outputs = modelconf.get('io', 'outputs').split(' ')
+                if outputs == ['']:
+                    outputs = []
+                target_sections = [conf[o] for o in outputs]
+                target_dataconfs = []
+                for section in target_sections:
+                    target_dataconfs.append(dict(dataconf.items(section)))
 
                 data_queue_elements, _ = input_pipeline.get_filenames(
-                    train_input_dataconfs + train_target_dataconfs)
+                    input_dataconfs + target_dataconfs)
 
                 tf.train.string_input_producer(
                     string_tensor=data_queue_elements,

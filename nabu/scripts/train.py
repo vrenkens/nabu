@@ -59,6 +59,7 @@ def train(clusterfile,
         #create the parameter server
         ps = trainer.ParameterServer(
             conf=trainer_cfg,
+            modelconf=model_cfg,
             dataconf=database_cfg,
             server=server,
             task_index=task_index)

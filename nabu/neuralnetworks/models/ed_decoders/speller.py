@@ -129,10 +129,10 @@ class Speller(ed_decoder.EDDecoder):
                 int(self.conf['num_units']),
                 reuse=tf.get_variable_scope().reuse)
 
-            if float(self.conf['dropout']) < 1 and is_training:
+            '''if float(self.conf['dropout']) < 1 and is_training:
                 rnn_cell = tf.contrib.rnn.DropoutWrapper(
                     rnn_cell,
-                    output_keep_prob=float(self.conf['dropout']))
+                    output_keep_prob=float(self.conf['dropout']))'''
 
             rnn_cells.append(rnn_cell)
 
@@ -153,14 +153,14 @@ class Speller(ed_decoder.EDDecoder):
             rnn_cell = tf.contrib.seq2seq.DynamicAttentionWrapper(
                 cell=rnn_cell,
                 attention_mechanism=attention_mechanism,
-                attention_size=rnn_cell.output_size
+                attention_size=self.output_dims[0]
             )
 
             #make an output projection to get the correct output dimension
-            rnn_cell = tf.contrib.rnn.OutputProjectionWrapper(
+            '''rnn_cell = tf.contrib.rnn.OutputProjectionWrapper(
                 rnn_cell,
                 self.output_dims[0],
-                reuse=tf.get_variable_scope().reuse)
+                reuse=tf.get_variable_scope().reuse)'''
 
             #wrap the rnn cell to make it a constant scope
             rnn_cell = rnn_cell_impl.ScopeRNNCellWrapper(
@@ -182,7 +182,7 @@ class Speller(ed_decoder.EDDecoder):
 
         rnn_cell = self.create_cell(None, None, False)
         cell_state = rnn_cell.zero_state(batch_size, tf.float32)
-        attention = tf.zeros([batch_size, rnn_cell.output_size])
+        attention = tf.zeros([batch_size, self.output_dims[0]])
         zero_state = tf.contrib.seq2seq.DynamicAttentionWrapperState(
             cell_state=cell_state,
             attention=attention)
