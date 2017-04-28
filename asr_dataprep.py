@@ -22,7 +22,7 @@ feat_cfg = dict(feat_cfg.items('features'))
 
 #compute the features of the training set for training
 print '------- computing training features ----------'
-'''prepare_data.prepare_data(
+prepare_data.prepare_data(
     datadir=database_cfg['train_data'],
     featdir=os.path.join(database_cfg['train_dir'], feat_cfg['name']),
     conf=feat_cfg)
@@ -77,7 +77,7 @@ with open(os.path.join(database_cfg['test_dir'], feat_cfg['name'], 'dim'),
 #shuffle the training data on disk
 print '------- shuffling examples ----------'
 prepare_data.shuffle_examples(os.path.join(database_cfg['train_dir'],
-                                           feat_cfg['name']))'''
+                                           feat_cfg['name']))
 
 #create the text normalizer
 normalizer = normalizer_factory.factory(database_cfg['normalizer'])
