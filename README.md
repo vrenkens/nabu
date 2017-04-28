@@ -119,7 +119,7 @@ the abstract methods
 class a name, this does not have to be the name of the class. You will use
 this name in the configuration file for your model so Nabu knows which class
 to use.
-- Add your file to the package in \__init\__.py
+- Add your file to the package in \_\_init\_\_.py
 - create a configuration file for your class and put it in templates. You
 should then add this configuration file in whichever recipe you want to use it
 for or create your own recipe using your new class.
