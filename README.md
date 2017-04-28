@@ -1,3 +1,6 @@
+<span style="color:red">Disclaimer: Nabu 2.0 is still under development and may
+contain bugs</span>
+
 # Nabu
 
 Please find the documentation page [here](http://vrenkens.github.io/nabu)
