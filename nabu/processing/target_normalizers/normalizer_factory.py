@@ -4,6 +4,7 @@ Contains the normalizer factory
 
 import aurora4
 import timit
+import gp
 
 def factory(normalizer_type):
     '''create a normalizer_type
@@ -18,5 +19,7 @@ def factory(normalizer_type):
         return aurora4.Aurora4()
     elif normalizer_type == 'timit_phone_norm':
         return timit.Timit()
+    elif normalizer_type == 'gp':
+        return gp.Gp()
     else:
         raise Exception('Undefined normalizer: %s' % normalizer_type)

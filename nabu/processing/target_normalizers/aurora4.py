@@ -1,5 +1,5 @@
 '''@file aurora4.py
-contains the timit target normalizer'''
+contains the aurora4 target normalizer'''
 
 import normalizer
 
