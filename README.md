@@ -50,8 +50,7 @@ You can find more information about models
 You can run the training with:
 
 ```
-run train --recipe=/path/to/recipe --expdir=/path/to/expdir --mode=<mode>
---computing=<computing>
+run train --recipe=/path/to/recipe --expdir=/path/to/expdir --mode=<mode> --computing=<computing>
 ```
 
 The parameters of this script are the following:
@@ -78,8 +77,7 @@ evaluators [here](nabu/neuralnetworks/trainers/README.md).
 You can run testing with
 
 ```
-run test --recipe=/path/to/recipe --expdir=/path/to/expdir
---computing=<computing>
+run test --recipe=/path/to/recipe --expdir=/path/to/expdir --computing=<computing>
 ```
 
 The parameters for this script are similar to the training script (see above).
@@ -95,8 +93,7 @@ information about decoders [here](nabu/neuralnetworks/decoders/README.md).
 You can run decoding with
 
 ```
-run decode --recipe=/path/to/recipe --expdir=/path/to/expdir
---computing=<computing>
+run decode --recipe=/path/to/recipe --expdir=/path/to/expdir --computing=<computing>
 ```
 
 The parameters for this script are similar to the training script (see above).
