@@ -1,5 +1,4 @@
-<span style="color:red">Disclaimer: Nabu 2.0 is still under development and may
-contain bugs</span>
+**Disclaimer: Nabu 2.0 is still under development and may contain bugs**
 
 # Nabu
 
