@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['licence',['LICENCE',['../md_LICENCE.html',1,'']]]
+  ['computing_20configuration',['Computing configuration',['../index.html',1,'']]]
 ];
