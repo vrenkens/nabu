@@ -86,3 +86,14 @@ class Classifier(object):
         '''
 
         raise NotImplementedError("Abstract method")
+
+    @property
+    def variables(self):
+        '''get all variables from this model
+
+        Returns:
+            a list of model variables
+        '''
+
+        return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
+                                 scope=self.scope.name)

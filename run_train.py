@@ -24,7 +24,7 @@ def main(_):
     '''main function'''
 
     #pointers to the config files
-    computing_cfg_file = 'config/computing/condor_non_distributed.cfg'
+    computing_cfg_file = 'config/computing/non_distributed.cfg'
     database_cfg_file = 'config/asr_databases/TIMIT.conf'
     if FLAGS.type == 'asr':
         feat_cfg_file = 'config/features/fbank.cfg'

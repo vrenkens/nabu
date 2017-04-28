@@ -56,6 +56,8 @@ class Trainer(object):
         self.max_target_length = dispenser.max_target_length
         self.max_input_length = dispenser.max_input_length
 
+        self.classifier = classifier
+
         #create the graph
         self.graph = tf.Graph()
 
@@ -273,6 +275,8 @@ class Trainer(object):
                 #create the schaffold
                 self.scaffold = tf.train.Scaffold()
 
+
+
     @abstractmethod
     def compute_loss(self, targets, logits, logit_seq_length,
                      target_seq_length):
@@ -312,7 +316,7 @@ class Trainer(object):
 
         #create a hook for saving the final model
         save_hook = SaveAtEnd(os.path.join(self.expdir, 'model',
-                                           'network.ckpt'))
+                                           'network.ckpt'), self.classifier)
 
         with self.graph.as_default():
             with tf.train.MonitoredTrainingSession(
@@ -536,19 +540,21 @@ def pad(inputs, length):
 class SaveAtEnd(tf.train.SessionRunHook):
     '''a training hook for saving the final model'''
 
-    def __init__(self, filename):
+    def __init__(self, filename, classifier):
         '''hook constructor
 
         Args:
-            filename: where the model will be saved'''
+            filename: where the model will be saved
+            classifier: the classifier that will be saved'''
 
         self.filename = filename
+        self.classifier = classifier
 
     def begin(self):
         '''this will be run at session creation'''
 
         #pylint: disable=W0201
-        self._saver = tf.train.Saver(tf.trainable_variables(), sharded=True)
+        self._saver = tf.train.Saver(self.classifier.variables, sharded=True)
 
     def end(self, session):
         '''this will be run at session closing'''

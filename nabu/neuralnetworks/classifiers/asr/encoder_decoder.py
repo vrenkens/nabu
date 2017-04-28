@@ -20,10 +20,13 @@ class EncoderDecoder(classifier.Classifier):
         super(EncoderDecoder, self).__init__(conf, output_dim, name)
 
         #create the listener
-        self.encoder = encoder_factory.factory(conf)
+        self.encoder = encoder_factory.factory(
+            conf,
+            name=self.scope.name + '/encoder')
 
         #create the speller
-        self.decoder = asr_decoder_factory.factory(conf, self.output_dim)
+        self.decoder = asr_decoder_factory.factory(
+            conf, self.output_dim, self.scope.name + '/decoder')
 
     def _get_outputs(self, inputs, input_seq_length, targets=None,
                      target_seq_length=None, is_training=False):
