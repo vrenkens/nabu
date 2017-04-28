@@ -85,6 +85,7 @@ def main(_):
         shutil.copyfile(evaluator_cfg_file,
                         os.path.join(FLAGS.expdir, 'evaluator.cfg'))
 
+    shutil.copyfile(trainer_cfg_file, os.path.join(FLAGS.expdir, 'trainer.cfg'))
 
     computing_cfg_file = 'config/computing/%s/%s.cfg' % (FLAGS.computing,
                                                          FLAGS.mode)
