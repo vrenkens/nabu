@@ -1,10 +1,10 @@
-'''@file librispeech.py
-contains the timit target normalizer'''
+'''@file timit_text.py
+contains the timit text target normalizer'''
 
 import normalizer
 
-class Librispeech(normalizer.Normalizer):
-    '''normalize for the Librispeech database'''
+class TimitText(normalizer.Normalizer):
+    '''normalize for the timit text database'''
 
     def __call__(self, transcription):
         '''normalize a transcription
@@ -39,6 +39,15 @@ class Librispeech(normalizer.Normalizer):
 
         #space
         alphabet.append('<space>')
+
+        #punctuation
+        alphabet.append('.')
+        alphabet.append('?')
+        alphabet.append('!')
+        alphabet.append(',')
+        alphabet.append(';')
+        alphabet.append('\"')
+        alphabet.append('\'')
 
         #unknown character
         alphabet.append('<unk>')

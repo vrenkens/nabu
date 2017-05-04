@@ -79,6 +79,9 @@ def create_server(clusterfile, job_name, task_index, expdir, ssh_command):
 
                                 port += 1
 
+                            print('creating tunnel from %s to %s' %
+                                  (localmachine, remote[0]))
+
                             #create the ssh tunnel
                             p = subprocess.Popen(
                                 [ssh_command, '-o', 'StrictHostKeyChecking=no',
@@ -111,9 +114,12 @@ def create_server(clusterfile, job_name, task_index, expdir, ssh_command):
             #notify that the cluster is ready
             open(readyfile, 'w').close()
 
-        #wait for the clusterfile to be ready
-        while not os.path.exists(readyfile):
-            sleep(1)
+        #wait for the all machines to create the tunnels
+        for job in machines:
+            for remote in machines[job]:
+                while not os.path.exists(os.path.join(
+                        expdir, 'cluster', '%s-ready' % remote[0])):
+                    sleep(1)
 
         #read the cluster file
         machines = cluster.read_cluster(machinecluster)

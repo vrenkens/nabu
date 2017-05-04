@@ -129,16 +129,9 @@ class Speller(ed_decoder.EDDecoder):
                 int(self.conf['num_units']),
                 reuse=tf.get_variable_scope().reuse)
 
-            '''if float(self.conf['dropout']) < 1 and is_training:
-                rnn_cell = tf.contrib.rnn.DropoutWrapper(
-                    rnn_cell,
-                    output_keep_prob=float(self.conf['dropout']))'''
-
             rnn_cells.append(rnn_cell)
 
         rnn_cell = tf.contrib.rnn.MultiRNNCell(rnn_cells)
-
-        #rnn_cell = rnn_cell_impl.StateOutputWrapper(rnn_cell)
 
         if encoded is not None:
 
@@ -155,12 +148,6 @@ class Speller(ed_decoder.EDDecoder):
                 attention_mechanism=attention_mechanism,
                 attention_size=self.output_dims[0]
             )
-
-            #make an output projection to get the correct output dimension
-            '''rnn_cell = tf.contrib.rnn.OutputProjectionWrapper(
-                rnn_cell,
-                self.output_dims[0],
-                reuse=tf.get_variable_scope().reuse)'''
 
             #wrap the rnn cell to make it a constant scope
             rnn_cell = rnn_cell_impl.ScopeRNNCellWrapper(
