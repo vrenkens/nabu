@@ -40,7 +40,9 @@ def test(expdir):
         batch_loss, numbatches = evaluator.evaluate()
 
         #create a hook that will load the model
-        load_hook = LoadAtBegin(os.path.join(expdir, 'model', 'network.ckpt'))
+        load_hook = LoadAtBegin(
+            os.path.join(expdir, 'model', 'network.ckpt'),
+            evaluator.model)
 
         #create a hook for summary writing
         summary_hook = SummaryHook(os.path.join(expdir, 'logdir'))
@@ -63,7 +65,8 @@ def test(expdir):
 if __name__ == '__main__':
 
     tf.app.flags.DEFINE_string('expdir', 'expdir',
-                               'the exeriments directory that was used for training'
+                               'the exeriments directory that was used for'
+                               ' training'
                               )
     FLAGS = tf.app.flags.FLAGS
 

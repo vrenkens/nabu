@@ -1,7 +1,7 @@
 '''@file ed_encoder_factory.py
 contains the EDEncoder factory'''
 
-from . import listener, dummy_encoder, dblstm, dnn
+from . import listener, dummy_encoder, dblstm, dnn, listener_ps
 
 def factory(encoder):
     '''get an EDEncoder class
@@ -14,6 +14,8 @@ def factory(encoder):
 
     if encoder == 'listener':
         return listener.Listener
+    if encoder == 'listener_ps':
+        return listener_ps.ListenerPS
     elif encoder == 'dummy_encoder':
         return dummy_encoder.DummyEncoder
     elif encoder == 'dblstm':

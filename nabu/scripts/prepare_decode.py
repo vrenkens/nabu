@@ -78,7 +78,7 @@ def main(_):
                          'nabu/computing/condor/non_distributed.job'])
 
 
-    elif FLAGS.computing == 'non_distributed':
+    elif FLAGS.computing == 'standart':
         decode(expdir=os.path.join(FLAGS.expdir, 'decode'))
 
     else:

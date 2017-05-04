@@ -155,3 +155,10 @@ class EDDecoder(object):
         Returns:
             the decoder zero state as a possibly nested tupple
                 of [batch_size x ... ] tensors'''
+
+    @property
+    def variables(self):
+        '''get a list of the models's variables'''
+
+        return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
+                                 scope=self.scope.name)

@@ -92,8 +92,9 @@ class Recognizer(object):
 
         with self.graph.as_default():
             #create a hook that will load the model
-            load_hook = LoadAtBegin(os.path.join(
-                self.expdir, 'model', 'network.ckpt'))
+            load_hook = LoadAtBegin(
+                os.path.join(self.expdir, 'model', 'network.ckpt'),
+                self.model)
 
             #create a hook for summary writing
             summary_hook = SummaryHook(os.path.join(self.expdir, 'logdir'))

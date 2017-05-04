@@ -61,7 +61,7 @@ def main(_):
     os.symlink(os.path.join(FLAGS.expdir, 'model'),
                os.path.join(FLAGS.expdir, 'test', 'model'))
 
-    if FLAGS.computing == 'condor_non_distributed':
+    if FLAGS.computing == 'condor':
 
         computing_cfg_file = 'config/computing/condor/non_distributed.cfg'
         parsed_computing_cfg = configparser.ConfigParser()
@@ -78,7 +78,7 @@ def main(_):
                          'nabu/computing/condor/non_distributed.job'])
 
 
-    elif FLAGS.computing == 'non_distributed':
+    elif FLAGS.computing == 'standart':
         test(expdir=os.path.join(FLAGS.expdir, 'test'))
 
     else:

@@ -73,3 +73,9 @@ class Model(object):
             is_training=is_training)
 
         return logits, logit_seq_length
+
+    @property
+    def variables(self):
+        '''get a list of the models's variables'''
+
+        return self.encoder.variables + self.decoder.variables

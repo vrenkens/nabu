@@ -6,19 +6,21 @@ import tensorflow as tf
 class LoadAtBegin(tf.train.SessionRunHook):
     '''a training hook for saving the final model'''
 
-    def __init__(self, filename):
+    def __init__(self, filename, model):
         '''hook constructor
 
         Args:
-            filename: where the model will be saved'''
+            filename: where the model will be saved
+            model: the model that will be loaded'''
 
         self.filename = filename
+        self.model = model
 
     def begin(self):
         '''this will be run at session creation'''
 
         #pylint: disable=W0201
-        self._saver = tf.train.Saver(tf.trainable_variables(), sharded=True)
+        self._saver = tf.train.Saver(self.model.variables, sharded=True)
 
     def after_create_session(self, session, _):
         '''this will be run after session creation'''
@@ -62,19 +64,21 @@ class SummaryHook(tf.train.SessionRunHook):
 class SaveAtEnd(tf.train.SessionRunHook):
     '''a training hook for saving the final model'''
 
-    def __init__(self, filename):
+    def __init__(self, filename, model):
         '''hook constructor
 
         Args:
-            filename: where the model will be saved'''
+            filename: where the model will be saved
+            model: the model that will be saved'''
 
         self.filename = filename
+        self.model = model
 
     def begin(self):
         '''this will be run at session creation'''
 
         #pylint: disable=W0201
-        self._saver = tf.train.Saver(tf.trainable_variables(), sharded=True)
+        self._saver = tf.train.Saver(self.model.variables, sharded=True)
 
     def end(self, session):
         '''this will be run at session closing'''

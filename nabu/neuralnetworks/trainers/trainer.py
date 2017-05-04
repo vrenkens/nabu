@@ -38,6 +38,7 @@ class Trainer(object):
 
         self.expdir = expdir
         self.server = server
+        self.conf = conf
 
         cluster = tf.train.ClusterSpec(server.server_def.cluster)
 
@@ -389,8 +390,9 @@ class Trainer(object):
         #config.log_device_placement = True
 
         #create a hook for saving the final model
-        save_hook = SaveAtEnd(os.path.join(self.expdir, 'model',
-                                           'network.ckpt'))
+        save_hook = SaveAtEnd(
+            os.path.join(self.expdir, 'model', 'network.ckpt'),
+            self.model)
 
         with self.graph.as_default():
             with tf.train.MonitoredTrainingSession(
@@ -434,7 +436,9 @@ class Trainer(object):
                         print 'validation loss: %f' % validation_loss
 
                         #check if the validation loss is better
-                        if validation_loss > prev_val_loss:
+                        if (validation_loss > prev_val_loss and
+                                self.conf['valid_adapt'] == 'True'):
+
                             print ('validation loss is worse halving '
                                    'learning rate')
                             self.half_lr.run(session=sess)

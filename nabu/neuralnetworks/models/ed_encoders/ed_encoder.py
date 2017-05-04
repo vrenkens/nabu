@@ -68,3 +68,10 @@ class EDEncoder(object):
             - the sequence lengths of the outputs as a list of [batch_size]
                 tensors
         '''
+
+    @property
+    def variables(self):
+        '''get a list of the models's variables'''
+
+        return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
+                                 scope=self.scope.name)
