@@ -293,10 +293,9 @@ and overwrite the \_get\_outputs method. This method takes the following inputs:
 - is_training: whether or not the network is in training mode
 
 The method should return the output logits (probabilities before softmax) and
-the output sequence lengths. Some example Classifiers:
+the output sequence lengths. An example Classifiers:
 
-- nabu/neuralnetworks/classifiers/las.py: Listen Attend and Spell asr
-- nabu/neuralnetworks/classifiers/dblstm.py: Deep Biderictional LSTM asr
+- nabu/neuralnetworks/classifiers/asr/dblstm.py: Deep Biderictional LSTM asr
 
 Once you've created your classifier you should add it in the factory method in
 nabu/neuralnetworks/classifiers/classifier_factory.py (with any name) and you
