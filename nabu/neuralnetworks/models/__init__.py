@@ -2,4 +2,4 @@
     Contains the neural net models and their components
 '''
 
-from . import model, layer, ed_decoders, ed_encoders
+from . import model, ed_decoders, ed_encoders
