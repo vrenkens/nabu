@@ -1,6 +1,7 @@
 '''@file decoder.py
 neural network decoder environment'''
 
+
 from abc import ABCMeta, abstractmethod
 
 class Decoder(object):
@@ -25,26 +26,33 @@ class Decoder(object):
         '''decode a batch of data
 
         Args:
-            inputs: the inputs as a list of [batch_size x ...] tensors
-            input_seq_length: the input sequence lengths as a list of
+            inputs: the inputs as a dictionary of [batch_size x ...] tensors
+            input_seq_length: the input sequence lengths as a dictionary of
                 [batch_size] vectors
 
         Returns:
-            - the decoded sequences as a list of length beam_width
-                containing [batch_size x ...] sparse tensors, the beam elements
-                are sorted from best to worst
-            - the sequence scores as a [batch_size x beam_width] tensor
+            - the decoded sequences as a dictionary of outputs
         '''
 
     @abstractmethod
-    def get_output_dims(self, output_dims):
-        '''
-        Adjust the output dimensions of the model (blank label, eos...)
-        WARNING: This should be a static method
+    def write(self, outputs, directory, names):
+        '''write the output of the decoder to disk
 
-        Args:
-            a list containing the original model output dimensions
+        args:
+            outputs: the outputs of the decoder as a dictionary
+            directory: the directory where the results should be written
+            names: the names of the utterances in outputs
+        '''
+
+    @abstractmethod
+    def evaluate(self, outputs, references, reference_seq_length):
+        '''evaluate the output of the decoder
+
+        args:
+            outputs: the outputs of the decoder as a dictionary
+            references: the references as a dictionary
+            reference_seq_length: the sequence lengths of the references
 
         Returns:
-            a list containing the new model output dimensions
+            the error of the outputs
         '''

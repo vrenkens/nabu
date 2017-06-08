@@ -6,36 +6,33 @@ from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn
 from nabu.neuralnetworks.components import ops
 
 class BLSTMLayer(object):
-    """This class allows enables blstm layer creation as well as computing
-       their output. The output is found by linearly combining the forward
-       and backward pass as described in:
-       Graves et al., Speech recognition with deep recurrent neural networks,
-       page 6646.
-    """
+    '''a BLSTM layer'''
+
     def __init__(self, num_units):
-        """
-        BlstmLayer constructor
+        '''
+        BLSTMLayer constructor
 
         Args:
-            num_units: The number of units in the LSTM
-        """
+            num_units: The number of units in the one directon
+        '''
 
         self.num_units = num_units
 
     def __call__(self, inputs, sequence_length, scope=None):
-        """
+        '''
         Create the variables and do the forward computation
 
         Args:
             inputs: the input to the layer as a
                 [batch_size, max_length, dim] tensor
-            sequence_length: the length of the input sequences
+            sequence_length: the length of the input sequences as a
+                [batch_size] tensor
             scope: The variable scope sets the namespace under which
-                      the variables created during this call will be stored.
+                the variables created during this call will be stored.
 
         Returns:
             the output of the layer
-        """
+        '''
 
         with tf.variable_scope(scope or type(self).__name__):
 
@@ -62,7 +59,8 @@ class PBLSTMLayer(object):
 
     def __init__(self, num_units, num_steps):
         """
-        BlstmLayer constructor
+        PBLSTMLayer constructor
+
         Args:
             num_units: The number of units in the LSTM
             num_steps: the number of time steps to concatenate
@@ -73,18 +71,20 @@ class PBLSTMLayer(object):
         self.num_steps = num_steps
 
     def __call__(self, inputs, sequence_lengths, scope=None):
-        """
+        '''
         Create the variables and do the forward computation
+
         Args:
-            inputs: A time minor tensor of shape [batch_size, time,
-                input_size],
-            sequence_lengths: the length of the input sequences
+            inputs: the input to the layer as a
+                [batch_size, max_length, dim] tensor
+            sequence_length: the length of the input sequences as a
+                [batch_size] tensor
             scope: The variable scope sets the namespace under which
                 the variables created during this call will be stored.
+
         Returns:
-            the output of the layer, the concatenated outputs of the
-            forward and backward pass shape [batch_size, time/2, input_size*2].
-        """
+            the output of the layer and the sequence lengths of the outputs
+        '''
 
 
         with tf.variable_scope(scope or type(self).__name__):
@@ -100,10 +100,10 @@ class PBLSTMLayer(object):
         return stacked_outputs, output_seq_lengths
 
 def projected_subsampling(inputs, input_seq_lengths, num_steps, name=None):
-    '''.
+    '''
     apply projected subsampling, this is concatenating 2 timesteps,
     projecting to a lower dimensionality, applying batch_normalization
-    and a relu layer.
+    and a relu layer
 
     args:
         inputs: a [batch_size x max_length x dim] input tensorflow

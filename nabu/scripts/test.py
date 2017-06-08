@@ -4,6 +4,7 @@ this file will test the performance of a model'''
 import sys
 import os
 sys.path.append(os.getcwd())
+import cPickle as pickle
 from six.moves import configparser
 import tensorflow as tf
 from nabu.neuralnetworks.evaluators import evaluator_factory
@@ -16,9 +17,9 @@ def test(expdir):
     database_cfg = configparser.ConfigParser()
     database_cfg.read(os.path.join(expdir, 'database.cfg'))
 
-    #read the model config files
-    model_cfg = configparser.ConfigParser()
-    model_cfg.read(os.path.join(expdir, 'model', 'model.cfg'))
+    #load the model
+    with open(os.path.join(expdir, 'model', 'model.pkl'), 'rb') as fid:
+        model = pickle.load(fid)
 
     #read the evaluator config file
     evaluator_cfg = configparser.ConfigParser()
@@ -29,7 +30,7 @@ def test(expdir):
     evaluator = evaluator_factory.factory(evaltype)(
         conf=evaluator_cfg,
         dataconf=database_cfg,
-        model_or_conf=model_cfg)
+        model=model)
 
     #create the graph
     graph = tf.Graph()
@@ -42,7 +43,7 @@ def test(expdir):
         #create a hook that will load the model
         load_hook = LoadAtBegin(
             os.path.join(expdir, 'model', 'network.ckpt'),
-            evaluator.model)
+            model)
 
         #create a hook for summary writing
         summary_hook = SummaryHook(os.path.join(expdir, 'logdir'))

@@ -1,11 +1,9 @@
 '''@file evaluator.py
 contains the Evaluator class'''
 
-import os
 from abc import ABCMeta, abstractmethod
 import tensorflow as tf
 from nabu.processing import input_pipeline
-from nabu.neuralnetworks.models.model import Model
 
 class Evaluator(object):
     '''the general evaluator class
@@ -14,63 +12,29 @@ class Evaluator(object):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, conf, dataconf, model_or_conf):
+    def __init__(self, conf, dataconf, model):
         '''Evaluator constructor
 
         Args:
             conf: the evaluator configuration as a ConfigParser
             dataconf: the database configuration
-            model_or_conf: eihther a model object or a model
-                configuration as a configparser
+            model: the model to be evaluated
         '''
 
         self.conf = conf
+        self.model = model
 
-        if isinstance(model_or_conf, Model):
-            self.model = model_or_conf
+        #get the database configurations
+        inputs = self.model.input_names
+        input_sections = [conf.get('evaluator', i) for i in inputs]
+        self.input_dataconfs = []
+        for section in input_sections:
+            self.input_dataconfs.append(dict(dataconf.items(section)))
 
-            #get the database configurations
-            inputs = self.model.input_names
-            input_sections = [conf.get('evaluator', i) for i in inputs]
-            self.input_dataconfs = []
-            for section in input_sections:
-                self.input_dataconfs.append(dict(dataconf.items(section)))
-            outputs = self.model.output_names
-            target_sections = [conf.get('evaluator', o) for o in outputs]
-            self.target_dataconfs = []
-            for section in target_sections:
-                self.target_dataconfs.append(dict(dataconf.items(section)))
-
-        else:
-            #get the database configurations
-            inputs = model_or_conf.get('io', 'inputs').split(' ')
-            if inputs == ['']:
-                inputs = []
-            input_sections = [conf.get('evaluator', i) for i in inputs]
-            self.input_dataconfs = []
-            for section in input_sections:
-                self.input_dataconfs.append(dict(dataconf.items(section)))
-            outputs = model_or_conf.get('io', 'outputs').split(' ')
-            if outputs == ['']:
-                outputs = []
-            target_sections = [conf.get('evaluator', o) for o in outputs]
-            self.target_dataconfs = []
-            for section in target_sections:
-                self.target_dataconfs.append(dict(dataconf.items(section)))
-
-            #get the dimensions of all the targets
-            output_dims = []
-            for c in self.target_dataconfs:
-                with open(os.path.join(c['dir'], 'dim')) as fid:
-                    output_dims.append(int(fid.read()))
-
-            #adjust the output dimensions if necesary
-            output_dims = self.get_output_dims(output_dims)
-
-            #create the model
-            self.model = Model(
-                conf=model_or_conf,
-                output_dims=output_dims)
+        target_sections = conf.get('evaluator', 'targets').split(' ')
+        self.target_dataconfs = []
+        for section in target_sections:
+            self.target_dataconfs.append(dict(dataconf.items(section)))
 
     def evaluate(self):
         '''evaluate the performance of the model
@@ -106,10 +70,21 @@ class Evaluator(object):
                 dataconfs=self.input_dataconfs + self.target_dataconfs
             )
 
-            inputs = data[:len(self.input_dataconfs)]
-            input_seq_length = seq_length[:len(self.input_dataconfs)]
-            targets = data[len(self.input_dataconfs):]
-            target_seq_length = seq_length[len(self.input_dataconfs):]
+            inputs = {
+                self.model.input_names[i]: d
+                for i, d in enumerate(data[:len(self.input_dataconfs)])}
+
+            input_seq_length = {
+                self.model.input_names[i]: d
+                for i, d in enumerate(seq_length[:len(self.input_dataconfs)])}
+
+            targets = {
+                self.model.output_names[i]: d
+                for i, d in enumerate(data[len(self.input_dataconfs):])}
+
+            target_seq_length = {
+                self.model.output_names[i]: d
+                for i, d in enumerate(seq_length[len(self.input_dataconfs):])}
 
             loss = self.compute_loss(inputs, input_seq_length, targets,
                                      target_seq_length)
@@ -133,15 +108,3 @@ class Evaluator(object):
 
         Returns:
             the loss as a scalar'''
-
-    @abstractmethod
-    def get_output_dims(self, output_dims):
-        '''
-        Adjust the output dimensions of the model (blank label, eos...)
-
-        Args:
-            a list containing the original model output dimensions
-
-        Returns:
-            a list containing the new model output dimensions
-        '''

@@ -14,10 +14,6 @@ def decode(expdir):
     database_cfg = configparser.ConfigParser()
     database_cfg.read(os.path.join(expdir, 'database.cfg'))
 
-    #read the model config files
-    model_cfg = configparser.ConfigParser()
-    model_cfg.read(os.path.join(expdir, 'model', 'model.cfg'))
-
     #read the recognizer config file
     recognizer_cfg = configparser.ConfigParser()
     recognizer_cfg.read(os.path.join(expdir, 'recognizer.cfg'))
@@ -26,7 +22,6 @@ def decode(expdir):
     recognizer = Recognizer(
         conf=recognizer_cfg,
         dataconf=database_cfg,
-        modelconf=model_cfg,
         expdir=expdir)
 
     #do the recognition

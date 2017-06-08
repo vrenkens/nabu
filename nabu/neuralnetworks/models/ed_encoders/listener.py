@@ -32,44 +32,53 @@ class Listener(ed_encoder.EDEncoder):
         Create the variables and do the forward computation
 
         Args:
-            inputs: the inputs to the neural network, this is a list of
-                [batch_size x ...] tensors
+            inputs: the inputs to the neural network, this is a dictionary of
+                [batch_size x time x ...] tensors
             input_seq_length: The sequence lengths of the input utterances, this
-                is a list of [batch_size] vectors
+                is a dictionary of [batch_size] vectors
             is_training: whether or not the network is in training mode
 
         Returns:
-            - the outputs of the encoder as a list of [bath_size x ...]
+            - the outputs of the encoder as a list of [bath_size x time x ...]
                 tensors
             - the sequence lengths of the outputs as a list of [batch_size]
                 tensors
         '''
 
 
-        #add input noise
-        std_input_noise = float(self.conf['input_noise'])
-        if is_training and std_input_noise > 0:
-            noisy_inputs = inputs[0] + tf.random_normal(
-                tf.shape(inputs[0]), stddev=std_input_noise)
-        else:
-            noisy_inputs = inputs[0]
 
-        outputs = noisy_inputs
-        output_seq_lengths = input_seq_length[0]
-        for l in range(int(self.conf['num_layers'])):
-            outputs, output_seq_lengths = self.pblstm(
-                outputs, output_seq_lengths, 'layer%d' % l)
+        encoded = {}
+        encoded_seq_length = {}
 
-            if float(self.conf['dropout']) < 1 and is_training:
-                outputs = tf.nn.dropout(
-                    outputs, float(self.conf['dropout']))
+        for inp in inputs:
+            with tf.variable_scope(inp):
+                #add input noise
+                std_input_noise = float(self.conf['input_noise'])
+                if is_training and std_input_noise > 0:
+                    noisy_inputs = inputs[inp] + tf.random_normal(
+                        tf.shape(inputs[inp]), stddev=std_input_noise)
+                else:
+                    noisy_inputs = inputs[inp]
 
-        outputs = self.blstm(
-            outputs, output_seq_lengths,
-            'layer%d' % int(self.conf['num_layers']))
+                outputs = noisy_inputs
+                output_seq_lengths = input_seq_length[inp]
+                for l in range(int(self.conf['num_layers'])):
+                    outputs, output_seq_lengths = self.pblstm(
+                        outputs, output_seq_lengths, 'layer%d' % l)
 
-        if float(self.conf['dropout']) < 1 and is_training:
-            outputs = tf.nn.dropout(outputs,
-                                    float(self.conf['dropout']))
+                    if float(self.conf['dropout']) < 1 and is_training:
+                        outputs = tf.nn.dropout(
+                            outputs, float(self.conf['dropout']))
 
-        return [outputs], [output_seq_lengths]
+                outputs = self.blstm(
+                    outputs, output_seq_lengths,
+                    'layer%d' % int(self.conf['num_layers']))
+
+                if float(self.conf['dropout']) < 1 and is_training:
+                    outputs = tf.nn.dropout(outputs,
+                                            float(self.conf['dropout']))
+
+                encoded[inp] = outputs
+                encoded_seq_length[inp] = output_seq_lengths
+
+        return encoded, encoded_seq_length

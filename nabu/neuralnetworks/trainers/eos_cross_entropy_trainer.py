@@ -6,7 +6,7 @@ import trainer
 from nabu.neuralnetworks.components import ops
 
 class EosCrossEntropyTrainer(trainer.Trainer):
-    '''A trainer that minimises the cross-entropy loss'''
+    '''A trainer that minimises the cross-entropy loss with an eos label'''
 
     def compute_loss(self, targets, logits, logit_seq_length,
                      target_seq_length):
@@ -14,28 +14,26 @@ class EosCrossEntropyTrainer(trainer.Trainer):
         Compute the loss
 
         Creates the operation to compute the cross-entropy loss for every input
-        frame
+        frame and ads an end of sequence label to the targets
 
         Args:
-            targets: a list of [batch_size x ...] tensor containing the
-                targets
-            logits: a list of [batch_size x ... tensor containing the
-                logits
-            logit_seq_length: a list of [batch_size] vectors containing the
-                logit sequence lengths
-            target_seq_length: a list of [batch_size] vectors containing the
-                target sequence lengths
+            targets: a dictionary of [batch_size x time x ...] tensor containing
+                the targets
+            logits: a dictionary of [batch_size x time x ...] tensor containing
+                the logits
+            logit_seq_length: a dictionary of [batch_size] vectors containing
+                the logit sequence lengths
+            target_seq_length: a dictionary of [batch_size] vectors containing
+                the target sequence lengths
 
         Returns:
             a scalar value containing the loss
         '''
 
-        numtargets = len(targets)
-
         with tf.name_scope('cross_entropy_loss'):
             losses = []
 
-            for t in range(numtargets):
+            for t in targets:
                 losses.append(ops.cross_entropy_loss_eos(
                     targets[t], logits[t], logit_seq_length[t],
                     target_seq_length[t]
@@ -45,15 +43,10 @@ class EosCrossEntropyTrainer(trainer.Trainer):
 
         return loss
 
-    def get_output_dims(self, output_dims):
+    @property
+    def trainlabels(self):
         '''
-        Adjust the output dimensions of the model (blank label, eos...)
-
-        Args:
-            a list containing the original model output dimensions
-
-        Returns:
-            a list containing the new model output dimensions
+        the number of aditional labels the trainer needs (e.g. blank or eos)
         '''
 
-        return [output_dim + 1 for output_dim in output_dims]
+        return 1

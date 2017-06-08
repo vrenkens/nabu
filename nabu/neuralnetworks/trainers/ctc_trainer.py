@@ -13,35 +13,32 @@ class CTCTrainer(trainer.Trainer):
         '''
         Compute the loss
 
-        Creates the operation to compute the cross-enthropy loss for every input
-        frame (if you want to have a different loss function, overwrite this
-        method)
+        Creates the operation to compute the cross-entropy loss for every input
+        frame and ads an end of sequence label to the targets
 
         Args:
-            targets: a list of [batch_size x ...] tensor containing the
-                targets
-            logits: a list of [batch_size x ... tensor containing the
-                logits
-            logit_seq_length: a list of [batch_size] vectors containing the
-                logit sequence lengths
-            target_seq_length: a list of [batch_size] vectors containing the
-                target sequence lengths
+            targets: a dictionary of [batch_size x time x ...] tensor containing
+                the targets
+            logits: a dictionary of [batch_size x time x ...] tensor containing
+                the logits
+            logit_seq_length: a dictionary of [batch_size] vectors containing
+                the logit sequence lengths
+            target_seq_length: a dictionary of [batch_size] vectors containing
+                the target sequence lengths
 
         Returns:
             a scalar value containing the loss
         '''
-
         with tf.name_scope('CTC_loss'):
 
             losses = []
-            numtargets = len(targets)
 
-            for t in range(numtargets):
+            for t in targets:
                 #convert the targets into a sparse tensor representation
                 sparse_targets = ops.dense_sequence_to_sparse(
                     targets[t], target_seq_length[t])
 
-                losses.append(tf.reduce_mean(tf.nn.ctc_loss(
+                losses.append(tf.reduce_sum(tf.nn.ctc_loss(
                     sparse_targets,
                     logits[t],
                     logit_seq_length[t],
@@ -51,15 +48,10 @@ class CTCTrainer(trainer.Trainer):
 
         return loss
 
-    def get_output_dims(self, output_dims):
+    @property
+    def trainlabels(self):
         '''
-        Adjust the output dimensions of the model (blank label, eos...)
-
-        Args:
-            a list containing the original model output dimensions
-
-        Returns:
-            a list containing the new model output dimensions
+        the number of aditional labels the trainer needs (e.g. blank or eos)
         '''
 
-        return [output_dim + 1 for output_dim in output_dims]
+        return 1

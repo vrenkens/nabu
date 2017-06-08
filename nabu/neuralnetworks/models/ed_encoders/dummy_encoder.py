@@ -11,14 +11,14 @@ class DummyEncoder(ed_encoder.EDEncoder):
         Create the variables and do the forward computation
 
         Args:
-            inputs: the inputs to the neural network, this is a list of
-                [batch_size x ...] tensors
+            inputs: the inputs to the neural network, this is a dictionary of
+                [batch_size x time x ...] tensors
             input_seq_length: The sequence lengths of the input utterances, this
-                is a list of [batch_size] vectors
+                is a dictionary of [batch_size] vectors
             is_training: whether or not the network is in training mode
 
         Returns:
-            - the outputs of the encoder as a list of [bath_size x ...]
+            - the outputs of the encoder as a list of [bath_size x time x ...]
                 tensors
             - the sequence lengths of the outputs as a list of [batch_size]
                 tensors

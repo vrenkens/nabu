@@ -1,14 +1,12 @@
-'''@ file linear_decoder.py
-contains the LinearDecoder class'''
+'''@ file phonology_decoder.py
+contains the PhonologyDecoder class'''
 
-import os
+import numpy as np
 import tensorflow as tf
 import ed_decoder
 
-class LinearDecoder(ed_decoder.EDDecoder):
-    '''a linear decoder that maps the encoded input sequences to outputs
-
-    Uses a single linear layer'''
+class PhonologyDecoder(ed_decoder.EDDecoder):
+    '''a decoder that is used to detect phonological features'''
 
     def _decode(self, encoded, encoded_seq_length, targets, target_seq_length,
                 is_training):
@@ -35,16 +33,51 @@ class LinearDecoder(ed_decoder.EDDecoder):
                 of [batch_size x ... ] tensors
         '''
 
-        #apply the linear layer
-        outputs = tf.contrib.layers.linear(
-            encoded.values()[0],
-            self.output_dims.values()[0],
-            scope='outlayer')
+        #splice the features
+        with tf.name_scope('splice'):
+            splicedlist = [encoded.values()[0]]
+            for i in range(1, int(self.conf['context_window'])):
+                left = tf.pad(
+                    tensor=encoded.values()[0][:, :-i, :],
+                    paddings=[[0, 0], [i, 0], [0, 0]])
+                right = tf.pad(
+                    tensor=encoded.values()[0][:, :-i, :],
+                    paddings=[[0, 0], [0, i], [0, 0]])
+                splicedlist += [left, right]
 
-        return (
-            {self.output_dims.keys()[0]: outputs},
-            {self.output_dims.keys()[0]:encoded_seq_length.values()[0]},
-            ())
+            spliced = tf.concat(splicedlist, axis=2)
+
+        ph_dims = [int(d) for d in self.conf['phonology_dims'].split(' ')]
+
+        #apply for each phonological feature
+        detector_outputs = [
+            detector(
+                inputs=spliced,
+                num_layers=int(self.conf['num_layers']),
+                num_units=int(self.conf['num_units']),
+                name='detector_%d' % i)
+            for i, _ in enumerate(ph_dims)]
+
+        #apply an output layer to each detector output
+        features = [
+            tf.contrib.layers.fully_connected(
+                inputs=o,
+                num_outputs=ph_dims[i],
+                scope='outlayer_%d' % i)
+            for i, o in enumerate(detector_outputs)]
+
+        #read the mapping
+        npmapping = np.load(self.conf['mapping']).transpose()
+        mapping = tf.constant(npmapping, dtype=tf.float32)
+
+        #map the features to the output
+        output_name = self.output_dims.keys()[0]
+        outputs = tf.tensordot(tf.concat(features, 2), mapping, axes=1)
+        outputs = {output_name:outputs}
+
+        output_seq_length = {output_name: encoded_seq_length.values()[0]}
+
+        return outputs, output_seq_length, ()
 
     def _step(self, encoded, encoded_seq_length, targets, state, is_training):
         '''take a single decoding step
@@ -95,8 +128,28 @@ class LinearDecoder(ed_decoder.EDDecoder):
 
         #get the dimensions of all the targets
         output_dims = {}
-        for i, c in enumerate(targetconfs):
-            with open(os.path.join(c['dir'], 'dim')) as fid:
-                output_dims[self.outputs[i]] = int(fid.read()) + trainlabels
+        for i, d in enumerate(self.conf['output_dims'].split(' ')):
+            output_dims[self.outputs[i]] = d + trainlabels
 
         return output_dims
+
+def detector(inputs, num_layers, num_units, name=None):
+    '''add a feature detecting network
+
+    args:
+        inputs: a [batch_size x ...] tensor containing the inputs
+        num_layers: the number of layers
+        num_units: the number of units in each layer
+
+    returns:
+        a [batch_size x ...] tensor'''
+
+    with tf.variable_scope(name or 'detector'):
+        outputs = inputs
+        for l in range(num_layers):
+            outputs = tf.contrib.layers.fully_connected(
+                inputs=outputs,
+                num_outputs=num_units,
+                scope='layer%d' % l
+            )
+    return outputs

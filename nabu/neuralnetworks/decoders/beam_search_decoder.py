@@ -1,6 +1,7 @@
 '''@file beam_search_decoder.py
 contains the BeamSearchDecoder'''
 
+import os
 from collections import namedtuple
 import tensorflow as tf
 from tensorflow.python.util import nest
@@ -9,6 +10,20 @@ from nabu.neuralnetworks.components.ops import dense_sequence_to_sparse
 
 class BeamSearchDecoder(decoder.Decoder):
     '''Beam search decoder'''
+
+    def __init__(self, conf, model):
+        '''
+        Decoder constructor
+
+        Args:
+            conf: the decoder config
+            model: the model that will be used for decoding
+        '''
+
+        #get the alphabet
+        self.alphabet = conf['alphabet'].split(' ')
+
+        super(BeamSearchDecoder, self).__init__(conf, model)
 
     def __call__(self, inputs, input_seq_length):
         '''decode a batch of data
@@ -19,15 +34,16 @@ class BeamSearchDecoder(decoder.Decoder):
                 [batch_size] vectors
 
         Returns:
-            - the decoded sequences as a list of length beam_width
-                containing [batch_size x ...] sparse tensors, the beam elements
-                are sorted from best to worst
-            - the sequence scores as a [batch_size x beam_width] tensor
+            a dictionary with outputs containing:
+                - the decoded sequences as a
+                [beam_width batch_size x length x num_labels] tensor
+                - the sequence lengths as a [beam_width x batch_size] tensor
+                - the sequence scores as a [beam_width x batch_size] tensor
         '''
 
         with tf.name_scope('beam_search_decoder'):
             max_output_length = int(self.conf['max_steps'])
-            batch_size = tf.shape(inputs[0])[0]
+            batch_size = tf.shape(inputs.values()[0])[0]
             beam_width = int(self.conf['beam_width'])
 
             #encode the inputs [batch_size x output_length x output_dim]
@@ -36,13 +52,16 @@ class BeamSearchDecoder(decoder.Decoder):
                 input_seq_length=input_seq_length,
                 is_training=False)
 
-            encoded_dim = [int(e.get_shape()[2]) for e in encoded]
+            encoded_dim = {e:int(encoded[e].get_shape()[2]) for e in encoded}
 
             #repeat the encoded inputs for all beam elements
-            encoded = [_stack_beam(tf.stack(
-                [e]*beam_width, axis=1)) for e in encoded]
-            encoded_seq_length = [_stack_beam(tf.stack(
-                [e]*beam_width, axis=1))  for e in encoded_seq_length]
+            encoded = {e:_stack_beam(tf.stack(
+                [encoded[e]]*beam_width, axis=1)) for e in encoded}
+            encoded_seq_length = {e:_stack_beam(tf.stack(
+                [encoded_seq_length[e]]*beam_width, axis=1))
+                                  for e in encoded_seq_length}
+
+            output_name = self.model.output_dims.keys()[0]
 
 
             def body(step, beam):
@@ -66,7 +85,7 @@ class BeamSearchDecoder(decoder.Decoder):
                     logits, states = self.model.decoder.step(
                         encoded=encoded,
                         encoded_seq_length=encoded_seq_length,
-                        targets=[prev_output],
+                        targets={output_name:prev_output},
                         state=states,
                         is_training=False)
 
@@ -74,7 +93,7 @@ class BeamSearchDecoder(decoder.Decoder):
                     states = [_unstack_beam(s, beam_width)
                               for s in nest.flatten(states)]
                     states = nest.pack_sequence_as(beam.states, states)
-                    logits = _unstack_beam(logits[0], beam_width)
+                    logits = _unstack_beam(logits.values()[0], beam_width)
 
                     #update the beam
                     beam = beam.update(logits, states, step)
@@ -99,7 +118,8 @@ class BeamSearchDecoder(decoder.Decoder):
                     #check if all beam elements have terminated
                     cont = tf.logical_and(
                         tf.logical_not(beam.all_terminated(
-                            step, self.model.decoder.output_dims[0] - 1)),
+                            step,
+                            self.model.decoder.output_dims.values()[0] - 1)),
                         tf.less(step, max_output_length))
 
                 return cont
@@ -118,7 +138,7 @@ class BeamSearchDecoder(decoder.Decoder):
                 shape=[batch_size, beam_width,
                        max_output_length],
                 dtype=tf.int32)
-            sequences += self.model.decoder.output_dims[0] - 1
+            sequences += self.model.decoder.output_dims.values()[0] - 1
             states = self.model.decoder.zero_state(
                 encoded_dim, beam_width*batch_size)
             states = nest.pack_sequence_as(
@@ -137,32 +157,63 @@ class BeamSearchDecoder(decoder.Decoder):
 
         #convert the output sequences to the sparse sequences
         with tf.name_scope('sparse_output'):
-            sequences = tf.concat(tf.unstack(
-                beam.sequences[:, :, 1:], axis=1), axis=0)
-            lengths = tf.concat(tf.unstack(beam.lengths - 1, axis=1), axis=0)
+            sequences = beam.sequences[:, :, 1:]
+            lengths = beam.lengths - 1
 
-            sparse_sequences = dense_sequence_to_sparse(sequences, lengths)
-            sparse_sequence_list = tf.sparse_split(
-                sp_input=sparse_sequences,
-                num_split=beam_width,
-                axis=0)
+        return {output_name: (sequences, lengths, beam.scores)}
 
+    def write(self, outputs, directory, names):
+        '''write the output of the decoder to disk
 
-        return sparse_sequence_list, beam.scores
-
-    @staticmethod
-    def get_output_dims(output_dims):
+        args:
+            outputs: the outputs of the decoder as a dictionary
+            directory: the directory where the results should be written
+            names: the names of the utterances in outputs
         '''
-        Adjust the output dimensions of the model (blank label, eos...)
 
-        Args:
-            a list containing the original model output dimensions
+        sequences = outputs.values()[0][0]
+        lengths = outputs.values()[0][1]
+        scores = outputs.values()[0][2]
+
+        for i, name in enumerate(names):
+            with open(os.path.join(directory, name), 'w') as fid:
+                for b in range(sequences.shape[0]):
+                    sequence = sequences[b, i][:lengths[b, i]]
+                    score = scores[b, i]
+                    text = ' '.join([self.alphabet[i] for i in sequence])
+                    fid.write('%f %s' % (score, text))
+
+    def evaluate(self, outputs, references, reference_seq_length):
+        '''evaluate the output of the decoder
+
+        args:
+            outputs: the outputs of the decoder as a dictionary
+            references: the references as a dictionary
+            reference_seq_length: the sequence lengths of the references
 
         Returns:
-            a list containing the new model output dimensions
+            the error of the outputs
         '''
 
-        return [output_dim + 1 for output_dim in output_dims]
+        sequences = outputs.values()[0][0]
+        lengths = outputs.values()[0][1]
+
+        #convert the references to sparse representations
+        sparse_targets = dense_sequence_to_sparse(
+            references.values()[0], reference_seq_length.values()[0])
+
+        #convert the best sequences to sparse representations
+        sparse_sequences = dense_sequence_to_sparse(
+            sequences[0, :, :], lengths[0, :])
+
+        #compute the edit distance
+        loss = tf.reduce_mean(
+            tf.edit_distance(sparse_sequences, sparse_targets))
+
+        return loss
+
+
+
 
 class Beam(namedtuple('Beam', ['sequences', 'lengths', 'states', 'scores'])):
     '''a named tuple class for a beam

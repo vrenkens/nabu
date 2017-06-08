@@ -72,8 +72,9 @@ def main(_):
             shutil.rmtree(os.path.join(FLAGS.expdir, 'logdir'))
         if not os.path.isdir(FLAGS.expdir):
             os.makedirs(FLAGS.expdir)
-        if not os.path.isdir(os.path.join(FLAGS.expdir, 'model')):
-            os.makedirs(os.path.join(FLAGS.expdir, 'model'))
+        if os.path.isdir(os.path.join(FLAGS.expdir, 'model')):
+            shutil.rmtree(os.path.join(FLAGS.expdir, 'model'))
+        os.makedirs(os.path.join(FLAGS.expdir, 'model'))
 
         #copy the configs to the expdir so they can be read there and the
         #experiment information is stored
@@ -81,7 +82,7 @@ def main(_):
         shutil.copyfile(database_cfg_file,
                         os.path.join(FLAGS.expdir, 'database.cfg'))
         shutil.copyfile(model_cfg_file,
-                        os.path.join(FLAGS.expdir, 'model', 'model.cfg'))
+                        os.path.join(FLAGS.expdir, 'model.cfg'))
         shutil.copyfile(evaluator_cfg_file,
                         os.path.join(FLAGS.expdir, 'evaluator.cfg'))
 

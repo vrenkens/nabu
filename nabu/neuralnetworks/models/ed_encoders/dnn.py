@@ -12,14 +12,14 @@ class DNN(ed_encoder.EDEncoder):
         Create the variables and do the forward computation
 
         Args:
-            inputs: the inputs to the neural network, this is a list of
-                [batch_size x ...] tensors
+            inputs: the inputs to the neural network, this is a dictionary of
+                [batch_size x time x ...] tensors
             input_seq_length: The sequence lengths of the input utterances, this
-                is a list of [batch_size] vectors
+                is a dictionary of [batch_size] vectors
             is_training: whether or not the network is in training mode
 
         Returns:
-            - the outputs of the encoder as a list of [bath_size x ...]
+            - the outputs of the encoder as a list of [bath_size x time x ...]
                 tensors
             - the sequence lengths of the outputs as a list of [batch_size]
                 tensors
@@ -35,17 +35,18 @@ class DNN(ed_encoder.EDEncoder):
                             self.conf['activation'])
 
         #do the forward computation
-        logits = []
+        logits = {}
         for inp in inputs:
-            logits.append(inp)
-            for i in range(int(self.conf['num_layers'])):
-                logits[-1] = tf.contrib.layers.linear(
-                    inputs=logits[-1],
-                    num_outputs=int(self.conf['num_units']),
-                    activation_fn=activation_fn,
-                    scope='layer%d' % i)
-                if float(self.conf['dropout']) < 1 and is_training:
-                    logits[-1] = tf.nn.dropout(logits[-1],
-                                               float(self.conf['dropout']))
+            with tf.variable_scope(inp):
+                logits[inp] = inputs[inp]
+                for i in range(int(self.conf['num_layers'])):
+                    logits[inp] = tf.contrib.layers.linear(
+                        inputs=logits[inp],
+                        num_outputs=int(self.conf['num_units']),
+                        activation_fn=activation_fn,
+                        scope='layer%d' % i)
+                    if float(self.conf['dropout']) < 1 and is_training:
+                        logits[inp] = tf.nn.dropout(logits[inp],
+                                                    float(self.conf['dropout']))
 
         return logits, input_seq_length

@@ -2,8 +2,9 @@
 neural network trainer environment'''
 
 import os
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 from time import time
+import cPickle as pickle
 import tensorflow as tf
 from nabu.processing import input_pipeline
 from nabu.neuralnetworks.models.model import Model
@@ -46,34 +47,29 @@ class Trainer(object):
         self.graph = tf.Graph()
 
         #get the database configurations
-        inputs = modelconf.get('io', 'inputs').split(' ')
-        if inputs == ['']:
-            inputs = []
-        input_sections = [conf[i] for i in inputs]
+        input_names = modelconf.get('io', 'inputs').split(' ')
+        if input_names == ['']:
+            input_names = []
+        input_sections = [conf[i] for i in input_names]
         input_dataconfs = []
         for section in input_sections:
             input_dataconfs.append(dict(dataconf.items(section)))
-        outputs = modelconf.get('io', 'outputs').split(' ')
-        if outputs == ['']:
-            outputs = []
-        target_sections = [conf[o] for o in outputs]
+        output_names = modelconf.get('io', 'outputs').split(' ')
+        if output_names == ['']:
+            output_names = []
+        target_sections = conf['targets'].split(' ')
         target_dataconfs = []
         for section in target_sections:
             target_dataconfs.append(dict(dataconf.items(section)))
 
-        #get the dimensions of all the targets
-        output_dims = []
-        for c in target_dataconfs:
-            with open(os.path.join(c['dir'], 'dim')) as fid:
-                output_dims.append(int(fid.read()))
-
-        #adjust the output dimensions if necesary
-        output_dims = self.get_output_dims(output_dims)
-
         #create the model
-        self.model = Model(
-            conf=modelconf,
-            output_dims=output_dims)
+        modelfile = os.path.join(expdir, 'model', 'model.pkl')
+        with open(modelfile, 'wb') as fid:
+            self.model = Model(
+                conf=modelconf,
+                targetconfs=target_dataconfs,
+                trainlabels=self.trainlabels)
+            pickle.dump(self.model, fid)
 
         #create the evaluator
         evaltype = evaluatorconf.get('evaluator', 'evaluator')
@@ -81,7 +77,7 @@ class Trainer(object):
             evaluator = evaluator_factory.factory(evaltype)(
                 conf=evaluatorconf,
                 dataconf=dataconf,
-                model_or_conf=self.model
+                model=self.model
             )
 
         if 'local' in cluster.as_dict():
@@ -205,10 +201,18 @@ class Trainer(object):
                         dataconfs=input_dataconfs + target_dataconfs
                     )
 
-                    inputs = data[:len(input_sections)]
-                    input_seq_length = seq_length[:len(input_sections)]
-                    targets = data[len(input_sections):]
-                    target_seq_length = seq_length[len(input_sections):]
+                    inputs = {
+                        input_names[i]: d
+                        for i, d in enumerate(data[:len(input_sections)])}
+                    input_seq_length = {
+                        input_names[i]: d
+                        for i, d in enumerate(seq_length[:len(input_sections)])}
+                    targets = {
+                        output_names[i]: d
+                        for i, d in enumerate(data[len(input_sections):])}
+                    target_seq_length = {
+                        output_names[i]: d
+                        for i, d in enumerate(seq_length[len(input_sections):])}
 
                     #store the inputs for creating the decoding graph
                     self.inputs = inputs
@@ -365,16 +369,10 @@ class Trainer(object):
             a scalar value containing the loss
         '''
 
-    @abstractmethod
-    def get_output_dims(self, output_dims):
+    @abstractproperty
+    def trainlabels(self):
         '''
-        Adjust the output dimensions of the model (blank label, eos...)
-
-        Args:
-            a list containing the original model output dimensions
-
-        Returns:
-            a list containing the new model output dimensions
+        the number of aditional labels the trainer needs (e.g. blank or eos)
         '''
 
     def train(self):

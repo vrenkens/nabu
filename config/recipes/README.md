@@ -46,9 +46,7 @@ information about evaluators
 - test_evaluator.cfg: This is the configuartion for the evaluator to be used at
 test time (see validation_evaluator.cfg)
 - recognizer.cfg: The configuration for the recognizer to be used for decoding
-it contains similar fields as the evaluator configs, but also how to process
-the output labels. You can find more info about post processing
-[here](../../nabu/processing/post_processors/README.md)
+it contains similar fields as the evaluator configs.
 
 To create your own recipe, simply create a directory containing all of the
 mentioned configuation files. You can find template configuations in

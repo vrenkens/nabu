@@ -11,20 +11,24 @@ class EDDecoder(object):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, conf, output_dims, name=None):
+    def __init__(self, conf, targetconfs, trainlabels, outputs):
         '''EDDecoder constructor
 
         Args:
             conf: the decoder configuration
-            output_dim: the classifier output dimension
-            name: the speller name'''
+            targetconfs: the data configurations for the targets
+            trainlabels: the number of extra labels required by the trainer
+            outputs: the name of the outputs of the model
+        '''
 
 
         #save the parameters
         self.conf = conf
-        self.output_dims = output_dims
+        self.outputs = outputs
 
-        self.scope = tf.VariableScope(False, name or type(self).__name__)
+        self.output_dims = self.get_output_dims(targetconfs, trainlabels)
+
+        self.scope = tf.VariableScope(False, type(self).__name__)
 
 
     def __call__(self, encoded, encoded_seq_length, targets, target_seq_length,
@@ -36,19 +40,19 @@ class EDDecoder(object):
 
         Args:
             encoded: the encoded inputs, this is a list of
-                [batch_size x ...] tensors
+                [batch_size x time x ...] tensors
             encoded_seq_length: the sequence lengths of the encoded inputs
                 as a list of [batch_size] vectors
-            targets: the targets used as decoder inputs as a list of
-                [batch_size x ...] tensors
+            targets: the targets used as decoder inputs as a dictionary of
+                [batch_size x time x ...] tensors
             target_seq_length: the sequence lengths of the targets
-                as a list of [batch_size] vectors
+                as a dictionary of [batch_size] vectors
             is_training: whether or not the network is in training mode
 
         Returns:
-            - the output logits of the decoder as a list of
-                [batch_size x ...] tensors
-            - the logit sequence_lengths as a list of [batch_size] vectors
+            - the output logits of the decoder as a dictionary of
+                [batch_size x time x ...] tensors
+            - the logit sequence_lengths as a dictionary of [batch_size] vectors
             - the final state of the decoder as a possibly nested tupple
                 of [batch_size x ... ] tensors
         '''
@@ -70,18 +74,18 @@ class EDDecoder(object):
         '''take a single decoding step
 
         encoded: the encoded inputs, this is a list of
-            [batch_size x ...] tensors
+            [batch_size x time x ...] tensors
         encoded_seq_length: the sequence lengths of the encoded inputs
             as a list of [batch_size] vectors
-        targets: the targets decoded in the previous step as a list of
+        targets: the targets decoded in the previous step as a dictionary of
             [batch_size] vectors
         state: the state of the previous deocding step as a possibly nested
             tupple of [batch_size x ...] vectors
         is_training: whether or not the network is in training mode.
 
         Returns:
-            - the output logits of this decoding step as a list of
-                [batch_size x ...] tensors
+            - the output logits of this decoding step as a dictionary of
+                [batch_size x time x ...] tensors
             - the updated state as a possibly nested tupple of
                 [batch_size x ...] vectors
         '''
@@ -100,17 +104,17 @@ class EDDecoder(object):
         '''take a single decoding step
 
         encoded: the encoded inputs, this is a list of
-            [batch_size x ...] tensors
+            [batch_size x time x ...] tensors
         encoded_seq_length: the sequence lengths of the encoded inputs
             as a list of [batch_size] vectors
-        targets: the targets decoded in the previous step as a list of
+        targets: the targets decoded in the previous step as a dictionary of
             [batch_size] vectors
         state: the state of the previous deocding step as a possibly nested
             tupple of [batch_size x ...] vectors
         is_training: whether or not the network is in training mode.
 
         Returns:
-            - the output logits of this decoding step as a list of
+            - the output logits of this decoding step as a dictionary of
                 [batch_size x ...] tensors
             - the updated state as a possibly nested tupple of
                 [batch_size x ...] vectors
@@ -126,19 +130,19 @@ class EDDecoder(object):
 
         Args:
             encoded: the encoded inputs, this is a list of
-                [batch_size x ...] tensors
+                [batch_size x time x ...] tensors
             encoded_seq_length: the sequence lengths of the encoded inputs
                 as a list of [batch_size] vectors
-            targets: the targets used as decoder inputs as a list of
-                [batch_size x ...] tensors
+            targets: the targets used as decoder inputs as a dictionary of
+                [batch_size x time x ...] tensors
             target_seq_length: the sequence lengths of the targets
-                as a list of [batch_size] vectors
+                as a dictionary of [batch_size] vectors
             is_training: whether or not the network is in training mode
 
         Returns:
-            - the output logits of the decoder as a list of
-                [batch_size x ...] tensors
-            - the logit sequence_lengths as a list of [batch_size] vectors
+            - the output logits of the decoder as a dictionary of
+                [batch_size x time x ...] tensors
+            - the logit sequence_lengths as a dictionary of [batch_size] vectors
             - the final state of the decoder as a possibly nested tupple
                 of [batch_size x ... ] tensors
         '''
@@ -162,3 +166,14 @@ class EDDecoder(object):
 
         return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
                                  scope=self.scope.name)
+
+    @abstractmethod
+    def get_output_dims(self, targetconfs, trainlabels):
+        '''get the decoder output dimensions
+
+        args:
+            targetconfs: the target data confs
+            trainlabels: the number of extra labels the trainer needs
+
+        returns:
+            a dictionary containing the output dimensions'''

@@ -34,7 +34,7 @@ def train(clusterfile,
 
     #read the asr config file
     model_cfg = configparser.ConfigParser()
-    model_cfg.read(os.path.join(expdir, 'model', 'model.cfg'))
+    model_cfg.read(os.path.join(expdir, 'model.cfg'))
 
     #read the trainer config file
     parsed_trainer_cfg = configparser.ConfigParser()

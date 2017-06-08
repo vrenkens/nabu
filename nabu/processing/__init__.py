@@ -6,4 +6,4 @@ This package contains all the functionality for data processing:
 '''
 
 from . import target_normalizers, feature_computers, processors, \
-tfreaders, tfwriters, post_processors
+tfreaders, tfwriters

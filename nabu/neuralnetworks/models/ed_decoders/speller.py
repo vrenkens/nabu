@@ -1,6 +1,7 @@
 '''@file speller.py
 contains the speller functionality'''
 
+import os
 import tensorflow as tf
 from nabu.neuralnetworks.models.ed_decoders import ed_decoder
 from nabu.neuralnetworks.components import rnn_cell as rnn_cell_impl
@@ -35,17 +36,19 @@ class Speller(ed_decoder.EDDecoder):
         '''
 
         #get the batch size
-        batch_size = tf.shape(targets[0])[0]
+        batch_size = tf.shape(targets.values()[0])[0]
+        output_dim = self.output_dims.values()[0]
+        output_name = self.output_dims.keys()[0]
 
         #prepend a sequence border label to the targets to get the encoder
         #inputs, the label is the last label
-        s_labels = tf.tile([[tf.constant(self.output_dims[0]-1,
+        s_labels = tf.tile([[tf.constant(output_dim-1,
                                          dtype=tf.int32)]],
                            [batch_size, 1])
-        expanded_targets = tf.concat([s_labels, targets[0]], 1)
+        expanded_targets = tf.concat([s_labels, targets.values()[0]], 1)
 
         #one hot encode the targets
-        one_hot_targets = tf.one_hot(expanded_targets, self.output_dims[0],
+        one_hot_targets = tf.one_hot(expanded_targets, output_dim,
                                      dtype=tf.float32)
 
         #create the rnn cell
@@ -54,8 +57,8 @@ class Speller(ed_decoder.EDDecoder):
         #create the decoder helper
         helper = tf.contrib.seq2seq.ScheduledEmbeddingTrainingHelper(
             inputs=one_hot_targets,
-            sequence_length=target_seq_length[0],
-            embedding=lambda ids: tf.one_hot(ids, self.output_dims[0],
+            sequence_length=target_seq_length.values()[0],
+            embedding=lambda ids: tf.one_hot(ids, output_dim,
                                              dtype=tf.float32),
             sampling_probability=float(self.conf['sample_prob'])
         )
@@ -71,7 +74,10 @@ class Speller(ed_decoder.EDDecoder):
         logits, state = tf.contrib.seq2seq.dynamic_decode(decoder)
         logits = logits.rnn_output
 
-        return [logits], [target_seq_length[0] + 1], state
+        return (
+            {output_name: logits},
+            {output_name: target_seq_length.values()[0] + 1},
+            state)
 
     def _step(self, encoded, encoded_seq_length, targets, state, is_training):
         '''take a single decoding step
@@ -93,8 +99,11 @@ class Speller(ed_decoder.EDDecoder):
                 [batch_size x ...] vectors
         '''
 
+        output_dim = self.output_dims.values()[0]
+        output_name = self.output_dims.keys()[0]
+
         #one hot encode the targets
-        one_hot_targets = tf.one_hot(targets[0], self.output_dims[0],
+        one_hot_targets = tf.one_hot(targets.values()[0], output_dim,
                                      dtype=tf.float32)
 
         #create the rnn cell
@@ -103,7 +112,7 @@ class Speller(ed_decoder.EDDecoder):
         #use the rnn_cell
         logits, state = rnn_cell(one_hot_targets, state)
 
-        return [logits], state
+        return {output_name:logits}, state
 
     def create_cell(self, encoded, encoded_seq_length, is_training):
         '''create the rnn cell
@@ -138,15 +147,15 @@ class Speller(ed_decoder.EDDecoder):
             #create the attention mechanism
             attention_mechanism = tf.contrib.seq2seq.BahdanauAttention(
                 num_units=rnn_cell.output_size,
-                memory=encoded[0],
-                memory_sequence_length=encoded_seq_length[0]
+                memory=encoded.values()[0],
+                memory_sequence_length=encoded_seq_length.values()[0]
             )
 
             #add attention to the rnn cell
             rnn_cell = tf.contrib.seq2seq.DynamicAttentionWrapper(
                 cell=rnn_cell,
                 attention_mechanism=attention_mechanism,
-                attention_size=self.output_dims[0]
+                attention_size=self.output_dims.values()[0]
             )
 
             #wrap the rnn cell to make it a constant scope
@@ -169,9 +178,27 @@ class Speller(ed_decoder.EDDecoder):
 
         rnn_cell = self.create_cell(None, None, False)
         cell_state = rnn_cell.zero_state(batch_size, tf.float32)
-        attention = tf.zeros([batch_size, self.output_dims[0]])
+        attention = tf.zeros([batch_size, self.output_dims.values()[0]])
         zero_state = tf.contrib.seq2seq.DynamicAttentionWrapperState(
             cell_state=cell_state,
             attention=attention)
 
         return zero_state
+
+    def get_output_dims(self, targetconfs, trainlabels):
+        '''get the decoder output dimensions
+
+        args:
+            targetconfs: the target data confs
+            trainlabels: the number of extra labels the trainer needs
+
+        returns:
+            a dictionary containing the output dimensions'''
+
+        #get the dimensions of all the targets
+        output_dims = {}
+        for i, c in enumerate(targetconfs):
+            with open(os.path.join(c['dir'], 'dim')) as fid:
+                output_dims[self.outputs[i]] = int(fid.read()) + trainlabels
+
+        return output_dims

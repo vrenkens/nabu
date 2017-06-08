@@ -63,7 +63,11 @@ def input_pipeline(data_queue, batch_size, numbuckets, dataconfs,
         dataconfs: the databes configuration sections that should be read
         allow_smaller_final_batch: if set to True a smaller final batch is
             allowed
-        name: name of the pipeline'''
+        name: name of the pipeline
+
+    Returns:
+        - the data elements as a list of [batch_size x ...] tensor
+        - the sequence lengths as a list of [batch_size] tensor'''
 
     with tf.variable_scope(name or 'input_pipeline'):
 
@@ -128,7 +132,7 @@ def input_pipeline(data_queue, batch_size, numbuckets, dataconfs,
                 allow_smaller_final_batch=allow_smaller_final_batch,
                 dynamic_pad=True)
 
-        #seperate the batches for inputs and targets
+        #seperate the data and the sequence lengths
         data = batches[::2]
         seq_length = batches[1::2]
 

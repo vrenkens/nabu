@@ -16,7 +16,9 @@ class TextProcessor(processor.Processor):
             conf: the textprocessor configuration as a dict of strings'''
 
         #create the normalizer
-        self.normalizer = normalizer_factory.factory(conf['normalizer'])()
+        self.normalizer = normalizer_factory.factory(conf['normalizer'])
+
+        self.alphabet = conf['alphabet'].split(' ')
 
         #initialize the metadata
         self.max_length = 0
@@ -33,7 +35,7 @@ class TextProcessor(processor.Processor):
             The normalized text as a string'''
 
         #normalize the line
-        normalized = self.normalizer(dataline)
+        normalized = self.normalizer(dataline, self.alphabet)
 
         #update the metadata
         self.max_length = max(self.max_length, len(normalized.split(' ')))
@@ -60,6 +62,6 @@ class TextProcessor(processor.Processor):
                   'w') as fid:
             np.save(fid, self.sequence_length_histogram)
         with open(os.path.join(datadir, 'alphabet'), 'w') as fid:
-            fid.write(' '.join(self.normalizer.alphabet))
+            fid.write(' '.join(self.alphabet))
         with open(os.path.join(datadir, 'dim'), 'w') as fid:
-            fid.write(str(len(self.normalizer.alphabet)))
+            fid.write(str(len(self.alphabet)))

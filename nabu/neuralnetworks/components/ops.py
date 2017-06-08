@@ -3,52 +3,6 @@ some operations'''
 
 import tensorflow as tf
 
-def aconv1d(inputs, filt, dilation_rate, scope=None):
-    '''a 1 dimensional causal (diluted) convolution
-
-    Args:
-        inputs: a [batch_size, max_seq_length, dim] input tensorflow
-        filt: the filter of shape [kernel_size, dim_in, dim_out]
-        dilation rate: the rate of dilation (integer)
-        scope: the name of the operations
-
-    Returns:
-        the output of the 1D atrous convolution
-    '''
-
-    with tf.name_scope(scope or 'aconv1d'):
-        #add the dimension (height = 1) to make 2d convolution possible
-        exp_inputs = tf.expand_dims(inputs, 1)
-        exp_filter = tf.expand_dims(filt, 0)
-
-        #do the convolution
-        out = tf.nn.atrous_conv2d(exp_inputs, exp_filter, dilation_rate,
-                                  padding='SAME')
-
-        #remove the added dimension and extra outputs at the end
-        out = out[:, 0, :, :]
-
-    return out
-
-
-def mu_law_encode(inputs, num_levels, scope=None):
-    '''do mu-law encoding
-
-    Args:
-        inputs: the inputs to quantize
-        num_levels: number of quantization lavels
-
-    Returns:
-        te one-hot encoded inputs'''
-
-    with tf.name_scope(scope or 'mu_law'):
-        mu = num_levels - 1
-        transformed = tf.sign(inputs)*tf.log(1+mu*tf.abs(inputs))/tf.log(1+mu)
-        quantized = tf.cast((transformed+1)*num_levels/2+0.5, tf.int32)
-        encoded = tf.one_hot(quantized, num_levels)
-
-    return encoded
-
 def pyramid_stack(inputs, sequence_lengths, numsteps, axis=2, scope=None):
     '''
     concatenate each two consecutive elements
@@ -162,8 +116,8 @@ def cross_entropy_loss_eos(targets, logits, logit_seq_length,
     Compute the cross_entropy loss with an added end of sequence label
 
     Args:
-        targets: a [batch_size x ...] tensor containing the targets
-        logits: a [batch_size x ...] tensor containing the logits
+        targets: a [batch_size x time] tensor containing the targets
+        logits: a [batch_size x time x num_classes] tensor containing the logits
         logit_seq_length: a [batch_size] vector containing the
             logit sequence lengths
         target_seq_length: a [batch_size] vector containing the

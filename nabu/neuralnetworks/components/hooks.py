@@ -34,7 +34,7 @@ class SummaryHook(tf.train.SessionRunHook):
         '''hook constructor
 
         Args:
-            filename: where the model will be saved'''
+            logdir: logdir where the summaries will be logged'''
 
         self.logdir = logdir
 
