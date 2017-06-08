@@ -3,3 +3,5 @@
 *.conf
 cluster
 nabu/computing/condor/create_environment.sh
+config/recipes/LAS/GP
+config/recipes/DBLSTM/GP
