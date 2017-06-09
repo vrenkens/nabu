@@ -1,7 +1,6 @@
 '''@ file phonology_decoder.py
 contains the PhonologyDecoder class'''
 
-import numpy as np
 import tensorflow as tf
 import ed_decoder
 
@@ -33,49 +32,24 @@ class PhonologyDecoder(ed_decoder.EDDecoder):
                 of [batch_size x ... ] tensors
         '''
 
-        #splice the features
-        with tf.name_scope('splice'):
-            splicedlist = [encoded.values()[0]]
-            for i in range(1, int(self.conf['context_window'])):
-                left = tf.pad(
-                    tensor=encoded.values()[0][:, :-i, :],
-                    paddings=[[0, 0], [i, 0], [0, 0]])
-                right = tf.pad(
-                    tensor=encoded.values()[0][:, :-i, :],
-                    paddings=[[0, 0], [0, i], [0, 0]])
-                splicedlist += [left, right]
-
-            spliced = tf.concat(splicedlist, axis=2)
-
-        ph_dims = [int(d) for d in self.conf['phonology_dims'].split(' ')]
-
         #apply for each phonological feature
-        detector_outputs = [
-            detector(
-                inputs=spliced,
+        detector_outputs = {
+            o:detector(
+                inputs=encoded[0],
                 num_layers=int(self.conf['num_layers']),
                 num_units=int(self.conf['num_units']),
-                name='detector_%d' % i)
-            for i, _ in enumerate(ph_dims)]
+                name='detector_%s' % o)
+            for o in self.output_dims}
 
         #apply an output layer to each detector output
-        features = [
-            tf.contrib.layers.fully_connected(
-                inputs=o,
-                num_outputs=ph_dims[i],
-                scope='outlayer_%d' % i)
-            for i, o in enumerate(detector_outputs)]
+        outputs = {
+            o:tf.contrib.layers.fully_connected(
+                inputs=detector_outputs[o],
+                num_outputs=self.output_dims[o],
+                scope='outlayer_%s' % o)
+            for o in detector_outputs}
 
-        #read the mapping
-        npmapping = np.load(self.conf['mapping']).transpose()
-        mapping = tf.constant(npmapping, dtype=tf.float32)
-
-        #map the features to the output
-        output_name = self.output_dims.keys()[0]
-        outputs = tf.tensordot(tf.concat(features, 2), mapping, axes=1)
-        outputs = {output_name:outputs}
-
-        output_seq_length = {output_name: encoded_seq_length.values()[0]}
+        output_seq_length = {o: encoded_seq_length[0] for o in outputs}
 
         return outputs, output_seq_length, ()
 

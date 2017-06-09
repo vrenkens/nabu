@@ -1,7 +1,7 @@
 '''@file ed_decoder_factory
 contains the ed decoder factory'''
 
-from . import speller, lstm_decoder, linear_decoder, phonology_decoder
+from . import speller, linear_decoder, phonology_decoder
 
 def factory(decoder):
     '''gets an ed decoder class
@@ -14,8 +14,6 @@ def factory(decoder):
 
     if decoder == 'speller':
         return speller.Speller
-    elif decoder == 'lstm_decoder':
-        return lstm_decoder.LstmDecoder
     elif decoder == 'linear_decoder':
         return linear_decoder.LinearDecoder
     elif decoder == 'phonology_decoder':

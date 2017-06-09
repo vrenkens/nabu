@@ -31,7 +31,10 @@ class Evaluator(object):
         for section in input_sections:
             self.input_dataconfs.append(dict(dataconf.items(section)))
 
-        target_sections = conf.get('evaluator', 'targets').split(' ')
+        targets = conf.get('evaluator', 'targets').split(' ')
+        if targets == ['']:
+            targets = []
+        target_sections = [conf.get('evaluator', o) for o in targets]
         self.target_dataconfs = []
         for section in target_sections:
             self.target_dataconfs.append(dict(dataconf.items(section)))
@@ -78,12 +81,13 @@ class Evaluator(object):
                 self.model.input_names[i]: d
                 for i, d in enumerate(seq_length[:len(self.input_dataconfs)])}
 
+            target_names = self.conf.get('evaluator', 'targets').split(' ')
             targets = {
-                self.model.output_names[i]: d
+                target_names[i]: d
                 for i, d in enumerate(data[len(self.input_dataconfs):])}
 
             target_seq_length = {
-                self.model.output_names[i]: d
+                target_names[i]: d
                 for i, d in enumerate(seq_length[len(self.input_dataconfs):])}
 
             loss = self.compute_loss(inputs, input_seq_length, targets,

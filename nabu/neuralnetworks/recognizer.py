@@ -113,3 +113,4 @@ class Recognizer(object):
                     #write to disk
                     names = self.names[nameid:nameid+self.batch_size]
                     self.decoder.write(outputs, directory, names)
+                    nameid += self.batch_size

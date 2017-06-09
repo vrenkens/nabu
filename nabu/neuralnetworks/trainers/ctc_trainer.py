@@ -6,7 +6,7 @@ import trainer
 from nabu.neuralnetworks.components import ops
 
 class CTCTrainer(trainer.Trainer):
-    '''A trainer that minimises the CTC loss, the output sequences'''
+    '''A trainer that minimises the CTC loss'''
 
     def compute_loss(self, targets, logits, logit_seq_length,
                      target_seq_length):

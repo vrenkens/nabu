@@ -54,10 +54,11 @@ class Trainer(object):
         input_dataconfs = []
         for section in input_sections:
             input_dataconfs.append(dict(dataconf.items(section)))
-        output_names = modelconf.get('io', 'outputs').split(' ')
+
+        output_names = conf['targets'].split(' ')
         if output_names == ['']:
             output_names = []
-        target_sections = conf['targets'].split(' ')
+        target_sections = [conf[o] for o in output_names]
         target_dataconfs = []
         for section in target_sections:
             target_dataconfs.append(dict(dataconf.items(section)))
