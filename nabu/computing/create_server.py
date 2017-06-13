@@ -45,7 +45,7 @@ def create_server(clusterfile, job_name, task_index, expdir, ssh_command):
         localports = []
         for job in machines:
             for remote in machines[job]:
-                if localmachine == remote[0] or remote[0] == 'localhost':
+                if localmachine == remote[0]:
                     localports.append(remote[1])
 
         #check if this task is the first one in the cluster
@@ -70,8 +70,8 @@ def create_server(clusterfile, job_name, task_index, expdir, ssh_command):
 
                         #create an ssh tunnel if the local machine is not the
                         #same as the remote machine
-                        if (localmachine != remote[0] and ssh_command != 'None'
-                                and remote[0] != 'localhost'):
+                        if (localmachine != remote[0]
+                                and ssh_command != 'None'):
 
                             #look for an available port
                             while (port in localports
@@ -79,8 +79,9 @@ def create_server(clusterfile, job_name, task_index, expdir, ssh_command):
 
                                 port += 1
 
-                            print('creating tunnel from %s to %s' %
-                                  (localmachine, remote[0]))
+                            print(
+                                'creating tunnel from %s to %s' %
+                                (localmachine, remote[0]))
 
                             #create the ssh tunnel
                             p = subprocess.Popen(

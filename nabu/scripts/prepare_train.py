@@ -4,6 +4,7 @@ this is the file that should be run for experiments'''
 import sys
 import os
 sys.path.append(os.getcwd())
+import socket
 import shutil
 import atexit
 import subprocess
@@ -146,7 +147,8 @@ def main(_):
                 for line in fid:
                     if line.strip():
                         split = line.strip().split(',')
-                        machines[split[0]].append(split[1])
+                        hostip = socket.gethostbyname(split[1])
+                        machines[split[0]].append(hostip)
 
             #create the outputs directory
             if os.path.isdir(os.path.join(FLAGS.expdir, 'cluster')):
@@ -217,6 +219,8 @@ def main(_):
                 shutil.rmtree(os.path.join(FLAGS.expdir, 'cluster'))
             os.makedirs(os.path.join(FLAGS.expdir, 'cluster'))
 
+            GPUs = computing_cfg['GPUs'].split(' ')
+
             #create the cluster file
             with open(os.path.join(FLAGS.expdir, 'cluster', 'cluster'),
                       'w') as fid:
@@ -229,7 +233,7 @@ def main(_):
                 for i in range(int(computing_cfg['numworkers'])):
                     while not cluster.port_available(port):
                         port += 1
-                    fid.write('worker,localhost,%d,%d\n' % (port, i))
+                    fid.write('worker,localhost,%d,%s\n' % (port, GPUs[i]))
                     port += 1
 
             #submit the job

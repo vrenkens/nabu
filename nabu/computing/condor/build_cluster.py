@@ -26,13 +26,14 @@ def main(_):
         sleep(1)
 
     port = 1024
-    machine_file = '%s/%s-%d' % (cluster_dir, socket.gethostname(), port)
+    ip = socket.gethostbyname(socket.gethostname())
+    machine_file = '%s/%s-%d' % (cluster_dir, ip, port)
 
     #look for an available port
     while os.path.exists(machine_file) or not cluster.port_available(port):
 
         port += 1
-        machine_file = '%s/%s-%d' % (cluster_dir, socket.gethostname(), port)
+        machine_file = '%s/%s-%d' % (cluster_dir, ip, port)
 
     #report that the machine is ready
     with open(machine_file, 'w') as fid:

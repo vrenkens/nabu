@@ -103,7 +103,7 @@ class PhonologyDecoder(ed_decoder.EDDecoder):
         #get the dimensions of all the targets
         output_dims = {}
         for i, d in enumerate(self.conf['output_dims'].split(' ')):
-            output_dims[self.outputs[i]] = d + trainlabels
+            output_dims[self.outputs[i]] = d
 
         return output_dims
 

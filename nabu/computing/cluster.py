@@ -25,7 +25,8 @@ def get_machines(machine_dir):
         splitfile = f.split('-')
         if job_name not in ['ps', 'worker']:
             continue
-        machines[job_name].append((splitfile[0], int(splitfile[1])))
+        machines[job_name].append(
+            (socket.gethostbyname(splitfile[0]), int(splitfile[1])))
 
     return machines
 
@@ -47,7 +48,7 @@ def read_cluster(filename):
             if line.strip() > 0:
                 split = line.strip().split(',')
                 machines[split[0]].append(
-                    (split[1], int(split[2]), split[3]))
+                    (socket.gethostbyname(split[1]), int(split[2]), split[3]))
 
     return machines
 

@@ -75,7 +75,7 @@ class CTCDecoder(decoder.Decoder):
                 for i in range(batch_size):
                     indices = np.where(outputs[o].indices[:, 0] == i)[0]
                     output = outputs[o].values[indices]
-                    text = ' '.join([self.alphabets[o][i] for i in output])
+                    text = ' '.join([self.alphabets[o][j] for j in output])
                     fid.write('%s %s\n' % (names[i], text))
 
     def evaluate(self, outputs, references, reference_seq_length):

@@ -84,3 +84,55 @@ class SaveAtEnd(tf.train.SessionRunHook):
         '''this will be run at session closing'''
 
         self._saver.save(session, self.filename)
+
+class ValidationSaveHook(tf.train.SessionRunHook):
+    '''a training hook for saving and loading the validated model'''
+    def __init__(self, filename, model):
+        '''hook constructor
+
+        Args:
+            filename: where the model will be saved
+            model: the model that will be saved'''
+
+        self.filename = filename
+        self.model = model
+
+    def begin(self):
+        '''this will be run at session creation'''
+
+        #pylint: disable=W0201
+        self._saver = tf.train.Saver(sharded=True)
+
+    def after_create_session(self, session, _):
+        '''this will be run after session creation'''
+
+        #pylint: disable=W0201
+        self._sess = session
+
+    def save(self):
+        '''save the current parameters'''
+
+        self._saver.save(self._sess, self.filename)
+
+    def restore(self):
+        '''restore the previously validate parameters'''
+
+        self._saver.restore(self._sess, self.filename)
+
+
+class StopHook(tf.train.SessionRunHook):
+    '''a hook that makes sure all replicas terminate when session ends'''
+
+    def __init__(self):
+        '''hook constructor'''
+
+    def after_create_session(self, session, coord):
+        '''this will be run after session creation'''
+
+        #pylint: disable=W0201
+        self._coord = coord
+
+    def end(self, session):
+        '''this will be run at session closing'''
+
+        self._coord.request_stop()

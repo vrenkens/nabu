@@ -3,13 +3,13 @@ neural network trainer environment'''
 
 import os
 from abc import ABCMeta, abstractmethod, abstractproperty
-from time import time
+import time
 import cPickle as pickle
 import tensorflow as tf
 from nabu.processing import input_pipeline
 from nabu.neuralnetworks.models.model import Model
 from nabu.neuralnetworks.evaluators import evaluator_factory
-from nabu.neuralnetworks.components.hooks import SaveAtEnd
+from nabu.neuralnetworks.components import hooks
 
 class Trainer(object):
     '''General class outlining the training environment of a model.'''
@@ -40,6 +40,7 @@ class Trainer(object):
         self.expdir = expdir
         self.server = server
         self.conf = conf
+        self.task_index = task_index
 
         cluster = tf.train.ClusterSpec(server.server_def.cluster)
 
@@ -152,7 +153,7 @@ class Trainer(object):
 
                         #get the number of steps from the parameter server
                         num_steps_queue = tf.FIFOQueue(
-                            capacity=1,
+                            capacity=num_replicas,
                             dtypes=[tf.int32],
                             shared_name='num_steps_queue',
                             name='num_steps_queue',
@@ -168,7 +169,7 @@ class Trainer(object):
                     for i in range(num_servers):
                         with tf.device('job:ps/task:%d' % i):
                             done_queue = tf.FIFOQueue(
-                                capacity=1,
+                                capacity=num_replicas,
                                 dtypes=[tf.bool],
                                 shapes=[[]],
                                 shared_name='done_queue%d' % task_index,
@@ -284,7 +285,7 @@ class Trainer(object):
                         *([apply_gradients_op] + update_ops),
                         name='update')
 
-                if self.is_chief and evaltype != 'None':
+                if evaltype != 'None':
 
                     #validation part
                     with tf.variable_scope('validate'):
@@ -330,6 +331,25 @@ class Trainer(object):
                         #create an operation to updated the validated step
                         self.update_validated_step = validated_step.assign(
                             self.global_step).op
+
+                        #a variable that holds the amount of workers at the
+                        #validation point
+                        waiting_workers = tf.get_variable(
+                            name='waiting_workers',
+                            shape=[],
+                            dtype=tf.int32,
+                            initializer=tf.constant_initializer(0),
+                            trainable=False)
+
+                        #an operation to signal a waiting worker
+                        self.waiting = waiting_workers.assign_add(1).op
+
+                        #an operation to set the waiting workers to zero
+                        self.reset_waiting = waiting_workers.initializer
+
+                        #an operation to check if all workers are waiting
+                        self.all_waiting = tf.equal(waiting_workers,
+                                                    num_replicas-1)
 
                         tf.summary.scalar('validation loss',
                                           self.validation_loss)
@@ -389,9 +409,18 @@ class Trainer(object):
         #config.log_device_placement = True
 
         #create a hook for saving the final model
-        save_hook = SaveAtEnd(
+        save_hook = hooks.SaveAtEnd(
             os.path.join(self.expdir, 'model', 'network.ckpt'),
             self.model)
+
+        #create a hook for saving and restoring the validated model
+        validation_hook = hooks.ValidationSaveHook(
+            os.path.join(self.expdir, 'logdir', 'validated.ckpt'),
+            self.model)
+
+        #number of times validation performance was worse
+        num_tries = 0
+
 
         with self.graph.as_default():
             with tf.train.MonitoredTrainingSession(
@@ -399,7 +428,7 @@ class Trainer(object):
                 is_chief=self.is_chief,
                 checkpoint_dir=os.path.join(self.expdir, 'logdir'),
                 scaffold=self.scaffold,
-                chief_only_hooks=[save_hook],
+                chief_only_hooks=[save_hook, validation_hook, hooks.StopHook()],
                 config=config) as sess:
 
                 #set the number of steps
@@ -413,37 +442,88 @@ class Trainer(object):
                     #check if validation is due
                     if (self.update_loss is not None
                             and self.should_validate.eval(session=sess)):
+                        if self.is_chief:
+                            print ('WORKER %d: validating model'
+                                   % self.task_index)
 
-                        #get the previous validation loss
-                        prev_val_loss = self.validation_loss.eval(
-                            session=sess)
+                            #get the previous validation loss
+                            prev_val_loss = self.validation_loss.eval(
+                                session=sess)
 
-                        #set the validated step
-                        self.update_validated_step.run(session=sess)
+                            #reset the validation loss
+                            self.reset_val_loss.run(session=sess)
 
-                        #reset the validation loss
-                        self.reset_val_loss.run(session=sess)
+                            #compute the validation loss
+                            for _ in range(self.valbatches):
+                                self.update_loss.run(session=sess)
 
-                        #compute the validation loss
-                        for _ in range(self.valbatches):
-                            self.update_loss.run(session=sess)
+                            #get the current validation loss
+                            validation_loss = self.validation_loss.eval(
+                                session=sess)
 
-                        #get the current validation loss
-                        validation_loss = self.validation_loss.eval(
-                            session=sess)
+                            print ('WORKER %d: validation loss: %f' %
+                                   (self.task_index, validation_loss))
 
-                        print 'validation loss: %f' % validation_loss
+                            #check if the validation loss is better
+                            if validation_loss > prev_val_loss:
 
-                        #check if the validation loss is better
-                        if (validation_loss > prev_val_loss and
-                                self.conf['valid_adapt'] == 'True'):
+                                print ('WORKER %d: validation loss is worse' %
+                                       self.task_index)
 
-                            print ('validation loss is worse halving '
-                                   'learning rate')
-                            self.half_lr.run(session=sess)
+                                #check how many times validation performance was
+                                #worse
+                                if self.conf['num_tries'] != 'None':
+                                    if num_tries == int(self.conf['num_tries']):
+                                        print ('WORKER %d: terminating training'
+                                               % self.task_index)
+                                        break
+
+                                num_tries += 1
+
+                                if self.conf['go_back'] == 'True':
+
+                                    #wait untill all workers are at validation
+                                    #point
+                                    while not self.all_waiting.eval(
+                                            session=sess):
+                                        time.sleep(1)
+                                    self.reset_waiting.run(session=sess)
+
+                                    print ('WORKER %d: loading previous model'
+                                           % self.task_index)
+
+                                    #load the previous model
+                                    validation_hook.restore()
+
+
+                                if self.conf['valid_adapt'] == 'True':
+                                    print ('WORKER %d: halving learning rate'
+                                           % self.task_index)
+                                    self.half_lr.run(session=sess)
+                                    validation_hook.save()
+
+                            else:
+                                if self.conf['reset_tries'] == 'True':
+                                    num_tries = 0
+
+                                #set the validated step
+                                self.update_validated_step.run(session=sess)
+                                self.reset_waiting.run(session=sess)
+
+                                #store the validated model
+                                validation_hook.save()
+
+
+
+                        else:
+                            if (self.conf['go_back'] == 'True'
+                                    and self.update_loss is not None):
+                                self.waiting.run(session=sess)
+                                while self.should_validate.eval(session=sess):
+                                    time.sleep(1)
 
                     #start time
-                    start = time()
+                    start = time.time()
 
                     #update the model
                     _, loss, lr, global_step, num_steps = sess.run(
@@ -453,11 +533,12 @@ class Trainer(object):
                                  self.global_step,
                                  self.num_steps])
 
-                    print(('step %d/%d loss: %f, learning rate: %f, '
+                    print(('WORKER %d: step %d/%d loss: %f, learning rate: %f, '
                            'time elapsed: %f sec')
-                          %(global_step,
+                          %(self.task_index,
+                            global_step,
                             num_steps,
-                            loss, lr, time()-start))
+                            loss, lr, time.time()-start))
 
                 self.done.run(session=sess)
 
