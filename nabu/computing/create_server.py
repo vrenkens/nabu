@@ -84,11 +84,13 @@ def create_server(clusterfile, job_name, task_index, expdir, ssh_command):
                                 (localmachine, remote[0]))
 
                             #create the ssh tunnel
-                            p = subprocess.Popen(
-                                [ssh_command, '-o', 'StrictHostKeyChecking=no',
-                                 '-o', 'UserKnownHostsFile=/dev/null', '-L',
-                                 '%d:127.0.0.1:%d' % (port, remote[1]), '-N',
-                                 remote[0]])
+                            command = [
+                                ssh_command, '-o', 'StrictHostKeyChecking=no',
+                                '-o', 'UserKnownHostsFile=/dev/null', '-L',
+                                '%d:127.0.0.1:%d' % (port, remote[1]),
+                                remote[0], '-N']
+                            print ' '.join(command)
+                            p = subprocess.Popen(command)
 
                             #report that the ssh tunnel is running
                             open(os.path.join(
@@ -105,12 +107,8 @@ def create_server(clusterfile, job_name, task_index, expdir, ssh_command):
                             sleep(0.1)
 
                         else:
-                            if localmachine == remote[0]:
-                                host = 'localhost'
-                            else:
-                                host = remote[0]
-                            fid.write('%s,%s,%s,%s\n' % (job, host,
-                                                         remote[1], remote[2]))
+                            fid.write('%s,localhost,%s,%s\n' % (
+                                job, remote[1], remote[2]))
 
             #notify that the cluster is ready
             open(readyfile, 'w').close()

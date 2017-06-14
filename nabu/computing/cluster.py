@@ -48,7 +48,7 @@ def read_cluster(filename):
             if line.strip() > 0:
                 split = line.strip().split(',')
                 machines[split[0]].append(
-                    (socket.gethostbyname(split[1]), int(split[2]), split[3]))
+                    (split[1], int(split[2]), split[3]))
 
     return machines
 

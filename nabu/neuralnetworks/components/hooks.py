@@ -1,6 +1,7 @@
 '''@file hooks.py
 contains session hooks'''
 
+import time
 import tensorflow as tf
 
 class LoadAtBegin(tf.train.SessionRunHook):
@@ -123,16 +124,12 @@ class ValidationSaveHook(tf.train.SessionRunHook):
 class StopHook(tf.train.SessionRunHook):
     '''a hook that makes sure all replicas terminate when session ends'''
 
-    def __init__(self):
+    def __init__(self, done_op):
         '''hook constructor'''
 
-    def after_create_session(self, session, coord):
-        '''this will be run after session creation'''
-
-        #pylint: disable=W0201
-        self._coord = coord
+        self.done_op = done_op
 
     def end(self, session):
         '''this will be run at session closing'''
 
-        self._coord.request_stop()
+        self.done_op.run(session=session)

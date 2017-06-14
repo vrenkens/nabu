@@ -19,11 +19,15 @@ class Listener(ed_encoder.EDEncoder):
 
 
         #create the pblstm layer
-        self.pblstm = layer.PBLSTMLayer(int(conf['num_units']),
-                                        int(conf['pyramid_steps']))
+        self.pblstm = layer.PBLSTMLayer(
+            num_units=int(conf['num_units']),
+            num_steps=int(conf['pyramid_steps']),
+            layer_norm=conf['pyramid_steps']=='True')
 
         #create the blstm layer
-        self.blstm = layer.BLSTMLayer(int(conf['num_units']))
+        self.blstm = layer.BLSTMLayer(
+            num_units=int(conf['num_units']),
+            layer_norm=conf['pyramid_steps']=='True')
 
         super(Listener, self).__init__(conf, name)
 

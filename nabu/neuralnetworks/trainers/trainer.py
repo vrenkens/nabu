@@ -114,6 +114,28 @@ class Trainer(object):
                 trainable=False
             )
 
+            #a variable to hold the amount of steps already taken
+            self.global_step = tf.get_variable(
+                name='global_step',
+                shape=[],
+                dtype=tf.int32,
+                initializer=tf.constant_initializer(0),
+                trainable=False)
+
+            should_terminate = tf.get_variable(
+                name='should_terminate',
+                shape=[],
+                dtype=tf.bool,
+                initializer=tf.constant_initializer(False),
+                trainable=False)
+
+            self.terminate = should_terminate.assign(True).op
+
+            #create a check if training should continue
+            self.should_stop = tf.logical_or(
+                tf.greater_equal(self.global_step, self.num_steps),
+                should_terminate)
+
             with tf.device(device):
 
                 #check if running in distributed model
@@ -172,25 +194,13 @@ class Trainer(object):
                                 capacity=num_replicas,
                                 dtypes=[tf.bool],
                                 shapes=[[]],
-                                shared_name='done_queue%d' % task_index,
-                                name='done_queue%d' % task_index
+                                shared_name='done_queue%d' % i,
+                                name='done_queue%d' % i
                             )
 
                             done_ops.append(done_queue.enqueue(True))
 
                     self.done = tf.group(*done_ops)
-
-                #a variable to hold the amount of steps already taken
-                self.global_step = tf.get_variable(
-                    name='global_step',
-                    shape=[],
-                    dtype=tf.int32,
-                    initializer=tf.constant_initializer(0),
-                    trainable=False)
-
-                #create a check if training should continue
-                self.should_stop = tf.greater_equal(self.global_step,
-                                                    self.num_steps)
 
                 #training part
                 with tf.variable_scope('train'):
@@ -428,7 +438,8 @@ class Trainer(object):
                 is_chief=self.is_chief,
                 checkpoint_dir=os.path.join(self.expdir, 'logdir'),
                 scaffold=self.scaffold,
-                chief_only_hooks=[save_hook, validation_hook, hooks.StopHook()],
+                hooks=[hooks.StopHook(self.done)],
+                chief_only_hooks=[save_hook, validation_hook],
                 config=config) as sess:
 
                 #set the number of steps
@@ -465,7 +476,7 @@ class Trainer(object):
                                    (self.task_index, validation_loss))
 
                             #check if the validation loss is better
-                            if validation_loss > prev_val_loss:
+                            if validation_loss >= prev_val_loss:
 
                                 print ('WORKER %d: validation loss is worse' %
                                        self.task_index)
@@ -476,6 +487,7 @@ class Trainer(object):
                                     if num_tries == int(self.conf['num_tries']):
                                         print ('WORKER %d: terminating training'
                                                % self.task_index)
+                                        self.terminate.run(session=sess)
                                         break
 
                                 num_tries += 1
@@ -513,14 +525,17 @@ class Trainer(object):
                                 #store the validated model
                                 validation_hook.save()
 
-
-
                         else:
                             if (self.conf['go_back'] == 'True'
                                     and self.update_loss is not None):
                                 self.waiting.run(session=sess)
-                                while self.should_validate.eval(session=sess):
+                                while (self.should_validate.eval(session=sess)
+                                       and not
+                                       self.should_stop.eval(session=sess)):
                                     time.sleep(1)
+
+                                if self.should_stop.eval(session=sess):
+                                    break
 
                     #start time
                     start = time.time()
@@ -539,8 +554,6 @@ class Trainer(object):
                             global_step,
                             num_steps,
                             loss, lr, time.time()-start))
-
-                self.done.run(session=sess)
 
 class ParameterServer(object):
     '''a class for parameter servers'''
@@ -616,17 +629,16 @@ class ParameterServer(object):
                     tf.constant([num_steps]*num_replicas)
                 )
 
+                #create a queue for the workers to signiy that they are done
+                done_queue = tf.FIFOQueue(
+                    capacity=num_replicas,
+                    dtypes=[tf.bool],
+                    shapes=[[]],
+                    shared_name='done_queue%d' % task_index,
+                    name='done_queue%d' % task_index
+                )
 
-            #create a queue for the workers to signiy that they are done
-            done_queue = tf.FIFOQueue(
-                capacity=num_replicas,
-                dtypes=[tf.bool],
-                shapes=[[]],
-                shared_name='done_queue%d' % task_index,
-                name='done_queue%d' % task_index
-            )
-
-            self.wait_op = done_queue.dequeue_many(num_replicas).op
+                self.wait_op = done_queue.dequeue_many(num_replicas).op
 
             self.scaffold = tf.train.Scaffold()
 
@@ -636,9 +648,10 @@ class ParameterServer(object):
         with self.graph.as_default():
             with tf.train.MonitoredTrainingSession(
                 master=self.server.target,
-                is_chief=self.task_index == 0,
+                is_chief=False,
                 scaffold=self.scaffold) as sess:
 
                 if self.task_index == 0:
                     self.set_num_steps.run(session=sess)
+
                 self.wait_op.run(session=sess)

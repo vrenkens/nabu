@@ -8,15 +8,17 @@ from nabu.neuralnetworks.components import ops
 class BLSTMLayer(object):
     '''a BLSTM layer'''
 
-    def __init__(self, num_units):
+    def __init__(self, num_units, layer_norm=False):
         '''
         BLSTMLayer constructor
 
         Args:
             num_units: The number of units in the one directon
+            layer_norm: whether layer normalization should be applied
         '''
 
         self.num_units = num_units
+        self.layer_norm = layer_norm
 
     def __call__(self, inputs, sequence_length, scope=None):
         '''
@@ -38,11 +40,13 @@ class BLSTMLayer(object):
 
             #create the lstm cell that will be used for the forward and backward
             #pass
-            lstm_cell_fw = tf.contrib.rnn.BasicLSTMCell(
-                self.num_units,
+            lstm_cell_fw = tf.contrib.rnn.LayerNormBasicLSTMCell(
+                num_units=self.num_units,
+                layer_norm=self.layer_norm,
                 reuse=tf.get_variable_scope().reuse)
-            lstm_cell_bw = tf.contrib.rnn.BasicLSTMCell(
+            lstm_cell_bw = tf.contrib.rnn.LayerNormBasicLSTMCell(
                 self.num_units,
+                layer_norm=self.layer_norm,
                 reuse=tf.get_variable_scope().reuse)
 
             #do the forward computation
@@ -57,17 +61,18 @@ class BLSTMLayer(object):
 class PBLSTMLayer(object):
     ''' a pyramidal bidirectional LSTM layer'''
 
-    def __init__(self, num_units, num_steps):
+    def __init__(self, num_units, num_steps=2, layer_norm=False):
         """
         PBLSTMLayer constructor
 
         Args:
             num_units: The number of units in the LSTM
             num_steps: the number of time steps to concatenate
+            layer_norm: whether layer normalization should be applied
         """
 
         #create BLSTM layer
-        self.blstm = BLSTMLayer(num_units)
+        self.blstm = BLSTMLayer(num_units, layer_norm)
         self.num_steps = num_steps
 
     def __call__(self, inputs, sequence_lengths, scope=None):

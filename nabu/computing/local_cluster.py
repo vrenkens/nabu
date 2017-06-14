@@ -35,7 +35,7 @@ def local_cluster(expdir):
             task_index += 1
 
     for process in processes:
-        atexit.register(process.terminate)
+        atexit.register(cond_term, process=process)
 
     for process in processes:
         process.wait()
@@ -45,3 +45,12 @@ if __name__ == '__main__':
     FLAGS = tf.app.flags.FLAGS
 
     local_cluster(FLAGS.expdir)
+
+def cond_term(process):
+    '''terminate pid if it exists'''
+
+    try:
+        os.kill(process.terminate)
+    #pylint: disable=W0702
+    except:
+        pass

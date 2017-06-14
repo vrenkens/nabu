@@ -114,6 +114,8 @@ def main(_):
                 shutil.rmtree(os.path.join(FLAGS.expdir, 'cluster'))
             os.makedirs(os.path.join(FLAGS.expdir, 'cluster'))
 
+            GPUs = computing_cfg['gpus'].split(' ')
+
             #create the cluster file
             with open(os.path.join(FLAGS.expdir, 'cluster', 'cluster'),
                       'w') as fid:
@@ -126,7 +128,7 @@ def main(_):
                 for i in range(int(computing_cfg['numworkers'])):
                     while not cluster.port_available(port):
                         port += 1
-                    fid.write('worker,localhost,%d,%d\n' % (port, i))
+                    fid.write('worker,localhost,%d,%s\n' % (port, GPUs[i]))
                     port += 1
 
             #start the training
@@ -178,7 +180,7 @@ def main(_):
             #make sure the created processes are terminated at exit
             for job in processes:
                 for process in processes[job]:
-                    atexit.register(process.terminate)
+                    atexit.register(cond_term, process=process)
 
             #make sure all remotely created processes are terminated at exit
             atexit.register(kill_processes.kill_processes,
@@ -219,8 +221,6 @@ def main(_):
                 shutil.rmtree(os.path.join(FLAGS.expdir, 'cluster'))
             os.makedirs(os.path.join(FLAGS.expdir, 'cluster'))
 
-            GPUs = computing_cfg['GPUs'].split(' ')
-
             #create the cluster file
             with open(os.path.join(FLAGS.expdir, 'cluster', 'cluster'),
                       'w') as fid:
@@ -233,7 +233,7 @@ def main(_):
                 for i in range(int(computing_cfg['numworkers'])):
                     while not cluster.port_available(port):
                         port += 1
-                    fid.write('worker,localhost,%d,%s\n' % (port, GPUs[i]))
+                    fid.write('worker,localhost,%d,%d\n' % (port, i))
                     port += 1
 
             #submit the job
@@ -311,7 +311,7 @@ def main(_):
                 os.system('condor_rm -constraint \'JobStatus =!= 2\'')
 
                 #check if enough machines are available
-                if machines['worker'] or machines['ps']:
+                if not machines['worker'] or not machines['ps']:
 
                     #stop the ps jobs
                     cidfile = os.path.join(FLAGS.expdir, 'cluster', 'ps-cid')
@@ -352,20 +352,6 @@ def main(_):
             print ('training has started look in %s/outputs for the job outputs'
                    % FLAGS.expdir)
 
-            print 'waiting for worker jobs to finish'
-
-            for machine in machines['worker']:
-                machine_file = os.path.join(FLAGS.expdir, 'cluster',
-                                            '%s-%d' % (machine[0], machine[1]))
-                while os.path.exists(machine_file):
-                    sleep(1)
-
-            #stop the ps jobs
-            with open(os.path.join(FLAGS.expdir, 'cluster', 'ps-cid')) as fid:
-                cid = fid.read()
-
-            subprocess.call(['condor_rm', cid])
-
         else:
             raise Exception('unknown mode %s' % FLAGS.mode)
     else:
@@ -373,3 +359,12 @@ def main(_):
 
 if __name__ == '__main__':
     tf.app.run()
+
+def cond_term(process):
+    '''terminate pid if it exists'''
+
+    try:
+        os.kill(process.terminate)
+    #pylint: disable=W0702
+    except:
+        pass
