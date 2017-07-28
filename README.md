@@ -149,7 +149,7 @@ run sweep --command=<command> --sweep=/path/to/sweepfile --expdir=/path/to/exdir
 
 where command can be any of the commands discussed above.
 
-### Kaldi an Nabu
+### Kaldi and Nabu
 
 There are some scripts avaiable to use a Nabu Neural Network in the Kaldi
 framework. Kaldi is an ASR toolkit. You can find more information
@@ -170,7 +170,7 @@ preperation and you should use them.
 
 #### GMM-HMM training
 
-You can train te GMM-HMM model as folows:
+You can train the GMM-HMM model as folows:
 
 ```
 nabu/scipts/kaldi/train_gmm.sh <datadir> <langdir> <langdir-test>  <traindir> <kaldi>
@@ -178,7 +178,7 @@ nabu/scipts/kaldi/train_gmm.sh <datadir> <langdir> <langdir-test>  <traindir> <k
 
 With the folowing arguments:
 - datadir: the directory containing the training data (created in data prep)
-- langdir: the directory containing the lanuage model for training
+- langdir: the directory containing the language model for training
 (created in data prep)
 - langdir-test: the directory containg the language model that should be used
 for decoding (created in data prep)
@@ -187,8 +187,8 @@ written
 - kaldi: the location of your kaldi installation
 
 The script will compute the features, train the GMM-HMM models and align the
-training data, so you do not have to do this anymore in the comming step.
-The alignments for the training set can be found in <traindir>/pdfs.
+training data, so you do not have to do this anymore in the coming step.
+The alignments for the training set can be found in \<traindir\>/pdfs.
 
 #### Aligning the data
 
@@ -200,9 +200,9 @@ nabu/scipts/kaldi/align_data.sh <datadir> <langdir> <traindir> <targetdir> <kald
 ```
 
 the datadir should point to the data you want to align, the traindir should be
-the traindir you used i the previous step and the targetdir is the directory
+the traindir you used in the previous step and the targetdir is the directory
 where the alignments will be written. The alignments can be found in
-<targetdir>/pdfs
+\<targetdir\>/pdfs
 
 #### Computing the prior
 
@@ -214,18 +214,18 @@ nabu/scipts/kaldi/compute_prior.sh <traindir>
 ```
 
 traindir should be the same as the traindir in the previous step. the prior can
-then be found in numpy format in <traindir>/prior.npy
+then be found in numpy format in \<traindir\>/prior.npy
 
 #### Training the neural net
 
 Training the neural network happens using the Nabu framework. In order to do
 this you should create a recipe for doing so (see the section on training).
 You can find an example recipe for this in config/recipes/DNN/WSJ. You can
-use this recipe, but you should still create the database configuration.
-In your database configuration you should create sections for the features
-which is the same as you would do for a normal Nabu neural network and
-sections for the alignments. The alignment sections should get the special
-type of alignments. A section should look something like this:
+use this recipe, but you should still create the database.conf file based on
+the database.cfg file. In your database configuration you should create sections
+for the features which is the same as you would do for a normal Nabu neural
+network and sections for the alignments. The alignment sections should get the
+special type "alignments". A section should look something like this:
 
 ```
 [trainalignments]
@@ -249,16 +249,16 @@ pseudo-likelihoods as folows:
 run decode --expdir=<expdir> --recipe=<recipe> ...
 ```
 
-The pseudo likelihoods can the be found in <expdir>/decode/decoded/alignments.
+The pseudo likelihoods can the be found in \<expdir\>/decode/decoded/alignments.
 
-You can then dor the Kaldi decoding and scoring with:
+You can then do the Kaldi decoding and scoring with:
 
 ```
 nabu/scipts/kaldi/decode.sh <datadir> <traindir> <expdir>/decode/decoded/alignments/feats.scp <outputs> <kaldi>
 ```
 
-The arguments are similar then the arguments in the script above. The outputs
-will be written to the <outputs> folder.
+The arguments are similar as the arguments in the script above. The outputs
+will be written to the \<outputs\> folder.
 
 ## Designing in Nabu
 
