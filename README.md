@@ -107,7 +107,7 @@ create a sweep file. A sweep file contain blocks of parameters, each block
 will change the parameters in the recipe and run a script. A sweep file
 looks like this:
 
-'''
+```
 experiment name 1
 confile1 section option value
 confile2 section option value
@@ -119,11 +119,11 @@ confile2 section option value
 ...
 
 ...
-'''
+```
 
 For example, if you want to try several number of layers and number of units:
 
-'''
+```
 4layers_1024units
 model.cfg encoder num_layers 4
 model.cfg encoder num_units 1024
@@ -139,13 +139,13 @@ model.cfg encoder num_units 1024
 5layers_1024units
 model.cfg encoder num_layers 5
 model.cfg encoder num_units 2048
-'''
+```
 
 The parameter sweep can then be executed as follows:
 
-'''
+```
 run sweep --command=<command> --sweep=/path/to/sweepfile --expdir=/path/to/exdir <command option>
-'''
+```
 
 where command can be any of the commands discussed above.
 
@@ -172,9 +172,9 @@ preperation and you should use them.
 
 You can train te GMM-HMM model as folows:
 
-'''
+```
 nabu/scipts/kaldi/train_gmm.sh <datadir> <langdir> <langdir-test>  <traindir> <kaldi>
-'''
+```
 
 With the folowing arguments:
 - datadir: the directory containing the training data (created in data prep)
@@ -195,9 +195,9 @@ The alignments for the training set can be found in <traindir>/pdfs.
 The training data has already been aligned in the previous step, but if you want
 to align e.g. the validation set you can do that as follows:
 
-'''
+```
 nabu/scipts/kaldi/align_data.sh <datadir> <langdir> <traindir> <targetdir> <kaldi>
-'''
+```
 
 the datadir should point to the data you want to align, the traindir should be
 the traindir you used i the previous step and the targetdir is the directory
@@ -209,9 +209,9 @@ where the alignments will be written. The alignments can be found in
 The prior is needed to convert the pdf posteriors to pdf pseudo-likelihoods.
 The prior can be computed with:
 
-'''
+```
 nabu/scipts/kaldi/compute_prior.sh <traindir>
-'''
+```
 
 traindir should be the same as the traindir in the previous step. the prior can
 then be found in numpy format in <traindir>/prior.npy
@@ -227,13 +227,13 @@ which is the same as you would do for a normal Nabu neural network and
 sections for the alignments. The alignment sections should get the special
 type of alignments. A section should look something like this:
 
-'''
+```
 [trainalignments]
 type = alignment
 datafiles = <traindir>/pdfs
 dir = /path/to/dir
 processor_config = path/to/alignment_processor.cfg
-'''
+```
 
 dir is just the directory where the processed alignments will be written.
 
@@ -245,17 +245,17 @@ folow the instructions in the sections above.
 To decode the using the trained system you should first compute the
 pseudo-likelihoods as folows:
 
-'''
+```
 run decode --expdir=<expdir> --recipe=<recipe> ...
-'''
+```
 
 The pseudo likelihoods can the be found in <expdir>/decode/decoded/alignments.
 
 You can then dor the Kaldi decoding and scoring with:
 
-'''
+```
 nabu/scipts/kaldi/decode.sh <datadir> <traindir> <expdir>/decode/decoded/alignments/feats.scp <outputs> <kaldi>
-'''
+```
 
 The arguments are similar then the arguments in the script above. The outputs
 will be written to the <outputs> folder.
