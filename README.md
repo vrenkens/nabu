@@ -188,7 +188,7 @@ written
 
 The script will compute the features, train the GMM-HMM models and align the
 training data, so you do not have to do this anymore in the coming step.
-The alignments for the training set can be found in \<traindir\>/pdfs.
+The alignments for the training set can be found in &lt traindir &gt/pdfs.
 
 #### Aligning the data
 
@@ -202,7 +202,7 @@ nabu/scipts/kaldi/align_data.sh <datadir> <langdir> <traindir> <targetdir> <kald
 the datadir should point to the data you want to align, the traindir should be
 the traindir you used in the previous step and the targetdir is the directory
 where the alignments will be written. The alignments can be found in
-\<targetdir\>/pdfs
+&lt targetdir &gt/pdfs
 
 #### Computing the prior
 
@@ -214,7 +214,7 @@ nabu/scipts/kaldi/compute_prior.sh <traindir>
 ```
 
 traindir should be the same as the traindir in the previous step. the prior can
-then be found in numpy format in \<traindir\>/prior.npy
+then be found in numpy format in &lt traindir &gt/prior.npy
 
 #### Training the neural net
 
@@ -249,7 +249,7 @@ pseudo-likelihoods as folows:
 run decode --expdir=<expdir> --recipe=<recipe> ...
 ```
 
-The pseudo likelihoods can the be found in \<expdir\>/decode/decoded/alignments.
+The pseudo likelihoods can the be found in &lt expdir &gt/decode/decoded/alignments.
 
 You can then do the Kaldi decoding and scoring with:
 
@@ -258,7 +258,7 @@ nabu/scipts/kaldi/decode.sh <datadir> <traindir> <expdir>/decode/decoded/alignme
 ```
 
 The arguments are similar as the arguments in the script above. The outputs
-will be written to the \<outputs\> folder.
+will be written to the &lt outputs &gt folder.
 
 ## Designing in Nabu
 
