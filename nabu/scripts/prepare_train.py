@@ -16,93 +16,80 @@ from nabu.computing.static import run_remote
 from nabu.computing.static import kill_processes
 from train import train
 
-tf.app.flags.DEFINE_string('expdir', None,
-                           'the exeriments directory'
-                          )
-tf.app.flags.DEFINE_string('recipe', None,
-                           'The directory containing the recipe'
-                          )
-tf.app.flags.DEFINE_string('mode', 'non_distributed',
-                           'The computing mode, one of non_distributed, '
-                           'single_machine or multi_machine'
-                          )
-tf.app.flags.DEFINE_string('computing', 'standart',
-                           'the distributed computing system one of standart or'
-                           ' condor'
-                          )
-
-FLAGS = tf.app.flags.FLAGS
-
-def main(_):
+def main(expdir, recipe, mode, computing):
     '''main function'''
 
-    if FLAGS.expdir is None:
+    if expdir is None:
         raise Exception('no expdir specified. Command usage: '
                         'nabu data --expdir=/path/to/recipe '
                         '--recipe=/path/to/recipe')
 
-    if FLAGS.recipe is None:
+    if recipe is None:
         raise Exception('no recipe specified. Command usage: '
                         'nabu data --expdir=/path/to/recipe '
                         '--recipe=/path/to/recipe')
 
-    if not os.path.isdir(FLAGS.recipe):
-        raise Exception('cannot find recipe %s' % FLAGS.recipe)
+    if not os.path.isdir(recipe):
+        raise Exception('cannot find recipe %s' % recipe)
+    if mode not in ['non_distributed', 'single_machine', 'multi_machine']:
+        raise Exception('unknown distributed mode: %s' % mode)
+    if computing not in ['standard', 'condor']:
+        raise Exception('unknown computing mode: %s' % computing)
 
-    database_cfg_file = os.path.join(FLAGS.recipe, 'database.conf')
-    model_cfg_file = os.path.join(FLAGS.recipe, 'model.cfg')
-    trainer_cfg_file = os.path.join(FLAGS.recipe, 'trainer.cfg')
-    evaluator_cfg_file = os.path.join(FLAGS.recipe, 'validation_evaluator.cfg')
+    database_cfg_file = os.path.join(recipe, 'database.conf')
+    model_cfg_file = os.path.join(recipe, 'model.cfg')
+    trainer_cfg_file = os.path.join(recipe, 'trainer.cfg')
+    evaluator_cfg_file = os.path.join(recipe, 'validation_evaluator.cfg')
 
     #read the trainer config file
     parsed_trainer_cfg = configparser.ConfigParser()
     parsed_trainer_cfg.read(trainer_cfg_file)
     trainer_cfg = dict(parsed_trainer_cfg.items('trainer'))
 
-    if os.path.isdir(os.path.join(FLAGS.expdir, 'processes')):
-        shutil.rmtree(os.path.join(FLAGS.expdir, 'processes'))
-    os.makedirs(os.path.join(FLAGS.expdir, 'processes'))
+    if os.path.isdir(os.path.join(expdir, 'processes')):
+        shutil.rmtree(os.path.join(expdir, 'processes'))
+    os.makedirs(os.path.join(expdir, 'processes'))
 
     if trainer_cfg['resume_training'] == 'True':
-        if not os.path.isdir(FLAGS.expdir):
+        if not os.path.isdir(expdir):
             raise Exception('cannot find %s, please set resume_training to '
                             'False if you want to start a new training process'
-                            % FLAGS.expdir)
+                            % expdir)
     else:
-        if os.path.isdir(os.path.join(FLAGS.expdir, 'logdir')):
-            shutil.rmtree(os.path.join(FLAGS.expdir, 'logdir'))
-        if not os.path.isdir(FLAGS.expdir):
-            os.makedirs(FLAGS.expdir)
-        if os.path.isdir(os.path.join(FLAGS.expdir, 'model')):
-            shutil.rmtree(os.path.join(FLAGS.expdir, 'model'))
-        os.makedirs(os.path.join(FLAGS.expdir, 'model'))
+        if os.path.isdir(os.path.join(expdir, 'logdir')):
+            shutil.rmtree(os.path.join(expdir, 'logdir'))
+        if not os.path.isdir(expdir):
+            os.makedirs(expdir)
+        if os.path.isdir(os.path.join(expdir, 'model')):
+            shutil.rmtree(os.path.join(expdir, 'model'))
+        os.makedirs(os.path.join(expdir, 'model'))
 
         #copy the configs to the expdir so they can be read there and the
         #experiment information is stored
 
         shutil.copyfile(database_cfg_file,
-                        os.path.join(FLAGS.expdir, 'database.cfg'))
+                        os.path.join(expdir, 'database.cfg'))
         shutil.copyfile(model_cfg_file,
-                        os.path.join(FLAGS.expdir, 'model.cfg'))
+                        os.path.join(expdir, 'model.cfg'))
         shutil.copyfile(evaluator_cfg_file,
-                        os.path.join(FLAGS.expdir, 'evaluator.cfg'))
+                        os.path.join(expdir, 'evaluator.cfg'))
 
-    shutil.copyfile(trainer_cfg_file, os.path.join(FLAGS.expdir, 'trainer.cfg'))
+    shutil.copyfile(trainer_cfg_file, os.path.join(expdir, 'trainer.cfg'))
 
-    computing_cfg_file = 'config/computing/%s/%s.cfg' % (FLAGS.computing,
-                                                         FLAGS.mode)
+    computing_cfg_file = 'config/computing/%s/%s.cfg' % (computing,
+                                                         mode)
 
-    if FLAGS.computing == 'standart':
+    if computing == 'standard':
 
-        if FLAGS.mode == 'non_distributed':
+        if mode == 'non_distributed':
 
             train(clusterfile=None,
                   job_name='local',
                   task_index=0,
                   ssh_command='None',
-                  expdir=FLAGS.expdir)
+                  expdir=expdir)
 
-        elif FLAGS.mode == 'single_machine':
+        elif mode == 'single_machine':
 
             #read the computing config file
             parsed_computing_cfg = configparser.ConfigParser()
@@ -110,14 +97,14 @@ def main(_):
             computing_cfg = dict(parsed_computing_cfg.items('computing'))
 
             #create the directories
-            if os.path.isdir(os.path.join(FLAGS.expdir, 'cluster')):
-                shutil.rmtree(os.path.join(FLAGS.expdir, 'cluster'))
-            os.makedirs(os.path.join(FLAGS.expdir, 'cluster'))
+            if os.path.isdir(os.path.join(expdir, 'cluster')):
+                shutil.rmtree(os.path.join(expdir, 'cluster'))
+            os.makedirs(os.path.join(expdir, 'cluster'))
 
             GPUs = computing_cfg['gpus'].split(' ')
 
             #create the cluster file
-            with open(os.path.join(FLAGS.expdir, 'cluster', 'cluster'),
+            with open(os.path.join(expdir, 'cluster', 'cluster'),
                       'w') as fid:
                 port = 1024
                 for _ in range(int(computing_cfg['numps'])):
@@ -132,9 +119,9 @@ def main(_):
                     port += 1
 
             #start the training
-            local_cluster.local_cluster(FLAGS.expdir)
+            local_cluster.local_cluster(expdir)
 
-        elif FLAGS.mode == 'multi_machine':
+        elif mode == 'multi_machine':
 
             #read the computing config file
             parsed_computing_cfg = configparser.ConfigParser()
@@ -153,9 +140,9 @@ def main(_):
                         machines[split[0]].append(hostip)
 
             #create the outputs directory
-            if os.path.isdir(os.path.join(FLAGS.expdir, 'cluster')):
-                shutil.rmtree(os.path.join(FLAGS.expdir, 'cluster'))
-            os.makedirs(os.path.join(FLAGS.expdir, 'cluster'))
+            if os.path.isdir(os.path.join(expdir, 'cluster')):
+                shutil.rmtree(os.path.join(expdir, 'cluster'))
+            os.makedirs(os.path.join(expdir, 'cluster'))
 
             #run all the jobs
             processes = dict()
@@ -170,7 +157,7 @@ def main(_):
                                '--expdir=%s') % (
                                    computing_cfg['clusterfile'], job,
                                    task_index, computing_cfg['ssh_command'],
-                                   FLAGS.expdir)
+                                   expdir)
                     processes[job].append(run_remote.run_remote(
                         command=command,
                         host=machine
@@ -184,45 +171,45 @@ def main(_):
 
             #make sure all remotely created processes are terminated at exit
             atexit.register(kill_processes.kill_processes,
-                            processdir=os.path.join(FLAGS.expdir, 'processes'))
+                            processdir=os.path.join(expdir, 'processes'))
 
             #wait for all worker processes to finish
             for process in processes['worker']:
                 process.wait()
 
         else:
-            raise Exception('unknown mode %s' % FLAGS.mode)
+            raise Exception('unknown mode %s' % mode)
 
-    elif FLAGS.computing == 'condor':
+    elif computing == 'condor':
 
-        if not os.path.isdir(os.path.join(FLAGS.expdir, 'outputs')):
-            os.makedirs(os.path.join(FLAGS.expdir, 'outputs'))
+        if not os.path.isdir(os.path.join(expdir, 'outputs')):
+            os.makedirs(os.path.join(expdir, 'outputs'))
 
-        if FLAGS.mode == 'non_distributed':
+        if mode == 'non_distributed':
 
             #read the computing config file
             parsed_computing_cfg = configparser.ConfigParser()
             parsed_computing_cfg.read(computing_cfg_file)
             computing_cfg = dict(parsed_computing_cfg.items('computing'))
 
-            subprocess.call(['condor_submit', 'expdir=%s' % FLAGS.expdir,
+            subprocess.call(['condor_submit', 'expdir=%s' % expdir,
                              'script=nabu/scripts/train.py',
                              'memory=%s' % computing_cfg['minmemory'],
                              'nabu/computing/condor/non_distributed.job'])
 
-        elif FLAGS.mode == 'single_machine':
+        elif mode == 'single_machine':
 
             #read the computing config file
             parsed_computing_cfg = configparser.ConfigParser()
             parsed_computing_cfg.read(computing_cfg_file)
             computing_cfg = dict(parsed_computing_cfg.items('computing'))
 
-            if os.path.isdir(os.path.join(FLAGS.expdir, 'cluster')):
-                shutil.rmtree(os.path.join(FLAGS.expdir, 'cluster'))
-            os.makedirs(os.path.join(FLAGS.expdir, 'cluster'))
+            if os.path.isdir(os.path.join(expdir, 'cluster')):
+                shutil.rmtree(os.path.join(expdir, 'cluster'))
+            os.makedirs(os.path.join(expdir, 'cluster'))
 
             #create the cluster file
-            with open(os.path.join(FLAGS.expdir, 'cluster', 'cluster'),
+            with open(os.path.join(expdir, 'cluster', 'cluster'),
                       'w') as fid:
                 port = 1024
                 for _ in range(int(computing_cfg['numps'])):
@@ -237,33 +224,33 @@ def main(_):
                     port += 1
 
             #submit the job
-            subprocess.call(['condor_submit', 'expdir=%s' % FLAGS.expdir,
+            subprocess.call(['condor_submit', 'expdir=%s' % expdir,
                              'GPUs=%d' % (int(computing_cfg['numworkers'])),
                              'memory=%s' % computing_cfg['minmemory'],
                              'nabu/computing/condor/local.job'])
 
             print ('job submitted look in %s/outputs for the job outputs' %
-                   FLAGS.expdir)
+                   expdir)
 
-        elif FLAGS.mode == 'multi_machine':
+        elif mode == 'multi_machine':
 
             #read the computing config file
             parsed_computing_cfg = configparser.ConfigParser()
             parsed_computing_cfg.read(computing_cfg_file)
             computing_cfg = dict(parsed_computing_cfg.items('computing'))
 
-            if os.path.isdir(os.path.join(FLAGS.expdir, 'cluster')):
-                shutil.rmtree(os.path.join(FLAGS.expdir, 'cluster'))
-            os.makedirs(os.path.join(FLAGS.expdir, 'cluster'))
+            if os.path.isdir(os.path.join(expdir, 'cluster')):
+                shutil.rmtree(os.path.join(expdir, 'cluster'))
+            os.makedirs(os.path.join(expdir, 'cluster'))
 
             #submit the parameter server jobs
-            subprocess.call(['condor_submit', 'expdir=%s' % FLAGS.expdir,
+            subprocess.call(['condor_submit', 'expdir=%s' % expdir,
                              'numjobs=%s' % computing_cfg['numps'],
                              'ssh_command=%s' % computing_cfg['ssh_command'],
                              'nabu/computing/condor/ps.job'])
 
             #submit the worker jobs
-            subprocess.call(['condor_submit', 'expdir=%s' % FLAGS.expdir,
+            subprocess.call(['condor_submit', 'expdir=%s' % expdir,
                              'numjobs=%s' % computing_cfg['numworkers'],
                              'memory=%s' % computing_cfg['minmemory'],
                              'ssh_command=%s' % computing_cfg['ssh_command'],
@@ -278,7 +265,7 @@ def main(_):
                 while not ready:
                     #check the machines in the cluster
                     machines = cluster.get_machines(
-                        os.path.join(FLAGS.expdir, 'cluster'))
+                        os.path.join(expdir, 'cluster'))
 
                     if (len(machines['ps']) > numps
                             or len(machines['worker']) > numworkers):
@@ -314,14 +301,14 @@ def main(_):
                 if not machines['worker'] or not machines['ps']:
 
                     #stop the ps jobs
-                    cidfile = os.path.join(FLAGS.expdir, 'cluster', 'ps-cid')
+                    cidfile = os.path.join(expdir, 'cluster', 'ps-cid')
                     if os.path.exists(cidfile):
                         with open(cidfile) as fid:
                             cid = fid.read()
                         subprocess.call(['condor_rm', cid])
 
                     #stop the worker jobs
-                    cidfile = os.path.join(FLAGS.expdir, 'cluster',
+                    cidfile = os.path.join(expdir, 'cluster',
                                            'worker-cid')
                     if os.path.exists(cidfile):
                         with open(cidfile) as fid:
@@ -335,7 +322,7 @@ def main(_):
                    % (len(machines['ps']), len(machines['worker'])))
 
             #create the cluster file
-            with open(os.path.join(FLAGS.expdir, 'cluster', 'cluster'),
+            with open(os.path.join(expdir, 'cluster', 'cluster'),
                       'w') as cfid:
                 for job in machines:
                     if job == 'ps':
@@ -347,18 +334,35 @@ def main(_):
                                                       machine[1], GPU))
 
             #notify the machine that the cluster is ready
-            open(os.path.join(FLAGS.expdir, 'cluster', 'ready'), 'w').close()
+            open(os.path.join(expdir, 'cluster', 'ready'), 'w').close()
 
             print ('training has started look in %s/outputs for the job outputs'
-                   % FLAGS.expdir)
+                   % expdir)
 
         else:
-            raise Exception('unknown mode %s' % FLAGS.mode)
+            raise Exception('unknown mode %s' % mode)
     else:
-        raise Exception('Unknown computing type %s' % FLAGS.computing)
+        raise Exception('Unknown computing type %s' % computing)
 
 if __name__ == '__main__':
-    tf.app.run()
+    tf.app.flags.DEFINE_string('expdir', None,
+                               'the exeriments directory'
+                              )
+    tf.app.flags.DEFINE_string('recipe', None,
+                               'The directory containing the recipe'
+                              )
+    tf.app.flags.DEFINE_string('mode', 'non_distributed',
+                               'The computing mode, one of non_distributed, '
+                               'single_machine or multi_machine'
+                              )
+    tf.app.flags.DEFINE_string('computing', 'standard',
+                               'the distributed computing system one of'
+                               ' condor'
+                              )
+
+    FLAGS = tf.app.flags.FLAGS
+
+    main(FLAGS.expdir, FLAGS.recipe, FLAGS.mode, FLAGS.computing)
 
 def cond_term(process):
     '''terminate pid if it exists'''

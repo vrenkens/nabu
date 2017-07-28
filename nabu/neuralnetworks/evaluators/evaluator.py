@@ -26,18 +26,22 @@ class Evaluator(object):
 
         #get the database configurations
         inputs = self.model.input_names
-        input_sections = [conf.get('evaluator', i) for i in inputs]
+        input_sections = [conf.get('evaluator', i).split(' ') for i in inputs]
         self.input_dataconfs = []
-        for section in input_sections:
-            self.input_dataconfs.append(dict(dataconf.items(section)))
+        for sectionset in input_sections:
+            self.input_dataconfs.append([])
+            for section in sectionset:
+                self.input_dataconfs[-1].append(dict(dataconf.items(section)))
 
         targets = conf.get('evaluator', 'targets').split(' ')
         if targets == ['']:
             targets = []
-        target_sections = [conf.get('evaluator', o) for o in targets]
+        target_sections = [conf.get('evaluator', o).split(' ') for o in targets]
         self.target_dataconfs = []
-        for section in target_sections:
-            self.target_dataconfs.append(dict(dataconf.items(section)))
+        for sectionset in target_sections:
+            self.target_dataconfs.append([])
+            for section in sectionset:
+                self.target_dataconfs[-1].append(dict(dataconf.items(section)))
 
     def evaluate(self):
         '''evaluate the performance of the model
@@ -57,6 +61,9 @@ class Evaluator(object):
 
             #compute the number of batches in the validation set
             numbatches = len(data_queue_elements)/batch_size
+
+            #cut the data so it has a whole numbe of batches
+            data_queue_elements = data_queue_elements[:numbatches*batch_size]
 
             #create a queue to hold the filenames
             data_queue = tf.train.string_input_producer(

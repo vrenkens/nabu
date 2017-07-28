@@ -11,12 +11,11 @@ class EDDecoder(object):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, conf, targetconfs, trainlabels, outputs):
+    def __init__(self, conf, trainlabels, outputs, name=None):
         '''EDDecoder constructor
 
         Args:
             conf: the decoder configuration
-            targetconfs: the data configurations for the targets
             trainlabels: the number of extra labels required by the trainer
             outputs: the name of the outputs of the model
         '''
@@ -26,9 +25,9 @@ class EDDecoder(object):
         self.conf = conf
         self.outputs = outputs
 
-        self.output_dims = self.get_output_dims(targetconfs, trainlabels)
+        self.output_dims = self.get_output_dims(trainlabels)
 
-        self.scope = tf.VariableScope(False, type(self).__name__)
+        self.scope = tf.VariableScope(False, name or type(self).__name__)
 
 
     def __call__(self, encoded, encoded_seq_length, targets, target_seq_length,
@@ -39,10 +38,10 @@ class EDDecoder(object):
         sequence
 
         Args:
-            encoded: the encoded inputs, this is a list of
+            encoded: the encoded inputs, this is a dictionary of
                 [batch_size x time x ...] tensors
             encoded_seq_length: the sequence lengths of the encoded inputs
-                as a list of [batch_size] vectors
+                as a dictionary of [batch_size] vectors
             targets: the targets used as decoder inputs as a dictionary of
                 [batch_size x time x ...] tensors
             target_seq_length: the sequence lengths of the targets
@@ -73,10 +72,10 @@ class EDDecoder(object):
     def step(self, encoded, encoded_seq_length, targets, state, is_training):
         '''take a single decoding step
 
-        encoded: the encoded inputs, this is a list of
+        encoded: the encoded inputs, this is a dictionary of
             [batch_size x time x ...] tensors
         encoded_seq_length: the sequence lengths of the encoded inputs
-            as a list of [batch_size] vectors
+            as a dictionary of [batch_size] vectors
         targets: the targets decoded in the previous step as a dictionary of
             [batch_size] vectors
         state: the state of the previous deocding step as a possibly nested
@@ -103,10 +102,10 @@ class EDDecoder(object):
     def _step(self, encoded, encoded_seq_length, targets, state, is_training):
         '''take a single decoding step
 
-        encoded: the encoded inputs, this is a list of
+        encoded: the encoded inputs, this is a dictionary of
             [batch_size x time x ...] tensors
         encoded_seq_length: the sequence lengths of the encoded inputs
-            as a list of [batch_size] vectors
+            as a dictionary of [batch_size] vectors
         targets: the targets decoded in the previous step as a dictionary of
             [batch_size] vectors
         state: the state of the previous deocding step as a possibly nested
@@ -129,10 +128,10 @@ class EDDecoder(object):
         sequence
 
         Args:
-            encoded: the encoded inputs, this is a list of
+            encoded: the encoded inputs, this is a dictionary of
                 [batch_size x time x ...] tensors
             encoded_seq_length: the sequence lengths of the encoded inputs
-                as a list of [batch_size] vectors
+                as a dictionary of [batch_size] vectors
             targets: the targets used as decoder inputs as a dictionary of
                 [batch_size x time x ...] tensors
             target_seq_length: the sequence lengths of the targets
@@ -168,11 +167,10 @@ class EDDecoder(object):
                                  scope=self.scope.name)
 
     @abstractmethod
-    def get_output_dims(self, targetconfs, trainlabels):
+    def get_output_dims(self, trainlabels):
         '''get the decoder output dimensions
 
         args:
-            targetconfs: the target data confs
             trainlabels: the number of extra labels the trainer needs
 
         returns:

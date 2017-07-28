@@ -33,11 +33,13 @@ class Recognizer(object):
             self.model = pickle.load(fid)
 
         #get the database configurations
-        input_sections = [conf.get('recognizer', i)
+        input_sections = [conf.get('recognizer', i).split(' ')
                           for i in self.model.input_names]
         self.input_dataconfs = []
-        for section in input_sections:
-            self.input_dataconfs.append(dict(dataconf.items(section)))
+        for sectionset in input_sections:
+            self.input_dataconfs.append([])
+            for section in sectionset:
+                self.input_dataconfs[-1].append(dict(dataconf.items(section)))
 
         decoderconf = dict(conf.items('decoder'))
 
@@ -83,6 +85,10 @@ class Recognizer(object):
                 for i, d in enumerate(input_seq_length)}
 
             self.decoded = self.decoder(inputs, input_seq_length)
+
+            #create a histogram for all trainable parameters
+            for param in tf.trainable_variables():
+                tf.summary.histogram(param.name, param)
 
     def recognize(self):
         '''perform the recognition'''

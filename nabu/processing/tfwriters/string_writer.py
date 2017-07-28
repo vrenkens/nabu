@@ -1,11 +1,11 @@
 '''@file string_writer.py
-contains the ArrayWriter class'''
+contains the StringWriter class'''
 
 import tensorflow as tf
 import tfwriter
 
 class StringWriter(tfwriter.TfWriter):
-    '''a TfWriter to write numpy arrays'''
+    '''a TfWriter to write strings'''
 
     def _get_example(self, data):
         '''write data to a file

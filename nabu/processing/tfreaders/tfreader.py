@@ -9,15 +9,16 @@ class TfReader(object):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, datadir):
+    def __init__(self, datadirs):
         '''TfReader constructor
 
         Args:
-            datadir: the directory where the metadata was stored
+            datadirs: the directories where the metadata was stored as a list
+                of strings
         '''
 
         #read the metadata
-        self.metadata = self._read_metadata(datadir)
+        self.metadata = self._read_metadata(datadirs)
 
         #create the features object
         self.features = self._create_features()
@@ -50,11 +51,12 @@ class TfReader(object):
         return processed
 
     @abstractmethod
-    def _read_metadata(self, datadir):
+    def _read_metadata(self, datadirs):
         '''read the metadata for the reader (writen by the processor)
 
             Args:
-                datadir: the directory where the metadata was written
+                datadirs: the directories where the metadata was stored as a
+                    list of strings
 
             Returns:
                 the metadata as a dictionary

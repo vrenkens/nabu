@@ -1,7 +1,6 @@
 '''@file speller.py
 contains the speller functionality'''
 
-import os
 import tensorflow as tf
 from nabu.neuralnetworks.models.ed_decoders import ed_decoder
 from nabu.neuralnetworks.components import rnn_cell as rnn_cell_impl
@@ -57,7 +56,7 @@ class Speller(ed_decoder.EDDecoder):
         #create the decoder helper
         helper = tf.contrib.seq2seq.ScheduledEmbeddingTrainingHelper(
             inputs=one_hot_targets,
-            sequence_length=target_seq_length.values()[0],
+            sequence_length=target_seq_length.values()[0]+1,
             embedding=lambda ids: tf.one_hot(ids, output_dim,
                                              dtype=tf.float32),
             sampling_probability=float(self.conf['sample_prob'])
@@ -71,12 +70,19 @@ class Speller(ed_decoder.EDDecoder):
         )
 
         #use the decoder
-        logits, state = tf.contrib.seq2seq.dynamic_decode(decoder)
+        logits, state, logit_seq_length = tf.contrib.seq2seq.dynamic_decode(
+            decoder)
         logits = logits.rnn_output
+
+        #apply a linear output layer
+        logits = tf.contrib.layers.linear(
+            logits,
+            self.output_dims.values()[0],
+            scope='outlayer')
 
         return (
             {output_name: logits},
-            {output_name: target_seq_length.values()[0] + 1},
+            {output_name: logit_seq_length},
             state)
 
     def _step(self, encoded, encoded_seq_length, targets, state, is_training):
@@ -112,6 +118,12 @@ class Speller(ed_decoder.EDDecoder):
         #use the rnn_cell
         logits, state = rnn_cell(one_hot_targets, state)
 
+        #apply a linear output layer
+        logits = tf.contrib.layer.linear(
+            logits,
+            self.output_dims.values()[0],
+            'outlayer')
+
         return {output_name:logits}, state
 
     def create_cell(self, encoded, encoded_seq_length, is_training):
@@ -136,7 +148,7 @@ class Speller(ed_decoder.EDDecoder):
             #create the multilayered rnn cell
             rnn_cell = tf.contrib.rnn.LayerNormBasicLSTMCell(
                 num_units=int(self.conf['num_units']),
-                layer_norm=self.conf['layer_norm']=='True',
+                layer_norm=self.conf['layer_norm'] == 'True',
                 reuse=tf.get_variable_scope().reuse)
 
             rnn_cells.append(rnn_cell)
@@ -153,10 +165,9 @@ class Speller(ed_decoder.EDDecoder):
             )
 
             #add attention to the rnn cell
-            rnn_cell = tf.contrib.seq2seq.DynamicAttentionWrapper(
+            rnn_cell = tf.contrib.seq2seq.AttentionWrapper(
                 cell=rnn_cell,
-                attention_mechanism=attention_mechanism,
-                attention_size=self.output_dims.values()[0]
+                attention_mechanism=attention_mechanism
             )
 
             #wrap the rnn cell to make it a constant scope
@@ -186,11 +197,10 @@ class Speller(ed_decoder.EDDecoder):
 
         return zero_state
 
-    def get_output_dims(self, targetconfs, trainlabels):
+    def get_output_dims(self, trainlabels):
         '''get the decoder output dimensions
 
         args:
-            targetconfs: the target data confs
             trainlabels: the number of extra labels the trainer needs
 
         returns:
@@ -198,8 +208,7 @@ class Speller(ed_decoder.EDDecoder):
 
         #get the dimensions of all the targets
         output_dims = {}
-        for i, c in enumerate(targetconfs):
-            with open(os.path.join(c['dir'], 'dim')) as fid:
-                output_dims[self.outputs[i]] = int(fid.read()) + trainlabels
+        for i, d in enumerate(self.conf['output_dims'].split(' ')):
+            output_dims[self.outputs[i]] = int(d) + trainlabels
 
         return output_dims

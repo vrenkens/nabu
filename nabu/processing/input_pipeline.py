@@ -9,8 +9,7 @@ def get_filenames(dataconfs):
     '''create a list of filenames to put into the queue
 
     Args:
-        dataconf: the database configuration
-        sections: the used sections of the database
+        dataconfs: the database configurations as a list of lists
 
     Returns:
         - a list containing all the filenames
@@ -23,12 +22,13 @@ def get_filenames(dataconfs):
 
     #read all the names and files
     files = []
-    for dataconf in dataconfs:
+    for dataconfset in dataconfs:
         setfiles = dict()
-        with open(os.path.join(dataconf['dir'], 'pointers.scp')) as fid:
-            for line in fid:
-                (n, f) = line.strip().split('\t')
-                setfiles[n] = f
+        for i, dataconf in enumerate(dataconfset):
+            with open(os.path.join(dataconf['dir'], 'pointers.scp')) as fid:
+                for line in fid:
+                    (n, f) = line.strip().split('\t')
+                    setfiles['%s-%d' % (n, i)] = f
         files.append(setfiles)
 
     #loop over the first names and look for them in the other names. If not
@@ -61,6 +61,7 @@ def input_pipeline(data_queue, batch_size, numbuckets, dataconfs,
         batch_size: the desired batch size
         numbuckets: the number of data buckets
         dataconfs: the databes configuration sections that should be read
+            as a list of lists
         allow_smaller_final_batch: if set to True a smaller final batch is
             allowed
         name: name of the pipeline
@@ -84,7 +85,7 @@ def input_pipeline(data_queue, batch_size, numbuckets, dataconfs,
 
         with tf.variable_scope('read_data'):
             #create a seperate queue for each data element
-            for i, dataconf in enumerate(dataconfs):
+            for i, dataconfset in enumerate(dataconfs):
                 with tf.variable_scope('reader'):
 
                     queue = tf.FIFOQueue(
@@ -97,8 +98,12 @@ def input_pipeline(data_queue, batch_size, numbuckets, dataconfs,
                     enqueue_op = queue.enqueue(filenames[i])
 
                     #create a reader to read from the queue
-                    reader = tfreader_factory.factory(dataconf['type'])(
-                        dataconf['dir'])
+                    types = [dataconf['type'] for dataconf in dataconfset]
+                    if len(set(types)) > 1:
+                        raise Exception(
+                            'all data types in a set must be the same')
+                    dirs = [dataconf['dir'] for dataconf in dataconfset]
+                    reader = tfreader_factory.factory(types[0])(dirs)
 
                     if i == 0:
                         sequence_length_histogram = \

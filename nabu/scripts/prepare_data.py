@@ -4,28 +4,30 @@ does the data preperation for a single database'''
 import sys
 import os
 sys.path.append(os.getcwd())
-import gzip
+import subprocess
+import shutil
 from six.moves import configparser
 import tensorflow as tf
-from nabu.processing.processors import processor_factory
-from nabu.processing.tfwriters import tfwriter_factory
+import data
 
-tf.app.flags.DEFINE_string('recipe', None,
-                           'The directory containing the recipe')
-FLAGS = tf.app.flags.FLAGS
-
-def main(_):
+def main(expdir, recipe, computing):
     '''main method'''
 
-    if FLAGS.recipe is None:
+    if recipe is None:
         raise Exception('no recipe specified. Command usage: '
                         'nabu data --recipe=/path/to/recipe')
-    if not os.path.isdir(FLAGS.recipe):
-        raise Exception('cannot find recipe %s' % FLAGS.recipe)
+    if not os.path.isdir(recipe):
+        raise Exception('cannot find recipe %s' % recipe)
+    if expdir is None:
+        raise Exception('no expdir specified. Command usage: '
+                        'nabu data --expdir=/path/to/recipe '
+                        '--recipe=/path/to/recipe')
+    if computing not in ['standard', 'condor']:
+        raise Exception('unknown computing mode: %s' % computing)
 
     #read the data conf file
     parsed_cfg = configparser.ConfigParser()
-    parsed_cfg.read(os.path.join(FLAGS.recipe, 'database.conf'))
+    parsed_cfg.read(os.path.join(recipe, 'database.conf'))
 
     #loop over the sections in the data config
     for name in parsed_cfg.sections():
@@ -35,47 +37,46 @@ def main(_):
         #read the section
         conf = dict(parsed_cfg.items(name))
 
-        if not os.path.exists(conf['dir']):
-            os.makedirs(conf['dir'])
+        #create the expdir for this section
+        if not os.path.isdir(os.path.join(expdir, name)):
+            os.makedirs(os.path.join(expdir, name))
+
+        #create the database configuration
+        dataconf = configparser.ConfigParser()
+        dataconf.add_section(name)
+        for item in conf:
+            dataconf.set(name, item, conf[item])
+
+        with open(os.path.join(expdir, name, 'database.cfg'), 'w') as fid:
+            dataconf.write(fid)
+
+        #copy the processor config
+        shutil.copyfile(
+            conf['processor_config'],
+            os.path.join(expdir, name, 'processor.cfg'))
+
+        if computing == 'condor':
+            if not os.path.isdir(os.path.join(expdir, name, 'outputs')):
+                os.makedirs(os.path.join(expdir, name, 'outputs'))
+            subprocess.call(['condor_submit',
+                             'expdir=%s' % os.path.join(expdir, name),
+                             'nabu/computing/condor/dataprep.job'])
         else:
-            print '%s already exists, skipping this section' % conf['dir']
-            continue
+            data.main(expdir)
 
-        #read the processor config
-        parsed_proc_cfg = configparser.ConfigParser()
-        parsed_proc_cfg.read(conf['processor_config'])
-        proc_cfg = dict(parsed_proc_cfg.items('processor'))
-
-        #create a processor
-        processor = processor_factory.factory(proc_cfg['processor'])(proc_cfg)
-
-        #create a writer
-        writer = tfwriter_factory.factory(conf['type'])(conf['dir'])
-
-        #loop over the data files
-        for datafile in conf['datafiles'].split(' '):
-
-            if datafile[-3:] == '.gz':
-                open_fn = gzip.open
-            else:
-                open_fn = open
-
-            #loop over the lines in the datafile
-            for line in open_fn(datafile):
-
-                #split the name and the data line
-                splitline = line.strip().split(' ')
-                name = splitline[0]
-                dataline = ' '.join(splitline[1:])
-
-                #process the dataline
-                processed = processor(dataline)
-
-                #write the processed data to disk
-                writer.write(processed, name)
-
-        #write the metadata to file
-        processor.write_metadata(conf['dir'])
 
 if __name__ == '__main__':
-    tf.app.run()
+
+    tf.app.flags.DEFINE_string('expdir', None,
+                               'the exeriments directory'
+                              )
+    tf.app.flags.DEFINE_string('recipe', None,
+                               'The directory containing the recipe')
+    tf.app.flags.DEFINE_string('computing', 'standard',
+                               'the distributed computing system one of'
+                               ' condor'
+                              )
+
+    FLAGS = tf.app.flags.FLAGS
+
+    main(FLAGS.expdir, FLAGS.recipe, FLAGS.computing)

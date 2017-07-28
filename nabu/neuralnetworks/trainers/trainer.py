@@ -8,7 +8,7 @@ import cPickle as pickle
 import tensorflow as tf
 from nabu.processing import input_pipeline
 from nabu.neuralnetworks.models.model import Model
-from nabu.neuralnetworks.evaluators import evaluator_factory
+from nabu.neuralnetworks.evaluators import evaluator_factory, loss_evaluator
 from nabu.neuralnetworks.components import hooks
 
 class Trainer(object):
@@ -51,36 +51,47 @@ class Trainer(object):
         input_names = modelconf.get('io', 'inputs').split(' ')
         if input_names == ['']:
             input_names = []
-        input_sections = [conf[i] for i in input_names]
+        input_sections = [conf[i].split(' ') for i in input_names]
         input_dataconfs = []
-        for section in input_sections:
-            input_dataconfs.append(dict(dataconf.items(section)))
+        for sectionset in input_sections:
+            input_dataconfs.append([])
+            for section in sectionset:
+                input_dataconfs[-1].append(dict(dataconf.items(section)))
 
         output_names = conf['targets'].split(' ')
         if output_names == ['']:
             output_names = []
-        target_sections = [conf[o] for o in output_names]
+        target_sections = [conf[o].split(' ') for o in output_names]
         target_dataconfs = []
-        for section in target_sections:
-            target_dataconfs.append(dict(dataconf.items(section)))
+        for sectionset in target_sections:
+            target_dataconfs.append([])
+            for section in sectionset:
+                target_dataconfs[-1].append(dict(dataconf.items(section)))
 
         #create the model
         modelfile = os.path.join(expdir, 'model', 'model.pkl')
         with open(modelfile, 'wb') as fid:
             self.model = Model(
                 conf=modelconf,
-                targetconfs=target_dataconfs,
                 trainlabels=self.trainlabels)
             pickle.dump(self.model, fid)
 
         #create the evaluator
         evaltype = evaluatorconf.get('evaluator', 'evaluator')
         if evaltype != 'None':
-            evaluator = evaluator_factory.factory(evaltype)(
-                conf=evaluatorconf,
-                dataconf=dataconf,
-                model=self.model
-            )
+            if evaltype == 'loss_evaluator':
+                evaluator = loss_evaluator.LossEvaluator(
+                    conf=evaluatorconf,
+                    dataconf=dataconf,
+                    model=self.model,
+                    loss_function=self.compute_loss
+                )
+            else:
+                evaluator = evaluator_factory.factory(evaltype)(
+                    conf=evaluatorconf,
+                    dataconf=dataconf,
+                    model=self.model
+                )
 
         if 'local' in cluster.as_dict():
             num_replicas = 1
@@ -305,11 +316,8 @@ class Trainer(object):
                             name='validation_loss',
                             shape=[],
                             dtype=tf.float32,
-                            initializer=tf.constant_initializer(1.79e+308),
+                            initializer=tf.constant_initializer(0),
                             trainable=False)
-
-                        #create an op to reset the validation loss
-                        self.reset_val_loss = self.validation_loss.assign(0).op
 
                         #create a variable to save the last step where the model
                         #was validated
@@ -341,6 +349,18 @@ class Trainer(object):
                         #create an operation to updated the validated step
                         self.update_validated_step = validated_step.assign(
                             self.global_step).op
+
+                        #variable to hold the best validation loss so far
+                        self.best_validation = tf.get_variable(
+                            name='best_validation',
+                            shape=[],
+                            dtype=tf.float32,
+                            initializer=tf.constant_initializer(1.79e+308),
+                            trainable=False)
+
+                        #op to update the best velidation loss
+                        self.update_best = self.best_validation.assign(
+                            self.validation_loss).op
 
                         #a variable that holds the amount of workers at the
                         #validation point
@@ -458,11 +478,11 @@ class Trainer(object):
                                    % self.task_index)
 
                             #get the previous validation loss
-                            prev_val_loss = self.validation_loss.eval(
+                            prev_val_loss = self.best_validation.eval(
                                 session=sess)
 
                             #reset the validation loss
-                            self.reset_val_loss.run(session=sess)
+                            self.validation_loss.initializer.run(session=sess)
 
                             #compute the validation loss
                             for _ in range(self.valbatches):
@@ -485,6 +505,7 @@ class Trainer(object):
                                 #worse
                                 if self.conf['num_tries'] != 'None':
                                     if num_tries == int(self.conf['num_tries']):
+                                        validation_hook.restore()
                                         print ('WORKER %d: terminating training'
                                                % self.task_index)
                                         self.terminate.run(session=sess)
@@ -506,6 +527,8 @@ class Trainer(object):
 
                                     #load the previous model
                                     validation_hook.restore()
+                                else:
+                                    self.update_validated_step.run(session=sess)
 
 
                                 if self.conf['valid_adapt'] == 'True':
@@ -520,6 +543,7 @@ class Trainer(object):
 
                                 #set the validated step
                                 self.update_validated_step.run(session=sess)
+                                self.update_best.run(session=sess)
                                 self.reset_waiting.run(session=sess)
 
                                 #store the validated model

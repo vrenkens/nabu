@@ -3,6 +3,7 @@ contains the DNN class'''
 
 import tensorflow as tf
 import ed_encoder
+from nabu.neuralnetworks.components.ops import mix
 
 class DNN(ed_encoder.EDEncoder):
     '''a DNN encoder'''
@@ -19,32 +20,39 @@ class DNN(ed_encoder.EDEncoder):
             is_training: whether or not the network is in training mode
 
         Returns:
-            - the outputs of the encoder as a list of [bath_size x time x ...]
-                tensors
-            - the sequence lengths of the outputs as a list of [batch_size]
-                tensors
+            - the outputs of the encoder as a dictionary of
+                [bath_size x time x ...] tensors
+            - the sequence lengths of the outputs as a dictionary of
+                [batch_size] tensors
         '''
 
-        #create the activation function
-        if self.conf['activation'] == 'relu':
-            activation_fn = tf.nn.relu
-        elif self.conf['activation'] == 'tanh':
-            activation_fn = tf.nn.tanh
-        else:
-            raise Exception('unexpected activation function %s' %
-                            self.conf['activation'])
+
+        #splice the features
+        spliced = {}
+        for inp in inputs:
+            times = [inputs[inp]]
+            for i in range(1, int(self.conf['context'])):
+                times.append(tf.pad(
+                    tensor=inputs[inp][:, i:, :],
+                    paddings=[[0, 0], [0, i], [0, 0]]))
+                times.append(tf.pad(
+                    tensor=inputs[inp][:, :-i, :],
+                    paddings=[[0, 0], [i, 0], [0, 0]]))
+            spliced[inp] = tf.concat(times, 2)
+
 
         #do the forward computation
         logits = {}
-        for inp in inputs:
+        for inp in spliced:
             with tf.variable_scope(inp):
-                logits[inp] = inputs[inp]
+                logits[inp] = spliced[inp]
                 for i in range(int(self.conf['num_layers'])):
-                    logits[inp] = tf.contrib.layers.linear(
+                    logits[inp] = tf.contrib.layers.fully_connected(
                         inputs=logits[inp],
                         num_outputs=int(self.conf['num_units']),
-                        activation_fn=activation_fn,
                         scope='layer%d' % i)
+                    if self.conf['layer_norm'] == 'True':
+                        logits[inp] = tf.contrib.layers.layer_norm(logits[inp])
                     if float(self.conf['dropout']) < 1 and is_training:
                         logits[inp] = tf.nn.dropout(logits[inp],
                                                     float(self.conf['dropout']))

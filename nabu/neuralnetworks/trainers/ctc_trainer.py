@@ -38,7 +38,7 @@ class CTCTrainer(trainer.Trainer):
                 sparse_targets = ops.dense_sequence_to_sparse(
                     targets[t], target_seq_length[t])
 
-                losses.append(tf.reduce_sum(tf.nn.ctc_loss(
+                losses.append(tf.reduce_mean(tf.nn.ctc_loss(
                     sparse_targets,
                     logits[t],
                     logit_seq_length[t],

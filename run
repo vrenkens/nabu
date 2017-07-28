@@ -5,7 +5,7 @@ arguments="${@:2}"
 basedir=$(dirname "$0")
 pwd=$(pwd)
 
-allowed="train test decode data"
+allowed="train test decode data sweep"
 
 if ! [[ $allowed =~ (^|[[:space:]])"$command"($|[[:space:]]) ]]; then
   echo "ERROR: unknown command $command"

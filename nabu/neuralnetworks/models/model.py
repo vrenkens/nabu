@@ -7,12 +7,11 @@ from ed_decoders import ed_decoder_factory
 class Model(object):
     '''a general class for an encoder decoder system'''
 
-    def __init__(self, conf, targetconfs, trainlabels):
+    def __init__(self, conf, trainlabels):
         '''Model constructor
 
         Args:
             conf: The model configuration as a configparser object
-            targetconfs: the data configurations for the targets
             trainlabels: the number of extra labels required by the trainer
         '''
 
@@ -31,7 +30,7 @@ class Model(object):
         #create the decoder
         decoder_conf = dict(conf.items('decoder'))
         self.decoder = ed_decoder_factory.factory(decoder_conf['decoder'])(
-            decoder_conf, targetconfs, trainlabels, self.output_names)
+            decoder_conf, trainlabels, self.output_names)
 
     def __call__(self, inputs, input_seq_length, targets,
                  target_seq_length, is_training):
@@ -47,14 +46,14 @@ class Model(object):
             targets: the targets to the neural network, this is a dictionary of
                 [batch_size x time x ...] tensors.
             target_seq_length: The sequence lengths of the target utterances,
-                this is a list of [batch_size] vectors
+                this is a dictionary of [batch_size] vectors
             is_training: whether or not the network is in training mode
 
         Returns:
-            - output logits, which is a list of [batch_size x time x ...]
+            - output logits, which is a dictionary of [batch_size x time x ...]
                 tensors
-            - the output logits sequence lengths which is a list of [batch_size]
-                vectors
+            - the output logits sequence lengths which is a dictionary of
+                [batch_size] vectors
         '''
 
         #compute the high level features

@@ -43,10 +43,10 @@ class Listener(ed_encoder.EDEncoder):
             is_training: whether or not the network is in training mode
 
         Returns:
-            - the outputs of the encoder as a list of [bath_size x time x ...]
-                tensors
-            - the sequence lengths of the outputs as a list of [batch_size]
-                tensors
+            - the outputs of the encoder as a dictionary of
+                [bath_size x time x ...] tensors
+            - the sequence lengths of the outputs as a dictionary of
+                [batch_size] tensors
         '''
 
 

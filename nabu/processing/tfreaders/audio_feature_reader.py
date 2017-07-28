@@ -9,7 +9,7 @@ import tfreader
 class AudioFeatureReader(tfreader.TfReader):
     '''reader for audio features'''
 
-    def _read_metadata(self, datadir):
+    def _read_metadata(self, datadirs):
         '''read the mean and std for normalization and the input dimension
 
             Args:
@@ -21,18 +21,33 @@ class AudioFeatureReader(tfreader.TfReader):
 
         metadata = dict()
 
-        #read the sequence length histogram
-        with open(os.path.join(datadir,
-                               'sequence_length_histogram.npy')) as fid:
-            metadata['sequence_length_histogram'] = np.load(fid)
+        #read the maximum lengths
+        max_lengths = []
+        for datadir in datadirs:
+            with open(os.path.join(datadir, 'max_length')) as fid:
+                max_lengths.append(int(fid.read()))
+        metadata['max_length'] = max(max_lengths)
 
-        #read the input dim
-        with open(os.path.join(datadir, 'dim')) as fid:
+        #read the sequence length histograms
+        metadata['sequence_length_histogram'] = np.zeros(
+            [metadata['max_length'] + 1])
+        for datadir in datadirs:
+            with open(os.path.join(datadir,
+                                   'sequence_length_histogram.npy')) as fid:
+                histogram = np.load(fid)
+                metadata['sequence_length_histogram'][:histogram.shape[0]] += (
+                    histogram
+                )
+
+        #read the dimension of the data
+        with open(os.path.join(datadirs[0], 'dim')) as fid:
             metadata['dim'] = int(fid.read())
+        for datadir in datadirs:
+            with open(os.path.join(datadir, 'dim')) as fid:
+                if metadata['dim'] != int(fid.read()):
+                    raise Exception(
+                        'all audio feature reader dimensions must be the same')
 
-        #read the maximum length
-        with open(os.path.join(datadir, 'max_length')) as fid:
-            metadata['max_length'] = int(fid.read())
 
         return metadata
 

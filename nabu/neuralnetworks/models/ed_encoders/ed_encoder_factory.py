@@ -1,7 +1,8 @@
 '''@file ed_encoder_factory.py
 contains the EDEncoder factory'''
 
-from . import listener, dummy_encoder, dblstm, dnn, listener_ps
+from . import listener, dummy_encoder, dblstm, dnn, listener_ps,\
+bottleneck_encoder
 
 def factory(encoder):
     '''get an EDEncoder class
@@ -22,5 +23,7 @@ def factory(encoder):
         return dblstm.DBLSTM
     elif encoder == 'dnn':
         return dnn.DNN
+    elif encoder == 'bottleneck_encoder':
+        return bottleneck_encoder.BottleneckEncoder
     else:
         raise Exception('undefined encoder type: %s' % encoder)

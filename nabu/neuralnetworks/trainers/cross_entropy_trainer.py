@@ -32,6 +32,7 @@ class CrossEntropyTrainer(trainer.Trainer):
             a scalar value containing the loss
         '''
 
+
         with tf.name_scope('cross_entropy_loss'):
             losses = []
 
@@ -42,10 +43,12 @@ class CrossEntropyTrainer(trainer.Trainer):
                 #create the stacked targets
                 stacked_targets = ops.seq2nonseq(targets[t],
                                                  target_seq_length[t])
+                stacked_targets = tf.cast(stacked_targets, tf.int32)
 
-                losses.append(tf.nn.sparse_softmax_cross_entropy_with_logits(
-                    logits=stacked_logits,
-                    labels=stacked_targets))
+                losses.append(tf.reduce_mean(
+                    tf.nn.sparse_softmax_cross_entropy_with_logits(
+                        logits=stacked_logits,
+                        labels=stacked_targets)))
 
             loss = tf.reduce_sum(losses)
 

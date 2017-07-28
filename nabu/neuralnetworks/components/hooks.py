@@ -1,7 +1,6 @@
 '''@file hooks.py
 contains session hooks'''
 
-import time
 import tensorflow as tf
 
 class LoadAtBegin(tf.train.SessionRunHook):

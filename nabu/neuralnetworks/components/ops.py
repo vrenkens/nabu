@@ -190,3 +190,44 @@ def get_indices(sequence_length):
                                    tf.expand_dims(sequence_length, numdims)))
 
     return indices
+
+def mix(inputs, hidden_dim, scope=None):
+    '''mix the layer in the time dimension'''
+
+    with tf.variable_scope(scope or 'mix'):
+
+        #append the possition to the inputs
+        position = tf.expand_dims(tf.expand_dims(tf.range(
+            tf.shape(inputs)[1]), 0), 2)
+        position = tf.cast(position, tf.float32)
+        position = tf.tile(position, [tf.shape(inputs)[0], 1, 1])
+        expanded_inputs = tf.concat([inputs, position], 2)
+
+        #apply the querry layer
+        query = tf.contrib.layers.linear(expanded_inputs, hidden_dim,
+                                         scope='query')
+
+        #apply the attention layer
+        queried = tf.contrib.layers.linear(expanded_inputs, hidden_dim,
+                                           scope='queried')
+
+        #create a sum for every combination of query and attention
+        query = tf.expand_dims(query, 0)
+        query = tf.tile(query, [tf.shape(query)[2], 1, 1, 1])
+        summed = tf.transpose(tf.nn.tanh(query + queried), [1, 2, 0, 3])
+
+        #map the combinations to single values
+        attention = tf.contrib.layers.fully_connected(
+            inputs=summed,
+            num_outputs=1,
+            scope='attention',
+            activation_fn=tf.nn.tanh
+        )[:, :, :, 0]
+
+        #apply softmax to the attention values
+        attention = tf.nn.softmax(attention)
+
+        #use the attention to recombine the inputs
+        outputs = tf.matmul(attention, inputs)
+
+    return outputs

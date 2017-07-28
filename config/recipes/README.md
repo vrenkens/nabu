@@ -5,7 +5,7 @@ for a specific database. Nabu alleady contains several pre-designed recipes,
 but you can design your own recipes with little effort. A recipe contains
 the following configurations files:
 
-- database.cfg: This is the database configuration. For every set of data
+- database.conf: This is the database configuration. For every set of data
 (training features, training text, testing features ...) it contains a section
 that specifies where to read and write the data in your file system and wich
 processors should be used to process the data. Every recipe contains a template

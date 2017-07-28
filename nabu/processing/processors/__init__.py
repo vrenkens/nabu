@@ -1,4 +1,5 @@
 '''@package processors
 contains the data processors'''
 
-from . import processor, processor_factory, audio_processor, text_processor
+from . import processor, processor_factory, audio_processor, text_processor,\
+binary_processor, alignment_processor

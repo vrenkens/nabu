@@ -1,7 +1,8 @@
 '''@file processor_factory.py
 contains the Processor factory method'''
 
-from . import audio_processor, text_processor
+from . import audio_processor, text_processor, binary_processor, \
+alignment_processor
 
 def factory(processor):
     '''gets a Processor class
@@ -16,5 +17,9 @@ def factory(processor):
         return audio_processor.AudioProcessor
     elif processor == 'text_processor':
         return text_processor.TextProcessor
+    elif processor == 'binary_processor':
+        return binary_processor.BinaryProcessor
+    elif processor == 'alignment_processor':
+        return alignment_processor.AlignmentProcessor
     else:
         raise Exception('unknown processor type: %s' % processor)
