@@ -10,14 +10,15 @@ lattice_beam=8.0 # Beam we use in lattice generation.
 num_threads=1 # if >1, will use gmm-latgen-faster-parallel
 minimize=false
 
-#the directory used in train gmm
-traindir=$1
+
 #the directory where the data is stored
-datadir=$2
-#the directory where the outputs should be stored
-outputs=$3
+datadir=$1
+#the directory used in train gmm
+traindir=$2
 #the directory containing the log likelihoods
-loglikes=$4
+loglikes=$3
+#the directory where the outputs should be stored
+outputs=$4
 #location of the kaldi root directory
 kaldi=$5
 

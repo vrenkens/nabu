@@ -62,7 +62,7 @@ def main(expdir, recipe, computing):
                              'expdir=%s' % os.path.join(expdir, name),
                              'nabu/computing/condor/dataprep.job'])
         else:
-            data.main(expdir)
+            data.main(os.path.join(expdir, name))
 
 
 if __name__ == '__main__':
