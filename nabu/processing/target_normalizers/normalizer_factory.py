@@ -19,5 +19,7 @@ def factory(normalizer):
         return phones.normalize
     elif normalizer == 'character':
         return character.normalize
+    elif normalize == 'gp':
+        return gp.normalize
     else:
         raise Exception('Undefined normalizer: %s' % normalizer)
