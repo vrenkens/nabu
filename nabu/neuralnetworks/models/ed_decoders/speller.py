@@ -188,14 +188,12 @@ class Speller(ed_decoder.EDDecoder):
             the decoder zero state as a possibly nested tupple
                 of [batch_size x ... ] tensors'''
 
-        rnn_cell = self.create_cell(None, None, False)
-        cell_state = rnn_cell.zero_state(batch_size, tf.float32)
-        attention = tf.zeros([batch_size, self.output_dims.values()[0]])
-        zero_state = tf.contrib.seq2seq.DynamicAttentionWrapperState(
-            cell_state=cell_state,
-            attention=attention)
+        rnn_cell = self.create_cell(
+            tf.zeros([batch_size, 0, encoded_dim]),
+            tf.zeros([batch_size]),
+            False)
 
-        return zero_state
+        return rnn_cell.zero_state(batch_size, tf.float32)
 
     def get_output_dims(self, trainlabels):
         '''get the decoder output dimensions
