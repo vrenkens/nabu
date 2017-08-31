@@ -180,7 +180,7 @@ class Speller(ed_decoder.EDDecoder):
         '''get the decoder zero state
 
         Args:
-            encoded_dim: the dimension of the encoded sequence as a list of
+            encoded_dim: the dimension of the encoded dict of
                 integers
             batch size: the batch size as a scalar Tensor
 
@@ -188,8 +188,13 @@ class Speller(ed_decoder.EDDecoder):
             the decoder zero state as a possibly nested tupple
                 of [batch_size x ... ] tensors'''
 
+
+
+        encoded = {name:tf.zeros([batch_size, 0, encoded_dim[name]])
+                   for name in encoded_dim}
+
         rnn_cell = self.create_cell(
-            tf.zeros([batch_size, 0, encoded_dim]),
+            encoded,
             tf.zeros([batch_size]),
             False)
 
