@@ -2,7 +2,7 @@
 contains the decoder factory'''
 
 from . import ctc_decoder, beam_search_decoder, max_decoder, threshold_decoder,\
-feature_decoder, alignment_decoder
+feature_decoder, alignment_decoder,new_beam_search_decoder
 
 def factory(decoder):
     '''

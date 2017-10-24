@@ -12,7 +12,6 @@ from nabu.neuralnetworks.components.hooks import LoadAtBegin, SummaryHook
 
 def test(expdir):
     '''does everything for testing'''
-
     #read the database config file
     database_cfg = configparser.ConfigParser()
     database_cfg.read(os.path.join(expdir, 'database.cfg'))
@@ -51,7 +50,6 @@ def test(expdir):
         #start the session
         with tf.train.SingularMonitoredSession(
             hooks=[load_hook, summary_hook]) as sess:
-
             loss = 0.0
             for _ in range(numbatches):
                 loss += batch_loss.eval(session=sess)

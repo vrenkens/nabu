@@ -158,6 +158,18 @@ class EDDecoder(object):
         Returns:
             the decoder zero state as a possibly nested tupple
                 of [batch_size x ... ] tensors'''
+    # @abstractmethod
+    # def create_cell(self, encoded_dim, batch_size):
+    #     '''get the decoder cell
+    #
+    #     Args:
+    #         encoded_dim: the dimension of the encoded sequence as a list of
+    #             integers
+    #         batch size: the batch size as a scalar Tensor
+    #
+    #     Returns:
+    #         the decoder zero state as a possibly nested tupple
+    #             of [batch_size x ... ] tensors'''
 
     @property
     def variables(self):
