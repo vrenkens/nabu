@@ -46,11 +46,12 @@ class BeamSearchDecoder(decoder.Decoder):
                 is_training=False)
 
             #repeat the encoded inputs for all beam elements
-            encoded = {e:_stack_beam(tf.stack(
-                [encoded[e]]*beam_width, axis=1)) for e in encoded}
-            encoded_seq_length = {e:_stack_beam(tf.stack(
-                [encoded_seq_length[e]]*beam_width, axis=1))
-                                  for e in encoded_seq_length}
+            encoded = {e:tf.contrib.seq2seq.tile_batch(encoded[e],
+                beam_width)
+                for e in encoded}
+            encoded_seq_length = {e:tf.contrib.seq2seq.tile_batch(
+                encoded_seq_length[e],beam_width)
+                for e in encoded_seq_length}
 
 
             #Use the scope of the decoder so the rnn_cells get reused
@@ -123,12 +124,16 @@ class BeamSearchDecoder(decoder.Decoder):
         '''
         #create sparse representaions of predictions and remove EOS token
         c = outputs.values()[0][0].predicted_ids[:,:,0]
+        c = tf.Print(c,[c],"predicted", summarize = 50)
         d = outputs.values()[0][1][:, 0] - 1
+        d = tf.Print(d,[d],"predicted-lengths",summarize = 32)
         predicts = dense_sequence_to_sparse(c, d)
 
         #create sparse representaion of references
         a = reference_seq_length.values()[0]
+        a = tf.Print(a,[a],"target-lengths",summarize = 32)
         b = references.values()[0]
+        b = tf.Print(b,[b],"targets",summarize = 50)
         labels = dense_sequence_to_sparse(
             b, a)
 

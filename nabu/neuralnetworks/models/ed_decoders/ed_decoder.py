@@ -175,8 +175,16 @@ class EDDecoder(object):
     def variables(self):
         '''get a list of the models's variables'''
 
-        return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
-                                 scope=self.scope.name)
+        '''get a list of the models's variables'''
+
+        variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
+                                      scope=self.scope.name)
+
+        if hasattr(self, 'wrapped'):
+            #pylint: disable=E1101
+            variables += self.wrapped.variables
+
+        return variables
 
     @abstractmethod
     def get_output_dims(self, trainlabels):
