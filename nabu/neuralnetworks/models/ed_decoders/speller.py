@@ -74,12 +74,6 @@ class Speller(ed_decoder.EDDecoder):
             decoder)
         logits = logits.rnn_output
 
-        #apply a linear output layer
-        logits = tf.contrib.layers.linear(
-            logits,
-            self.output_dims.values()[0],
-            scope='outlayer')
-
         return (
             {output_name: logits},
             {output_name: logit_seq_length},
@@ -118,15 +112,9 @@ class Speller(ed_decoder.EDDecoder):
         #use the rnn_cell
         logits, state = rnn_cell(one_hot_targets, state)
 
-        #apply a linear output layer
-        logits = tf.contrib.layer.linear(
-            logits,
-            self.output_dims.values()[0],
-            'outlayer')
-
         return {output_name:logits}, state
 
-    def create_cell(self, encoded, encoded_seq_length, is_training):
+    def create_cell(self, encoded, encoded_seq_length, _):
         '''create the rnn cell
 
         Args:
@@ -172,6 +160,13 @@ class Speller(ed_decoder.EDDecoder):
             #wrap the rnn cell to make it a constant scope
             rnn_cell = rnn_cell_impl.ScopeRNNCellWrapper(
                 rnn_cell, self.scope.name + '/rnn_cell')
+
+
+        #add an output layer to the rnn cell
+        rnn_cell = tf.contrib.rnn.OutputProjectionWrapper(
+            rnn_cell,
+            output_size=self.output_dims.values()[0],
+            reuse=tf.get_variable_scope().reuse)
 
         return rnn_cell
 

@@ -2,7 +2,7 @@
 Contains the normalizer factory
 '''
 
-from . import character, aurora4, phones
+from . import character, aurora4, phones, gp
 
 def factory(normalizer):
     '''get a normalizer class
@@ -19,5 +19,7 @@ def factory(normalizer):
         return phones.normalize
     elif normalizer == 'character':
         return character.normalize
+    elif normalizer == 'gp':
+        return gp.normalize
     else:
         raise Exception('Undefined normalizer: %s' % normalizer)
