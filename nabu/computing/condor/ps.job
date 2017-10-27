@@ -8,8 +8,6 @@ RequestMemory    = 2G
 +RequestWalltime = 604800
 Requirements = machineowner == "Visics"
 
-#Specfy nice user behavior
-NiceUser = true
 #Send an email in case of an error
 Notification = Error
 

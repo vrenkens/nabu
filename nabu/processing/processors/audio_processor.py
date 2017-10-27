@@ -47,18 +47,28 @@ class AudioProcessor(processor.Processor):
         #mean and variance normalize the features
         features = (features-np.mean(features, 0))/np.std(features, 0)
 
-        #update the metadata
-        self.max_length = max(self.max_length, features.shape[0])
-        seq_length = features.shape[0]
-        if seq_length >= self.sequence_length_histogram.shape[0]:
-            self.sequence_length_histogram = np.concatenate(
-                [self.sequence_length_histogram, np.zeros(
-                    seq_length-self.sequence_length_histogram.shape[0]+1,
-                    dtype=np.int32)]
-            )
-        self.sequence_length_histogram[seq_length] += 1
+        if self.conf['max_length'] != 'None':
+            max_length = int(self.conf['max_length'])
+        else:
+            max_length = None
 
-        return features
+        if max_length and features.shape[0] <= max_length:
+
+            #update the metadata
+            self.max_length = max(self.max_length, features.shape[0])
+            seq_length = features.shape[0]
+            if seq_length >= self.sequence_length_histogram.shape[0]:
+                self.sequence_length_histogram = np.concatenate(
+                    [self.sequence_length_histogram, np.zeros(
+                        seq_length-self.sequence_length_histogram.shape[0]+1,
+                        dtype=np.int32)]
+                )
+            self.sequence_length_histogram[seq_length] += 1
+
+            return features
+
+        else:
+            return None
 
     def write_metadata(self, datadir):
         '''write the processor metadata to disk

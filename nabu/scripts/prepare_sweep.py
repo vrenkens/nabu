@@ -45,6 +45,9 @@ def main(sweep, command, expdir, recipe, mode, computing):
             mode
         ))
 
+    #delete the recipe folder
+    shutil.rmtree(os.path.join(expdir, 'recipe'))
+
 if __name__ == '__main__':
     tf.app.flags.DEFINE_string('expdir', None,
                                'the exeriments directory'

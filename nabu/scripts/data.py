@@ -21,12 +21,6 @@ def main(expdir):
     #read the section
     conf = dict(parsed_cfg.items(name))
 
-    if not os.path.exists(conf['dir']):
-        os.makedirs(conf['dir'])
-    else:
-        print '%s already exists, skipping this section' % conf['dir']
-        return
-
     #read the processor config
     parsed_proc_cfg = configparser.ConfigParser()
     parsed_proc_cfg.read(os.path.join(expdir, 'processor.cfg'))
@@ -58,7 +52,8 @@ def main(expdir):
             processed = processor(dataline)
 
             #write the processed data to disk
-            writer.write(processed, name)
+            if processed is not None:
+                writer.write(processed, name)
 
     #write the metadata to file
     processor.write_metadata(conf['dir'])

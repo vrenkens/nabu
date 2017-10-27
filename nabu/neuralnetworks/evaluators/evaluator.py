@@ -73,7 +73,7 @@ class Evaluator(object):
                 capacity=batch_size*2)
 
             #create the input pipeline
-            data, seq_length = input_pipeline.input_pipeline(
+            data, seq_length, _ = input_pipeline.input_pipeline(
                 data_queue=data_queue,
                 batch_size=batch_size,
                 numbuckets=1,

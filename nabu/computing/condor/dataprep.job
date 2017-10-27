@@ -8,8 +8,6 @@ RequestMemory    = 4G
 +RequestWalltime = 604800
 
 
-#Specfy nice user behavior
-NiceUser = true
 #Send an email in case of an error
 Notification = Error
 

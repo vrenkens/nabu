@@ -10,27 +10,6 @@ class Listener(ed_encoder.EDEncoder):
 
     transforms input features into a high level representation'''
 
-    def __init__(self, conf, name=None):
-        '''Listener constructor
-
-        Args:
-            conf: the encoder configuration
-            name: the encoder name'''
-
-
-        #create the pblstm layer
-        self.pblstm = layer.PBLSTMLayer(
-            num_units=int(conf['num_units']),
-            num_steps=int(conf['pyramid_steps']),
-            layer_norm=conf['pyramid_steps']=='True')
-
-        #create the blstm layer
-        self.blstm = layer.BLSTMLayer(
-            num_units=int(conf['num_units']),
-            layer_norm=conf['pyramid_steps']=='True')
-
-        super(Listener, self).__init__(conf, name)
-
     def encode(self, inputs, input_seq_length, is_training):
         '''
         Create the variables and do the forward computation
@@ -67,16 +46,22 @@ class Listener(ed_encoder.EDEncoder):
                 outputs = noisy_inputs
                 output_seq_lengths = input_seq_length[inp]
                 for l in range(int(self.conf['num_layers'])):
-                    outputs, output_seq_lengths = self.pblstm(
-                        outputs, output_seq_lengths, 'layer%d' % l)
+                    outputs, output_seq_lengths = layer.pblstm(
+                        inputs=outputs,
+                        sequence_length=output_seq_lengths,
+                        num_units=int(self.conf['num_units']),
+                        num_steps=int(self.conf['pyramid_steps']),
+                        scope='layer%d' % l)
 
                     if float(self.conf['dropout']) < 1 and is_training:
                         outputs = tf.nn.dropout(
                             outputs, float(self.conf['dropout']))
 
-                outputs = self.blstm(
-                    outputs, output_seq_lengths,
-                    'layer%d' % int(self.conf['num_layers']))
+                outputs = layer.blstm(
+                    inputs=outputs,
+                    sequence_length=output_seq_lengths,
+                    num_units=int(self.conf['num_units']),
+                    scope='layer%d' % int(self.conf['num_layers']))
 
                 if float(self.conf['dropout']) < 1 and is_training:
                     outputs = tf.nn.dropout(outputs,

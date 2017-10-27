@@ -37,6 +37,12 @@ def main(expdir, recipe, computing):
         #read the section
         conf = dict(parsed_cfg.items(name))
 
+        if not os.path.exists(conf['dir']):
+            os.makedirs(conf['dir'])
+        else:
+            print '%s already exists, skipping this section' % conf['dir']
+            continue
+
         #create the expdir for this section
         if not os.path.isdir(os.path.join(expdir, name)):
             os.makedirs(os.path.join(expdir, name))

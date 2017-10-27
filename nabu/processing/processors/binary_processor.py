@@ -26,23 +26,33 @@ class BinaryProcessor(processor.Processor):
             dataline: a line of text
 
         Returns:
-            The normalized text as a string'''
+            The binary data as an array'''
 
         split = dataline.split(' ')
         seq_length = len(split)
         binary = np.array(map(int, split)).astype(np.uint8)
 
-        #update the metadata
-        self.max_length = max(self.max_length, seq_length)
-        if seq_length >= self.sequence_length_histogram.shape[0]:
-            self.sequence_length_histogram = np.concatenate(
-                [self.sequence_length_histogram, np.zeros(
-                    seq_length-self.sequence_length_histogram.shape[0]+1,
-                    dtype=np.int32)]
-            )
-        self.sequence_length_histogram[seq_length] += 1
+        if self.conf['max_length'] != 'None':
+            max_length = int(self.conf['max_length'])
+        else:
+            max_length = None
 
-        return binary
+        if max_length and seq_length <= max_length:
+
+            #update the metadata
+            self.max_length = max(self.max_length, seq_length)
+            if seq_length >= self.sequence_length_histogram.shape[0]:
+                self.sequence_length_histogram = np.concatenate(
+                    [self.sequence_length_histogram, np.zeros(
+                        seq_length-self.sequence_length_histogram.shape[0]+1,
+                        dtype=np.int32)]
+                )
+            self.sequence_length_histogram[seq_length] += 1
+
+            return binary
+
+        else:
+            return None
 
     def write_metadata(self, datadir):
         '''write the processor metadata to disk

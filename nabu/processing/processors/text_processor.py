@@ -43,18 +43,27 @@ class TextProcessor(processor.Processor):
             dataline,
             self.alphabet + [self.nonesymbol])
 
-        #update the metadata
-        self.max_length = max(self.max_length, len(normalized.split(' ')))
         seq_length = len(normalized.split(' '))
-        if seq_length >= self.sequence_length_histogram.shape[0]:
-            self.sequence_length_histogram = np.concatenate(
-                [self.sequence_length_histogram, np.zeros(
-                    seq_length-self.sequence_length_histogram.shape[0]+1,
-                    dtype=np.int32)]
-            )
-        self.sequence_length_histogram[seq_length] += 1
 
-        return normalized
+        if self.conf['max_length'] != 'None':
+            max_length = int(self.conf['max_length'])
+        else:
+            max_length = None
+
+        if max_length and seq_length <= max_length:
+            #update the metadata
+            self.max_length = max(self.max_length, seq_length)
+            if seq_length >= self.sequence_length_histogram.shape[0]:
+                self.sequence_length_histogram = np.concatenate(
+                    [self.sequence_length_histogram, np.zeros(
+                        seq_length-self.sequence_length_histogram.shape[0]+1,
+                        dtype=np.int32)]
+                )
+            self.sequence_length_histogram[seq_length] += 1
+
+            return normalized
+        else:
+            return None
 
     def write_metadata(self, datadir):
         '''write the processor metadata to disk

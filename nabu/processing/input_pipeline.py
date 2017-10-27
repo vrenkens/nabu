@@ -1,7 +1,9 @@
 '''@file input_pipeline.py
 contains the methotology for creating the input pipeline'''
 
+from __future__ import division
 import os
+import numpy as np
 import tensorflow as tf
 from tfreaders import tfreader_factory
 
@@ -52,8 +54,14 @@ def get_filenames(dataconfs):
 
     return data_queue_elements, names
 
-def input_pipeline(data_queue, batch_size, numbuckets, dataconfs,
-                   allow_smaller_final_batch=False, name=None):
+def input_pipeline(
+    data_queue,
+    batch_size,
+    numbuckets,
+    dataconfs,
+    variable_batch_size=False,
+    allow_smaller_final_batch=False,
+    name=None):
     '''create the input pipeline
 
     Args:
@@ -62,13 +70,16 @@ def input_pipeline(data_queue, batch_size, numbuckets, dataconfs,
         numbuckets: the number of data buckets
         dataconfs: the databes configuration sections that should be read
             as a list of lists
+        variable_batch_size: bool, change batch size from bucket to bucket,
+            for buckets with higher seq_length a smaller batch size is used
         allow_smaller_final_batch: if set to True a smaller final batch is
             allowed
         name: name of the pipeline
 
     Returns:
         - the data elements as a list of [batch_size x ...] tensor
-        - the sequence lengths as a list of [batch_size] tensor'''
+        - the sequence lengths as a list of [batch_size] tensor
+        - the number of steps in each epoch'''
 
     with tf.variable_scope(name or 'input_pipeline'):
 
@@ -121,15 +132,33 @@ def input_pipeline(data_queue, batch_size, numbuckets, dataconfs,
         if numbuckets > 1:
             boundaries = bucket_boundaries(sequence_length_histogram,
                                            numbuckets)
+            if variable_batch_size:
+                batch_sizes = [
+                    max(int(batch_size*boundaries[0]/b), 1)
+                    for b in boundaries + [sequence_length_histogram.size]]
+
+                #compute the number of steps
+                numutt = [
+                    sequence_length_histogram[boundaries[i]:b].sum()
+                    for i, b in enumerate(boundaries[1:])]
+                numutt = (
+                    [sequence_length_histogram[:boundaries[0]].sum()] +
+                    numutt +
+                    [sequence_length_histogram[boundaries[-1]:].sum()])
+                num_steps = int((np.array(numutt)/np.array(batch_sizes)).sum())
+            else:
+                batch_sizes = int(batch_size)
+                num_steps = int(sequence_length_histogram.sum()/batch_sizes)
             _, batches = tf.contrib.training.bucket_by_sequence_length(
                 input_length=data[1],
                 tensors=data,
-                batch_size=int(batch_size),
+                batch_size=batch_sizes,
                 bucket_boundaries=boundaries,
                 allow_smaller_final_batch=allow_smaller_final_batch,
                 dynamic_pad=True
             )
         else:
+            num_steps = int(sequence_length_histogram.sum()/int(batch_size))
             batches = tf.train.batch(
                 tensors=data,
                 batch_size=int(batch_size),
@@ -141,7 +170,7 @@ def input_pipeline(data_queue, batch_size, numbuckets, dataconfs,
         data = batches[::2]
         seq_length = batches[1::2]
 
-        return data, seq_length
+        return data, seq_length, num_steps
 
 def bucket_boundaries(histogram, numbuckets):
     '''detemine the bucket boundaries to uniformally devide the number of

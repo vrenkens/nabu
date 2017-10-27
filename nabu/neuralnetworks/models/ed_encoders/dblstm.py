@@ -26,11 +26,6 @@ class DBLSTM(ed_encoder.EDEncoder):
                 [batch_size] tensors
         '''
 
-        #the blstm layer
-        blstm = layer.BLSTMLayer(
-            num_units=int(self.conf['num_units']))#,
-            #layer_norm=self.conf['layer_norm'] == 'True')
-
         #do the forward computation
 
         encoded = {}
@@ -47,8 +42,12 @@ class DBLSTM(ed_encoder.EDEncoder):
                     logits = inputs[inp]
 
                 for l in range(int(self.conf['num_layers'])):
-                    logits = blstm(logits, input_seq_length[inp],
-                                   'layer' + str(l))
+
+                    logits = layer.blstm(
+                        inputs=logits,
+                        sequence_length=input_seq_length[inp],
+                        num_units=int(self.conf['num_units']),
+                        scope='layer' + str(l))
 
                 if is_training and float(self.conf['dropout']) < 1:
                     logits = tf.nn.dropout(logits, float(self.conf['dropout']))

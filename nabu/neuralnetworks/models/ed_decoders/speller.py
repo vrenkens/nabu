@@ -146,9 +146,8 @@ class Speller(ed_decoder.EDDecoder):
         for _ in range(int(self.conf['num_layers'])):
 
             #create the multilayered rnn cell
-            rnn_cell = tf.contrib.rnn.LayerNormBasicLSTMCell(
+            rnn_cell = tf.contrib.rnn.LSTMCell(
                 num_units=int(self.conf['num_units']),
-                layer_norm=self.conf['layer_norm'] == 'True',
                 reuse=tf.get_variable_scope().reuse)
 
             rnn_cells.append(rnn_cell)

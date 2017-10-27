@@ -116,15 +116,6 @@ class Trainer(object):
         #define the placeholders in the graph
         with self.graph.as_default():
 
-            #create a local num_steps variable
-            self.num_steps = tf.get_variable(
-                name='num_steps',
-                shape=[],
-                dtype=tf.int32,
-                initializer=tf.constant_initializer(0),
-                trainable=False
-            )
-
             #a variable to hold the amount of steps already taken
             self.global_step = tf.get_variable(
                 name='global_step',
@@ -142,10 +133,9 @@ class Trainer(object):
 
             self.terminate = should_terminate.assign(True).op
 
-            #create a check if training should continue
-            self.should_stop = tf.logical_or(
-                tf.greater_equal(self.global_step, self.num_steps),
-                should_terminate)
+            #create an op that measures the memory usage
+            self.memory_usage = tf.contrib.memory_stats.MaxBytesInUse()
+            self.memory_limit = tf.contrib.memory_stats.BytesLimit()
 
             with tf.device(device):
 
@@ -164,13 +154,6 @@ class Trainer(object):
                         capacity=int(conf['batch_size'])*2,
                         shared_name='data_queue')
 
-                    #compute the number of steps
-                    num_steps = (int(conf['num_epochs'])*
-                                 len(data_queue_elements)/
-                                 int(conf['batch_size']))
-
-                    #set the number of steps
-                    self.set_num_steps = self.num_steps.assign(num_steps).op
                     self.done = tf.no_op()
 
                 else:
@@ -183,19 +166,6 @@ class Trainer(object):
                             name='data_queue',
                             dtypes=[tf.string],
                             shapes=[[]])
-
-                        #get the number of steps from the parameter server
-                        num_steps_queue = tf.FIFOQueue(
-                            capacity=num_replicas,
-                            dtypes=[tf.int32],
-                            shared_name='num_steps_queue',
-                            name='num_steps_queue',
-                            shapes=[[]]
-                        )
-
-                        #set the number of steps
-                        self.set_num_steps = self.num_steps.assign(
-                            num_steps_queue.dequeue()).op
 
                     #get the done queues
                     done_ops = []
@@ -217,12 +187,20 @@ class Trainer(object):
                 with tf.variable_scope('train'):
 
                     #create the input pipeline
-                    data, seq_length = input_pipeline.input_pipeline(
+                    data, seq_length, num_steps = input_pipeline.input_pipeline(
                         data_queue=data_queue,
                         batch_size=int(conf['batch_size']),
                         numbuckets=int(conf['numbuckets']),
-                        dataconfs=input_dataconfs + target_dataconfs
+                        dataconfs=input_dataconfs + target_dataconfs,
+                        variable_batch_size=(
+                            conf['variable_batch_size'] == 'True')
                     )
+                    self.num_steps = num_steps*int(conf['num_epochs'])
+
+                    #create a check if training should continue
+                    self.should_stop = tf.logical_or(
+                        tf.greater_equal(self.global_step, self.num_steps),
+                        should_terminate)
 
                     inputs = {
                         input_names[i]: d
@@ -462,9 +440,6 @@ class Trainer(object):
                 chief_only_hooks=[save_hook, validation_hook],
                 config=config) as sess:
 
-                #set the number of steps
-                self.set_num_steps.run(session=sess)
-
                 #start the training loop
                 #pylint: disable=E1101
                 while not (sess.should_stop() or
@@ -565,19 +540,24 @@ class Trainer(object):
                     start = time.time()
 
                     #update the model
-                    _, loss, lr, global_step, num_steps = sess.run(
-                        fetches=[self.update_op,
-                                 self.loss,
-                                 self.learning_rate,
-                                 self.global_step,
-                                 self.num_steps])
+                    _, loss, lr, global_step, memory, limit = \
+                        sess.run(
+                            fetches=[self.update_op,
+                                     self.loss,
+                                     self.learning_rate,
+                                     self.global_step,
+                                     self.memory_usage,
+                                     self.memory_limit])
 
-                    print(('WORKER %d: step %d/%d loss: %f, learning rate: %f, '
-                           'time elapsed: %f sec')
+                    print(('WORKER %d: step %d/%d loss: %f, learning rate: %f '
+                           '\n\t time elapsed: %f sec'
+                           '\n\t peak memory usage: %d/%d MB')
                           %(self.task_index,
                             global_step,
-                            num_steps,
-                            loss, lr, time.time()-start))
+                            self.num_steps,
+                            loss, lr, time.time()-start,
+                            memory/1e6,
+                            limit/1e6))
 
 class ParameterServer(object):
     '''a class for parameter servers'''
@@ -637,22 +617,6 @@ class ParameterServer(object):
                     capacity=int(conf['batch_size'])*(num_replicas+1),
                     shared_name='data_queue')
 
-                num_steps = (int(conf['num_epochs'])*len(data_queue_elements)/
-                             int(conf['batch_size']))
-
-                #create a queue to communicate the number of steps
-                num_steps_queue = tf.FIFOQueue(
-                    capacity=num_replicas,
-                    dtypes=[tf.int32],
-                    shapes=[[]],
-                    shared_name='num_steps_queue',
-                    name='num_steps_queue'
-                )
-
-                self.set_num_steps = num_steps_queue.enqueue_many(
-                    tf.constant([num_steps]*num_replicas)
-                )
-
                 #create a queue for the workers to signiy that they are done
                 done_queue = tf.FIFOQueue(
                     capacity=num_replicas,
@@ -674,8 +638,5 @@ class ParameterServer(object):
                 master=self.server.target,
                 is_chief=False,
                 scaffold=self.scaffold) as sess:
-
-                if self.task_index == 0:
-                    self.set_num_steps.run(session=sess)
 
                 self.wait_op.run(session=sess)

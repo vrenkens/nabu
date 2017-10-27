@@ -10,18 +10,6 @@ class ListenerPS(ed_encoder.EDEncoder):
 
     transforms input features into a high level representation'''
 
-    def __init__(self, conf, name=None):
-        '''ListenerPS constructor
-
-        Args:
-            conf: the encoder configuration
-            name: the encoder name'''
-
-        #create the blstm layer
-        self.blstm = layer.BLSTMLayer(int(conf['num_units']))
-
-        super(ListenerPS, self).__init__(conf, name)
-
     def encode(self, inputs, input_seq_length, is_training):
         '''
         Create the variables and do the forward computation
@@ -57,7 +45,11 @@ class ListenerPS(ed_encoder.EDEncoder):
                 output_seq_lengths = input_seq_length[inp]
                 for l in range(int(self.conf['num_layers'])):
                     with tf.variable_scope('layer%d' % l):
-                        outputs = self.blstm(outputs, output_seq_lengths)
+                        outputs = layer.blstm(
+                            inputs=outputs,
+                            sequence_length=output_seq_lengths,
+                            num_units=int(self.conf['num_units']),
+                            scope='layer' + str(l))
 
                         #apply projected subsampling
                         outputs, output_seq_lengths = \
@@ -75,9 +67,11 @@ class ListenerPS(ed_encoder.EDEncoder):
                         outputs = tf.nn.relu(outputs)
 
                 #apply final blstm layer
-                outputs = self.blstm(
-                    outputs, output_seq_lengths,
-                    'layer%d' % int(self.conf['num_layers']))
+                outputs = layer.blstm(
+                    inputs=outputs,
+                    sequence_length=output_seq_lengths,
+                    num_units=int(self.conf['num_units']),
+                    scope='layer%d' % int(self.conf['num_layers']))
 
                 encoded[inp] = outputs
                 encoded_seq_length[inp] = output_seq_lengths

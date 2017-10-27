@@ -33,20 +33,30 @@ class AlignmentProcessor(processor.Processor):
 
         #normalize the line
         alignments = np.array(map(int, dataline.split()))
-
-        #update the metadata
         seq_length = alignments.size
-        self.max_length = max(self.max_length, seq_length)
-        if seq_length >= self.sequence_length_histogram.shape[0]:
-            self.sequence_length_histogram = np.concatenate(
-                [self.sequence_length_histogram, np.zeros(
-                    seq_length-self.sequence_length_histogram.shape[0]+1,
-                    dtype=np.int32)]
-            )
-        self.sequence_length_histogram[seq_length] += 1
-        self.dim = max(self.dim, alignments.max())
 
-        return alignments
+        if self.conf['max_length'] != 'None':
+            max_length = int(self.conf['max_length'])
+        else:
+            max_length = None
+
+        if max_length and seq_length <= max_length:
+
+            #update the metadata
+            self.max_length = max(self.max_length, seq_length)
+            if seq_length >= self.sequence_length_histogram.shape[0]:
+                self.sequence_length_histogram = np.concatenate(
+                    [self.sequence_length_histogram, np.zeros(
+                        seq_length-self.sequence_length_histogram.shape[0]+1,
+                        dtype=np.int32)]
+                )
+            self.sequence_length_histogram[seq_length] += 1
+            self.dim = max(self.dim, alignments.max())
+
+            return alignments
+        else:
+            
+            return None
 
     def write_metadata(self, datadir):
         '''write the processor metadata to disk

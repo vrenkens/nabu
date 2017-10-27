@@ -69,7 +69,7 @@ class Recognizer(object):
                 capacity=self.batch_size*2)
 
             #create the input pipeline
-            inputs, input_seq_length = input_pipeline.input_pipeline(
+            inputs, input_seq_length, _ = input_pipeline.input_pipeline(
                 data_queue=data_queue,
                 batch_size=self.batch_size,
                 numbuckets=1,
@@ -118,5 +118,8 @@ class Recognizer(object):
 
                     #write to disk
                     names = self.names[nameid:nameid+self.batch_size]
+
+                    #cut of the added index to the name
+                    names = ['-'.join(name.split('-')[:-1]) for name in names]
                     self.decoder.write(outputs, directory, names)
                     nameid += self.batch_size

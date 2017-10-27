@@ -32,7 +32,6 @@ class CrossEntropyTrainer(trainer.Trainer):
             a scalar value containing the loss
         '''
 
-
         with tf.name_scope('cross_entropy_loss'):
             losses = []
 
