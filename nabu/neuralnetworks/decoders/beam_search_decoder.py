@@ -41,11 +41,13 @@ class BeamSearchDecoder(decoder.Decoder):
             beam_width = int(self.conf['beam_width'])
             batch_size = tf.shape(inputs.values()[0])[0]
 
+            #the start and end tokens are the final output
             token_val = int(self.model.decoder.output_dims.values()[0]-1)
 
-            #start_tokens:vector with size batch_size
+            #start_tokens: vector with size batch_size
             start_tokens = tf.fill([batch_size], token_val)
 
+            #end token
             end_token = tf.constant(token_val, dtype=tf.int32)
 
             #encode the inputs [batch_size x output_length x output_dim]
@@ -55,13 +57,14 @@ class BeamSearchDecoder(decoder.Decoder):
                 is_training=False)
 
             #repeat the encoded inputs for all beam elements
-            encoded = {e:tf.contrib.seq2seq.tile_batch(
-                encoded[e],
-                beam_width)
-                       for e in encoded}
-            encoded_seq_length = {e:tf.contrib.seq2seq.tile_batch(
-                encoded_seq_length[e], beam_width)
-                                  for e in encoded_seq_length}
+            encoded = {
+                e:tf.contrib.seq2seq.tile_batch(encoded[e], beam_width)
+                for e in encoded}
+
+            encoded_seq_length = {
+                e:tf.contrib.seq2seq.tile_batch(encoded_seq_length[e],
+                                                beam_width)
+                for e in encoded_seq_length}
 
 
             #Use the scope of the decoder so the rnn_cells get reused
@@ -85,25 +88,26 @@ class BeamSearchDecoder(decoder.Decoder):
                     dtype=tf.float32)
 
                 #Create the beam search decoder
-                beam = tf.contrib.seq2seq.BeamSearchDecoder(
-                    cell,
-                    embeddings,
-                    start_tokens,
-                    end_token,
-                    initial_state,
-                    beam_width,
-                    output_layer=None,
+                beam_search_decoder = tf.contrib.seq2seq.BeamSearchDecoder(
+                    cell=cell,
+                    embedding=embeddings,
+                    start_tokens=start_tokens,
+                    end_token=end_token,
+                    initial_state=initial_state,
+                    beam_width=beam_width,
                     length_penalty_weight=0.0)
 
 
                 #Decode useing the beamsearch decoder
-                test_output, _, test_lengths = \
-                    tf.contrib.seq2seq.dynamic_decode(
-                        decoder=beam,
-                        maximum_iterations=int(self.conf['max_steps']))
+                output, _, lengths = tf.contrib.seq2seq.dynamic_decode(
+                    decoder=beam_search_decoder,
+                    maximum_iterations=int(self.conf['max_steps']))
+
+                sequences = output.predicted_ids
+                scores = output.beam_search_decoder_output.scores
 
 
-            return {output_name:(test_output, test_lengths)}
+            return {output_name:(sequences, lengths, scores)}
 
     def write(self, outputs, directory, names):
         '''write the output of the decoder to disk
@@ -113,15 +117,17 @@ class BeamSearchDecoder(decoder.Decoder):
             directory: the directory where the results should be written
             names: the names of the utterances in outputs
         '''
-        sequences = outputs.values()[0][0].predicted_ids[:, :, 0]
+        sequences = outputs.values()[0][0]
         lengths = outputs.values()[0][1]
+        scores = outputs.scores()[0][2]
 
         for i, name in enumerate(names):
             with open(os.path.join(directory, name), 'w') as fid:
                 for b in range(sequences.shape[0]):
                     sequence = sequences[b, i][:lengths[b, i]]
+                    score = scores[b, i]
                     text = ' '.join([self.alphabet[s] for s in sequence])
-                    fid.write('%f %s\n' % (text))
+                    fid.write('%f %s\n' % (score, text))
 
 
     def evaluate(self, outputs, references, reference_seq_length):
@@ -135,22 +141,20 @@ class BeamSearchDecoder(decoder.Decoder):
         Returns:
             the error of the outputs
         '''
-        #create sparse representaions of predictions and remove EOS token
-        c = outputs.values()[0][0].predicted_ids[:, :, 0]
-        c = tf.Print(c,[c],"predicted", summarize = 50)
-        d = outputs.values()[0][1][:, 0] - 1
-        d = tf.Print(d,[d], "predicted-lengths", summarize = 32)
-        predicts = dense_sequence_to_sparse(c, d)
 
-        #create sparse representaion of references
-        a = reference_seq_length.values()[0]
-        a = tf.Print(a, [a], "target-lengths", summarize = 32)
-        b = references.values()[0]
-        b = tf.Print(b, [b], "targets", summarize = 50)
-        labels = dense_sequence_to_sparse(
-            b, a)
+        sequences = outputs.values()[0][0]
+        lengths = outputs.values()[0][1]
 
-        #calculate error rate
-        error_rate = tf.reduce_mean(tf.edit_distance(predicts, labels))
+        #convert the references to sparse representations
+        sparse_targets = dense_sequence_to_sparse(
+            references.values()[0], reference_seq_length.values()[0])
 
-        return error_rate
+        #convert the best sequences to sparse representations
+        sparse_sequences = dense_sequence_to_sparse(
+            sequences, lengths)
+
+        #compute the edit distance
+        loss = tf.reduce_mean(
+            tf.edit_distance(sparse_sequences, sparse_targets))
+
+        return loss

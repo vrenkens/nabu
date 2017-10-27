@@ -3,7 +3,7 @@ contains the HotstartEncoder'''
 
 import tensorflow as tf
 import ed_encoder
-from . import ed_encoder_factory
+import ed_encoder_factory
 
 class HotstartEncoder(ed_encoder.EDEncoder):
     '''a listener object
@@ -19,8 +19,6 @@ class HotstartEncoder(ed_encoder.EDEncoder):
 
 
         #wrapped ecoder
-        #self.wrapped = ed_encoder_factory.factory(conf['wrapped'])(
-        #    conf, conf['wrapped'])
         self.wrapped = ed_encoder_factory.factory(conf['wrapped'])(
             conf)
 

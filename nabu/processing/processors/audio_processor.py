@@ -52,7 +52,7 @@ class AudioProcessor(processor.Processor):
         else:
             max_length = None
 
-        if max_length and features.shape[0] <= max_length:
+        if not max_length or features.shape[0] <= max_length:
 
             #update the metadata
             self.max_length = max(self.max_length, features.shape[0])

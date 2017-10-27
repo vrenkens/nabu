@@ -50,7 +50,7 @@ class TextProcessor(processor.Processor):
         else:
             max_length = None
 
-        if max_length and seq_length <= max_length:
+        if not max_length or seq_length <= max_length:
             #update the metadata
             self.max_length = max(self.max_length, seq_length)
             if seq_length >= self.sequence_length_histogram.shape[0]:
