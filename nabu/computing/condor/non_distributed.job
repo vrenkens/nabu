@@ -10,9 +10,14 @@ request_GPUs      = 1
 #requirement
 Requirements = (CUDACapability >= 3.0)\
   &&(CUDAGlobalMemoryMb >= $(memory))\
-  &&(machine =!= LastRemoteHost)
+  &&(machine =!= LastRemoteHost)\
+  &&(machine =!= LastRemoteHost)\
+  &&(machine != "triton.esat.kuleuven.be")\
+  &&(machine != "pyrite.esat.kuleuven.be")\
+  &&(machine != "quaoar.esat.kuleuven.be")\
+  &&(machine != "nihal.esat.kuleuven.be")
 
-NiceUser = true
+#NiceUser = true
 
 
 #Send an email in case of an error

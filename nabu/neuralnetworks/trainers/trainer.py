@@ -6,6 +6,7 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 import time
 import cPickle as pickle
 import tensorflow as tf
+from tensorflow.python.client import device_lib
 from nabu.processing import input_pipeline
 from nabu.neuralnetworks.models.model import Model
 from nabu.neuralnetworks.evaluators import evaluator_factory, loss_evaluator
@@ -134,8 +135,13 @@ class Trainer(object):
             self.terminate = should_terminate.assign(True).op
 
             #create an op that measures the memory usage
-            self.memory_usage = tf.contrib.memory_stats.MaxBytesInUse()
-            self.memory_limit = tf.contrib.memory_stats.BytesLimit()
+            if [x for x in device_lib.list_local_devices()
+                    if x.device_type == 'GPU']:
+
+                self.memory_usage = tf.contrib.memory_stats.MaxBytesInUse()
+                self.memory_limit = tf.contrib.memory_stats.BytesLimit()
+            else:
+                self.memory_usage = self.memory_limit = tf.no_op()
 
             with tf.device(device):
 
@@ -549,15 +555,21 @@ class Trainer(object):
                                      self.memory_usage,
                                      self.memory_limit])
 
+                    if memory is not None:
+                        memory_line = '\n\t peak memory usage: %d/%d MB' % (
+                            memory/1e6,
+                            limit/1e6
+                        )
+                    else:
+                        memory_line = ''
+
                     print(('WORKER %d: step %d/%d loss: %f, learning rate: %f '
-                           '\n\t time elapsed: %f sec'
-                           '\n\t peak memory usage: %d/%d MB')
+                           '\n\t time elapsed: %f sec%s')
                           %(self.task_index,
                             global_step,
                             self.num_steps,
                             loss, lr, time.time()-start,
-                            memory/1e6,
-                            limit/1e6))
+                            memory_line))
 
 class ParameterServer(object):
     '''a class for parameter servers'''

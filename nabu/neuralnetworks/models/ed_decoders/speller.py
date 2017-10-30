@@ -71,7 +71,8 @@ class Speller(ed_decoder.EDDecoder):
 
         #use the decoder
         logits, state, logit_seq_length = tf.contrib.seq2seq.dynamic_decode(
-            decoder)
+            decoder=decoder,
+            impute_finished=True)
         logits = logits.rnn_output
 
         return (

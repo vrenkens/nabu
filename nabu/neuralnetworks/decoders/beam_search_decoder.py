@@ -95,7 +95,7 @@ class BeamSearchDecoder(decoder.Decoder):
                     end_token=end_token,
                     initial_state=initial_state,
                     beam_width=beam_width,
-                    length_penalty_weight=0.0)
+                    length_penalty_weight=float(self.conf['length_penalty']))
 
 
                 #Decode useing the beamsearch decoder
@@ -104,7 +104,7 @@ class BeamSearchDecoder(decoder.Decoder):
                     maximum_iterations=int(self.conf['max_steps']))
 
                 sequences = output.predicted_ids
-                scores = output.beam_search_decoder_output.scores
+                scores = output.beam_search_decoder_output.scores[:, -1, :]
 
 
             return {output_name:(sequences, lengths, scores)}
@@ -118,16 +118,17 @@ class BeamSearchDecoder(decoder.Decoder):
             names: the names of the utterances in outputs
         '''
         sequences = outputs.values()[0][0]
-        lengths = outputs.values()[0][1]
-        scores = outputs.scores()[0][2]
+        scores = outputs.values()[0][2]
+        end = int(self.model.decoder.output_dims.values()[0]-1)
 
         for i, name in enumerate(names):
             with open(os.path.join(directory, name), 'w') as fid:
-                for b in range(sequences.shape[0]):
-                    sequence = sequences[b, i][:lengths[b, i]]
-                    score = scores[b, i]
-                    text = ' '.join([self.alphabet[s] for s in sequence])
-                    fid.write('%f %s\n' % (score, text))
+                for b in range(sequences.shape[2]):
+                    sequence = sequences[i, :, b]
+                    #look for the first occurence of a sequence border label
+                    e = next(i for i, j in enumerate(sequence) if j == end)
+                    text = ' '.join([self.alphabet[s] for s in sequence[:e]])
+                    fid.write('%f %s\n' % (scores[i, b], text))
 
 
     def evaluate(self, outputs, references, reference_seq_length):
@@ -151,7 +152,7 @@ class BeamSearchDecoder(decoder.Decoder):
 
         #convert the best sequences to sparse representations
         sparse_sequences = dense_sequence_to_sparse(
-            sequences, lengths)
+            sequences[:, :, 0], lengths[:, 0]-1)
 
         #compute the edit distance
         loss = tf.reduce_mean(
