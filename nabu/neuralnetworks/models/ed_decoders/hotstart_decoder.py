@@ -63,6 +63,9 @@ class HotstartDecoder(ed_decoder.EDDecoder):
                 self.conf['modeldir'],
                 var.name)
 
+            if self.conf['trainable'] == 'False':
+                tf.add_to_collection('untrainable', var)
+
             #pylint: disable=W0212
             var._initializer_op = var.assign(value).op
 

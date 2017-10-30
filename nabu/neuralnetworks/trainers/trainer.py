@@ -266,18 +266,31 @@ class Trainer(object):
                     self.loss = self.compute_loss(
                         targets, logits, logit_seq_length, target_seq_length)
 
+                    #get the list of trainable variables
+                    trainable = tf.trainable_variables()
+
+                    #get the list of variables to be removed from the trainable
+                    #variables
+                    untrainable = tf.get_collection('untrainable')
+
+                    #remove the variables
+                    trainable = [var for var in trainable
+                                 if var not in untrainable]
+
                     #compute the gradients
-                    grads = optimizer.compute_gradients(self.loss)
+                    grads_and_vars = optimizer.compute_gradients(
+                        loss=self.loss,
+                        var_list=trainable)
 
                     with tf.variable_scope('clip'):
                         #clip the gradients
-                        grads = [(tf.clip_by_value(grad, -1., 1.), var)
-                                 for grad, var in grads]
+                        grads_and_vars = [(tf.clip_by_value(grad, -1., 1.), var)
+                                          for grad, var in grads_and_vars]
 
 
                     #opperation to apply the gradients
                     apply_gradients_op = optimizer.apply_gradients(
-                        grads_and_vars=grads,
+                        grads_and_vars=grads_and_vars,
                         global_step=self.global_step,
                         name='apply_gradients')
 
