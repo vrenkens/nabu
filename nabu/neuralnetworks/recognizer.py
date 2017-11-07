@@ -25,7 +25,7 @@ class Recognizer(object):
             expdir: the experiments directory
         '''
 
-        self.conf = conf
+        self.conf = conf.items('recognizer')
         self.expdir = expdir
 
         #load the model
@@ -33,7 +33,7 @@ class Recognizer(object):
             self.model = pickle.load(fid)
 
         #get the database configurations
-        input_sections = [conf.get('recognizer', i).split(' ')
+        input_sections = [self.conf[i].split(' ')
                           for i in self.model.input_names]
         self.input_dataconfs = []
         for sectionset in input_sections:
@@ -41,13 +41,11 @@ class Recognizer(object):
             for section in sectionset:
                 self.input_dataconfs[-1].append(dict(dataconf.items(section)))
 
-        decoderconf = dict(conf.items('decoder'))
-
         #create a decoder
-        self.decoder = decoder_factory.factory(decoderconf['decoder'])(
-            decoderconf, self.model)
+        self.decoder = decoder_factory.factory(
+            conf.get('decoder', 'decoder'))(conf, model)
 
-        self.batch_size = int(self.conf.get('recognizer', 'batch_size'))
+        self.batch_size = int(self.conf['batch_size'])
 
         #create the graph
         self.graph = tf.Graph()
@@ -97,7 +95,7 @@ class Recognizer(object):
             #create a hook that will load the model
             load_hook = LoadAtBegin(
                 os.path.join(self.expdir, 'model', 'network.ckpt'),
-                self.model)
+                self.model.variables)
 
             #create a hook for summary writing
             summary_hook = SummaryHook(os.path.join(self.expdir, 'logdir'))

@@ -158,11 +158,6 @@ class Speller(ed_decoder.EDDecoder):
                 attention_mechanism=attention_mechanism
             )
 
-            #wrap the rnn cell to make it a constant scope
-            rnn_cell = rnn_cell_impl.ScopeRNNCellWrapper(
-                rnn_cell, self.scope.name + '/rnn_cell')
-
-
         #add an output layer to the rnn cell
         rnn_cell = tf.contrib.rnn.OutputProjectionWrapper(
             rnn_cell,

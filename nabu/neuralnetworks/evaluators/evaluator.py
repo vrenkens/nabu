@@ -21,22 +21,22 @@ class Evaluator(object):
             model: the model to be evaluated
         '''
 
-        self.conf = conf
+        self.conf = dict(conf.items('evaluator'))
         self.model = model
 
         #get the database configurations
         inputs = self.model.input_names
-        input_sections = [conf.get('evaluator', i).split(' ') for i in inputs]
+        input_sections = [self.conf[i].split(' ') for i in inputs]
         self.input_dataconfs = []
         for sectionset in input_sections:
             self.input_dataconfs.append([])
             for section in sectionset:
                 self.input_dataconfs[-1].append(dict(dataconf.items(section)))
 
-        targets = conf.get('evaluator', 'targets').split(' ')
+        targets = self.conf['targets'].split(' ')
         if targets == ['']:
             targets = []
-        target_sections = [conf.get('evaluator', o).split(' ') for o in targets]
+        target_sections = [self.conf[o].split(' ') for o in targets]
         self.target_dataconfs = []
         for sectionset in target_sections:
             self.target_dataconfs.append([])
@@ -51,7 +51,7 @@ class Evaluator(object):
             - the number of batches in the validation set as an integer
         '''
 
-        batch_size = int(self.conf.get('evaluator', 'batch_size'))
+        batch_size = int(self.conf['batch_size'])
 
         with tf.name_scope('evaluate'):
 
@@ -88,7 +88,7 @@ class Evaluator(object):
                 self.model.input_names[i]: d
                 for i, d in enumerate(seq_length[:len(self.input_dataconfs)])}
 
-            target_names = self.conf.get('evaluator', 'targets').split(' ')
+            target_names = self.conf['targets'].split(' ')
             targets = {
                 target_names[i]: d
                 for i, d in enumerate(data[len(self.input_dataconfs):])}

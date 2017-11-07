@@ -18,7 +18,7 @@ class Decoder(object):
             model: the model that will be used for decoding
         '''
 
-        self.conf = conf
+        self.conf = dict(conf.items('decoder'))
         self.model = model
 
     @abstractmethod

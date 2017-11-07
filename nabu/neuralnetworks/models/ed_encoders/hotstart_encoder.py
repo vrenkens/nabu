@@ -18,11 +18,19 @@ class HotstartEncoder(ed_encoder.EDEncoder):
             name: the encoder name'''
 
 
-        #wrapped ecoder
-        self.wrapped = ed_encoder_factory.factory(conf['wrapped'])(
-            conf)
-
         super(HotstartEncoder, self).__init__(conf, name)
+
+        #set the wrapped section as the encoder section
+        conf.remove_section('encoder')
+        conf.add_section('encoder')
+        for option, value in conf.items(self.conf['wrapped']):
+            conf.set('encoder', option, value)
+        conf.remove_section(self.conf['wrapped'])
+
+        #wrapped ecoder
+        self.wrapped = ed_encoder_factory.factory(
+            conf.get('encoder', 'encoder'))(
+                conf, self.conf['wrapped'])
 
     def encode(self, inputs, input_seq_length, is_training):
         '''

@@ -2,7 +2,7 @@
 contains the decoder factory'''
 
 from . import ctc_decoder, beam_search_decoder, max_decoder, threshold_decoder,\
- feature_decoder, alignment_decoder
+ feature_decoder, alignment_decoder, random_decoder
 
 def factory(decoder):
     '''
@@ -27,5 +27,7 @@ def factory(decoder):
         return feature_decoder.FeatureDecoder
     elif decoder == 'alignment_decoder':
         return alignment_decoder.AlignmentDecoder
+    elif decoder == 'random_decoder':
+        return random_decoder.RandomDecoder
     else:
         raise Exception('Undefined decoder type: %s' % decoder)

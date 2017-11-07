@@ -22,12 +22,12 @@ def main(expdir):
     conf = dict(parsed_cfg.items(name))
 
     #read the processor config
-    parsed_proc_cfg = configparser.ConfigParser()
-    parsed_proc_cfg.read(os.path.join(expdir, 'processor.cfg'))
-    proc_cfg = dict(parsed_proc_cfg.items('processor'))
+    proc_cfg = configparser.ConfigParser()
+    proc_cfg.read(os.path.join(expdir, 'processor.cfg'))
 
     #create a processor
-    processor = processor_factory.factory(proc_cfg['processor'])(proc_cfg)
+    processor = processor_factory.factory(
+        proc_cfg.get('processor', 'processor'))(proc_cfg)
 
     #create a writer
     writer = tfwriter_factory.factory(conf['type'])(conf['dir'])

@@ -16,12 +16,16 @@ class EDEncoder(object):
 
         Args:
             conf: the encoder configuration
-            name: the encoder name'''
+            name: the encoder name
+        '''
 
         #save the configuration
-        self.conf = conf
+        self.conf = dict(conf.items('encoder'))
 
-        self.scope = tf.VariableScope(False, name or type(self).__name__)
+        self.scope = tf.VariableScope(
+            tf.AUTO_REUSE, name or type(self).__name__)
+
+        self._variables = []
 
     def __call__(self, inputs, input_seq_length, is_training):
         '''
@@ -46,7 +50,13 @@ class EDEncoder(object):
             outputs, output_seq_length = self.encode(inputs, input_seq_length,
                                                      is_training)
 
-        self.scope.reuse_variables()
+        self._variables = tf.get_collection(
+            tf.GraphKeys.GLOBAL_VARIABLES,
+            scope=self.scope.name)
+
+        if hasattr(self, 'wrapped'):
+            #pylint: disable=E1101
+            self._variables += self.wrapped.variables
 
         return outputs, output_seq_length
 
@@ -73,11 +83,4 @@ class EDEncoder(object):
     def variables(self):
         '''get a list of the models's variables'''
 
-        variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
-                                      scope=self.scope.name)
-
-        if hasattr(self, 'wrapped'):
-            #pylint: disable=E1101
-            variables += self.wrapped.variables
-
-        return variables
+        return self._variables

@@ -48,7 +48,6 @@ class AudioFeatureReader(tfreader.TfReader):
                     raise Exception(
                         'all audio feature reader dimensions must be the same')
 
-
         return metadata
 
     def _create_features(self):

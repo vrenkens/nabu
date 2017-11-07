@@ -21,9 +21,8 @@ class DecoderEvaluator(evaluator.Evaluator):
         super(DecoderEvaluator, self).__init__(conf, dataconf, model)
 
         #create a decoder object
-        decoderconf = dict(conf.items('decoder'))
-        self.decoder = decoder_factory.factory(decoderconf['decoder'])(
-            decoderconf, model)
+        self.decoder = decoder_factory.factory(
+            conf.get('decoder', 'decoder'))(conf, model)
 
     def compute_loss(self, inputs, input_seq_length, targets,
                      target_seq_length):

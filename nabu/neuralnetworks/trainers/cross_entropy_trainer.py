@@ -36,7 +36,7 @@ class CrossEntropyTrainer(trainer.Trainer):
             losses = []
 
             for t in targets:
-                #stack all the logits except the final logits
+                #stack the logits
                 stacked_logits = ops.seq2nonseq(logits[t], logit_seq_length[t])
 
                 #create the stacked targets

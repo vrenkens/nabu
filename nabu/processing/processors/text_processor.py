@@ -13,18 +13,20 @@ class TextProcessor(processor.Processor):
         '''TextProcessor constructor
 
         Args:
-            conf: the textprocessor configuration as a dict of strings'''
+            conf: processor configuration as a configparser
+        '''
 
         #create the normalizer
-        self.normalizer = normalizer_factory.factory(conf['normalizer'])
+        self.normalizer = normalizer_factory.factory(
+            conf.get('processor', 'normalizer'))
 
-        self.alphabet = conf['alphabet'].split(' ')
+        self.alphabet = conf.get('processor', 'alphabet').split(' ')
 
         #initialize the metadata
         self.max_length = 0
         self.sequence_length_histogram = np.zeros(0, dtype=np.int32)
-        if 'nonesymbol' in conf:
-            self.nonesymbol = conf['nonesymbol']
+        if conf.has_option('processor', 'nonesymbol'):
+            self.nonesymbol = conf.get('processor', 'nonesymbol')
         else:
             self.nonesymbol = ''
 

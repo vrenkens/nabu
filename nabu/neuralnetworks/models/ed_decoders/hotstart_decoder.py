@@ -14,16 +14,27 @@ class HotstartDecoder(ed_decoder.EDDecoder):
         '''EDDecoder constructor
 
         Args:
-            conf: the decoder configuration
+            conf: the decoder configuration as a configparser
             trainlabels: the number of extra labels required by the trainer
             outputs: the name of the outputs of the model
         '''
 
-
-        self.wrapped = ed_decoder_factory.factory(conf['wrapped'])(
-            conf)
-
+        #super constructor
         super(HotstartDecoder, self).__init__(conf, trainlabels, outputs, name)
+
+        #set the wrapped section as the decoder section
+        conf.remove_section('decoder')
+        conf.add_section('decoder')
+        for option, value in conf.items(self.conf['wrapped']):
+            conf.set('decoder', option, value)
+        conf.remove_section(self.conf['wrapped'])
+
+        #create the wrapped decoder
+        self.wrapped = ed_decoder_factory.factory(
+            conf.get('decoder', 'decoder'))(
+                conf, trainlabels, outputs, self.conf['wrapped'])
+
+
 
     def _decode(self, encoded, encoded_seq_length, targets, target_seq_length,
                 is_training):

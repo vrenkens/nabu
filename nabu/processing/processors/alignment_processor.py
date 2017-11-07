@@ -12,7 +12,8 @@ class AlignmentProcessor(processor.Processor):
         '''AlignmentProcessor constructor
 
         Args:
-            conf: the textprocessor configuration as a dict of strings'''
+            conf: processor configuration as a configparser
+        '''
 
 
         #initialize the metadata

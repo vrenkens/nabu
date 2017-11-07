@@ -43,7 +43,7 @@ def test(expdir):
         #create a hook that will load the model
         load_hook = LoadAtBegin(
             os.path.join(expdir, 'model', 'network.ckpt'),
-            model)
+            model.variables)
 
         #create a hook for summary writing
         summary_hook = SummaryHook(os.path.join(expdir, 'logdir'))

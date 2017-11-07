@@ -18,10 +18,12 @@ class BeamSearchDecoder(decoder.Decoder):
             model: the model that will be used for decoding
         '''
 
-        #get the alphabet
-        self.alphabet = conf['alphabet'].split(' ')
-
         super(BeamSearchDecoder, self).__init__(conf, model)
+
+        #get the alphabet
+        self.alphabet = self.conf['alphabet'].split(' ')
+
+
 
     def __call__(self, inputs, input_seq_length):
         '''decode a batch of data

@@ -12,7 +12,8 @@ class BinaryProcessor(processor.Processor):
         '''TextProcessor constructor
 
         Args:
-            conf: the textprocessor configuration as a dict of strings'''
+            conf: processor configuration as a configparser
+        '''
 
         #initialize the metadata
         self.max_length = 0

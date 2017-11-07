@@ -37,9 +37,8 @@ def train(clusterfile,
     model_cfg.read(os.path.join(expdir, 'model.cfg'))
 
     #read the trainer config file
-    parsed_trainer_cfg = configparser.ConfigParser()
-    parsed_trainer_cfg.read(os.path.join(expdir, 'trainer.cfg'))
-    trainer_cfg = dict(parsed_trainer_cfg.items('trainer'))
+    trainer_cfg = configparser.ConfigParser()
+    trainer_cfg.read(os.path.join(expdir, 'trainer.cfg'))
 
     #read the decoder config file
     evaluator_cfg = configparser.ConfigParser()
@@ -69,7 +68,7 @@ def train(clusterfile,
         return
 
     #create the trainer
-    tr = trainer_factory.factory(trainer_cfg['trainer'])(
+    tr = trainer_factory.factory(trainer_cfg.get('trainer', 'trainer'))(
         conf=trainer_cfg,
         dataconf=database_cfg,
         modelconf=model_cfg,

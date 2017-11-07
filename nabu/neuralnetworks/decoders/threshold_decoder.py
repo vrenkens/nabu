@@ -4,7 +4,6 @@ contains the ThresholdDecoder'''
 import os
 import tensorflow as tf
 import decoder
-from nabu.neuralnetworks.components import ops
 
 class ThresholdDecoder(decoder.Decoder):
     '''CTC Decoder'''
@@ -18,9 +17,9 @@ class ThresholdDecoder(decoder.Decoder):
             model: the model that will be used for decoding
         '''
 
-        self.threshold = float(conf['threshold'])
-
         super(ThresholdDecoder, self).__init__(conf, model)
+
+        self.threshold = float(self.conf['threshold'])
 
     def __call__(self, inputs, input_seq_length):
         '''decode a batch of data

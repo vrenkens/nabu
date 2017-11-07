@@ -4,23 +4,23 @@ contains session hooks'''
 import tensorflow as tf
 
 class LoadAtBegin(tf.train.SessionRunHook):
-    '''a training hook for saving the final model'''
+    '''a training hook for saving the final variables'''
 
-    def __init__(self, filename, model):
+    def __init__(self, filename, variables):
         '''hook constructor
 
         Args:
             filename: where the model will be saved
-            model: the model that will be loaded'''
+            variables: the variables that will be loaded'''
 
         self.filename = filename
-        self.model = model
+        self.variables = variables
 
     def begin(self):
         '''this will be run at session creation'''
 
         #pylint: disable=W0201
-        self._saver = tf.train.Saver(self.model.variables, sharded=True)
+        self._saver = tf.train.Saver(self.variables, sharded=True)
 
     def after_create_session(self, session, _):
         '''this will be run after session creation'''
@@ -62,23 +62,23 @@ class SummaryHook(tf.train.SessionRunHook):
         self._writer.add_summary(run_values.results['summary'])
 
 class SaveAtEnd(tf.train.SessionRunHook):
-    '''a training hook for saving the final model'''
+    '''a training hook for saving the final variables'''
 
-    def __init__(self, filename, model):
+    def __init__(self, filename, variables):
         '''hook constructor
 
         Args:
             filename: where the model will be saved
-            model: the model that will be saved'''
+            variables: the variables that will be saved'''
 
         self.filename = filename
-        self.model = model
+        self.variables = variables
 
     def begin(self):
         '''this will be run at session creation'''
 
         #pylint: disable=W0201
-        self._saver = tf.train.Saver(self.model.variables, sharded=True)
+        self._saver = tf.train.Saver(self.variables, sharded=True)
 
     def end(self, session):
         '''this will be run at session closing'''

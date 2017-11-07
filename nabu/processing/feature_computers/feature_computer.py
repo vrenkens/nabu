@@ -13,10 +13,10 @@ class FeatureComputer(object):
         FeatureComputer constructor
 
         Args:
-            conf: the feature configuration
+            conf: the feature configuration as a configparser
         '''
 
-        self.conf = conf
+        self.conf = dict(conf.items('feature'))
 
     def __call__(self, sig, rate):
         '''

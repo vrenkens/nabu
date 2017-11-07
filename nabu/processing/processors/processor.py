@@ -12,10 +12,10 @@ class Processor(object):
         '''Processor constructor
 
         Args:
-            conf: processor configuration as a dictionary of strings
+            conf: processor configuration as a configparser
         '''
 
-        self.conf = conf
+        self.conf = dict(conf.items('processor'))
 
     @abstractmethod
     def __call__(self, dataline):

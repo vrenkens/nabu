@@ -15,6 +15,8 @@ class Model(object):
             trainlabels: the number of extra labels required by the trainer
         '''
 
+        self.conf = conf
+
         self.input_names = conf.get('io', 'inputs').split(' ')
         if self.input_names == ['']:
             self.input_names = []
@@ -23,14 +25,13 @@ class Model(object):
             self.output_names = []
 
         #create the encoder
-        encoder_conf = dict(conf.items('encoder'))
-        self.encoder = ed_encoder_factory.factory(encoder_conf['encoder'])(
-            encoder_conf)
+        self.encoder = ed_encoder_factory.factory(
+            conf.get('encoder', 'encoder'))(conf)
 
         #create the decoder
-        decoder_conf = dict(conf.items('decoder'))
-        self.decoder = ed_decoder_factory.factory(decoder_conf['decoder'])(
-            decoder_conf, trainlabels, self.output_names)
+        self.decoder = ed_decoder_factory.factory(
+            conf.get('decoder', 'decoder'))(
+                conf, trainlabels, self.output_names)
 
     def __call__(self, inputs, input_seq_length, targets,
                  target_seq_length, is_training):

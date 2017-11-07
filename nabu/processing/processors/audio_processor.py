@@ -17,10 +17,12 @@ class AudioProcessor(processor.Processor):
         '''AudioProcessor constructor
 
         Args:
-            conf: AudioProcessor configuration as a dict of strings'''
+            conf: processor configuration as a configparser
+        '''
 
         #create the feature computer
-        self.comp = feature_computer_factory.factory(conf['feature'])(conf)
+        self.comp = feature_computer_factory.factory(
+            conf.get('feature', 'feature'))(conf)
 
         #initialize the metadata
         self.dim = self.comp.get_dim()

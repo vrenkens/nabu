@@ -18,12 +18,12 @@ class MaxDecoder(decoder.Decoder):
             model: the model that will be used for decoding
         '''
 
+        super(MaxDecoder, self).__init__(conf, model)
+
         self.alphabets = {}
         for o in model.output_names:
             #get the alphabet
-            self.alphabets[o] = conf['%s_alphabet' % o].split(' ')
-
-        super(MaxDecoder, self).__init__(conf, model)
+            self.alphabets[o] = self.conf['%s_alphabet' % o].split(' ')
 
     def __call__(self, inputs, input_seq_length):
         '''decode a batch of data
