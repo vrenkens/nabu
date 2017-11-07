@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['recipes',['Recipes',['../md_config_recipes_README.html',1,'']]],
   ['random_5fdecoder_2epy',['random_decoder.py',['../random__decoder_8py.html',1,'']]],
   ['randomdecoder',['RandomDecoder',['../classnabu_1_1neuralnetworks_1_1decoders_1_1random__decoder_1_1RandomDecoder.html',1,'nabu::neuralnetworks::decoders::random_decoder']]],
   ['read_5fcluster',['read_cluster',['../cluster_8py.html#a9e150fc09bf176718319016ed77d86bb',1,'nabu::computing::cluster']]],

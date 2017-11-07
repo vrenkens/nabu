@@ -12,5 +12,6 @@ var searchData=
   ['fisher',['fisher',['../classnabu_1_1neuralnetworks_1_1trainers_1_1fisher__trainer_1_1FisherTrainer.html#a251a5bf057a11de26988d0ee7ecb3563',1,'nabu::neuralnetworks::trainers::fisher_trainer::FisherTrainer']]],
   ['fisher_5ftrainer_2epy',['fisher_trainer.py',['../fisher__trainer_8py.html',1,'']]],
   ['fishertrainer',['FisherTrainer',['../classnabu_1_1neuralnetworks_1_1trainers_1_1fisher__trainer_1_1FisherTrainer.html',1,'nabu::neuralnetworks::trainers::fisher_trainer']]],
-  ['framesig',['framesig',['../sigproc_8py.html#ae8f46c7fc11e88549d9b6c51933c88f4',1,'nabu::processing::feature_computers::sigproc']]]
+  ['framesig',['framesig',['../sigproc_8py.html#ae8f46c7fc11e88549d9b6c51933c88f4',1,'nabu::processing::feature_computers::sigproc']]],
+  ['feature_20computers',['Feature Computers',['../md_nabu_processing_feature_computers_README.html',1,'']]]
 ];

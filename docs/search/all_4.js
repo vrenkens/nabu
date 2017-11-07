@@ -17,5 +17,6 @@ var searchData=
   ['dnn',['DNN',['../classnabu_1_1neuralnetworks_1_1models_1_1ed__encoders_1_1dnn_1_1DNN.html',1,'nabu::neuralnetworks::models::ed_encoders::dnn']]],
   ['dnn_2epy',['dnn.py',['../dnn_8py.html',1,'']]],
   ['dnndecoder',['DNNDecoder',['../classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1dnn__decoder_1_1DNNDecoder.html',1,'nabu::neuralnetworks::models::ed_decoders::dnn_decoder']]],
-  ['dummyencoder',['DummyEncoder',['../classnabu_1_1neuralnetworks_1_1models_1_1ed__encoders_1_1dummy__encoder_1_1DummyEncoder.html',1,'nabu::neuralnetworks::models::ed_encoders::dummy_encoder']]]
+  ['dummyencoder',['DummyEncoder',['../classnabu_1_1neuralnetworks_1_1models_1_1ed__encoders_1_1dummy__encoder_1_1DummyEncoder.html',1,'nabu::neuralnetworks::models::ed_encoders::dummy_encoder']]],
+  ['decoders',['Decoders',['../md_nabu_neuralnetworks_decoders_README.html',1,'']]]
 ];

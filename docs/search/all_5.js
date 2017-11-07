@@ -14,5 +14,8 @@ var searchData=
   ['evaluator',['Evaluator',['../classnabu_1_1neuralnetworks_1_1evaluators_1_1evaluator_1_1Evaluator.html',1,'nabu::neuralnetworks::evaluators::evaluator']]],
   ['evaluator_2epy',['evaluator.py',['../evaluator_8py.html',1,'']]],
   ['evaluator_5ffactory_2epy',['evaluator_factory.py',['../evaluator__factory_8py.html',1,'']]],
-  ['evaluators',['evaluators',['../namespaceevaluators.html',1,'']]]
+  ['evaluators',['evaluators',['../namespaceevaluators.html',1,'']]],
+  ['evaluators',['Evaluators',['../md_nabu_neuralnetworks_evaluators_README.html',1,'']]],
+  ['encoder_2ddecoder_20decoder',['Encoder-Decoder Decoder',['../md_nabu_neuralnetworks_models_ed_decoders_README.html',1,'']]],
+  ['encoder_2ddecoder_20encoders',['Encoder-Decoder Encoders',['../md_nabu_neuralnetworks_models_ed_encoders_README.html',1,'']]]
 ];

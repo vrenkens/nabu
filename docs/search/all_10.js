@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['processors',['Processors',['../md_nabu_processing_processors_README.html',1,'']]],
   ['parameterserver',['ParameterServer',['../classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1ParameterServer.html',1,'nabu::neuralnetworks::trainers::trainer']]],
   ['pblstm',['pblstm',['../layer_8py.html#ab5617673c223366a9f9e9cdc94b3a896',1,'nabu::neuralnetworks::components::layer']]],
   ['phones_2epy',['phones.py',['../phones_8py.html',1,'']]],

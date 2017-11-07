@@ -18,5 +18,6 @@ var searchData=
   ['ctcdecoder',['CTCDecoder',['../classnabu_1_1neuralnetworks_1_1decoders_1_1ctc__decoder_1_1CTCDecoder.html',1,'nabu::neuralnetworks::decoders::ctc_decoder']]],
   ['ctcphonologytrainer',['CTCPhonologyTrainer',['../classnabu_1_1neuralnetworks_1_1trainers_1_1ctc__phonology__trainer_1_1CTCPhonologyTrainer.html',1,'nabu::neuralnetworks::trainers::ctc_phonology_trainer']]],
   ['ctctrainer',['CTCTrainer',['../classnabu_1_1neuralnetworks_1_1trainers_1_1ctc__trainer_1_1CTCTrainer.html',1,'nabu::neuralnetworks::trainers::ctc_trainer']]],
-  ['computing_20configuration',['Computing configuration',['../index.html',1,'']]]
+  ['computing_20configuration',['Computing configuration',['../md_config_computing_README.html',1,'']]],
+  ['computing',['Computing',['../md_nabu_computing_README.html',1,'']]]
 ];
