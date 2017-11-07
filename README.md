@@ -260,9 +260,10 @@ will be written to the &lt;outputs> folder.
 
 ## Designing in Nabu
 
-As mentioned in the beginning Nabu focusses on adaptibility. You can easily
-design new models, trainers etc. Most classes used in Nabu have a general class
-that defines an interface and common functionality for all children and
+As mentioned in the beginning Nabu focusses on adaptibility. Everything in the
+recipe can be modified (more information about recipes
+[here](config/recipes/README.md)). Most classes used in Nabu have a general 
+class that defines an interface and common functionality for all children and
 a factory that is used to create the necessary class. Look into the respective
 README files to see how to implement a new class.
 

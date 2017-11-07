@@ -59,9 +59,9 @@ if __name__ == '__main__':
                                'The computing mode, one of non_distributed, '
                                'single_machine or multi_machine'
                               )
-    tf.app.flags.DEFINE_string('computing', 'standart',
+    tf.app.flags.DEFINE_string('computing', 'standard',
                                'the distributed computing system one of'
-                               ' standart or condor'
+                               ' standard or condor'
                               )
     tf.app.flags.DEFINE_string('sweep', 'sweep',
                                'the file containing the sweep parameters'
