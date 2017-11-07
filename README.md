@@ -1,5 +1,3 @@
-**Disclaimer: Nabu 2.0 is still under development and may contain bugs**
-
 # Nabu
 
 Please find the documentation page [here](http://vrenkens.github.io/nabu)
