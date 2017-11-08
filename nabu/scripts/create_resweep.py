@@ -25,27 +25,40 @@ def main(sweep, command, expdir, target):
     unfinished = 0
     with open(target, 'w') as fid:
         for i, name in enumerate(names):
-            if command == 'train':
-                if not os.path.exists(
-                        os.path.join(expdir, name, 'model', 'checkpoint')):
 
-                    fid.write(exps[i] + '\n')
-                    if os.path.exists(
-                            os.path.join(expdir, name, 'logdir', 'checkpoint')):
-                        fid.write('trainer.cfg trainer resume_training True\n')
+            #check if in condor q
+            in_queue = os.popen(
+                'if condor_q -nobatch | grep -q %s; '
+                'then echo true; else echo false; fi' %
+                os.path.join(expdir, name)).read().strip() == 'true'
 
-                    fid.write('\n')
-                    unfinished += 1
+            if not in_queue:
 
-            elif command == 'test':
-                if not os.path.exists(
-                        os.path.join(expdir, name, 'test', 'result')):
+                if command == 'train':
 
-                    fid.write(exps[i] + '\n\n')
-                    unfinished += 1
+                    #check if training finished
+                    if not os.path.exists(
+                            os.path.join(expdir, name, 'model', 'checkpoint')):
 
-            else:
-                raise Exception('unknown command %s' % command)
+                        fid.write(exps[i] + '\n')
+                        if os.path.exists(os.path.join(
+                                expdir, name, 'logdir', 'checkpoint')):
+
+                            fid.write('trainer.cfg trainer'
+                                      ' resume_training True\n')
+
+                        fid.write('\n')
+                        unfinished += 1
+
+                elif command == 'test':
+                    if not os.path.exists(
+                            os.path.join(expdir, name, 'test', 'result')):
+
+                        fid.write(exps[i] + '\n\n')
+                        unfinished += 1
+
+                else:
+                    raise Exception('unknown command %s' % command)
 
     print '%d unfinished jobs added to %s' % (unfinished, target)
 

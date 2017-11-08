@@ -12,8 +12,8 @@ Requirements = (CUDACapability >= 3.0)\
   &&(CUDAGlobalMemoryMb >= $(memory))\
   &&(machine =!= LastRemoteHost)\
   &&(machine != "andromeda.esat.kuleuven.be")
-  
-#NiceUser = true
+
+NiceUser = true
 
 
 #Send an email in case of an error

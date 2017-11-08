@@ -3,7 +3,6 @@ contains the speller functionality'''
 
 import tensorflow as tf
 from nabu.neuralnetworks.models.ed_decoders import ed_decoder
-from nabu.neuralnetworks.components import rnn_cell as rnn_cell_impl
 
 class Speller(ed_decoder.EDDecoder):
     '''a speller decoder for the LAS architecture'''
@@ -79,41 +78,6 @@ class Speller(ed_decoder.EDDecoder):
             {output_name: logits},
             {output_name: logit_seq_length},
             state)
-
-    def _step(self, encoded, encoded_seq_length, targets, state, is_training):
-        '''take a single decoding step
-
-        encoded: the encoded inputs, this is a list of
-            [batch_size x ...] tensors
-        encoded_seq_length: the sequence lengths of the encoded inputs
-            as a list of [batch_size] vectors
-        targets: the targets decoded in the previous step as a list of
-            [batch_size] vectors
-        state: the state of the previous deocding step as a possibly nested
-            tupple of [batch_size x ...] vectors
-        is_training: whether or not the network is in training mode.
-
-        Returns:
-            - the output logits of this decoding step as a list of
-                [batch_size x ...] tensors
-            - the updated state as a possibly nested tupple of
-                [batch_size x ...] vectors
-        '''
-
-        output_dim = self.output_dims.values()[0]
-        output_name = self.output_dims.keys()[0]
-
-        #one hot encode the targets
-        one_hot_targets = tf.one_hot(targets.values()[0], output_dim,
-                                     dtype=tf.float32)
-
-        #create the rnn cell
-        rnn_cell = self.create_cell(encoded, encoded_seq_length, is_training)
-
-        #use the rnn_cell
-        logits, state = rnn_cell(one_hot_targets, state)
-
-        return {output_name:logits}, state
 
     def create_cell(self, encoded, encoded_seq_length, _):
         '''create the rnn cell

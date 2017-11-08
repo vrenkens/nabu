@@ -78,35 +78,36 @@ class BeamSearchDecoder(decoder.Decoder):
                     encoded_seq_length,
                     False)
 
-                #get the initial state
-                initial_state = cell.zero_state(
-                    batch_size*beam_width,
-                    tf.float32)
+            #get the initial state
+            initial_state = cell.zero_state(
+                batch_size*beam_width,
+                tf.float32)
 
-                #create the embeddings
-                embeddings = lambda x: tf.one_hot(
-                    x,
-                    self.model.decoder.output_dims.values()[0],
-                    dtype=tf.float32)
+            #create the embeddings
+            embeddings = lambda x: tf.one_hot(
+                x,
+                self.model.decoder.output_dims.values()[0],
+                dtype=tf.float32)
 
-                #Create the beam search decoder
-                beam_search_decoder = tf.contrib.seq2seq.BeamSearchDecoder(
-                    cell=cell,
-                    embedding=embeddings,
-                    start_tokens=start_tokens,
-                    end_token=end_token,
-                    initial_state=initial_state,
-                    beam_width=beam_width,
-                    length_penalty_weight=float(self.conf['length_penalty']))
+            #Create the beam search decoder
+            beam_search_decoder = tf.contrib.seq2seq.BeamSearchDecoder(
+                cell=cell,
+                embedding=embeddings,
+                start_tokens=start_tokens,
+                end_token=end_token,
+                initial_state=initial_state,
+                beam_width=beam_width,
+                length_penalty_weight=float(self.conf['length_penalty']))
 
 
+            with tf.variable_scope(self.model.decoder.scope):
                 #Decode useing the beamsearch decoder
                 output, _, lengths = tf.contrib.seq2seq.dynamic_decode(
                     decoder=beam_search_decoder,
                     maximum_iterations=int(self.conf['max_steps']))
 
-                sequences = output.predicted_ids
-                scores = output.beam_search_decoder_output.scores[:, -1, :]
+            sequences = output.predicted_ids
+            scores = output.beam_search_decoder_output.scores[:, -1, :]
 
 
             return {output_name:(sequences, lengths, scores)}

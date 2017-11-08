@@ -40,6 +40,10 @@ def test(expdir):
         #compute the loss
         batch_loss, numbatches = evaluator.evaluate()
 
+        #create a histogram for all trainable parameters
+        for param in model.variables:
+            tf.summary.histogram(param.name, param)
+
         #create a hook that will load the model
         load_hook = LoadAtBegin(
             os.path.join(expdir, 'model', 'network.ckpt'),

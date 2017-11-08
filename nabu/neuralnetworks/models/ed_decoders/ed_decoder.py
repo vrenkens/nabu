@@ -68,35 +68,6 @@ class EDDecoder(object):
                 target_seq_length,
                 is_training)
 
-
-
-        return logits, logit_sequence_length, state
-
-    def step(self, encoded, encoded_seq_length, targets, state, is_training):
-        '''take a single decoding step
-
-        encoded: the encoded inputs, this is a dictionary of
-            [batch_size x time x ...] tensors
-        encoded_seq_length: the sequence lengths of the encoded inputs
-            as a dictionary of [batch_size] vectors
-        targets: the targets decoded in the previous step as a dictionary of
-            [batch_size] vectors
-        state: the state of the previous deocding step as a possibly nested
-            tupple of [batch_size x ...] vectors
-        is_training: whether or not the network is in training mode.
-
-        Returns:
-            - the output logits of this decoding step as a dictionary of
-                [batch_size x time x ...] tensors
-            - the updated state as a possibly nested tupple of
-                [batch_size x ...] vectors
-        '''
-
-        with tf.variable_scope(self.scope):
-
-            logits, new_state = self._step(encoded, encoded_seq_length, targets,
-                                           state, is_training)
-
         self._variables = tf.get_collection(
             tf.GraphKeys.GLOBAL_VARIABLES,
             scope=self.scope.name)
@@ -105,28 +76,7 @@ class EDDecoder(object):
             #pylint: disable=E1101
             self._variables += self.wrapped.variables
 
-        return logits, new_state
-
-    @abstractmethod
-    def _step(self, encoded, encoded_seq_length, targets, state, is_training):
-        '''take a single decoding step
-
-        encoded: the encoded inputs, this is a dictionary of
-            [batch_size x time x ...] tensors
-        encoded_seq_length: the sequence lengths of the encoded inputs
-            as a dictionary of [batch_size] vectors
-        targets: the targets decoded in the previous step as a dictionary of
-            [batch_size] vectors
-        state: the state of the previous deocding step as a possibly nested
-            tupple of [batch_size x ...] vectors
-        is_training: whether or not the network is in training mode.
-
-        Returns:
-            - the output logits of this decoding step as a dictionary of
-                [batch_size x ...] tensors
-            - the updated state as a possibly nested tupple of
-                [batch_size x ...] vectors
-        '''
+        return logits, logit_sequence_length, state
 
     @abstractmethod
     def _decode(self, encoded, encoded_seq_length, targets, target_seq_length,

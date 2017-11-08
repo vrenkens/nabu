@@ -83,30 +83,6 @@ class HotstartDecoder(ed_decoder.EDDecoder):
 
         return logits, lengths, state
 
-    def _step(self, encoded, encoded_seq_length, targets, state, is_training):
-        '''take a single decoding step
-
-        encoded: the encoded inputs, this is a dictionary of
-            [batch_size x time x ...] tensors
-        encoded_seq_length: the sequence lengths of the encoded inputs
-            as a dictionary of [batch_size] vectors
-        targets: the targets decoded in the previous step as a dictionary of
-            [batch_size] vectors
-        state: the state of the previous deocding step as a possibly nested
-            tupple of [batch_size x ...] vectors
-        is_training: whether or not the network is in training mode.
-
-        Returns:
-            - the output logits of this decoding step as a dictionary of
-                [batch_size x ...] tensors
-            - the updated state as a possibly nested tupple of
-                [batch_size x ...] vectors
-        '''
-
-        #pylint: disable=W0212
-        return self.wrapped._step(
-            encoded, encoded_seq_length, targets, state, is_training)
-
     def zero_state(self, encoded_dim, batch_size):
         '''get the decoder zero state
 
