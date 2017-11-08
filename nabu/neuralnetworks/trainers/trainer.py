@@ -54,7 +54,7 @@ class Trainer(object):
                 trainlabels=self.trainlabels)
             pickle.dump(self.model, fid)
 
-    def create_graph(self):
+    def _create_graph(self):
         '''
         create the trainer computational graph
 
@@ -559,7 +559,7 @@ class Trainer(object):
         #create the graph
         graph = tf.Graph()
         with graph.as_default():
-            outputs = self.create_graph()
+            outputs = self._create_graph()
             scaffold = tf.train.Scaffold()
 
         #create a hook for saving the final model
