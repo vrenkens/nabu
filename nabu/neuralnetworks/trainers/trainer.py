@@ -67,61 +67,7 @@ class Trainer(object):
         #the outputs of the graph
         outputs = {}
 
-        #get the database configurations
-        input_names = self.model.conf.get('io', 'inputs').split(' ')
-        if input_names == ['']:
-            input_names = []
-        input_sections = [self.conf[i].split(' ') for i in input_names]
-        input_dataconfs = []
-        for sectionset in input_sections:
-            input_dataconfs.append([])
-            for section in sectionset:
-                input_dataconfs[-1].append(dict(self.dataconf.items(section)))
-
-        output_names = self.conf['targets'].split(' ')
-        if output_names == ['']:
-            output_names = []
-        target_sections = [self.conf[o].split(' ') for o in output_names]
-        target_dataconfs = []
-        for sectionset in target_sections:
-            target_dataconfs.append([])
-            for section in sectionset:
-                target_dataconfs[-1].append(dict(self.dataconf.items(section)))
-
-        #create the evaluator
-        evaltype = self.evaluatorconf.get('evaluator', 'evaluator')
-        if evaltype != 'None':
-            if evaltype == 'loss_evaluator':
-                evaluator = loss_evaluator.LossEvaluator(
-                    conf=self.evaluatorconf,
-                    dataconf=self.dataconf,
-                    model=self.model,
-                    loss_function=self.compute_loss
-                )
-            else:
-                evaluator = evaluator_factory.factory(evaltype)(
-                    conf=self.evaluatorconf,
-                    dataconf=self.dataconf,
-                    model=self.model
-                )
-
-        if 'local' in cluster.as_dict():
-            num_replicas = 1
-            device = tf.DeviceSpec(job='local')
-        else:
-            #distributed training
-            num_replicas = len(cluster.as_dict()['worker'])
-            num_servers = len(cluster.as_dict()['ps'])
-            ps_strategy = tf.contrib.training.GreedyLoadBalancingStrategy(
-                num_tasks=num_servers,
-                load_fn=tf.contrib.training.byte_size_load_fn
-            )
-            device = tf.train.replica_device_setter(
-                ps_tasks=num_servers,
-                ps_strategy=ps_strategy)
-            chief_ps = tf.DeviceSpec(
-                job='ps',
-                task=0)
+        device, chief_ps = self._device(cluster)
 
         #a variable to hold the amount of steps already taken
         outputs['global_step'] = tf.get_variable(
@@ -152,63 +98,15 @@ class Trainer(object):
 
         with tf.device(device):
 
-            #check if running in distributed model
-            if 'local' in cluster.as_dict():
-
-                #get the filenames
-                data_queue_elements, _ = input_pipeline.get_filenames(
-                    input_dataconfs + target_dataconfs)
-
-                #create the data queue and queue runners
-                data_queue = tf.train.string_input_producer(
-                    string_tensor=data_queue_elements,
-                    shuffle=True,
-                    seed=None,
-                    capacity=int(self.conf['batch_size'])*2,
-                    shared_name='data_queue')
-
-                outputs['done'] = tf.no_op()
-
-            else:
-                with tf.device(chief_ps):
-
-                    #get the data queue
-                    data_queue = tf.FIFOQueue(
-                        capacity=\
-                            int(self.conf['batch_size'])*(num_replicas+1),
-                        shared_name='data_queue',
-                        name='data_queue',
-                        dtypes=[tf.string],
-                        shapes=[[]])
-
-                #get the done queues
-                done_ops = []
-                for i in range(num_servers):
-                    with tf.device('job:ps/task:%d' % i):
-                        done_queue = tf.FIFOQueue(
-                            capacity=num_replicas,
-                            dtypes=[tf.bool],
-                            shapes=[[]],
-                            shared_name='done_queue%d' % i,
-                            name='done_queue%d' % i
-                        )
-
-                        done_ops.append(done_queue.enqueue(True))
-
-                outputs['done'] = tf.group(*done_ops)
-
             #training part
             with tf.variable_scope('train'):
 
-                #create the input pipeline
-                data, seq_length, num_steps = input_pipeline.input_pipeline(
-                    data_queue=data_queue,
-                    batch_size=int(self.conf['batch_size']),
-                    numbuckets=int(self.conf['numbuckets']),
-                    dataconfs=input_dataconfs + target_dataconfs,
-                    variable_batch_size=(
-                        self.conf['variable_batch_size'] == 'True')
-                )
+                #create the op to execute when done
+                outputs['done'] = self._done(cluster)
+
+                inputs, input_seq_length, targets, target_seq_length, num_steps\
+                    = self._data(chief_ps)
+
                 outputs['num_steps'] \
                     = num_steps*int(self.conf['num_epochs'])
 
@@ -218,19 +116,6 @@ class Trainer(object):
                         outputs['global_step'],
                         outputs['num_steps']),
                     should_terminate)
-
-                inputs = {
-                    input_names[i]: d
-                    for i, d in enumerate(data[:len(input_sections)])}
-                input_seq_length = {
-                    input_names[i]: d
-                    for i, d in enumerate(seq_length[:len(input_sections)])}
-                targets = {
-                    output_names[i]: d
-                    for i, d in enumerate(data[len(input_sections):])}
-                target_seq_length = {
-                    output_names[i]: d
-                    for i, d in enumerate(seq_length[len(input_sections):])}
 
                 #compute the training outputs of the model
                 logits, logit_seq_length = self.model(
@@ -257,73 +142,17 @@ class Trainer(object):
                     decay_rate=float(self.conf['learning_rate_decay']))
                                             * learning_rate_fact)
 
-                #create the optimizer
-                optimizer = tf.train.AdamOptimizer(outputs['learning_rate'])
-
-                #create an optimizer that aggregates gradients
-                if int(self.conf['numbatches_to_aggregate']) > 0:
-                    optimizer = tf.train.SyncReplicasOptimizer(
-                        opt=optimizer,
-                        replicas_to_aggregate=int(
-                            self.conf['numbatches_to_aggregate']),
-                        total_num_replicas=num_replicas)
-
-
                 #compute the loss
                 outputs['loss'] = self.compute_loss(
                     targets, logits, logit_seq_length, target_seq_length)
 
-                #a variable to store the loss
-                loss = tf.get_variable(
-                    name='loss',
-                    shape=[],
-                    dtype=tf.float32,
-                    initializer=tf.constant_initializer(0),
-                    trainable=False)
-
-                tf.summary.scalar('training loss', loss)
-
-                #an op to update the loss
-                update_loss = loss.assign(outputs['loss']).op
-
-                #get the list of trainable variables
-                trainable = tf.trainable_variables()
-
-                #get the list of variables to be removed from the trainable
-                #variables
-                untrainable = tf.get_collection('untrainable')
-
-                #remove the variables
-                trainable = [var for var in trainable
-                             if var not in untrainable]
-
-                #compute the gradients
-                grads_and_vars = optimizer.compute_gradients(
+                outputs['update_op'] = self._update(
                     loss=outputs['loss'],
-                    var_list=trainable)
-
-                with tf.variable_scope('clip'):
-                    #clip the gradients
-                    grads_and_vars = [(tf.clip_by_value(grad, -1., 1.), var)
-                                      for grad, var in grads_and_vars]
-
-
-                #opperation to apply the gradients
-                apply_gradients_op = optimizer.apply_gradients(
-                    grads_and_vars=grads_and_vars,
                     global_step=outputs['global_step'],
-                    name='apply_gradients')
+                    learning_rate=outputs['learning_rate'],
+                    cluster=cluster)
 
-                #all remaining operations with the UPDATE_OPS GraphKeys
-                update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-
-                #create an operation to update the gradients, the batch_loss
-                #and do all other update ops
-                outputs['update_op'] = tf.group(
-                    *([apply_gradients_op, update_loss] + update_ops),
-                    name='update')
-
-            if evaltype != 'None':
+            if self.evaluatorconf.get('evaluator', 'evaluator') != 'None':
 
                 #validation part
                 with tf.variable_scope('validate'):
@@ -351,9 +180,7 @@ class Trainer(object):
                         outputs['global_step'] - validated_step,
                         int(self.conf['valid_frequency']))
 
-                    #compute the loss
-                    val_batch_loss, outputs['valbatches'] = \
-                        evaluator.evaluate()
+                    val_batch_loss, outputs['valbatches'] = self._validate()
 
                     outputs['update_loss'] \
                         = outputs['validation_loss'].assign(
@@ -399,9 +226,12 @@ class Trainer(object):
                     outputs['reset_waiting'] = waiting_workers.initializer
 
                     #an operation to check if all workers are waiting
-                    outputs['all_waiting'] = tf.equal(
-                        waiting_workers,
-                        num_replicas-1)
+                    if 'local' in cluster.as_dict():
+                        outputs['all_waiting'] = tf.constant(True)
+                    else:
+                        outputs['all_waiting'] = tf.equal(
+                            waiting_workers,
+                            len(cluster.as_dict()['worker'])-1)
 
                     tf.summary.scalar('validation loss',
                                       outputs['validation_loss'])
@@ -415,6 +245,269 @@ class Trainer(object):
                 tf.summary.histogram(param.name, param)
 
         return outputs
+
+    def _data(self, chief_ps):
+        '''
+        create the input pipeline
+
+        args:
+            -chief_ps: the chief parameter server device
+
+        returns:
+            - the inputs
+            - the input sequence lengths
+            - the targets
+            - the target sequence lengths
+            - the number of steps in an epoch
+        '''
+
+        #get the database configurations
+        input_names = self.model.conf.get('io', 'inputs').split(' ')
+        if input_names == ['']:
+            input_names = []
+        input_sections = [self.conf[i].split(' ') for i in input_names]
+        input_dataconfs = []
+        for sectionset in input_sections:
+            input_dataconfs.append([])
+            for section in sectionset:
+                input_dataconfs[-1].append(dict(self.dataconf.items(section)))
+
+        output_names = self.conf['targets'].split(' ')
+        if output_names == ['']:
+            output_names = []
+        target_sections = [self.conf[o].split(' ') for o in output_names]
+        target_dataconfs = []
+        for sectionset in target_sections:
+            target_dataconfs.append([])
+            for section in sectionset:
+                target_dataconfs[-1].append(dict(self.dataconf.items(section)))
+
+        #check if running in distributed model
+        if chief_ps is None:
+
+            #get the filenames
+            data_queue_elements, _ = input_pipeline.get_filenames(
+                input_dataconfs + target_dataconfs)
+
+            #create the data queue and queue runners
+            data_queue = tf.train.string_input_producer(
+                string_tensor=data_queue_elements,
+                shuffle=True,
+                seed=None,
+                capacity=int(self.conf['batch_size'])*2,
+                shared_name='data_queue')
+
+        else:
+            with tf.device(chief_ps):
+
+                #get the data queue
+                data_queue = tf.FIFOQueue(
+                    capacity=int(self.conf['batch_size'])*2,
+                    shared_name='data_queue',
+                    name='data_queue',
+                    dtypes=[tf.string],
+                    shapes=[[]])
+
+        #create the input pipeline
+        data, seq_length, num_steps = input_pipeline.input_pipeline(
+            data_queue=data_queue,
+            batch_size=int(self.conf['batch_size']),
+            numbuckets=int(self.conf['numbuckets']),
+            dataconfs=input_dataconfs + target_dataconfs,
+            variable_batch_size=(
+                self.conf['variable_batch_size'] == 'True')
+        )
+
+        inputs = {
+            input_names[i]: d
+            for i, d in enumerate(data[:len(input_sections)])}
+        input_seq_length = {
+            input_names[i]: d
+            for i, d in enumerate(seq_length[:len(input_sections)])}
+        targets = {
+            output_names[i]: d
+            for i, d in enumerate(data[len(input_sections):])}
+        target_seq_length = {
+            output_names[i]: d
+            for i, d in enumerate(seq_length[len(input_sections):])}
+
+        return inputs, input_seq_length, targets, target_seq_length, num_steps
+
+    def _done(self, cluster):
+        '''
+        create the op to run when finished
+
+        args:
+            cluster: the tf cluster
+
+        returns: the done op
+        '''
+
+        if 'local' in cluster.as_dict():
+            done = tf.no_op()
+        else:
+            #get the done queues
+            num_servers = len(cluster.as_dict()['ps'])
+            num_replicas = len(cluster.as_dict()['worker'])
+            done_ops = []
+            for i in range(num_servers):
+                with tf.device('job:ps/task:%d' % i):
+                    done_queue = tf.FIFOQueue(
+                        capacity=num_replicas,
+                        dtypes=[tf.bool],
+                        shapes=[[]],
+                        shared_name='done_queue%d' % i,
+                        name='done_queue%d' % i
+                    )
+
+                    done_ops.append(done_queue.enqueue(True))
+
+            done = tf.group(*done_ops)
+
+        return done
+
+    def _validate(self):
+        '''
+        get the validation loss
+
+        returns:
+            - the validation loss for a batch
+            - the number of validation batches
+        '''
+
+        #create the evaluator
+        evaltype = self.evaluatorconf.get('evaluator', 'evaluator')
+        if evaltype != 'None':
+            if evaltype == 'loss_evaluator':
+                evaluator = loss_evaluator.LossEvaluator(
+                    conf=self.evaluatorconf,
+                    dataconf=self.dataconf,
+                    model=self.model,
+                    loss_function=self.compute_loss
+                )
+            else:
+                evaluator = evaluator_factory.factory(evaltype)(
+                    conf=self.evaluatorconf,
+                    dataconf=self.dataconf,
+                    model=self.model
+                )
+
+        #compute the loss
+        val_batch_loss, valbatches = evaluator.evaluate()
+
+        return val_batch_loss, valbatches
+
+    def _device(self, cluster):
+        '''
+        get the device
+
+        args:
+            cluster: a tf cluster
+
+        returns:
+            - the device specification
+            - the chief paramater server device
+        '''
+
+        if 'local' in cluster.as_dict():
+            device = tf.DeviceSpec(job='local')
+            chief_ps = None
+        else:
+            #distributed training
+            num_servers = len(cluster.as_dict()['ps'])
+            ps_strategy = tf.contrib.training.GreedyLoadBalancingStrategy(
+                num_tasks=num_servers,
+                load_fn=tf.contrib.training.byte_size_load_fn
+            )
+            device = tf.train.replica_device_setter(
+                ps_tasks=num_servers,
+                ps_strategy=ps_strategy)
+            chief_ps = tf.DeviceSpec(
+                job='ps',
+                task=0)
+
+        return device, chief_ps
+
+    def _update(self, loss, global_step, learning_rate, cluster):
+        '''
+        create the op to update the model
+
+        args:
+            loss: the loss to minimize
+            global_step: the gloabal step variable
+            learning_rate: the learning rate
+            cluster: the tf cluster
+
+        returns: the update op
+        '''
+
+        #create the optimizer
+        optimizer = tf.train.AdamOptimizer(learning_rate)
+
+        #create an optimizer that aggregates gradients
+        if int(self.conf['numbatches_to_aggregate']) > 0:
+            if 'local' in cluster.as_dict():
+                num_workers = 1
+            else:
+                num_workers = len(cluster.as_dict()['worker'])
+
+            optimizer = tf.train.SyncReplicasOptimizer(
+                opt=optimizer,
+                replicas_to_aggregate=int(
+                    self.conf['numbatches_to_aggregate']),
+                total_num_replicas=num_workers)
+
+        #a variable to store the loss
+        training_loss = tf.get_variable(
+            name='loss',
+            shape=[],
+            dtype=tf.float32,
+            initializer=tf.constant_initializer(0),
+            trainable=False)
+
+        tf.summary.scalar('training loss', training_loss)
+
+        #an op to update the loss
+        update_loss = training_loss.assign(loss).op
+
+        #get the list of trainable variables
+        trainable = tf.trainable_variables()
+
+        #get the list of variables to be removed from the trainable
+        #variables
+        untrainable = tf.get_collection('untrainable')
+
+        #remove the variables
+        trainable = [var for var in trainable
+                     if var not in untrainable]
+
+        #compute the gradients
+        grads_and_vars = optimizer.compute_gradients(
+            loss=loss,
+            var_list=trainable)
+
+        with tf.variable_scope('clip'):
+            #clip the gradients
+            grads_and_vars = [(tf.clip_by_value(grad, -1., 1.), var)
+                              for grad, var in grads_and_vars]
+
+
+        #opperation to apply the gradients
+        apply_gradients_op = optimizer.apply_gradients(
+            grads_and_vars=grads_and_vars,
+            global_step=global_step,
+            name='apply_gradients')
+
+        #all remaining operations with the UPDATE_OPS GraphKeys
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+
+        #create an operation to update the gradients, the batch_loss
+        #and do all other update ops
+        update_op = tf.group(
+            *([apply_gradients_op, update_loss] + update_ops),
+            name='update')
+
+        return update_op
 
     @abstractmethod
     def compute_loss(self, targets, logits, logit_seq_length,
@@ -703,7 +796,7 @@ class ParameterServer(object):
                     string_tensor=data_queue_elements,
                     shuffle=True,
                     seed=None,
-                    capacity=int(conf['batch_size'])*(num_replicas+1),
+                    capacity=int(conf['batch_size'])*2,
                     shared_name='data_queue')
 
                 #create a queue for the workers to signiy that they are done
