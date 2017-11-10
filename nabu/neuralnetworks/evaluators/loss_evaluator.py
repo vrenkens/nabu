@@ -3,24 +3,10 @@ contains the LossEvaluator class'''
 
 import tensorflow as tf
 import evaluator
+from nabu.neuralnetworks.trainers import loss_functions
 
 class LossEvaluator(evaluator.Evaluator):
     '''The Decoder Evaluator is used to evaluate a decoder'''
-
-    def __init__(self, conf, dataconf, model, loss_function):
-        '''Evaluator constructor
-
-        Args:
-            conf: the evaluator configuration as a ConfigParser
-            dataconf: the database configuration
-            model: the model to be evaluated
-            loss_function: the loss_function tpo be used in compute loss
-        '''
-
-
-        super(LossEvaluator, self).__init__(conf, dataconf, model)
-        self.loss_function = loss_function
-
 
 
     def compute_loss(self, inputs, input_seq_length, targets,
@@ -44,7 +30,11 @@ class LossEvaluator(evaluator.Evaluator):
             logits, logit_seq_length = self.model(
                 inputs, input_seq_length, targets, target_seq_length, False)
 
-            loss = self.loss_function(
-                targets, logits, logit_seq_length, target_seq_length)
+            loss = loss_functions.factory(
+                self.conf['loss'])(
+                    targets,
+                    logits,
+                    logit_seq_length,
+                    target_seq_length)
 
         return loss

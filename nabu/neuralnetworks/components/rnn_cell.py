@@ -39,6 +39,39 @@ class ScopeRNNCellWrapper(tf.contrib.rnn.RNNCell):
 
         return output, new_state
 
+class BypassWrapper(tf.contrib.rnn.RNNCell):
+    '''this will concatenate the input with the output'''
+
+    def __init__(self, cell):
+        '''ScopeRNNCellWrapper constructor'''
+
+        self._cell = cell
+
+    @property
+    def output_size(self):
+        '''return cell output size'''
+
+        return self._cell.output_size + self._cell.input_shape[-1]
+
+    @property
+    def state_size(self):
+        '''return cell state size'''
+
+        return self._cell.state_size
+
+    def zero_state(self, batch_size, dtype):
+        '''the cell zero state'''
+
+        return self._cell.zero_state(batch_size, dtype)
+
+    def __call__(self, inputs, state, scope=None):
+        '''call wrapped cell with constant scope'''
+
+        output, new_state = self._cell(inputs, state, scope)
+        output = tf.concat([output, inputs], -1)
+
+        return output, new_state
+
 class StateOutputWrapper(tf.contrib.rnn.RNNCell):
     '''this wraps an RNN cell to make it output its concatenated state instead
         of the output'''

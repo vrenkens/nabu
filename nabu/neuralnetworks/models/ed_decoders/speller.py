@@ -119,14 +119,18 @@ class Speller(ed_decoder.EDDecoder):
             #add attention to the rnn cell
             rnn_cell = tf.contrib.seq2seq.AttentionWrapper(
                 cell=rnn_cell,
-                attention_mechanism=attention_mechanism
+                attention_mechanism=attention_mechanism,
+                attention_layer_size=int(self.conf['num_units']),
+                alignment_history=False,
+                output_attention=True
             )
 
-        #add an output layer to the rnn cell
+        #the output layer
         rnn_cell = tf.contrib.rnn.OutputProjectionWrapper(
-            rnn_cell,
+            cell=rnn_cell,
             output_size=self.output_dims.values()[0],
-            reuse=tf.get_variable_scope().reuse)
+            reuse=tf.get_variable_scope().reuse
+        )
 
         return rnn_cell
 
