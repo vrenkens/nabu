@@ -2,18 +2,20 @@
 neural network trainer environment'''
 
 import os
-from abc import ABCMeta, abstractmethod, abstractproperty
 import time
 import cPickle as pickle
+from abc import ABCMeta, abstractmethod
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 from nabu.processing import input_pipeline
+from nabu.neuralnetworks.trainers import loss_functions
 from nabu.neuralnetworks.models.model import Model
-from nabu.neuralnetworks.evaluators import evaluator_factory, loss_evaluator
+from nabu.neuralnetworks.evaluators import evaluator_factory
 from nabu.neuralnetworks.components import hooks
 
 class Trainer(object):
     '''General class outlining the training environment of a model.'''
+
     __metaclass__ = ABCMeta
 
     def __init__(self,
@@ -46,12 +48,12 @@ class Trainer(object):
         self.server = server
         self.task_index = task_index
 
-        #create the model
+        #load the model
         modelfile = os.path.join(self.expdir, 'model', 'model.pkl')
         with open(modelfile, 'wb') as fid:
             self.model = Model(
                 conf=modelconf,
-                trainlabels=self.trainlabels)
+                trainlabels=int(self.conf['trainlabels']))
             pickle.dump(self.model, fid)
 
     def _create_graph(self):
@@ -143,8 +145,16 @@ class Trainer(object):
                                             * learning_rate_fact)
 
                 #compute the loss
-                outputs['loss'] = self.compute_loss(
-                    targets, logits, logit_seq_length, target_seq_length)
+                outputs['loss'] = loss_functions.factory(
+                    self.conf['loss'])(
+                        targets,
+                        logits,
+                        logit_seq_length,
+                        target_seq_length)
+
+                aditional_loss = self.aditional_loss()
+                if aditional_loss is not None:
+                    outputs['loss'] += aditional_loss
 
                 outputs['update_op'] = self._update(
                     loss=outputs['loss'],
@@ -378,19 +388,11 @@ class Trainer(object):
         #create the evaluator
         evaltype = self.evaluatorconf.get('evaluator', 'evaluator')
         if evaltype != 'None':
-            if evaltype == 'loss_evaluator':
-                evaluator = loss_evaluator.LossEvaluator(
-                    conf=self.evaluatorconf,
-                    dataconf=self.dataconf,
-                    model=self.model,
-                    loss_function=self.compute_loss
-                )
-            else:
-                evaluator = evaluator_factory.factory(evaltype)(
-                    conf=self.evaluatorconf,
-                    dataconf=self.dataconf,
-                    model=self.model
-                )
+            evaluator = evaluator_factory.factory(evaltype)(
+                conf=self.evaluatorconf,
+                dataconf=self.dataconf,
+                model=self.model
+            )
 
         #compute the loss
         val_batch_loss, valbatches = evaluator.evaluate()
@@ -508,36 +510,6 @@ class Trainer(object):
             name='update')
 
         return update_op
-
-    @abstractmethod
-    def compute_loss(self, targets, logits, logit_seq_length,
-                     target_seq_length):
-        '''
-        Compute the loss
-
-        Creates the operation to compute the cross-enthropy loss for every input
-        frame (if you want to have a different loss function, overwrite this
-        method)
-
-        Args:
-            targets: a list of [batch_size x ...] tensor containing the
-                targets
-            logits: a list of [batch_size x ... tensor containing the
-                logits
-            logit_seq_length: a list of [batch_size] vectors containing the
-                logit sequence lengths
-            target_seq_length: a list of [batch_size] vectors containing the
-                target sequence lengths
-
-        Returns:
-            a scalar value containing the loss
-        '''
-
-    @abstractproperty
-    def trainlabels(self):
-        '''
-        the number of aditional labels the trainer needs (e.g. blank or eos)
-        '''
 
     def train(self):
         '''train the model'''
@@ -717,7 +689,7 @@ class Trainer(object):
                             loss, lr, time.time()-start,
                             memory_line))
 
-    #pylint: disable=W0613
+    @abstractmethod
     def chief_only_hooks(self, outputs):
         '''add hooks only for the chief worker
 
@@ -727,8 +699,7 @@ class Trainer(object):
         Returns:
             a list of hooks'''
 
-        return []
-
+    @abstractmethod
     def hooks(self, outputs):
         '''add hooks for the session
 
@@ -739,7 +710,12 @@ class Trainer(object):
             a list of hooks
         '''
 
-        return []
+    @abstractmethod
+    def aditional_loss(self):
+        '''add an aditional loss
+
+        returns:
+            the aditional loss or None'''
 
 class ParameterServer(object):
     '''a class for parameter servers'''

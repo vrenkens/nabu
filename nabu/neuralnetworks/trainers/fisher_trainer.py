@@ -2,14 +2,11 @@
 contains the FisherTrainer'''
 
 import os
-import StringIO
-import ConfigParser
 import tensorflow as tf
 from nabu.neuralnetworks.trainers import trainer
 from nabu.neuralnetworks.decoders import random_decoder
 from nabu.processing import input_pipeline
 from nabu.neuralnetworks.components import hooks
-import trainer_factory
 
 class FisherTrainer(trainer.Trainer):
     '''A that computes the fisher information matrix at the end of training'''
@@ -24,7 +21,6 @@ class FisherTrainer(trainer.Trainer):
                  task_index):
         '''
         NnetTrainer constructor, creates the training graph
-
         Args:
             conf: the trainer config as a ConfigParser
             dataconf: the data configuration as a ConfigParser
@@ -35,31 +31,6 @@ class FisherTrainer(trainer.Trainer):
             server: optional server to be used for distributed training
             task_index: optional index of the worker task in the cluster
         '''
-
-        # Create a deep copy of the conf
-        config_string = StringIO.StringIO()
-        conf.write(config_string)
-
-        # We must reset the buffer to make it ready for reading.
-        config_string.seek(0)
-        wrapped_conf = ConfigParser.ConfigParser()
-        wrapped_conf.readfp(config_string)
-
-        #set the wrapped section as the trainer section
-        for option, value in wrapped_conf.items(conf.get('trainer', 'wrapped')):
-            wrapped_conf.set('trainer', option, value)
-        wrapped_conf.remove_section(conf.get('trainer', 'wrapped'))
-
-        #create the wrapped trainer
-        self.wrapped = trainer_factory.factory(
-            wrapped_conf.get('trainer', 'trainer'))(
-                wrapped_conf,
-                dataconf,
-                modelconf,
-                evaluatorconf,
-                expdir,
-                server,
-                task_index)
 
         #super constructor
         super(FisherTrainer, self).__init__(
@@ -72,13 +43,11 @@ class FisherTrainer(trainer.Trainer):
             task_index
         )
 
-        #link the models of the wrapped trainer to this trainer
-        self.wrapped.model = self.model
-
         #the scope for the fisher information
         self.fisher_scope = tf.VariableScope(
             tf.AUTO_REUSE, 'fisher_information')
 
+        #the conf for the decoder
         self.decoderconf = conf
 
     @property
@@ -123,26 +92,12 @@ class FisherTrainer(trainer.Trainer):
 
         return fisher, init
 
-    def compute_loss(self, targets, logits, logit_seq_length,
-                     target_seq_length):
+    def aditional_loss(self):
         '''
-        Compute the loss
+        add an aditional loss
 
-        Creates the operation to compute the cross-entropy loss for every input
-        frame and ads an end of sequence label to the targets
-
-        Args:
-            targets: a dictionary of [batch_size x time x ...] tensor containing
-                the targets
-            logits: a dictionary of [batch_size x time x ...] tensor containing
-                the logits
-            logit_seq_length: a dictionary of [batch_size] vectors containing
-                the logit sequence lengths
-            target_seq_length: a dictionary of [batch_size] vectors containing
-                the target sequence lengths
-
-        Returns:
-            a scalar value containing the loss
+        returns:
+            the aditional loss or None
         '''
 
         #get the fisher information and initial values
@@ -154,16 +109,7 @@ class FisherTrainer(trainer.Trainer):
                 tf.reduce_sum(fisher[var]*tf.square(var-init[var]))
                 for var in fisher])
 
-        return self.wrapped.compute_loss(targets, logits, logit_seq_length,
-                                         target_seq_length) + fisher_loss
-
-    @property
-    def trainlabels(self):
-        '''
-        the number of aditional labels the trainer needs (e.g. blank or eos)
-        '''
-
-        return self.wrapped.trainlabels
+        return fisher_loss
 
     def chief_only_hooks(self, outputs):
         '''add hooks only for the chief worker
@@ -175,7 +121,7 @@ class FisherTrainer(trainer.Trainer):
             a list of hooks
         '''
 
-        hooklist = self.wrapped.chief_only_hooks(outputs)
+        hooklist = []
 
         #create a hook to compute the fisher information
         fisher, init = self.fisher
@@ -231,7 +177,7 @@ class FisherTrainer(trainer.Trainer):
             a list of hooks
         '''
 
-        return self.wrapped.hooks(outputs)
+        return []
 
 class ComputeFisher(tf.train.SessionRunHook):
     '''a hook to compute the fisher information matrix'''

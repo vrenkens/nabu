@@ -2,7 +2,7 @@
 contains the EDEncoder factory'''
 
 from . import listener, dummy_encoder, dblstm, dnn, listener_ps, \
-bottleneck_encoder, bldnn, hotstart_encoder
+bottleneck_encoder, bldnn, hotstart_encoder, stack_encoder
 
 def factory(encoder):
     '''get an EDEncoder class
@@ -29,5 +29,7 @@ def factory(encoder):
         return bldnn.BLDNN
     elif encoder == 'hotstart_encoder':
         return hotstart_encoder.HotstartEncoder
+    elif encoder == 'stack_encoder':
+        return stack_encoder.StackEncoder
     else:
         raise Exception('undefined encoder type: %s' % encoder)
