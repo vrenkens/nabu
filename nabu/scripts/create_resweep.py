@@ -28,7 +28,7 @@ def main(sweep, command, expdir, target):
 
             #check if in condor q
             in_queue = os.popen(
-                'if condor_q -nobatch | grep -q %s; '
+                'if condor_q -nobatch -wide | grep -q %s; '
                 'then echo true; else echo false; fi' %
                 os.path.join(expdir, name)).read().strip() == 'true'
 

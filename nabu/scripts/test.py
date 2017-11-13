@@ -9,21 +9,36 @@ from six.moves import configparser
 import tensorflow as tf
 from nabu.neuralnetworks.evaluators import evaluator_factory
 from nabu.neuralnetworks.components.hooks import LoadAtBegin, SummaryHook
+from nabu.neuralnetworks.models.model import Model
 
-def test(expdir):
-    '''does everything for testing'''
+def test(expdir, testing=False):
+    '''does everything for testing
+
+    args:
+        expdir: the experiments directory
+        testing: if true only the graph will be created for debugging purposes
+    '''
 
     #read the database config file
     database_cfg = configparser.ConfigParser()
-    database_cfg.read(os.path.join(expdir, 'database.cfg'))
+    database_cfg.read(os.path.join(expdir, 'database.conf'))
 
-    #load the model
-    with open(os.path.join(expdir, 'model', 'model.pkl'), 'rb') as fid:
-        model = pickle.load(fid)
+    if testing:
+        model_cfg = configparser.ConfigParser()
+        model_cfg.read(os.path.join(expdir, 'model.cfg'))
+        trainer_cfg = configparser.ConfigParser()
+        trainer_cfg.read(os.path.join(expdir, 'trainer.cfg'))
+        model = Model(
+            conf=model_cfg,
+            trainlabels=int(trainer_cfg.get('trainer', 'trainlabels')))
+    else:
+        #load the model
+        with open(os.path.join(expdir, 'model', 'model.pkl'), 'rb') as fid:
+            model = pickle.load(fid)
 
     #read the evaluator config file
     evaluator_cfg = configparser.ConfigParser()
-    evaluator_cfg.read(os.path.join(expdir, 'evaluator.cfg'))
+    evaluator_cfg.read(os.path.join(expdir, 'test_evaluator.cfg'))
 
     #create the evaluator
     evaltype = evaluator_cfg.get('evaluator', 'evaluator')
@@ -39,6 +54,9 @@ def test(expdir):
 
         #compute the loss
         batch_loss, numbatches = evaluator.evaluate()
+
+        if testing:
+            return
 
         #create a histogram for all trainable parameters
         for param in model.variables:
@@ -75,4 +93,4 @@ if __name__ == '__main__':
                               )
     FLAGS = tf.app.flags.FLAGS
 
-    test(FLAGS.expdir)
+    test(FLAGS.expdir, False)

@@ -26,7 +26,7 @@ class LossEvaluator(evaluator.Evaluator):
         Returns:
             the loss as a scalar'''
 
-        with tf.name_scope('evaluate_decoder'):
+        with tf.name_scope('evaluate_loss'):
             logits, logit_seq_length = self.model(
                 inputs, input_seq_length, targets, target_seq_length, False)
 

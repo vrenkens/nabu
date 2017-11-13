@@ -53,7 +53,7 @@ def main(expdir, recipe, computing):
         for item in conf:
             dataconf.set(name, item, conf[item])
 
-        with open(os.path.join(expdir, name, 'database.cfg'), 'w') as fid:
+        with open(os.path.join(expdir, name, 'database.conf'), 'w') as fid:
             dataconf.write(fid)
 
         #copy the processor config

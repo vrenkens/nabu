@@ -4,7 +4,6 @@ contains the Recognizer class'''
 import os
 import shutil
 import math
-import cPickle as pickle
 import tensorflow as tf
 from nabu.processing import input_pipeline
 from nabu.neuralnetworks.decoders import decoder_factory
@@ -15,22 +14,20 @@ class Recognizer(object):
 
     stores the results on disk'''
 
-    def __init__(self, conf, dataconf, expdir):
+    def __init__(self, model, conf, dataconf, expdir):
         '''Recognizer constructor
 
         Args:
+            model: the model to be tested
             conf: the recognizer configuration as a configparser
             modelconf: the model configuration as a configparser
             dataconf: the database configuration as a configparser
             expdir: the experiments directory
         '''
 
-        self.conf = conf.items('recognizer')
+        self.conf = dict(conf.items('recognizer'))
         self.expdir = expdir
-
-        #load the model
-        with open(os.path.join(expdir, 'model', 'model.pkl'), 'rb') as fid:
-            self.model = pickle.load(fid)
+        self.model = model
 
         #get the database configurations
         input_sections = [self.conf[i].split(' ')
@@ -43,7 +40,7 @@ class Recognizer(object):
 
         #create a decoder
         self.decoder = decoder_factory.factory(
-            conf.get('decoder', 'decoder'))(conf, model)
+            conf.get('decoder', 'decoder'))(conf, self.model)
 
         self.batch_size = int(self.conf['batch_size'])
 

@@ -68,11 +68,11 @@ def main(expdir, recipe, mode, computing):
         #experiment information is stored
 
         shutil.copyfile(database_cfg_file,
-                        os.path.join(expdir, 'database.cfg'))
+                        os.path.join(expdir, 'database.conf'))
         shutil.copyfile(model_cfg_file,
                         os.path.join(expdir, 'model.cfg'))
         shutil.copyfile(evaluator_cfg_file,
-                        os.path.join(expdir, 'evaluator.cfg'))
+                        os.path.join(expdir, 'validation_evaluator.cfg'))
 
     shutil.copyfile(trainer_cfg_file, os.path.join(expdir, 'trainer.cfg'))
 

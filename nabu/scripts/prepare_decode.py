@@ -53,7 +53,7 @@ def main(_):
 
     #copy the config files
     shutil.copyfile(database_cfg_file,
-                    os.path.join(FLAGS.expdir, 'decode', 'database.cfg'))
+                    os.path.join(FLAGS.expdir, 'decode', 'database.conf'))
     shutil.copyfile(recognizer_cfg_file,
                     os.path.join(FLAGS.expdir, 'decode', 'recognizer.cfg'))
 

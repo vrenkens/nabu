@@ -14,7 +14,8 @@ def train(clusterfile,
           job_name,
           task_index,
           ssh_command,
-          expdir):
+          expdir,
+          testing=False):
 
     ''' does everything for asr training
 
@@ -26,11 +27,12 @@ def train(clusterfile,
         ssh_command: the command to use for ssh, if 'None' no tunnel will be
             created
         expdir: the experiments directory
+        testing: if true only the graph will be created for debugging purposes
     '''
 
     #read the database config file
     database_cfg = configparser.ConfigParser()
-    database_cfg.read(os.path.join(expdir, 'database.cfg'))
+    database_cfg.read(os.path.join(expdir, 'database.conf'))
 
     #read the asr config file
     model_cfg = configparser.ConfigParser()
@@ -42,7 +44,7 @@ def train(clusterfile,
 
     #read the decoder config file
     evaluator_cfg = configparser.ConfigParser()
-    evaluator_cfg.read(os.path.join(expdir, 'evaluator.cfg'))
+    evaluator_cfg.read(os.path.join(expdir, 'validation_evaluator.cfg'))
 
     #create the cluster and server
     server = create_server.create_server(
@@ -80,14 +82,14 @@ def train(clusterfile,
     print 'starting training'
 
     #train the model
-    tr.train()
+    tr.train(testing)
 
 if __name__ == '__main__':
 
     #define the FLAGS
     tf.app.flags.DEFINE_string('clusterfile', None,
                                'The file containing the cluster')
-    tf.app.flags.DEFINE_string('job_name', 'local', 'One of ps, worker')
+    tf.app.flags.DEFINE_string('job_name', 'local', 'One of local, ps, worker')
     tf.app.flags.DEFINE_integer('task_index', 0, 'The task index')
     tf.app.flags.DEFINE_string(
         'ssh_command', 'None',
@@ -101,4 +103,5 @@ if __name__ == '__main__':
         job_name=FLAGS.job_name,
         task_index=FLAGS.task_index,
         ssh_command=FLAGS.ssh_command,
-        expdir=FLAGS.expdir)
+        expdir=FLAGS.expdir,
+        testing=False)

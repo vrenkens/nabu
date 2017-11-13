@@ -508,8 +508,13 @@ class Trainer(object):
 
         return update_op
 
-    def train(self):
-        '''train the model'''
+    def train(self, testing=False):
+        '''train the model
+
+        args:
+            testing: if true only the graph will be created for debugging
+                purposes
+        '''
 
         #look for the master if distributed training is done
         master = self.server.target
@@ -530,6 +535,9 @@ class Trainer(object):
         with graph.as_default():
             outputs = self._create_graph()
             scaffold = tf.train.Scaffold()
+
+        if testing:
+            return
 
         #create a hook for saving the final model
         save_hook = hooks.SaveAtEnd(
