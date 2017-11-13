@@ -48,13 +48,10 @@ class Trainer(object):
         self.server = server
         self.task_index = task_index
 
-        #load the model
-        modelfile = os.path.join(self.expdir, 'model', 'model.pkl')
-        with open(modelfile, 'wb') as fid:
-            self.model = Model(
-                conf=modelconf,
-                trainlabels=int(self.conf['trainlabels']))
-            pickle.dump(self.model, fid)
+        #create the model
+        self.model = Model(
+            conf=modelconf,
+            trainlabels=int(self.conf['trainlabels']))
 
     def _create_graph(self):
         '''
@@ -688,6 +685,11 @@ class Trainer(object):
                             outputs['num_steps'],
                             loss, lr, time.time()-start,
                             memory_line))
+
+        #store the model file
+        modelfile = os.path.join(self.expdir, 'model', 'model.pkl')
+        with open(modelfile, 'wb') as fid:
+            pickle.dump(self.model, fid)
 
     @abstractmethod
     def chief_only_hooks(self, outputs):

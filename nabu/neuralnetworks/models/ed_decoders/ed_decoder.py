@@ -122,6 +122,10 @@ class EDDecoder(object):
     def variables(self):
         '''get a list of the models's variables'''
 
+        if not self._variables:
+            self._variables = tf.get_collection(
+                tf.GraphKeys.GLOBAL_VARIABLES,
+                scope=self.scope.name)
         return self._variables
 
     @abstractmethod
