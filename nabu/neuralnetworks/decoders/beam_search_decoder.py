@@ -43,16 +43,10 @@ class BeamSearchDecoder(decoder.Decoder):
             beam_width = int(self.conf['beam_width'])
             batch_size = tf.shape(inputs.values()[0])[0]
 
-            #the start and end tokens are the final output
-            token_val = int(self.model.decoder.output_dims.values()[0]-1)
-
             #start_tokens: vector with size batch_size
-            start_tokens = tf.fill([batch_size], token_val)
+            start_tokens = tf.zeros([batch_size], dtype=tf.int32)
 
-            #end token
-            end_token = tf.constant(token_val, dtype=tf.int32)
-
-            #encode the inputs [batch_size x output_length x output_dim]
+            #encode the inputs
             encoded, encoded_seq_length = self.model.encoder(
                 inputs=inputs,
                 input_seq_length=input_seq_length,
@@ -85,7 +79,7 @@ class BeamSearchDecoder(decoder.Decoder):
 
             #create the embeddings
             embeddings = lambda x: tf.one_hot(
-                x,
+                x+1,
                 self.model.decoder.output_dims.values()[0],
                 dtype=tf.float32)
 
@@ -94,7 +88,7 @@ class BeamSearchDecoder(decoder.Decoder):
                 cell=cell,
                 embedding=embeddings,
                 start_tokens=start_tokens,
-                end_token=end_token,
+                end_token=self.model.decoder.output_dims.values()[0]-1,
                 initial_state=initial_state,
                 beam_width=beam_width,
                 length_penalty_weight=float(self.conf['length_penalty']))

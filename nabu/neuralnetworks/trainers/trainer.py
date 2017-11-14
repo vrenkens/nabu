@@ -539,20 +539,22 @@ class Trainer(object):
         if testing:
             return
 
-        #create a hook for saving the final model
-        save_hook = hooks.SaveAtEnd(
-            os.path.join(self.expdir, 'model', 'network.ckpt'),
-            self.model.variables)
-
-        #create a hook for saving and restoring the validated model
-        validation_hook = hooks.ValidationSaveHook(
-            os.path.join(self.expdir, 'logdir', 'validated.ckpt'),
-            self.model)
-
-        #create the summary hook
-        summary_hook = hooks.SummaryHook(os.path.join(self.expdir, 'logdir'))
-
         with graph.as_default():
+
+            #create a hook for saving the final model
+            save_hook = hooks.SaveAtEnd(
+                os.path.join(self.expdir, 'model', 'network.ckpt'),
+                self.model.variables)
+
+            #create a hook for saving and restoring the validated model
+            validation_hook = hooks.ValidationSaveHook(
+                os.path.join(self.expdir, 'logdir', 'validated.ckpt'),
+                self.model)
+
+            #create the summary hook
+            summary_hook = hooks.SummaryHook(
+                os.path.join(self.expdir, 'logdir'))
+
             with tf.train.MonitoredTrainingSession(
                 master=master,
                 is_chief=is_chief,

@@ -1,34 +1,37 @@
-'''@ file rnn_decoder.py
-contains the RNNDecoder class'''
+'''@file rnn_decoder.py
+contains the general recurrent decoder class'''
 
+from abc import ABCMeta, abstractmethod
 import tensorflow as tf
-import ed_decoder
-from nabu.neuralnetworks.components import rnn_cell as rnn_cell_impl
+from nabu.neuralnetworks.models.ed_decoders import ed_decoder
 
 class RNNDecoder(ed_decoder.EDDecoder):
-    '''a decoder that is used to detect phonological features'''
+    '''a speller decoder for the LAS architecture'''
+
+    __metaclass__ = ABCMeta
 
     def _decode(self, encoded, encoded_seq_length, targets, target_seq_length,
                 is_training):
+
         '''
         Create the variables and do the forward computation to decode an entire
         sequence
 
         Args:
-            encoded: the encoded inputs, this is a dictionary of
-                [batch_size x time x ...] tensors
+            encoded: the encoded inputs, this is a list of
+                [batch_size x ...] tensors
             encoded_seq_length: the sequence lengths of the encoded inputs
-                as a dictionary of [batch_size] vectors
-            targets: the targets used as decoder inputs as a dictionary of
-                [batch_size x time x ...] tensors
+                as a list of [batch_size] vectors
+            targets: the targets used as decoder inputs as a list of
+                [batch_size x ...] tensors
             target_seq_length: the sequence lengths of the targets
-                as a dictionary of [batch_size] vectors
+                as a list of [batch_size] vectors
             is_training: whether or not the network is in training mode
 
         Returns:
-            - the output logits of the decoder as a dictionary of
-                [batch_size x time x ...] tensors
-            - the logit sequence_lengths as a dictionary of [batch_size] vectors
+            - the output logits of the decoder as a list of
+                [batch_size x ...] tensors
+            - the logit sequence_lengths as a list of [batch_size] vectors
             - the final state of the decoder as a possibly nested tupple
                 of [batch_size x ... ] tensors
         '''
@@ -39,29 +42,28 @@ class RNNDecoder(ed_decoder.EDDecoder):
         output_name = self.output_dims.keys()[0]
 
         #prepend a sequence border label to the targets to get the encoder
-        #inputs, the label is the last label
-        s_labels = tf.tile([[tf.constant(output_dim-1,
-                                         dtype=tf.int32)]],
-                           [batch_size, 1])
-        expanded_targets = tf.concat([s_labels, targets.values()[0]], 1)
+        #inputs
+        expanded_targets = tf.pad(targets.values()[0] + 1, [[0, 0], [1, 0]])
 
         #one hot encode the targets
         one_hot_targets = tf.one_hot(expanded_targets, output_dim,
                                      dtype=tf.float32)
 
-        #concatenate the vector of encoded inputs to the targets
-        rnn_in = tf.tile(
-            encoded.values()[0],
-            [1, tf.shape(one_hot_targets)[1], 1])
-        rnn_in = tf.concat([one_hot_targets, rnn_in], 2)
-
         #create the rnn cell
-        rnn_cell = self.create_cell()
+        rnn_cell = self.create_cell(encoded, encoded_seq_length, is_training)
+
+        #create the embedding
+        embedding = lambda ids: tf.one_hot(
+            ids+1,
+            output_dim,
+            dtype=tf.float32)
 
         #create the decoder helper
-        helper = tf.contrib.seq2seq.TrainingHelper(
-            inputs=rnn_in,
+        helper = tf.contrib.seq2seq.ScheduledEmbeddingTrainingHelper(
+            inputs=one_hot_targets,
             sequence_length=target_seq_length.values()[0]+1,
+            embedding=embedding,
+            sampling_probability=float(self.conf['sample_prob'])
         )
 
         #create the decoder
@@ -73,7 +75,8 @@ class RNNDecoder(ed_decoder.EDDecoder):
 
         #use the decoder
         logits, state, logit_seq_length = tf.contrib.seq2seq.dynamic_decode(
-            decoder)
+            decoder=decoder,
+            impute_finished=True)
         logits = logits.rnn_output
 
         return (
@@ -81,7 +84,8 @@ class RNNDecoder(ed_decoder.EDDecoder):
             {output_name: logit_seq_length},
             state)
 
-    def create_cell(self):
+    @abstractmethod
+    def create_cell(self, encoded, encoded_seq_length, is_training):
         '''create the rnn cell
 
         Args:
@@ -96,31 +100,11 @@ class RNNDecoder(ed_decoder.EDDecoder):
         Returns:
             an RNNCell object'''
 
-        rnn_cells = []
-
-        for _ in range(int(self.conf['num_layers'])):
-
-            #create the multilayered rnn cell
-            rnn_cell = tf.contrib.rnn.LayerNormBasicLSTMCell(
-                num_units=int(self.conf['num_units']),
-                layer_norm=self.conf['layer_norm'] == 'True',
-                reuse=tf.get_variable_scope().reuse)
-
-            rnn_cells.append(rnn_cell)
-
-        rnn_cell = tf.contrib.rnn.MultiRNNCell(rnn_cells)
-
-        #wrap the rnn cell to make it a constant scope
-        rnn_cell = rnn_cell_impl.ScopeRNNCellWrapper(
-            rnn_cell, self.scope.name + '/rnn_cell')
-
-        return rnn_cell
-
     def zero_state(self, encoded_dim, batch_size):
         '''get the decoder zero state
 
         Args:
-            encoded_dim: the dimension of the encoded sequence as a list of
+            encoded_dim: the dimension of the encoded dict of
                 integers
             batch size: the batch size as a scalar Tensor
 
@@ -128,14 +112,17 @@ class RNNDecoder(ed_decoder.EDDecoder):
             the decoder zero state as a possibly nested tupple
                 of [batch_size x ... ] tensors'''
 
-        rnn_cell = self.create_cell()
-        cell_state = rnn_cell.zero_state(batch_size, tf.float32)
-        attention = tf.zeros([batch_size, self.output_dims.values()[0]])
-        zero_state = tf.contrib.seq2seq.DynamicAttentionWrapperState(
-            cell_state=cell_state,
-            attention=attention)
 
-        return zero_state
+
+        encoded = {name:tf.zeros([batch_size, 0, encoded_dim[name]])
+                   for name in encoded_dim}
+
+        rnn_cell = self.create_cell(
+            encoded,
+            tf.zeros([batch_size]),
+            False)
+
+        return rnn_cell.zero_state(batch_size, tf.float32)
 
     def get_output_dims(self, trainlabels):
         '''get the decoder output dimensions
@@ -152,3 +139,8 @@ class RNNDecoder(ed_decoder.EDDecoder):
             output_dims[self.outputs[i]] = int(d) + trainlabels
 
         return output_dims
+
+    def __getstate__(self):
+        '''getstate'''
+
+        return self.__dict__
