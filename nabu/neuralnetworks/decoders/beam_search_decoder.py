@@ -5,6 +5,9 @@ import os
 import tensorflow as tf
 import decoder
 from nabu.neuralnetworks.components.ops import dense_sequence_to_sparse
+from nabu.neuralnetworks.components import beam_search_decoder as beam_search
+
+import pdb
 
 class BeamSearchDecoder(decoder.Decoder):
     '''Beam search decoder'''
@@ -44,7 +47,7 @@ class BeamSearchDecoder(decoder.Decoder):
             batch_size = tf.shape(inputs.values()[0])[0]
 
             #start_tokens: vector with size batch_size
-            start_tokens = tf.zeros([batch_size], dtype=tf.int32)
+            start_tokens = -tf.ones([batch_size], dtype=tf.int32)
 
             #encode the inputs
             encoded, encoded_seq_length = self.model.encoder(
@@ -84,7 +87,7 @@ class BeamSearchDecoder(decoder.Decoder):
                 dtype=tf.float32)
 
             #Create the beam search decoder
-            beam_search_decoder = tf.contrib.seq2seq.BeamSearchDecoder(
+            beam_search_decoder = beam_search.BeamSearchDecoder(
                 cell=cell,
                 embedding=embeddings,
                 start_tokens=start_tokens,
@@ -100,9 +103,9 @@ class BeamSearchDecoder(decoder.Decoder):
                     decoder=beam_search_decoder,
                     maximum_iterations=int(self.conf['max_steps']))
 
-            sequences = output.predicted_ids
-            scores = output.beam_search_decoder_output.scores[:, -1, :]
-
+            sequences = tf.transpose(output.predicted_ids, [0, 2, 1])
+            #scores = output.beam_search_decoder_output.scores[:, -1, :]
+            scores = output.scores[:, 0, :]
 
             return {output_name:(sequences, lengths, scores)}
 
@@ -115,16 +118,17 @@ class BeamSearchDecoder(decoder.Decoder):
             names: the names of the utterances in outputs
         '''
         sequences = outputs.values()[0][0]
+        lengths = outputs.values()[0][1]
         scores = outputs.values()[0][2]
-        end = int(self.model.decoder.output_dims.values()[0]-1)
+
+        pdb.set_trace()
 
         for i, name in enumerate(names):
             with open(os.path.join(directory, name), 'w') as fid:
-                for b in range(sequences.shape[2]):
-                    sequence = sequences[i, :, b]
+                for b in range(sequences.shape[1]):
+                    sequence = sequences[i, b, :lengths[i, b] - 1]
                     #look for the first occurence of a sequence border label
-                    e = next(i for i, j in enumerate(sequence) if j == end)
-                    text = ' '.join([self.alphabet[s] for s in sequence[:e]])
+                    text = ' '.join([self.alphabet[s] for s in sequence])
                     fid.write('%f %s\n' % (scores[i, b], text))
 
 
@@ -140,8 +144,8 @@ class BeamSearchDecoder(decoder.Decoder):
             the error of the outputs
         '''
 
-        sequences = outputs.values()[0][0]
-        lengths = outputs.values()[0][1]
+        sequences = outputs.values()[0][0][:, 0, :]
+        lengths = outputs.values()[0][1][:, 0]
 
         #convert the references to sparse representations
         sparse_targets = dense_sequence_to_sparse(
@@ -149,7 +153,7 @@ class BeamSearchDecoder(decoder.Decoder):
 
         #convert the best sequences to sparse representations
         sparse_sequences = dense_sequence_to_sparse(
-            sequences[:, :, 0], lengths[:, 0]-1)
+            sequences, lengths-1)
 
         #compute the edit distance
         loss = tf.reduce_mean(

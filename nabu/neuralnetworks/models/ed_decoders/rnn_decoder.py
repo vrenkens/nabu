@@ -43,11 +43,8 @@ class RNNDecoder(ed_decoder.EDDecoder):
 
         #prepend a sequence border label to the targets to get the encoder
         #inputs
-        expanded_targets = tf.pad(targets.values()[0] + 1, [[0, 0], [1, 0]])
-
-        #one hot encode the targets
-        one_hot_targets = tf.one_hot(expanded_targets, output_dim,
-                                     dtype=tf.float32)
+        expanded_targets = tf.pad(targets.values()[0], [[0, 0], [1, 0]],
+                                  constant_values=-1)
 
         #create the rnn cell
         rnn_cell = self.create_cell(encoded, encoded_seq_length, is_training)
@@ -60,7 +57,7 @@ class RNNDecoder(ed_decoder.EDDecoder):
 
         #create the decoder helper
         helper = tf.contrib.seq2seq.ScheduledEmbeddingTrainingHelper(
-            inputs=one_hot_targets,
+            inputs=embedding(expanded_targets),
             sequence_length=target_seq_length.values()[0]+1,
             embedding=embedding,
             sampling_probability=float(self.conf['sample_prob'])
