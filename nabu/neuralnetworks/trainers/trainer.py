@@ -164,14 +164,6 @@ class Trainer(object):
                 #validation part
                 with tf.variable_scope('validate'):
 
-                    #create a variable to hold the validation loss
-                    outputs['validation_loss'] = tf.get_variable(
-                        name='validation_loss',
-                        shape=[],
-                        dtype=tf.float32,
-                        initializer=tf.constant_initializer(0),
-                        trainable=False)
-
                     #create a variable to save the last step where the model
                     #was validated
                     validated_step = tf.get_variable(
@@ -187,13 +179,8 @@ class Trainer(object):
                         outputs['global_step'] - validated_step,
                         int(self.conf['valid_frequency']))
 
-                    val_batch_loss, outputs['valbatches'] = self._validate()
-
-                    outputs['update_loss'] \
-                        = outputs['validation_loss'].assign(
-                            outputs['validation_loss'] +
-                            val_batch_loss/outputs['valbatches']
-                        ).op
+                    outputs['validation_loss'], outputs['update_loss'], \
+                        outputs['valbatches'] = self._validate()
 
                     #update the learning rate factor
                     outputs['half_lr'] = learning_rate_fact.assign(
@@ -242,6 +229,11 @@ class Trainer(object):
 
                     tf.summary.scalar('validation loss',
                                       outputs['validation_loss'])
+
+                #create an operation to initialize validation
+                outputs['init_validation'] = tf.variables_initializer(
+                    tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
+                                      'validate'))
             else:
                 outputs['update_loss'] = None
 
@@ -378,7 +370,8 @@ class Trainer(object):
         get the validation loss
 
         returns:
-            - the validation loss for a batch
+            - the validation loss
+            - an op to update the validation loss
             - the number of validation batches
         '''
 
@@ -391,10 +384,7 @@ class Trainer(object):
                 model=self.model
             )
 
-        #compute the loss
-        val_batch_loss, valbatches = evaluator.evaluate()
-
-        return val_batch_loss, valbatches
+        return evaluator.evaluate()
 
     def _device(self, cluster):
         '''
@@ -581,9 +571,8 @@ class Trainer(object):
                             prev_val_loss = outputs['best_validation'].eval(
                                 session=sess)
 
-                            #reset the validation loss
-                            outputs['validation_loss'].initializer.run(
-                                session=sess)
+                            #initialize validation
+                            outputs['init_validation'].run(session=sess)
 
                             #compute the validation loss
                             for _ in range(outputs['valbatches']):

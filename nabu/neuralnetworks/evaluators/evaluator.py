@@ -48,12 +48,22 @@ class Evaluator(object):
 
         Returns:
             - the loss as a scalar tensor
+            - an operation to update the loss
             - the number of batches in the validation set as an integer
         '''
 
         batch_size = int(self.conf['batch_size'])
 
         with tf.name_scope('evaluate'):
+
+            #a variable to hold the validation loss
+            loss = tf.get_variable(
+                name='validation_loss',
+                shape=[],
+                dtype=tf.float32,
+                initializer=tf.zeros_initializer(),
+                trainable=False
+            )
 
             #get the list of filenames fo the validation set
             data_queue_elements, _ = input_pipeline.get_filenames(
@@ -97,17 +107,18 @@ class Evaluator(object):
                 target_names[i]: d
                 for i, d in enumerate(seq_length[len(self.input_dataconfs):])}
 
-            loss = self.compute_loss(inputs, input_seq_length, targets,
-                                     target_seq_length)
+            update_loss = self.update_loss(
+                loss, inputs, input_seq_length, targets, target_seq_length)
 
-        return loss, numbatches
+        return loss, update_loss, numbatches
 
     @abstractmethod
-    def compute_loss(self, inputs, input_seq_length, targets,
-                     target_seq_length):
-        '''compute the validation loss for a batch of data
+    def update_loss(self, loss, inputs, input_seq_length, targets,
+                    target_seq_length):
+        '''update the validation loss for a batch of data
 
         Args:
+            loss: the current loss
             inputs: the inputs to the neural network, this is a list of
                 [batch_size x ...] tensors
             input_seq_length: The sequence lengths of the input utterances, this
@@ -118,4 +129,4 @@ class Evaluator(object):
                 this is a list of [batch_size] vectors
 
         Returns:
-            the loss as a scalar'''
+            an operation to update the loss'''

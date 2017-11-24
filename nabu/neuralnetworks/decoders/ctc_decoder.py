@@ -78,17 +78,28 @@ class CTCDecoder(decoder.Decoder):
                     text = ' '.join([self.alphabets[o][j] for j in output])
                     fid.write('%s %s\n' % (names[i], text))
 
-    def evaluate(self, outputs, references, reference_seq_length):
-        '''evaluate the output of the decoder
+    def update_evaluation_loss(self, loss, outputs, references,
+                               reference_seq_length):
+        '''update the evaluation loss
 
         args:
+            loss: the current evaluation loss
             outputs: the outputs of the decoder as a dictionary
             references: the references as a dictionary
             reference_seq_length: the sequence lengths of the references
 
         Returns:
-            the error of the outputs
+            an op to update the evalution loss
         '''
+
+        #create a variable to hold the total number of reference targets
+        num_targets = tf.get_variable(
+            name='num_targets',
+            shape=[],
+            dtype=tf.float32,
+            initializer=tf.zeros_initializer(),
+            trainable=False
+        )
 
         #compute the edit distance for the decoded sequences
         #convert the representations to sparse Tensors
@@ -96,12 +107,29 @@ class CTCDecoder(decoder.Decoder):
             o:dense_sequence_to_sparse(references[o], reference_seq_length[o])
             for o in references}
 
-        #compute the edit distance
-        losses = [
-            tf.reduce_mean(tf.edit_distance(outputs[o],
-                                            sparse_targets[o]))
+        #compute the number of errors made in this batch
+        errors = [
+            tf.reduce_sum(tf.edit_distance(
+                outputs[o],
+                sparse_targets[o],
+                normalize=False))
             for o in outputs]
 
-        loss = tf.reduce_mean(losses)
+        errors = tf.reduce_sum(errors)
 
-        return loss
+        #compute the number of targets in this batch
+        batch_targets = tf.reduce_sum([
+            tf.reduce_sum(lengths)
+            for lengths in reference_seq_length.values()])
+
+        new_num_targets = num_targets + tf.cast(batch_targets, tf.float32)
+
+        #an operation to update the loss
+        update_loss = loss.assign(
+            (loss*num_targets + errors)/new_num_targets).op
+
+        #add an operation to update the number of targets
+        with tf.control_dependencies([update_loss]):
+            update_loss = num_targets.assign(new_num_targets).op
+
+        return update_loss

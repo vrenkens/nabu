@@ -10,8 +10,6 @@ import sys
 import os
 import numpy as np
 
-import pdb
-
 def main(reference, decoded):
     '''main function
 
@@ -47,8 +45,6 @@ def main(reference, decoded):
             insertions += i
             deletions += d
             numwords += len(reftext)
-
-    pdb.set_trace()
 
     substitutions /= numwords
     deletions /= numwords

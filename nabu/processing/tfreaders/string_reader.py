@@ -95,7 +95,8 @@ class StringReader(tfreader.TfReader):
         data = tf.cast(data, tf.int32) - 1
 
         assert_op = tf.assert_equal(
-            tf.shape(splitstring[0]), sequence_length,
+            tf.shape(splitstring)[0], sequence_length,
+            data=[features['data']],
             message='not all string elements found in alphabet')
 
         with tf.control_dependencies([assert_op]):

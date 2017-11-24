@@ -7,8 +7,6 @@ import decoder
 from nabu.neuralnetworks.components.ops import dense_sequence_to_sparse
 from nabu.neuralnetworks.components import beam_search_decoder as beam_search
 
-import pdb
-
 class BeamSearchDecoder(decoder.Decoder):
     '''Beam search decoder'''
 
@@ -99,13 +97,13 @@ class BeamSearchDecoder(decoder.Decoder):
 
             with tf.variable_scope(self.model.decoder.scope):
                 #Decode useing the beamsearch decoder
-                output, _, lengths = tf.contrib.seq2seq.dynamic_decode(
+                output, _, _ = tf.contrib.seq2seq.dynamic_decode(
                     decoder=beam_search_decoder,
                     maximum_iterations=int(self.conf['max_steps']))
 
             sequences = tf.transpose(output.predicted_ids, [0, 2, 1])
-            #scores = output.beam_search_decoder_output.scores[:, -1, :]
             scores = output.scores[:, 0, :]
+            lengths = output.lengths[:, 0, :]
 
             return {output_name:(sequences, lengths, scores)}
 
@@ -121,8 +119,6 @@ class BeamSearchDecoder(decoder.Decoder):
         lengths = outputs.values()[0][1]
         scores = outputs.values()[0][2]
 
-        pdb.set_trace()
-
         for i, name in enumerate(names):
             with open(os.path.join(directory, name), 'w') as fid:
                 for b in range(sequences.shape[1]):
@@ -131,18 +127,28 @@ class BeamSearchDecoder(decoder.Decoder):
                     text = ' '.join([self.alphabet[s] for s in sequence])
                     fid.write('%f %s\n' % (scores[i, b], text))
 
-
-    def evaluate(self, outputs, references, reference_seq_length):
-        '''evaluate the output of the decoder
+    def update_evaluation_loss(self, loss, outputs, references,
+                               reference_seq_length):
+        '''update the evaluation loss
 
         args:
+            loss: the current evaluation loss
             outputs: the outputs of the decoder as a dictionary
             references: the references as a dictionary
             reference_seq_length: the sequence lengths of the references
 
         Returns:
-            the error of the outputs
+            an op to update the evalution loss
         '''
+
+        #create a variable to hold the total number of reference targets
+        num_targets = tf.get_variable(
+            name='num_targets',
+            shape=[],
+            dtype=tf.float32,
+            initializer=tf.zeros_initializer(),
+            trainable=False
+        )
 
         sequences = outputs.values()[0][0][:, 0, :]
         lengths = outputs.values()[0][1][:, 0]
@@ -156,7 +162,21 @@ class BeamSearchDecoder(decoder.Decoder):
             sequences, lengths-1)
 
         #compute the edit distance
-        loss = tf.reduce_mean(
-            tf.edit_distance(sparse_sequences, sparse_targets))
+        errors = tf.edit_distance(
+            sparse_sequences, sparse_targets, normalize=False)
+        errors = tf.reduce_sum(errors)
 
-        return loss
+        #compute the number of targets in this batch
+        batch_targets = tf.reduce_sum(reference_seq_length.values()[0])
+
+        new_num_targets = num_targets + tf.cast(batch_targets, tf.float32)
+
+        #an operation to update the loss
+        update_loss = loss.assign(
+            (loss*num_targets + errors)/new_num_targets).op
+
+        #add an operation to update the number of targets
+        with tf.control_dependencies([update_loss]):
+            update_loss = num_targets.assign(new_num_targets).op
+
+        return update_loss

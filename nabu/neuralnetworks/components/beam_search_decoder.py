@@ -45,12 +45,14 @@ class BeamSearchDecoderOutput(
 class BeamSearchDecoderFinalOutput(
         collections.namedtuple('BeamSearchDecoderFinalOutput',
                                ('predicted_ids',
+                                'lengths',
                                 'scores',))):
     '''
     class for the final output of the BeamSearchDecoder
 
     - predicted_ids: a [time x batch_size x beam_width] tensor
         containing the predicted ids
+    - lengths: a [1 x batch_size x beam_width] tensor containing the lengths
     - scores: a [1 x batch_size x beam_width] tensor containing the scores
     '''
 
@@ -265,8 +267,11 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
                 scores, indices = tf.nn.top_k(scores, self.beam_width)
 
                 #get the selected ids and the selected beams from the indices
-                parent_ids = tf.floor_div(indices, output_dim,
-                                          name='parent_ids')
+                parent_ids = tf.floor_div(indices, output_dim)
+                parent_ids = tf.where(
+                    tf.equal(parent_ids, self.beam_width),
+                    tf.mod(indices, output_dim),
+                    parent_ids, name='parent_ids')
 
                 #prepare indices for gather_nd
                 batch_indices = tf.tile(
@@ -278,14 +283,14 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
                 lengths = tf.gather_nd(lengths, indices, name='prune_lengths')
                 predicted_ids = tf.gather_nd(predicted_ids, indices,
                                              name='prune_ids')
-                logprobs = tf.gather_nd(logprobs, indices, 'prunt_logprobs')
+                logprobs = tf.gather_nd(logprobs, indices, 'prune_logprobs')
                 cell_states = nest.map_structure(
                     lambda s: _gather_state(s, indices),
                     cell_states
                 )
 
 
-            finished = tf.equal(predicted_ids, self.end_token, name='finished')
+            finished = tf.equal(predicted_ids, self.end_token)
 
             #compute the new inputs
             with tf.name_scope('next_inputs'):
@@ -348,24 +353,14 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
 
                 with tf.name_scope('gather_indices'):
 
-                    #if the parent_id is equal to beam width, stay in the same
-                    #beam
-                    stay_beam = tf.tile(
-                        tf.expand_dims(tf.range(self.beam_width), 0),
-                        [self.batch_size, 1])
-                    beams = tf.where(
-                        tf.equal(beams, self.beam_width),
-                        stay_beam,
-                        beams)
-
                     batch_indices = tf.tile(
                         tf.expand_dims(tf.range(self.batch_size), 1),
                         [1, self.beam_width])
                     indices = tf.stack([batch_indices, beams], 2)
 
-                new_indices = tf.gather_nd(predicted_ids[:, :, new_time],
-                                           indices, name='selected_indices')
-                new_sequences = sequences.write(new_time, new_indices)
+                selected_ids = tf.gather_nd(predicted_ids[:, :, new_time],
+                                            indices, name='selected_indices')
+                new_sequences = sequences.write(new_time, selected_ids)
                 new_beams = tf.gather_nd(parent_ids[:, :, new_time], indices,
                                          name='selected_beams')
 
@@ -392,9 +387,11 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
             scores = _score(final_state.logprobs, final_state.lengths,
                             self.length_penalty_weight)
             scores = tf.expand_dims(scores, 0)
+            lengths = tf.expand_dims(final_state.lengths, 0)
 
             outputs = BeamSearchDecoderFinalOutput(
                 predicted_ids=predicted_ids_out,
+                lengths=lengths,
                 scores=scores
             )
 

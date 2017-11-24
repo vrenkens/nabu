@@ -9,11 +9,12 @@ class LossEvaluator(evaluator.Evaluator):
     '''The Decoder Evaluator is used to evaluate a decoder'''
 
 
-    def compute_loss(self, inputs, input_seq_length, targets,
-                     target_seq_length):
-        '''compute the validation loss for a batch of data
+    def update_loss(self, loss, inputs, input_seq_length, targets,
+                    target_seq_length):
+        '''update the validation loss for a batch of data
 
         Args:
+            loss: the current loss
             inputs: the inputs to the neural network, this is a list of
                 [batch_size x ...] tensors
             input_seq_length: The sequence lengths of the input utterances, this
@@ -24,17 +25,40 @@ class LossEvaluator(evaluator.Evaluator):
                 this is a list of [batch_size] vectors
 
         Returns:
-            the loss as a scalar'''
+            an operation to update the loss'''
 
         with tf.name_scope('evaluate_loss'):
+
+            #a variable to hold the total number of utterances
+            num_utt = tf.get_variable(
+                name='num_val_utterances',
+                shape=[],
+                dtype=tf.float32,
+                initializer=tf.zeros_initializer(),
+                trainable=False
+            )
+
             logits, logit_seq_length = self.model(
                 inputs, input_seq_length, targets, target_seq_length, False)
 
-            loss = loss_functions.factory(
+            batch_loss = loss_functions.factory(
                 self.conf['loss'])(
                     targets,
                     logits,
                     logit_seq_length,
                     target_seq_length)
 
-        return loss
+            #number of utterances in the batch
+            batch_utt = tf.shape(logits)[0]
+
+            new_num_utt = num_utt + tf.cast(batch_utt, tf.float32)
+
+            #an operation to update the loss
+            update_loss = loss.assign(
+                (loss*num_utt + batch_loss*batch_utt)/new_num_utt).op
+
+            #add an operation to update the number of utterances
+            with tf.control_dependencies([update_loss]):
+                update_loss = num_utt.assign(new_num_utt).op
+
+        return update_loss

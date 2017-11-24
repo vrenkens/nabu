@@ -53,7 +53,7 @@ def test(expdir, testing=False):
     with graph.as_default():
 
         #compute the loss
-        batch_loss, numbatches = evaluator.evaluate()
+        loss, update_loss, numbatches = evaluator.evaluate()
 
         if testing:
             return
@@ -74,10 +74,9 @@ def test(expdir, testing=False):
         with tf.train.SingularMonitoredSession(
             hooks=[load_hook, summary_hook]) as sess:
 
-            loss = 0.0
             for _ in range(numbatches):
-                loss += batch_loss.eval(session=sess)
-            loss = loss/numbatches
+                update_loss.run(session=sess)
+            loss = loss.eval(session=sess)
 
     print 'loss = %f' % loss
 

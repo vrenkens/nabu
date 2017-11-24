@@ -55,13 +55,13 @@ def get_filenames(dataconfs):
     return data_queue_elements, names
 
 def input_pipeline(
-    data_queue,
-    batch_size,
-    numbuckets,
-    dataconfs,
-    variable_batch_size=False,
-    allow_smaller_final_batch=False,
-    name=None):
+        data_queue,
+        batch_size,
+        numbuckets,
+        dataconfs,
+        variable_batch_size=False,
+        allow_smaller_final_batch=False,
+        name=None):
     '''create the input pipeline
 
     Args:
