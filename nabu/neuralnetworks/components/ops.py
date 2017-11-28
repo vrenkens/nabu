@@ -59,9 +59,9 @@ def pyramid_stack(inputs, sequence_lengths, numsteps, axis=2, scope=None):
 
     return outputs, output_sequence_lengths
 
-def seq2nonseq(sequential, sequence_lengths, name=None):
+def stack_seq(sequential, sequence_lengths, name=None):
     '''
-    Convert sequential data to non sequential data
+    remove padding and stack sequences
 
     Args:
         sequential: the sequential data which is a [batch_size, max_length, dim]
@@ -74,7 +74,7 @@ def seq2nonseq(sequential, sequence_lengths, name=None):
         sequence lengths
     '''
 
-    with tf.name_scope(name or 'seq2nonseq'):
+    with tf.name_scope(name or 'stack_seq'):
 
         indices = get_indices(sequence_lengths)
 
@@ -83,6 +83,37 @@ def seq2nonseq(sequential, sequence_lengths, name=None):
 
 
     return tensor
+
+def unstack_seq(nonseq, sequence_lengths, name=None):
+    '''
+    unstack sequences and add padding
+
+    Args:
+        nonseq: the non sequential data which is a
+            [sum(sequence_lengths) x dim] tensor
+        sequence_lengths: a [batch_size] vector containing the sequence lengths
+        name: [optional] the name of the operation
+
+    Returns:
+        sequential data, which is a  [batch_size, max_length, dim] tensor
+    '''
+
+    with tf.name_scope(name or 'unstack_seq'):
+        max_length = tf.reduce_max(sequence_lengths)
+        batch_size = tf.size(sequence_lengths)
+        unstacked = tf.TensorArray(
+            dtype=nonseq.dtype,
+            size=batch_size,
+            element_shape=tf.TensorShape([None]).concatenate(nonseq.shape[1:]))
+        unstacked = unstacked.split(nonseq, sequence_lengths)
+        unstacked = map_ta(
+            lambda x: pad_to(x, max_length),
+            unstacked
+        )
+        unstacked = unstacked.stack()
+
+    return unstacked
+
 
 def dense_sequence_to_sparse(sequences, sequence_lengths):
     '''convert sequence dense representations to sparse representations
@@ -110,59 +141,6 @@ def dense_sequence_to_sparse(sequences, sequence_lengths):
 
     return sparse
 
-def cross_entropy_loss_eos(targets, logits, logit_seq_length,
-                           target_seq_length):
-    '''
-    Compute the cross_entropy loss with an added end of sequence label
-
-    Args:
-        targets: a [batch_size x time] tensor containing the targets
-        logits: a [batch_size x time x num_classes] tensor containing the logits
-        logit_seq_length: a [batch_size] vector containing the
-            logit sequence lengths
-        target_seq_length: a [batch_size] vector containing the
-            target sequence lengths
-
-    Returns:
-        a scalar value containing the loss
-    '''
-
-    batch_size = tf.shape(targets)[0]
-
-    with tf.name_scope('cross_entropy_loss'):
-
-        output_dim = tf.shape(logits)[2]
-
-        #get the logits for the final timestep
-        indices = tf.stack([tf.range(batch_size),
-                            logit_seq_length-1],
-                           axis=1)
-        final_logits = tf.gather_nd(logits, indices)
-
-        #stack all the logits except the final logits
-        stacked_logits = seq2nonseq(logits,
-                                    logit_seq_length - 1)
-
-        #create the stacked targets
-        stacked_targets = seq2nonseq(targets,
-                                     target_seq_length)
-
-        #create the targets for the end of sequence labels
-        final_targets = tf.tile([output_dim-1], [batch_size])
-
-        #add the final logits and targets
-        stacked_logits = tf.concat([stacked_logits, final_logits], 0)
-        stacked_targets = tf.concat([stacked_targets, final_targets], 0)
-
-        #compute the cross-entropy loss
-        losses = tf.nn.sparse_softmax_cross_entropy_with_logits(
-            logits=stacked_logits,
-            labels=stacked_targets)
-
-        loss = tf.reduce_mean(losses)
-
-    return loss
-
 def get_indices(sequence_length):
     '''get the indices corresponding to sequences (and not padding)
 
@@ -176,12 +154,12 @@ def get_indices(sequence_length):
 
         numdims = len(sequence_length.shape)
 
-        #get th emaximal length
+        #get the maximal length
         max_length = tf.reduce_max(sequence_length)
 
         sizes = tf.shape(sequence_length)
 
-        range_tensor = tf.range(max_length-1)
+        range_tensor = tf.range(max_length)
         for i in range(1, numdims):
             tile_dims = [1]*i + [sizes[i]]
             range_tensor = tf.tile(tf.expand_dims(range_tensor, i), tile_dims)
@@ -191,43 +169,71 @@ def get_indices(sequence_length):
 
     return indices
 
-def mix(inputs, hidden_dim, scope=None):
-    '''mix the layer in the time dimension'''
+def pad_to(tensor, length, axis=0, name=None):
+    '''pad the tensor to a certain length
 
-    with tf.variable_scope(scope or 'mix'):
+    args:
+        - tensor: the tensor to pad
+        - length: the length to pad to, has to be larger than tensor.shape[axis]
+        - axis: the axis to pad
+        - name: the name of the operation
 
-        #append the possition to the inputs
-        position = tf.expand_dims(tf.expand_dims(tf.range(
-            tf.shape(inputs)[1]), 0), 2)
-        position = tf.cast(position, tf.float32)
-        position = tf.tile(position, [tf.shape(inputs)[0], 1, 1])
-        expanded_inputs = tf.concat([inputs, position], 2)
+    returns:
+        the padded tensor
+    '''
 
-        #apply the querry layer
-        query = tf.contrib.layers.linear(expanded_inputs, hidden_dim,
-                                         scope='query')
+    with tf.name_scope(name or 'pad_to'):
+        rank = tensor.shape.ndims
+        orig_length = tf.shape(tensor)[axis]
+        assert_op = tf.assert_less(axis, rank,
+                                   message='axis has to be less than rank')
+        with tf.control_dependencies([assert_op]):
+            assert_op = tf.assert_less_equal(
+                orig_length, length,
+                message='target length less than original length')
+        with tf.control_dependencies([assert_op]):
+            paddings = tf.SparseTensor(
+                indices=[[axis, 1]],
+                values=tf.expand_dims(length-orig_length, 0),
+                dense_shape=[rank, 2])
 
-        #apply the attention layer
-        queried = tf.contrib.layers.linear(expanded_inputs, hidden_dim,
-                                           scope='queried')
+        padded = tf.pad(tensor, tf.sparse_tensor_to_dense(paddings))
 
-        #create a sum for every combination of query and attention
-        query = tf.expand_dims(query, 0)
-        query = tf.tile(query, [tf.shape(query)[2], 1, 1, 1])
-        summed = tf.transpose(tf.nn.tanh(query + queried), [1, 2, 0, 3])
+    return padded
 
-        #map the combinations to single values
-        attention = tf.contrib.layers.fully_connected(
-            inputs=summed,
-            num_outputs=1,
-            scope='attention',
-            activation_fn=tf.nn.tanh
-        )[:, :, :, 0]
+def map_ta(fn, ta):
+    '''
+    apply fn to each element in tensorarray
 
-        #apply softmax to the attention values
-        attention = tf.nn.softmax(attention)
+    args:
+        fn: the function to apply
+        ta: the tensorarray
 
-        #use the attention to recombine the inputs
-        outputs = tf.matmul(attention, inputs)
+    returns:
+        the resulting tensorarray
+    '''
 
-    return outputs
+    def body(index, ta_out):
+        '''the body of the while loop'''
+        ta_out = ta_out.write(index, fn(ta.read(index)))
+        newindex = index + 1
+
+        return newindex, ta_out
+
+    def condition(index, ta_out):
+        '''loop condition'''
+        return tf.not_equal(index, ta_out.size())
+
+    ta_init = tf.TensorArray(
+        dtype=ta._dtype,    #pylint:disable=W0212
+        size=ta.size()
+    )
+    index_init = 0
+
+    _, mapped = tf.while_loop(
+        cond=condition,
+        body=body,
+        loop_vars=[index_init, ta_init]
+    )
+
+    return mapped

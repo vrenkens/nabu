@@ -5,6 +5,7 @@ import os
 import time
 import cPickle as pickle
 from abc import ABCMeta, abstractmethod
+from math import ceil
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 from nabu.processing import input_pipeline
@@ -12,6 +13,7 @@ from nabu.neuralnetworks.trainers import loss_functions
 from nabu.neuralnetworks.models.model import Model
 from nabu.neuralnetworks.evaluators import evaluator_factory
 from nabu.neuralnetworks.components import hooks
+from nabu.neuralnetworks.components import ops
 
 class Trainer(object):
     '''General class outlining the training environment of a model.'''
@@ -103,8 +105,14 @@ class Trainer(object):
                 #create the op to execute when done
                 outputs['done'] = self._done(cluster)
 
-                inputs, input_seq_length, targets, target_seq_length, num_steps\
-                    = self._data(chief_ps)
+                #get a batch of data
+                (inputs,
+                 input_seq_length,
+                 targets,
+                 target_seq_length,
+                 num_steps,
+                 outputs['read_data'],
+                 outputs['local_steps']) = self._data(chief_ps)
 
                 outputs['num_steps'] \
                     = num_steps*int(self.conf['num_epochs'])
@@ -257,80 +265,128 @@ class Trainer(object):
             - the input sequence lengths
             - the targets
             - the target sequence lengths
-            - the number of steps in an epoch
+            - the number of global steps in an epoch
+            - an operation to read a batch data
+            - the number of local steps in this step
         '''
 
-        #get the database configurations
-        input_names = self.model.conf.get('io', 'inputs').split(' ')
-        if input_names == ['']:
-            input_names = []
-        input_sections = [self.conf[i].split(' ') for i in input_names]
-        input_dataconfs = []
-        for sectionset in input_sections:
-            input_dataconfs.append([])
-            for section in sectionset:
-                input_dataconfs[-1].append(dict(self.dataconf.items(section)))
+        with tf.name_scope('get_batch'):
 
-        output_names = self.conf['targets'].split(' ')
-        if output_names == ['']:
-            output_names = []
-        target_sections = [self.conf[o].split(' ') for o in output_names]
-        target_dataconfs = []
-        for sectionset in target_sections:
-            target_dataconfs.append([])
-            for section in sectionset:
-                target_dataconfs[-1].append(dict(self.dataconf.items(section)))
+            #get the database configurations
+            input_names = self.model.conf.get('io', 'inputs').split(' ')
+            if input_names == ['']:
+                input_names = []
+            input_sections = [self.conf[i].split(' ') for i in input_names]
+            input_dataconfs = []
+            for sectionset in input_sections:
+                input_dataconfs.append([])
+                for section in sectionset:
+                    input_dataconfs[-1].append(
+                        dict(self.dataconf.items(section)))
 
-        #check if running in distributed model
-        if chief_ps is None:
+            output_names = self.conf['targets'].split(' ')
+            if output_names == ['']:
+                output_names = []
+            target_sections = [self.conf[o].split(' ') for o in output_names]
+            target_dataconfs = []
+            for sectionset in target_sections:
+                target_dataconfs.append([])
+                for section in sectionset:
+                    target_dataconfs[-1].append(
+                        dict(self.dataconf.items(section)))
 
-            #get the filenames
-            data_queue_elements, _ = input_pipeline.get_filenames(
-                input_dataconfs + target_dataconfs)
+            #check if running in distributed model
+            if chief_ps is None:
 
-            #create the data queue and queue runners
-            data_queue = tf.train.string_input_producer(
-                string_tensor=data_queue_elements,
-                shuffle=True,
-                seed=None,
-                capacity=int(self.conf['batch_size'])*2,
-                shared_name='data_queue')
+                #get the filenames
+                data_queue_elements, _ = input_pipeline.get_filenames(
+                    input_dataconfs + target_dataconfs)
 
-        else:
-            with tf.device(chief_ps):
-
-                #get the data queue
-                data_queue = tf.FIFOQueue(
+                #create the data queue and queue runners
+                data_queue = tf.train.string_input_producer(
+                    string_tensor=data_queue_elements,
+                    shuffle=True,
+                    seed=None,
                     capacity=int(self.conf['batch_size'])*2,
-                    shared_name='data_queue',
-                    name='data_queue',
-                    dtypes=[tf.string],
-                    shapes=[[]])
+                    shared_name='data_queue')
 
-        #create the input pipeline
-        data, seq_length, num_steps = input_pipeline.input_pipeline(
-            data_queue=data_queue,
-            batch_size=int(self.conf['batch_size']),
-            numbuckets=int(self.conf['numbuckets']),
-            dataconfs=input_dataconfs + target_dataconfs,
-            variable_batch_size=(
-                self.conf['variable_batch_size'] == 'True')
-        )
+            else:
+                with tf.device(chief_ps):
 
-        inputs = {
-            input_names[i]: d
-            for i, d in enumerate(data[:len(input_sections)])}
-        input_seq_length = {
-            input_names[i]: d
-            for i, d in enumerate(seq_length[:len(input_sections)])}
-        targets = {
-            output_names[i]: d
-            for i, d in enumerate(data[len(input_sections):])}
-        target_seq_length = {
-            output_names[i]: d
-            for i, d in enumerate(seq_length[len(input_sections):])}
+                    #get the data queue
+                    data_queue = tf.FIFOQueue(
+                        capacity=int(self.conf['batch_size'])*2,
+                        shared_name='data_queue',
+                        name='data_queue',
+                        dtypes=[tf.string],
+                        shapes=[[]])
 
-        return inputs, input_seq_length, targets, target_seq_length, num_steps
+            #create the input pipeline
+            data, seq_length, num_steps, max_length = \
+                input_pipeline.input_pipeline(
+                    data_queue=data_queue,
+                    batch_size=int(self.conf['batch_size']),
+                    numbuckets=int(self.conf['numbuckets']),
+                    dataconfs=input_dataconfs + target_dataconfs,
+                    variable_batch_size=(
+                        self.conf['variable_batch_size'] == 'True')
+                )
+            batches = data + seq_length
+            if int(self.conf['cut_sequence_length']):
+
+                #make sure that all the sequence lengths are the same
+                assertops = [tf.assert_equal(seq_length[0], l)
+                             for l in seq_length]
+
+                with tf.control_dependencies(assertops):
+                    #cut each data component
+                    read_ops = []
+                    components = []
+                    for batch in batches:
+                        cut, read_op, num_local_steps = _cut_sequence(
+                            batch,
+                            int(self.conf['cut_sequence_length']),
+                            max_length)
+                        components.append(cut)
+                        read_ops.append(read_op)
+            else:
+                num_local_steps = tf.constant(1)
+
+                queues = [tf.FIFOQueue(1, b.dtype) for b in batches]
+                components = [q.dequeue() for q in queues]
+                for i, c in enumerate(components):
+                    c.set_shape(batches[i].shape)
+
+                #create an op to read the data into the queues
+                read_ops = [q.enqueue(batches[i]) for i, q in enumerate(queues)]
+
+            #create an op for reading the data
+            read_data = tf.group(*read_ops)
+
+            #seperate the different parts of the batches
+            data = components[:len(components)/2]
+            seq_length = components[len(components)/2:]
+
+            inputs = {
+                input_names[i]: d
+                for i, d in enumerate(data[:len(input_sections)])}
+            input_seq_length = {
+                input_names[i]: d
+                for i, d in enumerate(seq_length[:len(input_sections)])}
+            targets = {
+                output_names[i]: d
+                for i, d in enumerate(data[len(input_sections):])}
+            target_seq_length = {
+                output_names[i]: d
+                for i, d in enumerate(seq_length[len(input_sections):])}
+
+        return (inputs,
+                input_seq_length,
+                targets,
+                target_seq_length,
+                num_steps,
+                read_data,
+                num_local_steps)
 
     def _done(self, cluster):
         '''
@@ -659,31 +715,36 @@ class Trainer(object):
                     #start time
                     start = time.time()
 
-                    #update the model
-                    _, loss, lr, global_step, memory, limit = \
-                        sess.run(
-                            fetches=[outputs['update_op'],
-                                     outputs['loss'],
-                                     outputs['learning_rate'],
-                                     outputs['global_step'],
-                                     outputs['memory_usage'],
-                                     outputs['memory_limit']])
+                    #read in the next batch of data
+                    local_steps, _ = sess.run([outputs['local_steps'],
+                                               outputs['read_data']])
 
-                    if memory is not None:
-                        memory_line = '\n\t peak memory usage: %d/%d MB' % (
-                            memory/1e6,
-                            limit/1e6
-                        )
-                    else:
-                        memory_line = ''
+                    for _ in range(local_steps):
+                        #update the model
+                        _, loss, lr, global_step, memory, limit = \
+                            sess.run(
+                                fetches=[outputs['update_op'],
+                                         outputs['loss'],
+                                         outputs['learning_rate'],
+                                         outputs['global_step'],
+                                         outputs['memory_usage'],
+                                         outputs['memory_limit']])
 
-                    print(('WORKER %d: step %d/%d loss: %f, learning rate: %f '
-                           '\n\t time elapsed: %f sec%s')
-                          %(self.task_index,
-                            global_step,
-                            outputs['num_steps'],
-                            loss, lr, time.time()-start,
-                            memory_line))
+                        if memory is not None:
+                            memory_line = '\n\t peak memory usage: %d/%d MB' % (
+                                memory/1e6,
+                                limit/1e6
+                            )
+                        else:
+                            memory_line = ''
+
+                        print(('WORKER %d: step %d/%d loss: %f, learning rate:'
+                               ' %f \n\t time elapsed: %f sec%s')
+                              %(self.task_index,
+                                global_step,
+                                outputs['num_steps'],
+                                loss, lr, time.time()-start,
+                                memory_line))
 
         #store the model file
         modelfile = os.path.join(self.expdir, 'model', 'model.pkl')
@@ -799,3 +860,45 @@ class ParameterServer(object):
                 scaffold=self.scaffold) as sess:
 
                 self.wait_op.run(session=sess)
+
+
+def _cut_sequence(sequence, cut_length, max_length):
+    '''cut sequence in equal parts and put into tensorarray
+
+    args:
+        sequence: a [batch_size x time x ...] tensor
+        cut_length: int, the length of each sequence
+        max_length: int, the maximum length teh sequence can be
+
+    returns:
+        - an element from the queue
+        - an op to enqueue the cut sequences
+        - the number of elements in the queue
+    '''
+
+    #pad the sequence to a multiple of cut_length
+    numcuts = tf.toint32(tf.ceil(tf.shape(sequence)[1]/cut_length))
+    length = numcuts*cut_length
+    padded = ops.pad_to(sequence, length, 1)
+
+    #cut the data into equal parts into a TensorArray
+    element_shape = sequence.shape[0].concatenate(
+        tf.TensorShape([cut_length])).concatenate(sequence.shape[2:])
+    cut = tf.TensorArray(
+        dtype=sequence.dtype,
+        size=numcuts,
+        element_shape=element_shape
+    )
+    lengths = tf.fill([numcuts], cut_length)
+    cut = cut.split(padded, lengths)
+
+    #put the tensorarray values in the FIFOQueue.
+    queue = tf.FIFOQueue(
+        capacity=int(ceil(float(max_length)/cut_length)),
+        dtypes=(sequence.dtype)
+    )
+    enqueue_op = queue.enqueue_many(cut.stack())
+    element = queue.dequeue()
+    element.set_shape(element_shape)
+
+    return element, enqueue_op, numcuts

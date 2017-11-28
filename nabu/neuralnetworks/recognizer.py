@@ -64,7 +64,7 @@ class Recognizer(object):
                 capacity=self.batch_size*2)
 
             #create the input pipeline
-            inputs, input_seq_length, _ = input_pipeline.input_pipeline(
+            inputs, input_seq_length, _, _ = input_pipeline.input_pipeline(
                 data_queue=data_queue,
                 batch_size=self.batch_size,
                 numbuckets=1,
