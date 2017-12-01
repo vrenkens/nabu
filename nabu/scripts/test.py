@@ -8,7 +8,7 @@ import cPickle as pickle
 from six.moves import configparser
 import tensorflow as tf
 from nabu.neuralnetworks.evaluators import evaluator_factory
-from nabu.neuralnetworks.components.hooks import LoadAtBegin, SummaryHook
+from nabu.neuralnetworks.components.hooks import LoadAtBegin
 from nabu.neuralnetworks.models.model import Model
 
 def test(expdir, testing=False):
@@ -60,22 +60,32 @@ def test(expdir, testing=False):
 
         #create a histogram for all trainable parameters
         for param in model.variables:
-            tf.summary.histogram(param.name, param)
+            tf.summary.histogram(param.name, param, ['variables'])
+
+
+
+        eval_summary = tf.summary.merge_all('eval_summaries')
+        variable_summary = tf.summary.merge_all('variables')
 
         #create a hook that will load the model
         load_hook = LoadAtBegin(
             os.path.join(expdir, 'model', 'network.ckpt'),
             model.variables)
 
-        #create a hook for summary writing
-        summary_hook = SummaryHook(os.path.join(expdir, 'logdir'))
-
         #start the session
         with tf.train.SingularMonitoredSession(
-            hooks=[load_hook, summary_hook]) as sess:
+            hooks=[load_hook]) as sess:
 
-            for _ in range(numbatches):
-                update_loss.run(session=sess)
+            summary_writer = tf.summary.FileWriter(
+                os.path.join(expdir, 'logdir'))
+
+            summary = variable_summary.eval(session=sess)
+            summary_writer.add_summary(summary)
+
+            for i in range(numbatches):
+                _, summary = sess.run([update_loss, eval_summary])
+                summary_writer.add_summary(summary, i)
+
             loss = loss.eval(session=sess)
 
     print 'loss = %f' % loss

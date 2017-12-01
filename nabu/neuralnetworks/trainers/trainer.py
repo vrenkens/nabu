@@ -77,6 +77,7 @@ class Trainer(object):
             dtype=tf.int32,
             initializer=tf.constant_initializer(0),
             trainable=False)
+        outputs['increment_step'] = outputs['global_step'].assign_add(1).op
 
         should_terminate = tf.get_variable(
             name='should_terminate',
@@ -163,7 +164,6 @@ class Trainer(object):
 
                 outputs['update_op'] = self._update(
                     loss=outputs['loss'],
-                    global_step=outputs['global_step'],
                     learning_rate=outputs['learning_rate'],
                     cluster=cluster)
 
@@ -235,8 +235,9 @@ class Trainer(object):
                             waiting_workers,
                             len(cluster.as_dict()['worker'])-1)
 
-                    tf.summary.scalar('validation loss',
-                                      outputs['validation_loss'])
+                    outputs['val_loss_summary'] = tf.summary.scalar(
+                        'validation loss',
+                        outputs['validation_loss'])
 
                 #create an operation to initialize validation
                 outputs['init_validation'] = tf.variables_initializer(
@@ -245,11 +246,17 @@ class Trainer(object):
             else:
                 outputs['update_loss'] = None
 
-            tf.summary.scalar('learning rate', outputs['learning_rate'])
+            tf.summary.scalar('learning rate', outputs['learning_rate'],
+                              collections=['training_summaries'])
 
             #create a histogram for all trainable parameters
             for param in tf.trainable_variables():
-                tf.summary.histogram(param.name, param)
+                tf.summary.histogram(param.name, param,
+                                     collections=['training_summaries'])
+
+            outputs['training_summaries'] = tf.summary.merge_all(
+                'training_summaries')
+            outputs['eval_summaries'] = tf.summary.merge_all('eval_summaries')
 
         return outputs
 
@@ -473,13 +480,12 @@ class Trainer(object):
 
         return device, chief_ps
 
-    def _update(self, loss, global_step, learning_rate, cluster):
+    def _update(self, loss, learning_rate, cluster):
         '''
         create the op to update the model
 
         args:
             loss: the loss to minimize
-            global_step: the gloabal step variable
             learning_rate: the learning rate
             cluster: the tf cluster
 
@@ -502,18 +508,9 @@ class Trainer(object):
                     self.conf['numbatches_to_aggregate']),
                 total_num_replicas=num_workers)
 
-        #a variable to store the loss
-        training_loss = tf.get_variable(
-            name='loss',
-            shape=[],
-            dtype=tf.float32,
-            initializer=tf.constant_initializer(0),
-            trainable=False)
 
-        tf.summary.scalar('training loss', training_loss)
-
-        #an op to update the loss
-        update_loss = training_loss.assign(loss).op
+        tf.summary.scalar('training_loss', loss,
+                          collections=['training_summaries'])
 
         #get the list of trainable variables
         trainable = tf.trainable_variables()
@@ -540,7 +537,6 @@ class Trainer(object):
         #opperation to apply the gradients
         apply_gradients_op = optimizer.apply_gradients(
             grads_and_vars=grads_and_vars,
-            global_step=global_step,
             name='apply_gradients')
 
         #all remaining operations with the UPDATE_OPS GraphKeys
@@ -549,7 +545,7 @@ class Trainer(object):
         #create an operation to update the gradients, the batch_loss
         #and do all other update ops
         update_op = tf.group(
-            *([apply_gradients_op, update_loss] + update_ops),
+            *([apply_gradients_op] + update_ops),
             name='update')
 
         return update_op
@@ -597,19 +593,20 @@ class Trainer(object):
                 os.path.join(self.expdir, 'logdir', 'validated.ckpt'),
                 self.model)
 
-            #create the summary hook
-            summary_hook = hooks.SummaryHook(
-                os.path.join(self.expdir, 'logdir'))
-
             with tf.train.MonitoredTrainingSession(
                 master=master,
                 is_chief=is_chief,
                 checkpoint_dir=os.path.join(self.expdir, 'logdir'),
                 scaffold=scaffold,
                 hooks=[hooks.StopHook(outputs['done'])] + self.hooks(outputs),
-                chief_only_hooks=[save_hook, validation_hook, summary_hook] \
+                chief_only_hooks=[save_hook, validation_hook] \
                     + self.chief_only_hooks(outputs),
                 config=config) as sess:
+
+                #create the summary writer
+                summary_writer = tf.summary.FileWriter(
+                    os.path.join(self.expdir, 'logdir'))
+
 
                 #start the training loop
                 #pylint: disable=E1101
@@ -631,8 +628,16 @@ class Trainer(object):
                             outputs['init_validation'].run(session=sess)
 
                             #compute the validation loss
-                            for _ in range(outputs['valbatches']):
-                                outputs['update_loss'].run(session=sess)
+                            for i in range(outputs['valbatches']):
+                                _, summary = sess.run(fetches=[
+                                    outputs['update_loss'],
+                                    outputs['eval_summaries']])
+                                summary_writer.add_summary(summary, i)
+                            summary, global_step = sess.run(fetches=[
+                                outputs['val_loss_summary'],
+                                outputs['global_step']
+                            ])
+                            summary_writer.add_summary(summary, global_step)
 
                             #get the current validation loss
                             validation_loss = outputs['validation_loss'].eval(
@@ -721,14 +726,17 @@ class Trainer(object):
 
                     for _ in range(local_steps):
                         #update the model
-                        _, loss, lr, global_step, memory, limit = \
+                        _, loss, lr, global_step, memory, limit, summary = \
                             sess.run(
                                 fetches=[outputs['update_op'],
                                          outputs['loss'],
                                          outputs['learning_rate'],
                                          outputs['global_step'],
                                          outputs['memory_usage'],
-                                         outputs['memory_limit']])
+                                         outputs['memory_limit'],
+                                         outputs['training_summaries']])
+
+                        summary_writer.add_summary(summary, global_step)
 
                         if memory is not None:
                             memory_line = '\n\t peak memory usage: %d/%d MB' % (
@@ -745,6 +753,8 @@ class Trainer(object):
                                 outputs['num_steps'],
                                 loss, lr, time.time()-start,
                                 memory_line))
+
+                    outputs['increment_step'].run(session=sess)
 
         #store the model file
         modelfile = os.path.join(self.expdir, 'model', 'model.pkl')

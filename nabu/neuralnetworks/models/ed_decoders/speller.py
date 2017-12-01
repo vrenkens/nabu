@@ -2,7 +2,6 @@
 contains the speller functionality'''
 
 import tensorflow as tf
-from nabu.neuralnetworks.models.ed_decoders import ed_decoder
 from nabu.neuralnetworks.models.ed_decoders import rnn_decoder
 
 class Speller(rnn_decoder.RNNDecoder):
@@ -39,17 +38,21 @@ class Speller(rnn_decoder.RNNDecoder):
         if encoded is not None:
 
             #create the attention mechanism
-            attention_mechanism = tf.contrib.seq2seq.BahdanauAttention(
+            attention_mechanisms = [tf.contrib.seq2seq.BahdanauAttention(
                 num_units=rnn_cell.output_size,
-                memory=encoded.values()[0],
-                memory_sequence_length=encoded_seq_length.values()[0]
-            )
+                memory=encoded[e],
+                memory_sequence_length=encoded_seq_length[e],
+                probability_fn=normalized_sigmoid
+            ) for e in encoded]
+
+            attention_layer_size = \
+                [int(self.conf['num_units'])]*len(attention_mechanisms)
 
             #add attention to the rnn cell
             rnn_cell = tf.contrib.seq2seq.AttentionWrapper(
                 cell=rnn_cell,
-                attention_mechanism=attention_mechanism,
-                attention_layer_size=int(self.conf['num_units']),
+                attention_mechanism=attention_mechanisms,
+                attention_layer_size=attention_layer_size,
                 alignment_history=False,
                 output_attention=True
             )
@@ -62,3 +65,19 @@ class Speller(rnn_decoder.RNNDecoder):
         )
 
         return rnn_cell
+
+def normalized_sigmoid(x, axis=-1):
+    '''
+    the normalized sigmoid probability function
+
+    args:
+        x: the input tensor
+        axis: the axis to normalize
+
+    returns:
+        the normalize sigmoid output
+    '''
+
+    sig = tf.sigmoid(x)
+
+    return sig/tf.reduce_sum(sig, axis, keep_dims=True)
