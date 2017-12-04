@@ -11,6 +11,8 @@ from nabu.neuralnetworks.evaluators import evaluator_factory
 from nabu.neuralnetworks.components.hooks import LoadAtBegin
 from nabu.neuralnetworks.models.model import Model
 
+import pdb
+
 def test(expdir, testing=False):
     '''does everything for testing
 
@@ -59,13 +61,12 @@ def test(expdir, testing=False):
             return
 
         #create a histogram for all trainable parameters
-        for param in model.variables:
-            tf.summary.histogram(param.name, param, ['variables'])
-
-
+        for param in tf.trainable_variables():
+            tf.summary.histogram(param.name, param,
+                                 collections=['variable_summaries'])
 
         eval_summary = tf.summary.merge_all('eval_summaries')
-        variable_summary = tf.summary.merge_all('variables')
+        variable_summary = tf.summary.merge_all('variable_summaries')
 
         #create a hook that will load the model
         load_hook = LoadAtBegin(

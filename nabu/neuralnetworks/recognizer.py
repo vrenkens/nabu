@@ -83,10 +83,10 @@ class Recognizer(object):
 
             #create a histogram for all trainable parameters
             for param in tf.trainable_variables():
-                tf.summary.histogram(param.name, param, ['variables'])
+                tf.summary.histogram(param.name, param, ['variable_summaries'])
 
             self.eval_summary = tf.summary.merge_all('eval_summaries')
-            self.variable_summary = tf.summary.merge_all('variables')
+            self.variable_summary = tf.summary.merge_all('variable_summaries')
 
 
     def recognize(self):
