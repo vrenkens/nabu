@@ -12,8 +12,7 @@ from nabu.processing import input_pipeline
 from nabu.neuralnetworks.trainers import loss_functions
 from nabu.neuralnetworks.models.model import Model
 from nabu.neuralnetworks.evaluators import evaluator_factory
-from nabu.neuralnetworks.components import hooks
-from nabu.neuralnetworks.components import ops
+from nabu.neuralnetworks.components import hooks, ops, constraints
 
 class Trainer(object):
     '''General class outlining the training environment of a model.'''
@@ -50,10 +49,17 @@ class Trainer(object):
         self.server = server
         self.task_index = task_index
 
+        if ('norm_constraint' in self.conf
+                and self.conf['norm_constraint'] != 'None'):
+            constraint = constraints.MaxNorm(int(self.conf['norm_constraint']))
+        else:
+            constraint = None
+
         #create the model
         self.model = Model(
             conf=modelconf,
-            trainlabels=int(self.conf['trainlabels']))
+            trainlabels=int(self.conf['trainlabels']),
+            constraint=constraint)
 
     def _create_graph(self):
         '''
@@ -338,7 +344,7 @@ class Trainer(object):
                     variable_batch_size=(
                         self.conf['variable_batch_size'] == 'True')
                 )
-            batches = data + seq_length
+
             if int(self.conf['cut_sequence_length']):
 
                 #make sure that all the sequence lengths are the same
@@ -349,43 +355,48 @@ class Trainer(object):
                     #cut each data component
                     read_ops = []
                     components = []
-                    for batch in batches:
-                        cut, read_op, num_local_steps = _cut_sequence(
-                            batch,
-                            int(self.conf['cut_sequence_length']),
-                            max_length)
+                    component_lengths = []
+                    for i, batch in enumerate(data):
+                        cut, cut_length = read_op, num_local_steps = \
+                            _cut_sequence(
+                                batch,
+                                seq_length[i],
+                                int(self.conf['cut_sequence_length']),
+                                max_length)
                         components.append(cut)
+                        component_lengths.append(cut_length)
                         read_ops.append(read_op)
             else:
                 num_local_steps = tf.constant(1)
 
-                queues = [tf.FIFOQueue(1, b.dtype) for b in batches]
+                queues = [tf.FIFOQueue(1, b.dtype) for b in data]
+                length_queues = [tf.FIFOQueue(1, b.dtype) for b in seq_length]
                 components = [q.dequeue() for q in queues]
+                component_lengths = [q.dequeue() for q in length_queues]
                 for i, c in enumerate(components):
-                    c.set_shape(batches[i].shape)
+                    c.set_shape(data[i].shape)
+                    component_lengths[i].set_shape(seq_length[i].shape)
 
                 #create an op to read the data into the queues
-                read_ops = [q.enqueue(batches[i]) for i, q in enumerate(queues)]
+                read_ops = [q.enqueue(data[i]) for i, q in enumerate(queues)]
+                read_ops += [q.enqueue(seq_length[i])
+                             for i, q in enumerate(length_queues)]
 
             #create an op for reading the data
             read_data = tf.group(*read_ops)
 
-            #seperate the different parts of the batches
-            data = components[:len(components)/2]
-            seq_length = components[len(components)/2:]
-
             inputs = {
                 input_names[i]: d
-                for i, d in enumerate(data[:len(input_sections)])}
+                for i, d in enumerate(components[:len(input_sections)])}
             input_seq_length = {
                 input_names[i]: d
-                for i, d in enumerate(seq_length[:len(input_sections)])}
+                for i, d in enumerate(component_lengths[:len(input_sections)])}
             targets = {
                 output_names[i]: d
-                for i, d in enumerate(data[len(input_sections):])}
+                for i, d in enumerate(components[len(input_sections):])}
             target_seq_length = {
                 output_names[i]: d
-                for i, d in enumerate(seq_length[len(input_sections):])}
+                for i, d in enumerate(component_lengths[len(input_sections):])}
 
         return (inputs,
                 input_seq_length,
@@ -872,16 +883,18 @@ class ParameterServer(object):
                 self.wait_op.run(session=sess)
 
 
-def _cut_sequence(sequence, cut_length, max_length):
+def _cut_sequence(sequence, sequence_length, cut_length, max_length):
     '''cut sequence in equal parts and put into tensorarray
 
     args:
         sequence: a [batch_size x time x ...] tensor
+        sequence_length: a [batch_size] tensor containing the sequence length
         cut_length: int, the length of each sequence
-        max_length: int, the maximum length teh sequence can be
+        max_length: int, the maximum length the sequence can be
 
     returns:
         - an element from the queue
+        - the sequence length from the element in the queue
         - an op to enqueue the cut sequences
         - the number of elements in the queue
     '''
@@ -905,10 +918,25 @@ def _cut_sequence(sequence, cut_length, max_length):
     #put the tensorarray values in the FIFOQueue.
     queue = tf.FIFOQueue(
         capacity=int(ceil(float(max_length)/cut_length)),
-        dtypes=(sequence.dtype)
+        dtypes=sequence.dtype
     )
     enqueue_op = queue.enqueue_many(cut.stack())
     element = queue.dequeue()
     element.set_shape(element_shape)
 
-    return element, enqueue_op, numcuts
+    #get the sequence lengths o the queue elemenents
+    batch_size = tf.size(sequence_length)
+    element_lengths = tf.fill([numcuts, batch_size], cut_length)
+    element_lengths = tf.cumsum(element_lengths)
+    element_lengths = tf.minimum(element_lengths, sequence_length)
+    element_lengths = element_lengths - tf.pad(element_lengths[:-1],
+                                               [[1, 0], [0, 0]])
+    length_queue = queue = tf.FIFOQueue(
+        capacity=int(ceil(float(max_length)/cut_length)),
+        dtypes=sequence_length.dtype
+    )
+    enqueue_length = length_queue.enqueue_many(element_lengths)
+    enqueue_op = tf.group(*[enqueue_op, enqueue_length])
+    element_length = length_queue.dequeue()
+
+    return element, element_length, enqueue_op, numcuts

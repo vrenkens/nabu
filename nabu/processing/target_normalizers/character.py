@@ -15,7 +15,12 @@ def normalize(transcription, alphabet):
     normalized = list(transcription.lower())
 
     #replace the spaces with <space>
-    normalized = [character if character is not ' ' else '<space>'
+    normalized = [character if character != ' ' else '<space>'
+                  for character in normalized]
+
+    #replace the end of line with <eol>
+    #replace the spaces with <space>
+    normalized = [character if character != '\n' else '<eol>'
                   for character in normalized]
 
     #replace unknown characters with <unk>

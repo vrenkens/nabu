@@ -1,12 +1,12 @@
-'''@file text_processor.py
-Contains the TextProcessor'''
+'''@file textfile_processor.py
+Contains the TextFileProcessor'''
 
 import os
 import numpy as np
 import processor
 from nabu.processing.target_normalizers import normalizer_factory
 
-class TextProcessor(processor.Processor):
+class TextFileProcessor(processor.Processor):
     '''a processor for text data, does normalization'''
 
     def __init__(self, conf):
@@ -31,7 +31,7 @@ class TextProcessor(processor.Processor):
         else:
             self.nonesymbol = ''
 
-        super(TextProcessor, self).__init__(conf)
+        super(TextFileProcessor, self).__init__(conf)
 
     def __call__(self, dataline):
         '''process the data in dataline
@@ -41,9 +41,13 @@ class TextProcessor(processor.Processor):
         Returns:
             The normalized text as a string'''
 
+        #read the file
+        with open(dataline) as fid:
+            text = '\n'.join(fid.readlines())
+
         #normalize the line
         normalized = self.normalizer(
-            dataline,
+            text,
             self.alphabet + [self.nonesymbol])
 
         seq_length = len(normalized.split(' '))

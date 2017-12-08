@@ -7,12 +7,13 @@ from ed_decoders import ed_decoder_factory
 class Model(object):
     '''a general class for an encoder decoder system'''
 
-    def __init__(self, conf, trainlabels):
+    def __init__(self, conf, trainlabels, constraint):
         '''Model constructor
 
         Args:
             conf: The model configuration as a configparser object
             trainlabels: the number of extra labels required by the trainer
+            constraint: a constraint for the model paramaters
         '''
 
         self.conf = conf
@@ -26,12 +27,12 @@ class Model(object):
 
         #create the encoder
         self.encoder = ed_encoder_factory.factory(
-            conf.get('encoder', 'encoder'))(conf)
+            conf.get('encoder', 'encoder'))(conf, constraint)
 
         #create the decoder
         self.decoder = ed_decoder_factory.factory(
             conf.get('decoder', 'decoder'))(
-                conf, trainlabels, self.output_names)
+                conf, trainlabels, self.output_names, constraint)
 
     def __call__(self, inputs, input_seq_length, targets,
                  target_seq_length, is_training):

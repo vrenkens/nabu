@@ -10,17 +10,19 @@ class HotstartDecoder(ed_decoder.EDDecoder):
 
     transforms input features into a high level representation'''
 
-    def __init__(self, conf, trainlabels, outputs, name=None):
-        '''EDDecoder constructor
+    def __init__(self, conf, trainlabels, outputs, constraint, name=None):
+        '''constructor
 
         Args:
-            conf: the decoder configuration as a configparser
+            conf: the decoder configuration as a ConfigParser
             trainlabels: the number of extra labels required by the trainer
             outputs: the name of the outputs of the model
+            constraint: the constraint for the variables
         '''
 
         #super constructor
-        super(HotstartDecoder, self).__init__(conf, trainlabels, outputs, name)
+        super(HotstartDecoder, self).__init__(
+            conf, trainlabels, outputs, constraint, name)
 
         #set the wrapped section as the decoder section
         conf.remove_section('decoder')
@@ -32,7 +34,7 @@ class HotstartDecoder(ed_decoder.EDDecoder):
         #create the wrapped decoder
         self.wrapped = ed_decoder_factory.factory(
             conf.get('decoder', 'decoder'))(
-                conf, trainlabels, outputs, self.conf['wrapped'])
+                conf, trainlabels, outputs, constraint, self.conf['wrapped'])
 
 
 
