@@ -2,6 +2,7 @@
 usage: python nabu/scripts/segment_audio.py data_dir'''
 
 import os
+import sys
 
 def main(data_dir):
 
