@@ -2,4 +2,4 @@
 contains the decoders for encoder-decoder classifiers'''
 
 from . import ed_decoder, ed_decoder_factory, speller, dnn_decoder, \
-rnn_decoder, hotstart_decoder
+rnn_decoder, hotstart_decoder, dynamic_routing

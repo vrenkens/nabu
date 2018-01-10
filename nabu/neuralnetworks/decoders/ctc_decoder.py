@@ -54,7 +54,7 @@ class CTCDecoder(decoder.Decoder):
                 logits[o] = tf.transpose(logits[o], [1, 0, 2])
 
                 #do the CTC beam search
-                out, _ = tf.nn.ctc_greedy_decoder(
+                out, _ = tf.nn.ctc_beam_search_decoder(
                     logits[o], logits_seq_length[o])
                 outputs[o] = tf.cast(out[0], tf.int32)
 

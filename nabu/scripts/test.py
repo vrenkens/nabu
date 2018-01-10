@@ -8,8 +8,10 @@ import cPickle as pickle
 from six.moves import configparser
 import tensorflow as tf
 from nabu.neuralnetworks.evaluators import evaluator_factory
-from nabu.neuralnetworks.components.hooks import LoadAtBegin, SummaryHook
+from nabu.neuralnetworks.components.hooks import LoadAtBegin
 from nabu.neuralnetworks.models.model import Model
+
+import pdb
 
 def test(expdir, testing=False):
     '''does everything for testing
@@ -30,7 +32,8 @@ def test(expdir, testing=False):
         trainer_cfg.read(os.path.join(expdir, 'trainer.cfg'))
         model = Model(
             conf=model_cfg,
-            trainlabels=int(trainer_cfg.get('trainer', 'trainlabels')))
+            trainlabels=int(trainer_cfg.get('trainer', 'trainlabels')),
+            constraint=None)
     else:
         #load the model
         with open(os.path.join(expdir, 'model', 'model.pkl'), 'rb') as fid:
@@ -59,23 +62,35 @@ def test(expdir, testing=False):
             return
 
         #create a histogram for all trainable parameters
-        for param in model.variables:
-            tf.summary.histogram(param.name, param)
+        for param in tf.trainable_variables():
+            tf.summary.histogram(param.name, param,
+                                 collections=['variable_summaries'])
+
+        eval_summary = tf.summary.merge_all('eval_summaries')
+        variable_summary = tf.summary.merge_all('variable_summaries')
 
         #create a hook that will load the model
         load_hook = LoadAtBegin(
             os.path.join(expdir, 'model', 'network.ckpt'),
             model.variables)
 
-        #create a hook for summary writing
-        summary_hook = SummaryHook(os.path.join(expdir, 'logdir'))
-
         #start the session
         with tf.train.SingularMonitoredSession(
-            hooks=[load_hook, summary_hook]) as sess:
+            hooks=[load_hook]) as sess:
 
-            for _ in range(numbatches):
-                update_loss.run(session=sess)
+            summary_writer = tf.summary.FileWriter(
+                os.path.join(expdir, 'logdir'))
+
+            summary = variable_summary.eval(session=sess)
+            summary_writer.add_summary(summary)
+
+            for i in range(numbatches):
+                if eval_summary is not None:
+                    _, summary = sess.run([update_loss, eval_summary])
+                    summary_writer.add_summary(summary, i)
+                else:
+                    update_loss.run(session=sess)
+
             loss = loss.eval(session=sess)
 
     print 'loss = %f' % loss

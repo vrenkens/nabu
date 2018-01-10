@@ -49,9 +49,9 @@ class LossEvaluator(evaluator.Evaluator):
                     target_seq_length)
 
             #number of utterances in the batch
-            batch_utt = tf.shape(logits)[0]
+            batch_utt = tf.cast(tf.shape(logits.values()[0])[0], tf.float32)
 
-            new_num_utt = num_utt + tf.cast(batch_utt, tf.float32)
+            new_num_utt = num_utt + batch_utt
 
             #an operation to update the loss
             update_loss = loss.assign(

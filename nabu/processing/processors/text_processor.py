@@ -20,7 +20,8 @@ class TextProcessor(processor.Processor):
         self.normalizer = normalizer_factory.factory(
             conf.get('processor', 'normalizer'))
 
-        self.alphabet = conf.get('processor', 'alphabet').split(' ')
+        self.alphabet = conf.get('processor', 'alphabet').strip().split(' ')
+        self.alphabet = [c if c != '\\;' else ';' for c in self.alphabet]
 
         #initialize the metadata
         self.max_length = 0
@@ -52,7 +53,7 @@ class TextProcessor(processor.Processor):
         else:
             max_length = None
 
-        if not max_length or seq_length <= max_length:
+        if max_length is None or seq_length <= max_length:
             #update the metadata
             self.max_length = max(self.max_length, seq_length)
             if seq_length >= self.sequence_length_histogram.shape[0]:

@@ -48,17 +48,19 @@ def cross_entropy(targets, logits, logit_seq_length, target_seq_length):
 
         for t in targets:
             #stack the logits
-            stacked_logits = ops.seq2nonseq(logits[t], logit_seq_length[t])
+            stacked_logits = ops.stack_seq(logits[t], logit_seq_length[t])
 
             #create the stacked targets
-            stacked_targets = ops.seq2nonseq(targets[t],
-                                             target_seq_length[t])
+            stacked_targets = ops.stack_seq(targets[t], target_seq_length[t])
             stacked_targets = tf.cast(stacked_targets, tf.int32)
 
-            losses.append(tf.reduce_mean(
-                tf.nn.sparse_softmax_cross_entropy_with_logits(
-                    logits=stacked_logits,
-                    labels=stacked_targets)))
+            stacked_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
+                logits=stacked_logits,
+                labels=stacked_targets)
+
+            unstacked_loss = ops.unstack_seq(stacked_loss, logit_seq_length[t])
+
+            losses.append(tf.reduce_mean(tf.reduce_sum(unstacked_loss, 1)))
 
         loss = tf.reduce_sum(losses)
 
@@ -89,7 +91,7 @@ def cross_entropy_eos(targets, logits, logit_seq_length, target_seq_length):
         for t in targets:
             with tf.name_scope('cross_entropy_loss'):
 
-                output_dim = tf.shape(logits[t])[2]
+                output_dim = tf.shape(logits[t])[-1]
 
                 #get the logits for the final timestep
                 indices = tf.stack([tf.range(batch_size),
@@ -98,25 +100,31 @@ def cross_entropy_eos(targets, logits, logit_seq_length, target_seq_length):
                 final_logits = tf.gather_nd(logits[t], indices)
 
                 #stack all the logits except the final logits
-                stacked_logits = ops.seq2nonseq(logits[t],
-                                                logit_seq_length[t] - 1)
+                stacked_logits = ops.stack_seq(logits[t],
+                                               logit_seq_length[t] - 1)
 
                 #create the stacked targets
-                stacked_targets = ops.seq2nonseq(targets[t],
-                                                 target_seq_length[t])
+                stacked_targets = ops.stack_seq(targets[t],
+                                                target_seq_length[t])
 
                 #create the targets for the end of sequence labels
                 final_targets = tf.tile([output_dim-1], [batch_size])
 
-                #add the final logits and targets
-                stacked_logits = tf.concat([stacked_logits, final_logits], 0)
-                stacked_targets = tf.concat([stacked_targets, final_targets], 0)
+                #compute the loss for the loss for the sequences
+                stacked_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
+                    logits=stacked_logits,
+                    labels=stacked_targets)
 
-                #compute the cross-entropy loss
-                losses.append(tf.reduce_mean(
-                    tf.nn.sparse_softmax_cross_entropy_with_logits(
-                        logits=stacked_logits,
-                        labels=stacked_targets)))
+                #compute the loss for the eos label
+                eos_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
+                    logits=final_logits,
+                    labels=final_targets)
+
+                unstacked_loss = ops.unstack_seq(
+                    stacked_loss, target_seq_length[t])
+
+                losses.append(tf.reduce_mean(tf.reduce_sum(unstacked_loss, 1)
+                                             + eos_loss))
 
         loss = tf.reduce_sum(losses)
 
@@ -181,17 +189,20 @@ def sigmoid_cross_entropy(targets, logits, logit_seq_length, target_seq_length):
 
         for t in targets:
             #stack all the logits except the final logits
-            stacked_logits = ops.seq2nonseq(logits[t], logit_seq_length[t])
+            stacked_logits = ops.stack_seq(logits[t], logit_seq_length[t])
 
             #create the stacked targets
-            stacked_targets = ops.seq2nonseq(
-                tf.cast(targets[t], tf.float32),
+            stacked_targets = ops.stack_seq(
+                tf.to_float(targets[t]),
                 target_seq_length[t])
 
-            losses.append(tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(
-                    logits=stacked_logits,
-                    labels=stacked_targets)))
+            stacked_loss = tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=stacked_logits,
+                labels=stacked_targets)
+
+            unstacked_loss = ops.unstack_seq(stacked_loss, logit_seq_length[t])
+
+            losses.append(tf.reduce_mean(tf.reduce_sum(unstacked_loss, 1)))
 
         loss = tf.reduce_sum(losses)
 

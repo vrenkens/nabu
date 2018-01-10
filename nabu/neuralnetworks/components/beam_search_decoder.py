@@ -2,14 +2,17 @@
 contain the BeamSearchDecoder'''
 
 import collections
+from functools import partial
 import numpy as np
 import tensorflow as tf
 from tensorflow.contrib.framework import nest
+from ops import map_ta
 
 
 class BeamSearchState(
         collections.namedtuple('BeamSearchState',
                                ('cell_states',
+                                'alignment_history',
                                 'logprobs',
                                 'lengths',
                                 'finished'))):
@@ -18,6 +21,7 @@ class BeamSearchState(
 
     - cell_states: the cell states as a tuple of [batch_size x beam_width x s]
         tensor
+    - alignment_history: the alignments history as a TensorArray
     - predicted_ids: a [batch_size x beam_width] tensorArray containing the
         predicted ids
     - logprobs: a [batch_size x beam_width] tensor containing, the log
@@ -46,7 +50,8 @@ class BeamSearchDecoderFinalOutput(
         collections.namedtuple('BeamSearchDecoderFinalOutput',
                                ('predicted_ids',
                                 'lengths',
-                                'scores',))):
+                                'scores',
+                                'alignments'))):
     '''
     class for the final output of the BeamSearchDecoder
 
@@ -54,6 +59,8 @@ class BeamSearchDecoderFinalOutput(
         containing the predicted ids
     - lengths: a [1 x batch_size x beam_width] tensor containing the lengths
     - scores: a [1 x batch_size x beam_width] tensor containing the scores
+    - alignments: a [time x batch_size x beam_width x in_time] tensor containing
+        the alignments
     '''
 
     pass
@@ -151,8 +158,11 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
                                dtype=tf.int32)
             finished = tf.zeros([self.batch_size, self.beam_width],
                                 dtype=tf.bool)
+            alignment_history = tf.TensorArray(tf.float32, size=0,
+                                               dynamic_size=True)
             state = BeamSearchState(
                 cell_states=cell_states,
+                alignment_history=alignment_history,
                 logprobs=logprobs,
                 lengths=lengths,
                 finished=finished)
@@ -224,7 +234,7 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
                     tf.expand_dims(state.logprobs, 2),
                     [1, 1, output_dim]) + new_logprobs
                 lengths = tf.tile(
-                    tf.expand_dims(state.lengths + 1, 2),
+                    tf.expand_dims(state.lengths, 2),
                     [1, 1, output_dim])
                 cell_states = nest.map_structure(
                     lambda s: _tile_state(s, output_dim),
@@ -235,6 +245,10 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
                                                   self.beam_width, output_dim)
                 lengths = _stack_hypotheses(lengths, self.batch_size,
                                             self.beam_width, output_dim)
+                lengths = tf.where(
+                    tf.equal(predicted_ids, self.end_token),
+                    lengths,
+                    lengths + 1)
                 logprobs = _stack_hypotheses(logprobs, self.batch_size,
                                              self.beam_width, output_dim)
                 cell_states = nest.map_structure(
@@ -292,12 +306,27 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
 
             finished = tf.equal(predicted_ids, self.end_token)
 
+            if hasattr(cell_states, 'alignments'):
+                alignment_history = state.alignment_history.write(
+                    state.alignment_history.size(),
+                    cell_states.alignments[0]
+                )
+            else:
+                alignment_history = state.alignment_history.write(
+                    state.alignment_history.size(),
+                    tf.expand_dims(tf.zeros_like(predicted_ids, tf.float32), 2)
+                )
+
             #compute the new inputs
             with tf.name_scope('next_inputs'):
                 next_inputs = self.embedding(predicted_ids)
 
-            next_state = BeamSearchState(cell_states, logprobs, lengths,
-                                         finished)
+            next_state = BeamSearchState(
+                cell_states=cell_states,
+                alignment_history=alignment_history,
+                logprobs=logprobs,
+                lengths=lengths,
+                finished=finished)
 
             outputs = BeamSearchDecoderOutput(predicted_ids, parent_ids)
 
@@ -321,14 +350,18 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
             #do backwards search through the predicted ids
             predicted_ids = tf.transpose(outputs.predicted_ids, [1, 2, 0])
             parent_ids = tf.transpose(outputs.parent_ids, [1, 2, 0])
+            alignment_history = tf.transpose(
+                final_state.alignment_history.stack(),
+                [1, 2, 0, 3])
 
-            def condition(time, sequences, beams):
+            def condition(time, sequences, beams, alignments):
                 '''the condition of the while loop
 
                 Args:
                     time: a scalar, the current time step
                     sequences: a tensorArray containing the sequences
                     beams: the current beams that are being explored
+                    alignments: the tensorArray containing the alignments
 
                 returns:
                     True if time reached 0
@@ -336,7 +369,7 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
 
                 return tf.not_equal(time, 0)
 
-            def body(time, sequences, beams):
+            def body(time, sequences, beams, alignments):
                 '''the body of the while loop
 
                 Args:
@@ -344,6 +377,7 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
                     sequences: a tensorArray containing the sequences
                     beams: the current beams that are being explored shape
                         [batch_size, beam_width]
+                    alignments: the tensorArray containing the alignments
 
                 returns:
                     the updated time, sequences and beams
@@ -363,8 +397,12 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
                 new_sequences = sequences.write(new_time, selected_ids)
                 new_beams = tf.gather_nd(parent_ids[:, :, new_time], indices,
                                          name='selected_beams')
+                selected_alignments = tf.gather_nd(
+                    alignment_history[:, :, new_time],
+                    indices, name='selected_alignments')
+                new_alignments = alignments.write(new_time, selected_alignments)
 
-                return new_time, new_sequences, new_beams
+                return new_time, new_sequences, new_beams, new_alignments
 
             #create the initial loop variables
             init_time = tf.shape(predicted_ids)[-1]
@@ -373,6 +411,11 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
                 size=init_time,
                 name='init_sequences'
             )
+            init_alignments = tf.TensorArray(
+                dtype=tf.float32,
+                size=init_time,
+                name='init_alignments'
+            )
             init_beams = tf.tile(
                 tf.expand_dims(tf.range(self.beam_width), 0),
                 [self.batch_size, 1], name='initial_beams')
@@ -380,9 +423,11 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
             res = tf.while_loop(
                 condition,
                 body,
-                loop_vars=[init_time, init_sequences, init_beams])
+                loop_vars=[init_time, init_sequences, init_beams,
+                           init_alignments])
 
             predicted_ids_out = res[1].stack(name='predicted_ids')
+            alignments_out = res[3].stack(name='alignments')
 
             scores = _score(final_state.logprobs, final_state.lengths,
                             self.length_penalty_weight)
@@ -392,7 +437,8 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
             outputs = BeamSearchDecoderFinalOutput(
                 predicted_ids=predicted_ids_out,
                 lengths=lengths,
-                scores=scores
+                scores=scores,
+                alignments=alignments_out
             )
 
         return outputs, final_state
@@ -442,6 +488,9 @@ def _stack(tensor, batch_size, beam_width):
 
     returns: a [batch_size * beam_width x ...] tensor
     '''
+    if isinstance(tensor, tf.TensorArray):
+        return map_ta(partial(_stack, batch_size=batch_size,
+                              beam_width=beam_width), tensor)
 
     if tensor.shape.ndims != 3:
         return tensor
@@ -463,6 +512,9 @@ def _unstack(tensor, batch_size, beam_width):
 
     returns: a [batch_size x beam_width x ...] tensor
     '''
+    if isinstance(tensor, tf.TensorArray):
+        return map_ta(partial(_unstack, batch_size=batch_size,
+                              beam_width=beam_width), tensor)
 
     if tensor.shape.ndims != 2:
         return tensor
@@ -485,6 +537,10 @@ def _stack_hypotheses(tensor, batch_size, beam_width, output_dim):
 
     returns: a [batch_size x beam_width*output_dim x ...] tensor
     '''
+    if isinstance(tensor, tf.TensorArray):
+        return map_ta(partial(_stack_hypotheses, batch_size=batch_size,
+                              beam_width=beam_width, output_dim=output_dim),
+                      tensor)
 
     if tensor.shape.ndims < 3:
         return tensor
@@ -507,6 +563,8 @@ def _tile_state(state, output_dim):
 
     returns: the tiled state
     '''
+    if isinstance(state, tf.TensorArray):
+        return map_ta(partial(_tile_state, output_dim=output_dim), state)
 
     if state.shape.ndims != 3:
         return state
@@ -516,6 +574,13 @@ def _tile_state(state, output_dim):
 def _concat_states(s1, s2):
     '''concatenate the states'''
 
+    if isinstance(s1, tf.TensorArray):
+        st1 = s1.stack()
+        st2 = s2.stack()
+        st = tf.concat([st1, st2], 2)
+        sa = tf.TensorArray(s1.dtype, s1.size())
+        return sa.unstack(st)
+
     if s1.shape.ndims == 0:
         return s1
 
@@ -523,6 +588,9 @@ def _concat_states(s1, s2):
 
 def _gather_state(state, indices):
     '''do the gather on the strates'''
+
+    if isinstance(state, tf.TensorArray):
+        return map_ta(partial(_gather_state, indices=indices), state)
 
     if state.shape.ndims == 0:
         return state

@@ -97,14 +97,14 @@ class MaxDecoder(decoder.Decoder):
 
         #stack all the logits
         stacked_outputs = {
-            t:ops.seq2nonseq(outputs[t][0], outputs[t][1])
+            t:ops.stack_seq(outputs[t][0], outputs[t][1])
             for t in outputs}
 
 
         #create the stacked targets
         stacked_targets = {
-            t:tf.cast(ops.seq2nonseq(references[t],
-                                     reference_seq_length[t]), tf.int32)
+            t:tf.cast(ops.stack_seq(references[t],
+                                    reference_seq_length[t]), tf.int32)
             for t in references}
 
         #compute the number of errors
