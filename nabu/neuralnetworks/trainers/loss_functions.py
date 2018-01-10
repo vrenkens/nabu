@@ -22,8 +22,53 @@ def factory(loss_function):
         return CTC
     elif loss_function == 'sigmoid_cross_entropy':
         return sigmoid_cross_entropy
+    elif loss_function == 'marigin':
+        return marigin_loss
     else:
         raise Exception('unknown loss function %s' % loss_function)
+
+def marigin_loss(targets, logits, logit_seq_length, target_seq_length):
+    '''
+    marigin loss
+
+    Args:
+        targets: a dictionary of [batch_size x time x ...] tensor containing
+            the targets
+        logits: a dictionary of [batch_size x time x ...] tensor containing
+            the logits
+        logit_seq_length: a dictionary of [batch_size] vectors containing
+            the logit sequence lengths
+        target_seq_length: a dictionary of [batch_size] vectors containing
+            the target sequence lengths
+
+    Returns:
+        a scalar value containing the loss
+    '''
+
+    with tf.name_scope('marigin_loss'):
+        losses = []
+
+        for t in targets:
+            #stack the logits
+            stacked_logits = tf.squeeze(
+                ops.seq2nonseq(logits[t], logit_seq_length[t]), [1])
+            stacked_probs = tf.nn.sigmoid(stacked_logits)
+
+            #create the stacked targets
+            stacked_targets = tf.to_float(
+                ops.seq2nonseq(targets[t], target_seq_length[t]))
+
+            #compute the lower and upper marigins
+            lower = tf.square(tf.maximum(0.0, stacked_probs - 0.1))
+            upper = tf.square(tf.maximum(0.0, 0.9 - stacked_probs))
+
+            #compute the loss
+            losses.append(tf.reduce_mean(
+                stacked_targets*upper + (1-stacked_targets)*lower))
+
+        loss = tf.reduce_sum(losses)
+
+    return loss
 
 def cross_entropy(targets, logits, logit_seq_length, target_seq_length):
     '''

@@ -44,7 +44,9 @@ class ThresholdDecoder(decoder.Decoder):
 
             outputs = {}
             for out in logits:
-                labels = tf.greater(tf.nn.sigmoid(logits[out]), self.threshold)
+                labels = tf.greater(
+                    tf.nn.sigmoid(tf.squeeze(logits[out], [2])), 
+                    self.threshold)
                 outputs[out] = (labels, logits_seq_length[out])
 
         return outputs

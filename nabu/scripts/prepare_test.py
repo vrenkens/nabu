@@ -18,7 +18,7 @@ def main(expdir, recipe, computing):
     Args:
         - expdir: the training experiments directory
         - recipe: the directory containing the recipe config files
-        - computing: the computing type, one off (condor, standart)'''
+        - computing: the computing type, one off (condor, standard)'''
 
     if expdir is None:
         raise Exception('no expdir specified. Command usage: '
@@ -71,7 +71,7 @@ def main(expdir, recipe, computing):
                          'nabu/computing/condor/non_distributed.job'])
 
 
-    elif computing == 'standart':
+    elif computing == 'standard':
         test(expdir=os.path.join(expdir, 'test'))
 
     else:
@@ -85,8 +85,8 @@ if __name__ == '__main__':
                                'the directory containing the recipe config '
                                'files'
                               )
-    tf.app.flags.DEFINE_string('computing', 'standart',
-                               'the computing type, one off (condor, standart)'
+    tf.app.flags.DEFINE_string('computing', 'standard',
+                               'the computing type, one off (condor, standard)'
                               )
 
     FLAGS = tf.app.flags.FLAGS
