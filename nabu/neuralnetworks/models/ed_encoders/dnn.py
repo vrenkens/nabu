@@ -3,7 +3,6 @@ contains the DNN class'''
 
 import tensorflow as tf
 import ed_encoder
-from nabu.neuralnetworks.components.ops import mix
 
 class DNN(ed_encoder.EDEncoder):
     '''a DNN encoder'''

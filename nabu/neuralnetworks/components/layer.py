@@ -6,11 +6,11 @@ from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn
 from nabu.neuralnetworks.components import ops
 
 def blstm(
-    inputs,
-    sequence_length,
-    num_units,
-    layer_norm=False,
-    scope=None):
+        inputs,
+        sequence_length,
+        num_units,
+        layer_norm=False,
+        scope=None):
     '''
     a BLSTM layer
 
@@ -51,12 +51,12 @@ def blstm(
         return outputs
 
 def pblstm(
-    inputs,
-    sequence_length,
-    num_units,
-    num_steps=2,
-    layer_norm=False,
-    scope=None):
+        inputs,
+        sequence_length,
+        num_units,
+        num_steps=2,
+        layer_norm=False,
+        scope=None):
     '''
     a Pyramidal BLSTM layer
 

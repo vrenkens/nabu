@@ -4,6 +4,7 @@ contains the listener code'''
 import tensorflow as tf
 import ed_encoder
 from nabu.neuralnetworks.components import layer
+from nabu.neuralnetworks.components import ops
 
 class Listener(ed_encoder.EDEncoder):
     '''a listener object

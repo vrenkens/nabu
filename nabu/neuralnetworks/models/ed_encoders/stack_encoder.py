@@ -9,15 +9,17 @@ import ed_encoder_factory
 class StackEncoder(ed_encoder.EDEncoder):
     '''this encoder will stack encoders on top of each other'''
 
-    def __init__(self, conf, name=None):
+    def __init__(self, conf, constraint, name=None):
         '''constructor
 
         Args:
             conf: the encoder configuration
-            name: the encoder name'''
+            name: the encoder name
+            constraint: the constraint for the variables
+        '''
 
 
-        super(StackEncoder, self).__init__(conf, name)
+        super(StackEncoder, self).__init__(conf, constraint, name)
 
         #create the encoders
         self.encoders = []
@@ -44,7 +46,7 @@ class StackEncoder(ed_encoder.EDEncoder):
 
             self.encoders.append(ed_encoder_factory.factory(
                 encoder_conf.get('encoder', 'encoder'))(
-                    encoder_conf, encoder
+                    encoder_conf, constraint, encoder
                 ))
 
     def encode(self, inputs, input_seq_length, is_training):

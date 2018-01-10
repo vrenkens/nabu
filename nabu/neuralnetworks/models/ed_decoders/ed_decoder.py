@@ -11,13 +11,14 @@ class EDDecoder(object):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, conf, trainlabels, outputs, name=None):
+    def __init__(self, conf, trainlabels, outputs, constraint, name=None):
         '''EDDecoder constructor
 
         Args:
             conf: the decoder configuration as a ConfigParser
             trainlabels: the number of extra labels required by the trainer
             outputs: the name of the outputs of the model
+            constraint: the constraint for the variables
         '''
 
 
@@ -28,9 +29,9 @@ class EDDecoder(object):
         self.output_dims = self.get_output_dims(trainlabels)
 
         self.scope = tf.VariableScope(
-            tf.AUTO_REUSE, name or type(self).__name__)
-
-        self._variables = []
+            tf.AUTO_REUSE,
+            name or type(self).__name__,
+            constraint=constraint)
 
 
     def __call__(self, encoded, encoded_seq_length, targets, target_seq_length,
@@ -67,14 +68,6 @@ class EDDecoder(object):
                 targets,
                 target_seq_length,
                 is_training)
-
-        self._variables = tf.get_collection(
-            tf.GraphKeys.GLOBAL_VARIABLES,
-            scope=self.scope.name)
-
-        if hasattr(self, 'wrapped'):
-            #pylint: disable=E1101
-            self._variables += self.wrapped.variables
 
         return logits, logit_sequence_length, state
 
@@ -122,7 +115,15 @@ class EDDecoder(object):
     def variables(self):
         '''get a list of the models's variables'''
 
-        return self._variables
+        variables = tf.get_collection(
+            tf.GraphKeys.GLOBAL_VARIABLES,
+            scope=self.scope.name)
+
+        if hasattr(self, 'wrapped'):
+            #pylint: disable=E1101
+            variables += self.wrapped.variables
+
+        return variables
 
     @abstractmethod
     def get_output_dims(self, trainlabels):

@@ -55,13 +55,13 @@ def get_filenames(dataconfs):
     return data_queue_elements, names
 
 def input_pipeline(
-    data_queue,
-    batch_size,
-    numbuckets,
-    dataconfs,
-    variable_batch_size=False,
-    allow_smaller_final_batch=False,
-    name=None):
+        data_queue,
+        batch_size,
+        numbuckets,
+        dataconfs,
+        variable_batch_size=False,
+        allow_smaller_final_batch=False,
+        name=None):
     '''create the input pipeline
 
     Args:
@@ -79,7 +79,8 @@ def input_pipeline(
     Returns:
         - the data elements as a list of [batch_size x ...] tensor
         - the sequence lengths as a list of [batch_size] tensor
-        - the number of steps in each epoch'''
+        - the number of steps in each epoch
+        - the maximal length a sequence can be'''
 
     with tf.variable_scope(name or 'input_pipeline'):
 
@@ -170,7 +171,7 @@ def input_pipeline(
         data = batches[::2]
         seq_length = batches[1::2]
 
-        return data, seq_length, num_steps
+        return data, seq_length, num_steps, sequence_length_histogram.size
 
 def bucket_boundaries(histogram, numbuckets):
     '''detemine the bucket boundaries to uniformally devide the number of

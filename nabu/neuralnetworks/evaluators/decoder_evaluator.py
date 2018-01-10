@@ -24,11 +24,12 @@ class DecoderEvaluator(evaluator.Evaluator):
         self.decoder = decoder_factory.factory(
             conf.get('decoder', 'decoder'))(conf, model)
 
-    def compute_loss(self, inputs, input_seq_length, targets,
-                     target_seq_length):
-        '''compute the validation loss for a batch of data
+    def update_loss(self, loss, inputs, input_seq_length, targets,
+                    target_seq_length):
+        '''update the validation loss for a batch of data
 
         Args:
+            loss: the current loss
             inputs: the inputs to the neural network, this is a list of
                 [batch_size x ...] tensors
             input_seq_length: The sequence lengths of the input utterances, this
@@ -39,13 +40,14 @@ class DecoderEvaluator(evaluator.Evaluator):
                 this is a list of [batch_size] vectors
 
         Returns:
-            the loss as a scalar'''
+            an operation to update the loss'''
 
         with tf.name_scope('evaluate_decoder'):
 
             #use the decoder to decoder
             outputs = self.decoder(inputs, input_seq_length)
 
-            loss = self.decoder.evaluate(outputs, targets, target_seq_length)
+            update_loss = self.decoder.update_evaluation_loss(
+                loss, outputs, targets, target_seq_length)
 
-        return loss
+        return update_loss

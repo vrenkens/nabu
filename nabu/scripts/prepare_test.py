@@ -46,9 +46,9 @@ def main(expdir, recipe, computing):
 
     #copy the config files
     shutil.copyfile(database_cfg_file,
-                    os.path.join(expdir, 'test', 'database.cfg'))
+                    os.path.join(expdir, 'test', 'database.conf'))
     shutil.copyfile(evaluator_cfg_file,
-                    os.path.join(expdir, 'test', 'evaluator.cfg'))
+                    os.path.join(expdir, 'test', 'test_evaluator.cfg'))
 
     #create a link to the model
     os.symlink(os.path.join(expdir, 'model'),

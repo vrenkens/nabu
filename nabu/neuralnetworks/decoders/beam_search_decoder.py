@@ -2,9 +2,11 @@
 contains the BeamSearchDecoder'''
 
 import os
+import numpy as np
 import tensorflow as tf
 import decoder
 from nabu.neuralnetworks.components.ops import dense_sequence_to_sparse
+from nabu.neuralnetworks.components import beam_search_decoder as beam_search
 
 class BeamSearchDecoder(decoder.Decoder):
     '''Beam search decoder'''
@@ -42,17 +44,12 @@ class BeamSearchDecoder(decoder.Decoder):
             output_name = self.model.output_dims.keys()[0]
             beam_width = int(self.conf['beam_width'])
             batch_size = tf.shape(inputs.values()[0])[0]
-
-            #the start and end tokens are the final output
-            token_val = int(self.model.decoder.output_dims.values()[0]-1)
+            output_dim = self.model.decoder.output_dims.values()[0]
 
             #start_tokens: vector with size batch_size
-            start_tokens = tf.fill([batch_size], token_val)
+            start_tokens = tf.fill([batch_size], output_dim-1)
 
-            #end token
-            end_token = tf.constant(token_val, dtype=tf.int32)
-
-            #encode the inputs [batch_size x output_length x output_dim]
+            #encode the inputs
             encoded, encoded_seq_length = self.model.encoder(
                 inputs=inputs,
                 input_seq_length=input_seq_length,
@@ -90,11 +87,11 @@ class BeamSearchDecoder(decoder.Decoder):
                 dtype=tf.float32)
 
             #Create the beam search decoder
-            beam_search_decoder = tf.contrib.seq2seq.BeamSearchDecoder(
+            beam_search_decoder = beam_search.BeamSearchDecoder(
                 cell=cell,
                 embedding=embeddings,
                 start_tokens=start_tokens,
-                end_token=end_token,
+                end_token=self.model.decoder.output_dims.values()[0]-1,
                 initial_state=initial_state,
                 beam_width=beam_width,
                 length_penalty_weight=float(self.conf['length_penalty']))
@@ -102,15 +99,16 @@ class BeamSearchDecoder(decoder.Decoder):
 
             with tf.variable_scope(self.model.decoder.scope):
                 #Decode useing the beamsearch decoder
-                output, _, lengths = tf.contrib.seq2seq.dynamic_decode(
+                output, _, _ = tf.contrib.seq2seq.dynamic_decode(
                     decoder=beam_search_decoder,
                     maximum_iterations=int(self.conf['max_steps']))
 
-            sequences = output.predicted_ids
-            scores = output.beam_search_decoder_output.scores[:, -1, :]
+            sequences = tf.transpose(output.predicted_ids, [0, 2, 1])
+            scores = output.scores[:, 0, :]
+            lengths = output.lengths[:, 0, :]
+            alignments = tf.transpose(output.alignments, [0, 2, 1, 3])
 
-
-            return {output_name:(sequences, lengths, scores)}
+            return {output_name:(sequences, lengths, scores, alignments)}
 
     def write(self, outputs, directory, names):
         '''write the output of the decoder to disk
@@ -121,33 +119,53 @@ class BeamSearchDecoder(decoder.Decoder):
             names: the names of the utterances in outputs
         '''
         sequences = outputs.values()[0][0]
+        lengths = outputs.values()[0][1]
         scores = outputs.values()[0][2]
-        end = int(self.model.decoder.output_dims.values()[0]-1)
+        alignments = outputs.values()[0][3]
 
         for i, name in enumerate(names):
             with open(os.path.join(directory, name), 'w') as fid:
-                for b in range(sequences.shape[2]):
-                    sequence = sequences[i, :, b]
+                for b in range(sequences.shape[1]):
+                    sequence = sequences[i, b, :lengths[i, b]]
                     #look for the first occurence of a sequence border label
-                    e = next(i for i, j in enumerate(sequence) if j == end)
-                    text = ' '.join([self.alphabet[s] for s in sequence[:e]])
+                    text = ' '.join([self.alphabet[s] for s in sequence])
                     fid.write('%f %s\n' % (scores[i, b], text))
+            if ('visualize_alignments' in self.conf and
+                    self.conf['visualize_alignments'] == 'True'):
+                np.save(os.path.join(directory, name + '_alignments.npy'),
+                        alignments[i])
 
-
-    def evaluate(self, outputs, references, reference_seq_length):
-        '''evaluate the output of the decoder
+    def update_evaluation_loss(self, loss, outputs, references,
+                               reference_seq_length):
+        '''update the evaluation loss
 
         args:
+            loss: the current evaluation loss
             outputs: the outputs of the decoder as a dictionary
             references: the references as a dictionary
             reference_seq_length: the sequence lengths of the references
 
         Returns:
-            the error of the outputs
+            an op to update the evalution loss
         '''
 
-        sequences = outputs.values()[0][0]
-        lengths = outputs.values()[0][1]
+        #create a variable to hold the total number of reference targets
+        num_targets = tf.get_variable(
+            name='num_targets',
+            shape=[],
+            dtype=tf.float32,
+            initializer=tf.zeros_initializer(),
+            trainable=False
+        )
+
+        if ('visualize_alignments' in self.conf and
+                self.conf['visualize_alignments'] == 'True'):
+            alignments = outputs.values()[0][3][:, 0]
+            tf.summary.image('alignments', tf.expand_dims(alignments, 3),
+                             collections=['eval_summaries'])
+
+        sequences = outputs.values()[0][0][:, 0]
+        lengths = outputs.values()[0][1][:, 0]
 
         #convert the references to sparse representations
         sparse_targets = dense_sequence_to_sparse(
@@ -155,10 +173,24 @@ class BeamSearchDecoder(decoder.Decoder):
 
         #convert the best sequences to sparse representations
         sparse_sequences = dense_sequence_to_sparse(
-            sequences[:, :, 0], lengths[:, 0]-1)
+            sequences, lengths)
 
         #compute the edit distance
-        loss = tf.reduce_mean(
-            tf.edit_distance(sparse_sequences, sparse_targets))
+        errors = tf.edit_distance(
+            sparse_sequences, sparse_targets, normalize=False)
+        errors = tf.reduce_sum(errors)
 
-        return loss
+        #compute the number of targets in this batch
+        batch_targets = tf.reduce_sum(reference_seq_length.values()[0])
+
+        new_num_targets = num_targets + tf.cast(batch_targets, tf.float32)
+
+        #an operation to update the loss
+        update_loss = loss.assign(
+            (loss*num_targets + errors)/new_num_targets).op
+
+        #add an operation to update the number of targets
+        with tf.control_dependencies([update_loss]):
+            update_loss = num_targets.assign(new_num_targets).op
+
+        return update_loss

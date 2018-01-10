@@ -51,16 +51,18 @@ class FeatureDecoder(decoder.Decoder):
                 output = outputs[o][0][i, :outputs[o][1][i]]
                 np.save(os.path.join(directory, o, names[i]+'.npy'), output)
 
-    def evaluate(self, outputs, references, reference_seq_length):
-        '''evaluate the output of the decoder
+    def update_evaluation_loss(self, loss, outputs, references,
+                               reference_seq_length):
+        '''update the evaluation loss
 
         args:
+            loss: the current evaluation loss
             outputs: the outputs of the decoder as a dictionary
             references: the references as a dictionary
             reference_seq_length: the sequence lengths of the references
 
         Returns:
-            the error of the outputs
+            an op to update the evalution loss
         '''
 
         raise Exception('FeatureDecoder can only be used to decode')

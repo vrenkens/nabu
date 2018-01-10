@@ -32,8 +32,8 @@ run data --recipe=/path/to/recipe --expdir=/path/to/expdir --computing=<computin
 
 - recipe: points to the directory containing the recipe you
 want to prepare the data for.
-- expdir: the path to a directory where you can write to. In this directory all
-files will be stored, like the configurations and logs
+- expdir: the absolute path to a directory where you can write to. In this 
+directory all files will be stored, like the configurations and logs
 - computing [default: standard]: the distributed computing software you want to
 use. One of standard or condor. standard means that no distributed computing
 software is used and the job will run on the machine where nabu is called from.
@@ -262,7 +262,7 @@ will be written to the &lt;outputs> folder.
 
 As mentioned in the beginning Nabu focusses on adaptibility. Everything in the
 recipe can be modified (more information about recipes
-[here](config/recipes/README.md)). Most classes used in Nabu have a general 
+[here](config/recipes/README.md)). Most classes used in Nabu have a general
 class that defines an interface and common functionality for all children and
 a factory that is used to create the necessary class. Look into the respective
 README files to see how to implement a new class.
