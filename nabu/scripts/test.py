@@ -32,7 +32,8 @@ def test(expdir, testing=False):
         trainer_cfg.read(os.path.join(expdir, 'trainer.cfg'))
         model = Model(
             conf=model_cfg,
-            trainlabels=int(trainer_cfg.get('trainer', 'trainlabels')))
+            trainlabels=int(trainer_cfg.get('trainer', 'trainlabels')),
+            constraint=None)
     else:
         #load the model
         with open(os.path.join(expdir, 'model', 'model.pkl'), 'rb') as fid:
