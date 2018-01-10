@@ -5,6 +5,7 @@ import tensorflow as tf
 from nabu.neuralnetworks.models.ed_decoders import rnn_decoder
 from nabu.neuralnetworks.components.rnn_cell import StateOutputWrapper
 from nabu.neuralnetworks.components import attention
+from nabu.neuralnetworks.components.rnn_cell import AttentionWrapper
 
 class Speller(rnn_decoder.RNNDecoder):
     '''a speller decoder for the LAS architecture'''
@@ -44,7 +45,7 @@ class Speller(rnn_decoder.RNNDecoder):
         if encoded is not None:
 
             #create the attention mechanism
-            attention_mechanisms = [_create_attention(
+            attention_mechanisms = [attention.factory(
                 conf=self.conf,
                 num_units=rnn_cell.output_size,
                 encoded=encoded[e],
@@ -71,51 +72,3 @@ class Speller(rnn_decoder.RNNDecoder):
         )
 
         return rnn_cell
-
-def normalized_sigmoid(x, axis=-1):
-    '''
-    the normalized sigmoid probability function
-
-    args:
-        x: the input tensor
-        axis: the axis to normalize
-
-    returns:
-        the normalize sigmoid output
-    '''
-
-    sig = tf.sigmoid(x)
-
-    return sig/tf.reduce_sum(sig, axis, keep_dims=True)
-
-def _create_attention(conf, num_units, encoded, encoded_seq_length):
-    '''create the attention mechanism'''
-
-    prob_fn = {
-        'softmax': None,
-        'sigmoid': normalized_sigmoid
-    }
-
-    if conf['attention'] == 'location_aware':
-        return attention.LocationAwareAttention(
-            num_units=num_units,
-            numfilt=int(conf['numfilt']),
-            filtersize=int(conf['filtersize']),
-            memory=encoded,
-            memory_sequence_length=encoded_seq_length,
-            probability_fn=prob_fn[conf['probability_fn']]
-        )
-    elif conf['attention'] == 'vanilla':
-        return tf.contrib.seq2seq.BahdanauAttention(
-            num_units=num_units,
-            memory=encoded,
-            memory_sequence_length=encoded_seq_length,
-            probability_fn=prob_fn[conf['probability_fn']]
-        )
-    elif conf['attention'] == 'monotonic':
-        return attention.MonotonicAttention(
-            num_units=num_units,
-            memory=encoded,
-            memory_sequence_length=encoded_seq_length,
-            probability_fn=prob_fn[conf['probability_fn']]
-        )

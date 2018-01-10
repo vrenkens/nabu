@@ -314,7 +314,7 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
             else:
                 alignment_history = state.alignment_history.write(
                     state.alignment_history.size(),
-                    tf.expand_dims(tf.zeros_like(predicted_ids), 2)
+                    tf.expand_dims(tf.zeros_like(predicted_ids, tf.float32), 2)
                 )
 
             #compute the new inputs

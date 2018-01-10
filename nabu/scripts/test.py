@@ -84,8 +84,11 @@ def test(expdir, testing=False):
             summary_writer.add_summary(summary)
 
             for i in range(numbatches):
-                _, summary = sess.run([update_loss, eval_summary])
-                summary_writer.add_summary(summary, i)
+                if eval_summary is not None:
+                    _, summary = sess.run([update_loss, eval_summary])
+                    summary_writer.add_summary(summary, i)
+                else:
+                    update_loss.run(session=sess)
 
             loss = loss.eval(session=sess)
 

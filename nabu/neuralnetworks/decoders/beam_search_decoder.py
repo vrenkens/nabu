@@ -44,9 +44,10 @@ class BeamSearchDecoder(decoder.Decoder):
             output_name = self.model.output_dims.keys()[0]
             beam_width = int(self.conf['beam_width'])
             batch_size = tf.shape(inputs.values()[0])[0]
+            output_dim = self.model.decoder.output_dims.values()[0]
 
             #start_tokens: vector with size batch_size
-            start_tokens = -tf.ones([batch_size], dtype=tf.int32)
+            start_tokens = tf.fill([batch_size], output_dim-1)
 
             #encode the inputs
             encoded, encoded_seq_length = self.model.encoder(
@@ -81,7 +82,7 @@ class BeamSearchDecoder(decoder.Decoder):
 
             #create the embeddings
             embeddings = lambda x: tf.one_hot(
-                x+1,
+                x,
                 self.model.decoder.output_dims.values()[0],
                 dtype=tf.float32)
 

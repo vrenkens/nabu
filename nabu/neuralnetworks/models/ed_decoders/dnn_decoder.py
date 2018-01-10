@@ -32,7 +32,6 @@ class DNNDecoder(ed_decoder.EDDecoder):
                 of [batch_size x ... ] tensors
         '''
 
-        #apply for each phonological feature
         outputs = {}
         output_seq_length = {}
         for o in self.output_dims:

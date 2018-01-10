@@ -3,8 +3,60 @@ contain attention mechanisms'''
 
 import tensorflow as tf
 
+def factory(conf, num_units, encoded, encoded_seq_length):
+    '''create the attention mechanism'''
+
+    prob_fn = {
+        'softmax': None,
+        'normalized_sigmoid': normalized_sigmoid,
+        'sigmoid':tf.sigmoid
+    }
+
+    if conf['attention'] == 'location_aware':
+        return LocationAwareAttention(
+            num_units=num_units,
+            numfilt=int(conf['numfilt']),
+            filtersize=int(conf['filtersize']),
+            memory=encoded,
+            memory_sequence_length=encoded_seq_length,
+            probability_fn=prob_fn[conf['probability_fn']]
+        )
+    elif conf['attention'] == 'vanilla':
+        return tf.contrib.seq2seq.BahdanauAttention(
+            num_units=num_units,
+            memory=encoded,
+            memory_sequence_length=encoded_seq_length,
+            probability_fn=prob_fn[conf['probability_fn']]
+        )
+    elif conf['attention'] == 'windowed':
+        return WindowedAttention(
+            num_units=num_units,
+            left_window_width=int(conf['left_window_width']),
+            right_window_width=int(conf['right_window_width']),
+            memory=encoded,
+            memory_sequence_length=encoded_seq_length,
+            probability_fn=prob_fn[conf['probability_fn']]
+        )
+
+def normalized_sigmoid(x, axis=-1):
+    '''
+    the normalized sigmoid probability function
+
+    args:
+        x: the input tensor
+        axis: the axis to normalize
+
+    returns:
+        the normalize sigmoid output
+    '''
+
+    sig = tf.sigmoid(x)
+
+    return sig/tf.reduce_sum(sig, axis, keep_dims=True)
+
+
 class BahdanauAttention(tf.contrib.seq2seq.BahdanauAttention):
-    '''attention mechanism that is location aware'''
+    '''normal Bahdanau Style attention'''
 
     def __call__(self, query, previous_alignments):
         '''Score the query based on the keys and values.
@@ -24,8 +76,6 @@ class BahdanauAttention(tf.contrib.seq2seq.BahdanauAttention):
 
         with tf.variable_scope(None, 'bahdanau_attention',
                                [query, previous_alignments]):
-
-            #query = tf.Print(query, [query])
 
             processed_query = \
                 self.query_layer(query) if self.query_layer else query
@@ -131,53 +181,8 @@ class LocationAwareAttention(tf.contrib.seq2seq.BahdanauAttention):
 
             return alignments
 
-class MonotonicAttention(tf.contrib.seq2seq.BahdanauAttention):
-    '''attention mechanism that is location aware'''
-
-    def __init__(self,
-                 num_units,
-                 memory,
-                 memory_sequence_length=None,
-                 normalize=False,
-                 probability_fn=None,
-                 score_mask_value=float("-inf"),
-                 name='MonotonicAttention'):
-        '''Construct the Attention mechanism.
-
-        Args:
-            num_units: The depth of the query mechanism.
-            memory: The memory to query; usually the output of an RNN encoder.
-                This tensor should be shaped `[batch_size, max_time, ...]`.
-            memory_sequence_length (optional): Sequence lengths for the batch
-                entries in memory.  If provided, the memory tensor rows are
-                masked with zeros for values past the respective sequence
-                lengths.
-            normalize: Python boolean.  Whether to normalize the energy term.
-            probability_fn: (optional) A `callable`.  Converts the score to
-                probabilities.  The default is @{tf.nn.softmax}. Other options
-                include @{tf.contrib.seq2seq.hardmax} and
-                @{tf.contrib.sparsemax.sparsemax}. Its signature should be:
-                `probabilities = probability_fn(score)`.
-            score_mask_value: (optional): The mask value for score before
-                passing into `probability_fn`. The default is -inf. Only used if
-                `memory_sequence_length` is not None.
-            name: Name to use when creating ops.
-        '''
-
-        super(MonotonicAttention, self).__init__(
-            num_units,
-            memory,
-            memory_sequence_length,
-            normalize,
-            probability_fn,
-            score_mask_value,
-            name
-        )
-        _curent_prob_fn = self._probability_fn
-        self._probability_fn = lambda s, p: _monotonit_probability_wrapper(
-            _curent_prob_fn(s, p), p)
-
-def _bahdanau_location_score(processed_query, keys, processed_convolutional_features,
+def _bahdanau_location_score(processed_query, keys,
+                             processed_convolutional_features,
                              normalize):
     '''
     Implements Bahdanau-style (additive) scoring function.
@@ -284,30 +289,104 @@ def _bahdanau_score(processed_query, keys, normalize):
     else:
         return tf.reduce_sum(v*tf.tanh(summed), [2])
 
-def _monotonit_probability_wrapper(alignments, previous_alignments):
-    '''
-    this function will make sure that the alignments are monotonic
+class WindowedAttention(tf.contrib.seq2seq.BahdanauAttention):
+    '''attention mechanism that is location aware'''
 
-    args:
-        alignments: the current alignments shape [batch_size x max_time]
-        previous_alignments: the previous alignments shape
-            [batch_size x max_time]
+    def __init__(self,
+                 num_units,
+                 left_window_width,
+                 right_window_width,
+                 memory,
+                 memory_sequence_length=None,
+                 normalize=False,
+                 probability_fn=None,
+                 score_mask_value=float("-inf"),
+                 name='LocationAwareAttention'):
+        '''Construct the Attention mechanism.
 
-    returns:
-        the alignments adjusted for monotonicity
-    '''
+        Args:
+            num_units: The depth of the query mechanism.
+            window_width: the width of the attention window
+            memory: The memory to query; usually the output of an RNN encoder.
+                This tensor should be shaped `[batch_size, max_time, ...]`.
+            memory_sequence_length (optional): Sequence lengths for the batch
+                entries in memory.  If provided, the memory tensor rows are
+                masked with zeros for values past the respective sequence
+                lengths.
+            normalize: Python boolean.  Whether to normalize the energy term.
+            probability_fn: (optional) A `callable`.  Converts the score to
+                probabilities.  The default is @{tf.nn.softmax}. Other options
+                include @{tf.contrib.seq2seq.hardmax} and
+                @{tf.contrib.sparsemax.sparsemax}. Its signature should be:
+                `probabilities = probability_fn(score)`.
+            score_mask_value: (optional): The mask value for score before
+                passing into `probability_fn`. The default is -inf. Only used if
+                `memory_sequence_length` is not None.
+            name: Name to use when creating ops.
+        '''
 
-    alignments_cumsum = tf.cumsum(alignments, axis=1)
-    previous_alignments_cumsum = tf.cumsum(previous_alignments, axis=1)
-    target_cumsum = tf.minimum(alignments_cumsum, previous_alignments_cumsum)
-    shifted_target_cumsum = tf.pad(target_cumsum[:, :-1], [[0, 0], [1, 0]])
-    monotonic_alignments = target_cumsum - shifted_target_cumsum
+        super(WindowedAttention, self).__init__(
+            num_units,
+            memory,
+            memory_sequence_length,
+            normalize,
+            probability_fn,
+            score_mask_value,
+            name
+        )
 
-    #the initial alignment is zero everywhere. If it is the alignment, keep
-    #the input alignment
-    monotonic_alignments = tf.where(
-        tf.equal(tf.reduce_sum(previous_alignments, 1), 0),
-        alignments,
-        monotonic_alignments)
+        self._left_window_width = left_window_width
+        self._right_window_width = right_window_width
 
-    return monotonic_alignments
+    def initial_alignments(self, batch_size, dtype):
+        '''get the initial alignments'''
+
+        max_time = self._alignments_size
+        return tf.concat([
+            tf.ones([batch_size, 1], dtype),
+            tf.zeros([batch_size, max_time-1])], 1)
+
+    def __call__(self, query, previous_alignments):
+        '''Score the query based on the keys and values.
+
+        Args:
+            query: Tensor of dtype matching `self.values` and shape
+                `[batch_size, query_depth]`.
+            previous_alignments: Tensor of dtype matching `self.values` and
+                shape `[batch_size, alignments_size]`
+                (`alignments_size` is memory's `max_time`).
+
+        Returns:
+          alignments: Tensor of dtype matching `self.values` and shape
+            `[batch_size, alignments_size]` (`alignments_size` is memory's
+            `max_time`).
+        '''
+
+        with tf.variable_scope(None, 'windowed_attention',
+                               [query, previous_alignments]):
+            #process the query
+            processed_query = \
+                self.query_layer(query) if self.query_layer else query
+
+            #determine the attention window
+            cum_alignment = tf.cumsum(previous_alignments, 1)
+            half_step = cum_alignment > 0.5
+            shifted_left = tf.pad(
+                half_step[:, self._left_window_width+1:],
+                [[0, 0], [0, self._left_window_width+1]],
+                constant_values=True)
+            shifted_right = tf.pad(
+                half_step[:, :-self._right_window_width],
+                [[0, 0], [self._right_window_width, 0]],
+                constant_values=False)
+            window = tf.logical_xor(shifted_left, shifted_right)
+
+            score = _bahdanau_score(
+                processed_query, self._keys, self._normalize)
+
+            #mask the score using the window
+            score = tf.where(window, score, -tf.ones_like(score)*float('inf'))
+
+            alignments = self._probability_fn(score, previous_alignments)
+
+            return alignments

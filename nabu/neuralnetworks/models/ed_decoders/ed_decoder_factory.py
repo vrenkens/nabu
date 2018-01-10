@@ -1,7 +1,7 @@
 '''@file ed_decoder_factory
 contains the ed decoder factory'''
 
-from . import speller, dnn_decoder, hotstart_decoder, speller_dev
+from . import speller, dnn_decoder, hotstart_decoder, dynamic_routing
 
 def factory(decoder):
     '''gets an ed decoder class
@@ -18,7 +18,7 @@ def factory(decoder):
         return dnn_decoder.DNNDecoder
     elif decoder == 'hotstart_decoder':
         return hotstart_decoder.HotstartDecoder
-    elif decoder == 'speller_dev':
-        return speller_dev.Speller
+    elif decoder == 'dynamic_routing':
+        return dynamic_routing.DynamicRouting
     else:
         raise Exception('undefined decoder type: %s' % decoder)

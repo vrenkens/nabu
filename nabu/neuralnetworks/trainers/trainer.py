@@ -168,6 +168,10 @@ class Trainer(object):
                 if aditional_loss is not None:
                     outputs['loss'] += aditional_loss
 
+                #add te resularization losses
+                outputs['loss'] += tf.reduce_sum(
+                    tf.losses.get_regularization_losses())
+
                 outputs['update_op'] = self._update(
                     loss=outputs['loss'],
                     learning_rate=outputs['learning_rate'],
@@ -193,8 +197,9 @@ class Trainer(object):
                         outputs['global_step'] - validated_step,
                         int(self.conf['valid_frequency']))
 
-                    outputs['validation_loss'], outputs['update_loss'], \
-                        outputs['valbatches'] = self._validate()
+                    with tf.variable_scope('validation'):
+                        outputs['validation_loss'], outputs['update_loss'], \
+                            outputs['valbatches'] = self._validate()
 
                     #update the learning rate factor
                     outputs['half_lr'] = learning_rate_fact.assign(
@@ -248,7 +253,7 @@ class Trainer(object):
                 #create an operation to initialize validation
                 outputs['init_validation'] = tf.variables_initializer(
                     tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
-                                      'validate'))
+                                      'validation'))
             else:
                 outputs['update_loss'] = None
 
@@ -263,6 +268,8 @@ class Trainer(object):
             outputs['training_summaries'] = tf.summary.merge_all(
                 'training_summaries')
             outputs['eval_summaries'] = tf.summary.merge_all('eval_summaries')
+            if outputs['eval_summaries'] is None:
+                outputs['eval_summaries'] = tf.no_op()
 
         return outputs
 
@@ -643,7 +650,8 @@ class Trainer(object):
                                 _, summary = sess.run(fetches=[
                                     outputs['update_loss'],
                                     outputs['eval_summaries']])
-                                summary_writer.add_summary(summary, i)
+                                if summary is not None:
+                                    summary_writer.add_summary(summary, i)
                             summary, global_step = sess.run(fetches=[
                                 outputs['val_loss_summary'],
                                 outputs['global_step']

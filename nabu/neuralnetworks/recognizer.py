@@ -115,11 +115,15 @@ class Recognizer(object):
 
                 nameid = 0
                 for i in range(self.numbatches):
-                    #decode
-                    outputs, summary = sess.run([
-                        self.decoded,
-                        self.eval_summary])
-                    summary_writer.add_summary(summary, i)
+                    if self.eval_summary is not None:
+                        #decode
+                        outputs, summary = sess.run([
+                            self.decoded,
+                            self.eval_summary])
+
+                        summary_writer.add_summary(summary, i)
+                    else:
+                        outputs = sess.run(self.decoded)
 
                     #write to disk
                     names = self.names[nameid:nameid+self.batch_size]

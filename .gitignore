@@ -8,3 +8,4 @@ config/recipes/phonology
 .gitignore
 config/recipes/phonology*
 sweeps
+config/recipes/dynamic*
