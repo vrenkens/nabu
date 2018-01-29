@@ -364,7 +364,7 @@ class Trainer(object):
                     components = []
                     component_lengths = []
                     for i, batch in enumerate(data):
-                        cut, cut_length = read_op, num_local_steps = \
+                        cut, cut_length, read_op, num_local_steps = \
                             _cut_sequence(
                                 batch,
                                 seq_length[i],
