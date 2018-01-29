@@ -1,7 +1,7 @@
 '''@file ed_encoder_factory.py
 contains the EDEncoder factory'''
 
-from . import listener, dummy_encoder, dblstm, dnn, listener_ps, \
+from . import listener, dummy_encoder, dblstm, dnn, \
 bottleneck_encoder, bldnn, hotstart_encoder, stack_encoder, parallel_encoder
 
 def factory(encoder):
@@ -15,8 +15,6 @@ def factory(encoder):
 
     if encoder == 'listener':
         return listener.Listener
-    if encoder == 'listener_ps':
-        return listener_ps.ListenerPS
     elif encoder == 'dummy_encoder':
         return dummy_encoder.DummyEncoder
     elif encoder == 'dblstm':
