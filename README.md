@@ -32,7 +32,7 @@ run data --recipe=/path/to/recipe --expdir=/path/to/expdir --computing=<computin
 
 - recipe: points to the directory containing the recipe you
 want to prepare the data for.
-- expdir: the absolute path to a directory where you can write to. In this 
+- expdir: the absolute path to a directory where you can write to. In this
 directory all files will be stored, like the configurations and logs
 - computing [default: standard]: the distributed computing software you want to
 use. One of standard or condor. standard means that no distributed computing
@@ -171,7 +171,7 @@ preperation and you should use them.
 You can train the GMM-HMM model as folows:
 
 ```
-nabu/scipts/kaldi/train_gmm.sh <datadir> <langdir> <langdir-test>  <traindir> <kaldi>
+nabu/scripts/kaldi/train_gmm.sh <datadir> <langdir> <langdir-test>  <traindir> <kaldi>
 ```
 
 With the folowing arguments:
@@ -194,7 +194,7 @@ The training data has already been aligned in the previous step, but if you want
 to align e.g. the validation set you can do that as follows:
 
 ```
-nabu/scipts/kaldi/align_data.sh <datadir> <langdir> <traindir> <targetdir> <kaldi>
+nabu/scripts/kaldi/align_data.sh <datadir> <langdir> <traindir> <targetdir> <kaldi>
 ```
 
 the datadir should point to the data you want to align, the traindir should be
@@ -208,7 +208,7 @@ The prior is needed to convert the pdf posteriors to pdf pseudo-likelihoods.
 The prior can be computed with:
 
 ```
-nabu/scipts/kaldi/compute_prior.sh <traindir>
+nabu/scripts/kaldi/compute_prior.sh <traindir>
 ```
 
 traindir should be the same as the traindir in the previous step. the prior can
@@ -252,7 +252,7 @@ The pseudo likelihoods can the be found in &lt;expdir>/decode/decoded/alignments
 You can then do the Kaldi decoding and scoring with:
 
 ```
-nabu/scipts/kaldi/decode.sh <datadir> <traindir> <expdir>/decode/decoded/alignments/feats.scp <outputs> <kaldi>
+nabu/scripts/kaldi/decode.sh <datadir> <traindir> <expdir>/decode/decoded/alignments <outputs> <kaldi>
 ```
 
 The arguments are similar as the arguments in the script above. The outputs

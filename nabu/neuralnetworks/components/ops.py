@@ -80,6 +80,7 @@ def stack_seq(sequential, sequence_lengths, name=None):
 
         #create the values
         tensor = tf.gather_nd(sequential, indices)
+        tensor.set_shape([None] + sequential.shape.as_list()[2:])
 
 
     return tensor
@@ -111,6 +112,7 @@ def unstack_seq(nonseq, sequence_lengths, name=None):
             unstacked
         )
         unstacked = unstacked.stack()
+        unstacked.set_shape([None, None] + nonseq.shape.as_list()[1:])
 
     return unstacked
 
