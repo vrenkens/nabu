@@ -105,7 +105,8 @@ def unstack_seq(nonseq, sequence_lengths, name=None):
         unstacked = tf.TensorArray(
             dtype=nonseq.dtype,
             size=batch_size,
-            element_shape=tf.TensorShape([None]).concatenate(nonseq.shape[1:]))
+            element_shape=tf.TensorShape([None]).concatenate(nonseq.shape[1:]),
+            infer_shape=False)
         unstacked = unstacked.split(nonseq, sequence_lengths)
         unstacked = map_ta(
             lambda x: pad_to(x, max_length),
@@ -227,7 +228,7 @@ def map_ta(fn, ta):
         return tf.not_equal(index, ta_out.size())
 
     ta_init = tf.TensorArray(
-        dtype=ta._dtype,    #pylint:disable=W0212
+        dtype=ta.dtype,
         size=ta.size()
     )
     index_init = 0

@@ -78,7 +78,7 @@ class EDEncoder(object):
 
         variables = tf.get_collection(
             tf.GraphKeys.GLOBAL_VARIABLES,
-            scope=self.scope.name)
+            scope=self.scope.name + '/')
 
         if hasattr(self, 'wrapped'):
             #pylint: disable=E1101

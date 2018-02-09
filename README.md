@@ -6,6 +6,8 @@ Nabu is an ASR framework for end-to-end networks built on top of TensorFlow.
 Nabu's design focusses on adaptibility, making it easy for the designer to
 adjust everything from the model structure to the way it is trained.
 
+Laet built with TensorFlow version: 1.5.0
+
 ## Using Nabu
 
 Nabu works in several stages: data prepation, training and finally testing and
