@@ -5,7 +5,6 @@ import tensorflow as tf
 from nabu.neuralnetworks.models.ed_decoders import rnn_decoder
 from nabu.neuralnetworks.components.rnn_cell import StateOutputWrapper
 from nabu.neuralnetworks.components import attention
-from nabu.neuralnetworks.components.rnn_cell import AttentionWrapper
 
 class Speller(rnn_decoder.RNNDecoder):
     '''a speller decoder for the LAS architecture'''

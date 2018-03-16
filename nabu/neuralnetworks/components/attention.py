@@ -58,13 +58,13 @@ def normalized_sigmoid(x, axis=-1):
 class BahdanauAttention(tf.contrib.seq2seq.BahdanauAttention):
     '''normal Bahdanau Style attention'''
 
-    def __call__(self, query, previous_alignments):
+    def __call__(self, query, state):
         '''Score the query based on the keys and values.
 
         Args:
             query: Tensor of dtype matching `self.values` and shape
                 `[batch_size, query_depth]`.
-            previous_alignments: Tensor of dtype matching `self.values` and
+            state: Tensor of dtype matching `self.values` and
                 shape `[batch_size, alignments_size]`
                 (`alignments_size` is memory's `max_time`).
 
@@ -75,7 +75,7 @@ class BahdanauAttention(tf.contrib.seq2seq.BahdanauAttention):
         '''
 
         with tf.variable_scope(None, 'bahdanau_attention',
-                               [query, previous_alignments]):
+                               [query, state]):
 
             processed_query = \
                 self.query_layer(query) if self.query_layer else query
@@ -83,9 +83,9 @@ class BahdanauAttention(tf.contrib.seq2seq.BahdanauAttention):
             score = _bahdanau_score(processed_query, self._keys,
                                     self._normalize)
 
-            alignments = self._probability_fn(score, previous_alignments)
+            alignments = self._probability_fn(score, state)
 
-            return alignments
+            return alignments, alignments
 
 class LocationAwareAttention(tf.contrib.seq2seq.BahdanauAttention):
     '''attention mechanism that is location aware'''
@@ -99,6 +99,7 @@ class LocationAwareAttention(tf.contrib.seq2seq.BahdanauAttention):
                  normalize=False,
                  probability_fn=None,
                  score_mask_value=float("-inf"),
+                 dtype=None,
                  name='LocationAwareAttention'):
         '''Construct the Attention mechanism.
 
@@ -131,19 +132,20 @@ class LocationAwareAttention(tf.contrib.seq2seq.BahdanauAttention):
             normalize,
             probability_fn,
             score_mask_value,
+            dtype,
             name
         )
 
         self._numfilt = numfilt
         self._filtersize = filtersize
 
-    def __call__(self, query, previous_alignments):
+    def __call__(self, query, state):
         '''Score the query based on the keys and values.
 
         Args:
             query: Tensor of dtype matching `self.values` and shape
                 `[batch_size, query_depth]`.
-            previous_alignments: Tensor of dtype matching `self.values` and
+            state: Tensor of dtype matching `self.values` and
                 shape `[batch_size, alignments_size]`
                 (`alignments_size` is memory's `max_time`).
 
@@ -154,12 +156,12 @@ class LocationAwareAttention(tf.contrib.seq2seq.BahdanauAttention):
         '''
 
         with tf.variable_scope(None, 'location_aware_attention',
-                               [query, previous_alignments]):
+                               [query, state]):
             processed_query = \
                 self.query_layer(query) if self.query_layer else query
 
             conv_features = tf.layers.conv1d(
-                inputs=tf.expand_dims(previous_alignments, 2),
+                inputs=tf.expand_dims(state, 2),
                 filters=self._numfilt,
                 kernel_size=self._filtersize,
                 padding='same',
@@ -177,9 +179,9 @@ class LocationAwareAttention(tf.contrib.seq2seq.BahdanauAttention):
                 processed_query, self._keys,
                 processed_conv_features, self._normalize)
 
-            alignments = self._probability_fn(score, previous_alignments)
+            alignments = self._probability_fn(score, state)
 
-            return alignments
+            return alignments, alignments
 
 def _bahdanau_location_score(processed_query, keys,
                              processed_convolutional_features,
@@ -301,6 +303,7 @@ class WindowedAttention(tf.contrib.seq2seq.BahdanauAttention):
                  normalize=False,
                  probability_fn=None,
                  score_mask_value=float("-inf"),
+                 dtype=None,
                  name='LocationAwareAttention'):
         '''Construct the Attention mechanism.
 
@@ -332,6 +335,7 @@ class WindowedAttention(tf.contrib.seq2seq.BahdanauAttention):
             normalize,
             probability_fn,
             score_mask_value,
+            dtype,
             name
         )
 
@@ -346,13 +350,13 @@ class WindowedAttention(tf.contrib.seq2seq.BahdanauAttention):
             tf.ones([batch_size, 1], dtype),
             tf.zeros([batch_size, max_time-1])], 1)
 
-    def __call__(self, query, previous_alignments):
+    def __call__(self, query, state):
         '''Score the query based on the keys and values.
 
         Args:
             query: Tensor of dtype matching `self.values` and shape
                 `[batch_size, query_depth]`.
-            previous_alignments: Tensor of dtype matching `self.values` and
+            state: Tensor of dtype matching `self.values` and
                 shape `[batch_size, alignments_size]`
                 (`alignments_size` is memory's `max_time`).
 
@@ -363,13 +367,13 @@ class WindowedAttention(tf.contrib.seq2seq.BahdanauAttention):
         '''
 
         with tf.variable_scope(None, 'windowed_attention',
-                               [query, previous_alignments]):
+                               [query, state]):
             #process the query
             processed_query = \
                 self.query_layer(query) if self.query_layer else query
 
             #determine the attention window
-            cum_alignment = tf.cumsum(previous_alignments, 1)
+            cum_alignment = tf.cumsum(state, 1)
             half_step = cum_alignment > 0.5
             shifted_left = tf.pad(
                 half_step[:, self._left_window_width+1:],
@@ -387,6 +391,6 @@ class WindowedAttention(tf.contrib.seq2seq.BahdanauAttention):
             #mask the score using the window
             score = tf.where(window, score, -tf.ones_like(score)*float('inf'))
 
-            alignments = self._probability_fn(score, previous_alignments)
+            alignments = self._probability_fn(score, state)
 
-            return alignments
+            return alignments, alignments
