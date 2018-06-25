@@ -491,7 +491,9 @@ class Trainer(object):
             )
             device = tf.train.replica_device_setter(
                 ps_tasks=num_servers,
-                ps_strategy=ps_strategy)
+                ps_strategy=ps_strategy,
+                worker_device='/job:worker/task:%d' % self.task_index,
+                cluster=cluster)
             chief_ps = tf.DeviceSpec(
                 job='ps',
                 task=0)
