@@ -15,6 +15,7 @@ def main(recipe):
         recipe: the recipe to be tested
     '''
 
+    print 'testing %s' % recipe
     sys.stderr = open(os.devnull, 'w')
 
     #test training
