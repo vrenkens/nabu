@@ -11,7 +11,8 @@ request_GPUs      = $(GPUs)
 #specify that the cuda capability should be at least 3.0 and set the memory
 #requirement
 Requirements = (CUDACapability >= 3.0)\
-  &&(CUDAGlobalMemoryMb >= $(memory))
+  &&(CUDAGlobalMemoryMb >= $(memory))\
+  && has_avx
 
 
 #Send an email in case of an error
