@@ -253,7 +253,7 @@ class Trainer(object):
                 #create an operation to initialize validation
                 outputs['init_validation'] = tf.variables_initializer(
                     tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
-                                      'validation'))
+                                      'validate/validation'))
             else:
                 outputs['update_loss'] = None
 
