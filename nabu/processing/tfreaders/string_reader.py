@@ -102,4 +102,4 @@ class StringReader(tfreader.TfReader):
         with tf.control_dependencies([assert_op]):
             data = tf.identity(data)
 
-        return data, sequence_length + 1
+        return data, sequence_length
