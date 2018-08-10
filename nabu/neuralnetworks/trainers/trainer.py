@@ -13,6 +13,7 @@ from nabu.neuralnetworks.trainers import loss_functions
 from nabu.neuralnetworks.models.model import Model
 from nabu.neuralnetworks.evaluators import evaluator_factory
 from nabu.neuralnetworks.components import hooks, ops, constraints
+from nabu.tools.default_conf import apply_defaults
 
 class Trainer(object):
     '''General class outlining the training environment of a model.'''
@@ -43,6 +44,14 @@ class Trainer(object):
 
         #save some inputs
         self.conf = dict(conf.items('trainer'))
+
+        #apply default configuration
+        default = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'defaults',
+            type(self).__name__.lower() + '.cfg')
+        apply_defaults(self.conf, default)
+
         self.dataconf = dataconf
         self.evaluatorconf = evaluatorconf
         self.expdir = expdir
@@ -253,7 +262,7 @@ class Trainer(object):
                 #create an operation to initialize validation
                 outputs['init_validation'] = tf.variables_initializer(
                     tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
-                                      'validation'))
+                                      'validate/validation'))
             else:
                 outputs['update_loss'] = None
 
@@ -625,7 +634,7 @@ class Trainer(object):
 
                 #create the summary writer
                 summary_writer = tf.summary.FileWriter(
-                    os.path.join(self.expdir, 'logdir'))
+                    os.path.join(self.expdir, 'logdir'), graph)
 
 
                 #start the training loop

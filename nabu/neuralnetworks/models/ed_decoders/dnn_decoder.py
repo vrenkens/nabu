@@ -74,20 +74,3 @@ class DNNDecoder(ed_decoder.EDDecoder):
                 of [batch_size x ... ] tensors'''
 
         return ()
-
-    def get_output_dims(self, trainlabels):
-        '''get the decoder output dimensions
-
-        args:
-            targetconfs: the target data confs
-            trainlabels: the number of extra labels the trainer needs
-
-        returns:
-            a dictionary containing the output dimensions'''
-
-        #get the dimensions of all the targets
-        output_dims = {}
-        for i, d in enumerate(self.conf['output_dims'].split(' ')):
-            output_dims[self.outputs[i]] = int(d) + trainlabels
-
-        return output_dims

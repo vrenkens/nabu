@@ -8,7 +8,7 @@ import tensorflow as tf
 import decoder
 
 class AlignmentDecoder(decoder.Decoder):
-    '''feature Decoder'''
+    '''gets the HMM state posteriors'''
 
     def __call__(self, inputs, input_seq_length):
         '''decode a batch of data
@@ -33,8 +33,15 @@ class AlignmentDecoder(decoder.Decoder):
             #compute the log probabilities
             logprobs = tf.log(tf.nn.softmax(logits.values()[0]))
 
-            #read the pd prior
-            prior = np.load(self.conf['prior'])
+            #read the prior if it exists, otherwise use uniform prior
+            if os.path.exists(self.conf['prior']):
+                prior = np.load(self.conf['prior'])
+            else:
+                print(
+                    'WARNING could not find prior in file %s using uniform'
+                    ' prior' % self.conf['prior'])
+                output_dim = self.model.output_dims.values()[0]
+                prior = np.ones([output_dim])/output_dim
 
             #compute posterior to pseudo likelihood
             loglikes = logprobs - np.log(prior)

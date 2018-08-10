@@ -98,14 +98,3 @@ class HotstartDecoder(ed_decoder.EDDecoder):
                 of [batch_size x ... ] tensors'''
 
         return self.wrapped.zero_state(encoded_dim, batch_size)
-
-    def get_output_dims(self, trainlabels):
-        '''get the decoder output dimensions
-
-        args:
-            trainlabels: the number of extra labels the trainer needs
-
-        returns:
-            a dictionary containing the output dimensions'''
-
-        return self.wrapped.get_output_dims(trainlabels)

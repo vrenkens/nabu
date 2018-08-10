@@ -7,7 +7,8 @@ import processor
 from nabu.processing.target_normalizers import normalizer_factory
 
 class TextFileProcessor(processor.Processor):
-    '''a processor for text data, does normalization'''
+    '''a processor for text data where the datalines are pointers to text files,
+    does normalization'''
 
     def __init__(self, conf):
         '''TextProcessor constructor
@@ -26,7 +27,7 @@ class TextFileProcessor(processor.Processor):
         #initialize the metadata
         self.max_length = 0
         self.sequence_length_histogram = np.zeros(0, dtype=np.int32)
-        if conf.has_option('processor', 'nonesymbol'):
+        if conf.get('processor', 'nonesymbol') != 'None':
             self.nonesymbol = conf.get('processor', 'nonesymbol')
         else:
             self.nonesymbol = ''

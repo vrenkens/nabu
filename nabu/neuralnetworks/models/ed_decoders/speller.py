@@ -5,6 +5,7 @@ import tensorflow as tf
 from nabu.neuralnetworks.models.ed_decoders import rnn_decoder
 from nabu.neuralnetworks.components.rnn_cell import StateOutputWrapper
 from nabu.neuralnetworks.components import attention
+from nabu.neuralnetworks.components import rnn_cell as rnn_cell_lib
 
 class Speller(rnn_decoder.RNNDecoder):
     '''a speller decoder for the LAS architecture'''
@@ -33,41 +34,36 @@ class Speller(rnn_decoder.RNNDecoder):
                 num_units=int(self.conf['num_units']),
                 reuse=tf.get_variable_scope().reuse)
 
+            if float(self.conf['dropout']) < 1 and is_training:
+                rnn_cell = tf.contrib.rnn.DropoutWrapper(
+                    cell=rnn_cell,
+                    output_keep_prob=float(self.conf['dropout'])
+                )
+
             rnn_cells.append(rnn_cell)
 
         rnn_cell = tf.contrib.rnn.MultiRNNCell(rnn_cells)
 
-        if self.conf['statequery'] == 'True':
-            rnn_cell = StateOutputWrapper(rnn_cell)
 
+        #create the attention mechanism
+        attention_mechanisms = [attention.factory(
+            conf=self.conf,
+            num_units=rnn_cell.output_size,
+            encoded=encoded[e],
+            encoded_seq_length=encoded_seq_length[e]
+        ) for e in encoded]
 
-        if encoded is not None:
-
-            #create the attention mechanism
-            attention_mechanisms = [attention.factory(
-                conf=self.conf,
-                num_units=rnn_cell.output_size,
-                encoded=encoded[e],
-                encoded_seq_length=encoded_seq_length[e]
-            ) for e in encoded]
-
-            attention_layer_size = \
-                [int(self.conf['num_units'])]*len(attention_mechanisms)
-
-            #add attention to the rnn cell
-            rnn_cell = tf.contrib.seq2seq.AttentionWrapper(
-                cell=rnn_cell,
-                attention_mechanism=attention_mechanisms,
-                attention_layer_size=attention_layer_size,
-                alignment_history=False,
-                output_attention=True
-            )
+        #add attention to the rnn cell
+        rnn_cell = tf.contrib.seq2seq.AttentionWrapper(
+            cell=rnn_cell,
+            attention_mechanism=attention_mechanisms,
+            output_attention=False
+        )
 
         #the output layer
-        rnn_cell = tf.contrib.rnn.OutputProjectionWrapper(
+        rnn_cell = rnn_cell_lib.AttentionProjectionWrapper(
             cell=rnn_cell,
-            output_size=self.output_dims.values()[0],
-            reuse=tf.get_variable_scope().reuse
+            output_dim=self.output_dims.values()[0]
         )
 
         return rnn_cell

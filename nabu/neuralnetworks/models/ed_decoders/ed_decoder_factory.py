@@ -1,7 +1,6 @@
 '''@file ed_decoder_factory
 contains the ed decoder factory'''
 
-from . import speller, dnn_decoder, hotstart_decoder
 
 def factory(decoder):
     '''gets an ed decoder class
@@ -13,10 +12,13 @@ def factory(decoder):
         An EDDecoder class'''
 
     if decoder == 'speller':
+        import speller
         return speller.Speller
     elif decoder == 'dnn_decoder':
+        import dnn_decoder
         return dnn_decoder.DNNDecoder
     elif decoder == 'hotstart_decoder':
+        import hotstart_decoder
         return hotstart_decoder.HotstartDecoder
     else:
         raise Exception('undefined decoder type: %s' % decoder)

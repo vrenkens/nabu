@@ -1,8 +1,6 @@
 '''@file trainer_factory.py
 contains the Trainer factory mehod'''
 
-from . import standard_trainer, fisher_trainer
-
 def factory(trainer):
     '''gets a Trainer class
 
@@ -12,9 +10,8 @@ def factory(trainer):
     Returns: a Trainer class
     '''
 
-    if trainer == 'fisher':
-        return fisher_trainer.FisherTrainer
-    elif trainer == 'standard':
+    if trainer == 'standard':
+        import standard_trainer
         return standard_trainer.StandardTrainer
     else:
         raise Exception('Undefined trainer type: %s' % trainer)

@@ -51,3 +51,8 @@ it contains similar fields as the evaluator configs.
 To create your own recipe, simply create a directory containing all of the
 mentioned configuation files. You can find template configuations in
 config/templates.
+
+All the components in the recipe have default configurations. You can find these
+configurations in the directory where the component is implemented under the
+defaults directory. If a field is not defined in the configuration it will be
+filled in with the default value.

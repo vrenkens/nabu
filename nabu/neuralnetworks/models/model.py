@@ -25,6 +25,11 @@ class Model(object):
         if self.output_names == ['']:
             self.output_names = []
 
+        #get the dimensions of all outputs
+        self.output_dims = {}
+        for i, d in enumerate(conf.get('io', 'output_dims').split(' ')):
+            self.output_dims[self.output_names[i]] = int(d) + trainlabels
+
         #create the encoder
         self.encoder = ed_encoder_factory.factory(
             conf.get('encoder', 'encoder'))(conf, constraint)
@@ -32,7 +37,7 @@ class Model(object):
         #create the decoder
         self.decoder = ed_decoder_factory.factory(
             conf.get('decoder', 'decoder'))(
-                conf, trainlabels, self.output_names, constraint)
+                conf, self.output_dims, constraint)
 
     def __call__(self, inputs, input_seq_length, targets,
                  target_seq_length, is_training):
@@ -79,9 +84,3 @@ class Model(object):
         '''get a list of the models's variables'''
 
         return self.encoder.variables + self.decoder.variables
-
-    @property
-    def output_dims(self):
-        '''get the model output dimensions'''
-
-        return self.decoder.output_dims

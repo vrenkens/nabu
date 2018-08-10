@@ -26,7 +26,7 @@ class TextProcessor(processor.Processor):
         #initialize the metadata
         self.max_length = 0
         self.sequence_length_histogram = np.zeros(0, dtype=np.int32)
-        if conf.has_option('processor', 'nonesymbol'):
+        if conf.get('processor', 'nonesymbol') != 'None':
             self.nonesymbol = conf.get('processor', 'nonesymbol')
         else:
             self.nonesymbol = ''

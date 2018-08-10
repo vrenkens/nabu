@@ -1,8 +1,10 @@
 '''@file asr_decoder.py
 contains the EDDecoder class'''
 
+import os
 from abc import ABCMeta, abstractmethod
 import tensorflow as tf
+from nabu.tools.default_conf import apply_defaults
 
 class EDDecoder(object):
     '''a general decoder for an encoder decoder system
@@ -11,22 +13,30 @@ class EDDecoder(object):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, conf, trainlabels, outputs, constraint, name=None):
+    def __init__(self, conf, output_dims, constraint, name=None):
         '''EDDecoder constructor
 
         Args:
             conf: the decoder configuration as a ConfigParser
-            trainlabels: the number of extra labels required by the trainer
-            outputs: the name of the outputs of the model
+            output_dims: a dictionary containing the output dimensions for each
+                output
             constraint: the constraint for the variables
         '''
 
 
         #save the parameters
         self.conf = dict(conf.items('decoder'))
-        self.outputs = outputs
 
-        self.output_dims = self.get_output_dims(trainlabels)
+        #apply default configuration
+        default = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'defaults',
+            type(self).__name__.lower() + '.cfg')
+        apply_defaults(self.conf, default)
+
+        self.outputs = output_dims.keys()
+
+        self.output_dims = output_dims
 
         self.scope = tf.VariableScope(
             tf.AUTO_REUSE,
@@ -124,13 +134,3 @@ class EDDecoder(object):
             variables += self.wrapped.variables
 
         return variables
-
-    @abstractmethod
-    def get_output_dims(self, trainlabels):
-        '''get the decoder output dimensions
-
-        args:
-            trainlabels: the number of extra labels the trainer needs
-
-        returns:
-            a dictionary containing the output dimensions'''

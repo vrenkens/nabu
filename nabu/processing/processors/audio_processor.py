@@ -8,7 +8,7 @@ import StringIO
 import scipy.io.wavfile as wav
 import numpy as np
 import processor
-from nabu.processing.feature_computers import feature_computer_factory
+from feature_computers import feature_computer_factory
 
 class AudioProcessor(processor.Processor):
     '''a processor for audio files, this will compute features'''
@@ -47,7 +47,8 @@ class AudioProcessor(processor.Processor):
         features = self.comp(utt, rate)
 
         #mean and variance normalize the features
-        features = (features-np.mean(features, 0))/np.std(features, 0)
+        if self.conf['mvn'] == 'True':
+            features = (features-np.mean(features, 0))/np.std(features, 0)
 
         if self.conf['max_length'] != 'None':
             max_length = int(self.conf['max_length'])

@@ -49,8 +49,9 @@ class DBLSTM(ed_encoder.EDEncoder):
                         num_units=int(self.conf['num_units']),
                         scope='layer' + str(l))
 
-                if is_training and float(self.conf['dropout']) < 1:
-                    logits = tf.nn.dropout(logits, float(self.conf['dropout']))
+                    if is_training and float(self.conf['dropout']) < 1:
+                        logits = tf.nn.dropout(
+                            logits, float(self.conf['dropout']))
 
                 encoded[inp] = logits
                 encoded_seq_length[inp] = input_seq_length[inp]

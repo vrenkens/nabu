@@ -98,7 +98,8 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
                  initial_state,
                  beam_width,
                  output_layer=None,
-                 length_penalty_weight=0.0):
+                 length_penalty_weight=0.0,
+                 temperature=1.0,):
         '''constructor
 
         args:
@@ -116,6 +117,9 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
                 prior to storing the result or sampling.
             length_penalty_weight: Float weight to penalize length. Disabled
                 with 0.0.
+            temperature: a temperature to apply before the softmax to smooth
+                or sharpen the probabilities. High temperature means a smooth
+                distribution
         '''
 
         self.cell = cell
@@ -127,6 +131,7 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
         self.output_layer = output_layer
         self.length_penalty_weight = length_penalty_weight
         self._batch_size = tf.shape(start_tokens)[0]
+        self._temperature = temperature
 
     def initialize(self, name=None):
         '''
@@ -204,6 +209,9 @@ class BeamSearchDecoder(tf.contrib.seq2seq.Decoder):
                 outputs, cell_states = self.cell(cell_inputs, cell_states)
                 if self.output_layer:
                     outputs = self.output_layer(outputs)
+
+                #apply the temperature
+                outputs /= self._temperature
 
                 with tf.name_scope('unstack_beams'):
                     outputs = _unstack(outputs, self.batch_size,

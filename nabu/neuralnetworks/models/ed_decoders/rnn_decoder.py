@@ -58,7 +58,7 @@ class RNNDecoder(ed_decoder.EDDecoder):
         #create the decoder helper
         helper = tf.contrib.seq2seq.ScheduledEmbeddingTrainingHelper(
             inputs=embedding(expanded_targets),
-            sequence_length=target_seq_length.values()[0]+1,
+            sequence_length=target_seq_length.values()[0],
             embedding=embedding,
             sampling_probability=float(self.conf['sample_prob'])
         )
@@ -120,22 +120,6 @@ class RNNDecoder(ed_decoder.EDDecoder):
             False)
 
         return rnn_cell.zero_state(batch_size, tf.float32)
-
-    def get_output_dims(self, trainlabels):
-        '''get the decoder output dimensions
-
-        args:
-            trainlabels: the number of extra labels the trainer needs
-
-        returns:
-            a dictionary containing the output dimensions'''
-
-        #get the dimensions of all the targets
-        output_dims = {}
-        for i, d in enumerate(self.conf['output_dims'].split(' ')):
-            output_dims[self.outputs[i]] = int(d) + trainlabels
-
-        return output_dims
 
     def __getstate__(self):
         '''getstate'''

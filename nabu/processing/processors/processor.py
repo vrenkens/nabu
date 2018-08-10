@@ -1,7 +1,9 @@
 '''@file processor.py
 contains the Processor class'''
 
+import os
 from abc import ABCMeta, abstractmethod
+from nabu.tools.default_conf import apply_defaults
 
 class Processor(object):
     '''general Processor class for data processing'''
@@ -16,6 +18,13 @@ class Processor(object):
         '''
 
         self.conf = dict(conf.items('processor'))
+
+        #apply default configuration
+        default = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'defaults',
+            type(self).__name__.lower() + '.cfg')
+        apply_defaults(self.conf, default)
 
     @abstractmethod
     def __call__(self, dataline):
