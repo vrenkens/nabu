@@ -7,7 +7,7 @@ import math
 import tensorflow as tf
 from nabu.processing import input_pipeline
 from nabu.neuralnetworks.decoders import decoder_factory
-from nabu.neuralnetworks.components.hooks import LoadAtBegin, SummaryHook
+from nabu.neuralnetworks.components.hooks import LoadAtBegin
 
 class Recognizer(object):
     '''a Recognizer can use a model to produce decode
@@ -64,7 +64,7 @@ class Recognizer(object):
                 capacity=self.batch_size*2)
 
             #create the input pipeline
-            inputs, input_seq_length, _ = input_pipeline.input_pipeline(
+            inputs, input_seq_length, _, _ = input_pipeline.input_pipeline(
                 data_queue=data_queue,
                 batch_size=self.batch_size,
                 numbuckets=1,
@@ -83,7 +83,11 @@ class Recognizer(object):
 
             #create a histogram for all trainable parameters
             for param in tf.trainable_variables():
-                tf.summary.histogram(param.name, param)
+                tf.summary.histogram(param.name, param, ['variable_summaries'])
+
+            self.eval_summary = tf.summary.merge_all('eval_summaries')
+            self.variable_summary = tf.summary.merge_all('variable_summaries')
+
 
     def recognize(self):
         '''perform the recognition'''
@@ -94,9 +98,6 @@ class Recognizer(object):
                 os.path.join(self.expdir, 'model', 'network.ckpt'),
                 self.model.variables)
 
-            #create a hook for summary writing
-            summary_hook = SummaryHook(os.path.join(self.expdir, 'logdir'))
-
             directory = os.path.join(self.expdir, 'decoded')
             if os.path.isdir(directory):
                 shutil.rmtree(directory)
@@ -104,12 +105,25 @@ class Recognizer(object):
 
             #start the session
             with tf.train.SingularMonitoredSession(
-                hooks=[load_hook, summary_hook]) as sess:
+                hooks=[load_hook]) as sess:
+
+                summary_writer = tf.summary.FileWriter(
+                    os.path.join(self.expdir, 'logdir'))
+
+                summary = self.variable_summary.eval(session=sess)
+                summary_writer.add_summary(summary)
 
                 nameid = 0
-                for _ in range(self.numbatches):
-                    #decode
-                    outputs = sess.run(self.decoded)
+                for i in range(self.numbatches):
+                    if self.eval_summary is not None:
+                        #decode
+                        outputs, summary = sess.run([
+                            self.decoded,
+                            self.eval_summary])
+
+                        summary_writer.add_summary(summary, i)
+                    else:
+                        outputs = sess.run(self.decoded)
 
                     #write to disk
                     names = self.names[nameid:nameid+self.batch_size]

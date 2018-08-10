@@ -3,7 +3,7 @@ contains the DNN class'''
 
 import tensorflow as tf
 import ed_encoder
-from nabu.neuralnetworks.components.ops import mix
+from nabu.neuralnetworks.components import ops
 
 class DNN(ed_encoder.EDEncoder):
     '''a DNN encoder'''
@@ -44,8 +44,12 @@ class DNN(ed_encoder.EDEncoder):
         #do the forward computation
         logits = {}
         for inp in spliced:
+
             with tf.variable_scope(inp):
                 logits[inp] = spliced[inp]
+
+                #stack the sequences for effecicience reasons
+                logits[inp] = ops.stack_seq(logits[inp], input_seq_length[inp])
                 for i in range(int(self.conf['num_layers'])):
                     logits[inp] = tf.contrib.layers.fully_connected(
                         inputs=logits[inp],
@@ -56,5 +60,8 @@ class DNN(ed_encoder.EDEncoder):
                     if float(self.conf['dropout']) < 1 and is_training:
                         logits[inp] = tf.nn.dropout(logits[inp],
                                                     float(self.conf['dropout']))
+                #unstack the sequences again
+                logits[inp] = ops.unstack_seq(
+                    logits[inp], input_seq_length[inp])
 
         return logits, input_seq_length

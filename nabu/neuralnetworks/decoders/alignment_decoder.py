@@ -59,9 +59,8 @@ class AlignmentDecoder(decoder.Decoder):
             scp_file = os.path.join(directory, o, 'feats.scp')
             ark_file = os.path.join(directory, o, 'loglikes.ark')
             for i in range(batch_size):
-                name = '-'.join(names[i].split('-')[:-1])
                 output = outputs[o][0][i, :outputs[o][1][i]]
-                arkwrite(scp_file, ark_file, name, output)
+                arkwrite(scp_file, ark_file, names[i], output)
 
     def update_evaluation_loss(self, loss, outputs, references,
                                reference_seq_length):

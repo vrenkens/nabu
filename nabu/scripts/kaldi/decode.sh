@@ -39,7 +39,7 @@ echo $nj > $outputs/num_jobs
 #create the reader for the log likelihoods
 loglikes="ark,s,cs:copy-feats scp:$sdata/JOB/feats.scp ark:- |"
 
-model=$traindir/tri_ali/final.mdl
+model=$traindir/tri/final.mdl
 graphdir=$traindir/graph
 
 #generate the latices

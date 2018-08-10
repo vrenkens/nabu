@@ -44,14 +44,14 @@ class RNNDecoder(ed_decoder.EDDecoder):
         #prepend a sequence border label to the targets to get the encoder
         #inputs
         expanded_targets = tf.pad(targets.values()[0], [[0, 0], [1, 0]],
-                                  constant_values=-1)
+                                  constant_values=output_dim-1)
 
         #create the rnn cell
         rnn_cell = self.create_cell(encoded, encoded_seq_length, is_training)
 
         #create the embedding
         embedding = lambda ids: tf.one_hot(
-            ids+1,
+            ids,
             output_dim,
             dtype=tf.float32)
 

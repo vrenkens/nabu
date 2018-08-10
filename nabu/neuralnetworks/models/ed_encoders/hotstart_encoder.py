@@ -10,15 +10,17 @@ class HotstartEncoder(ed_encoder.EDEncoder):
 
     transforms input features into a high level representation'''
 
-    def __init__(self, conf, name=None):
-        '''Listener constructor
+    def __init__(self, conf, constraint, name=None):
+        '''constructor
 
         Args:
             conf: the encoder configuration
-            name: the encoder name'''
+            name: the encoder name
+            constraint: the constraint for the variables
+        '''
 
 
-        super(HotstartEncoder, self).__init__(conf, name)
+        super(HotstartEncoder, self).__init__(conf, constraint, name)
 
         #set the wrapped section as the encoder section
         conf.remove_section('encoder')
@@ -30,7 +32,7 @@ class HotstartEncoder(ed_encoder.EDEncoder):
         #wrapped ecoder
         self.wrapped = ed_encoder_factory.factory(
             conf.get('encoder', 'encoder'))(
-                conf, self.conf['wrapped'])
+                conf, constraint, self.conf['wrapped'])
 
     def encode(self, inputs, input_seq_length, is_training):
         '''

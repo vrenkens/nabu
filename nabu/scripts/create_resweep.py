@@ -25,6 +25,8 @@ def main(sweep, command, expdir, target):
     unfinished = 0
     with open(target, 'w') as fid:
         for i, name in enumerate(names):
+            if not name:
+                continue
 
             #check if in condor q
             in_queue = os.popen(

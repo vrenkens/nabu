@@ -2,8 +2,9 @@
 contains the speller functionality'''
 
 import tensorflow as tf
-from nabu.neuralnetworks.models.ed_decoders import ed_decoder
 from nabu.neuralnetworks.models.ed_decoders import rnn_decoder
+from nabu.neuralnetworks.components.rnn_cell import StateOutputWrapper
+from nabu.neuralnetworks.components import attention
 
 class Speller(rnn_decoder.RNNDecoder):
     '''a speller decoder for the LAS architecture'''
@@ -36,20 +37,28 @@ class Speller(rnn_decoder.RNNDecoder):
 
         rnn_cell = tf.contrib.rnn.MultiRNNCell(rnn_cells)
 
+        if self.conf['statequery'] == 'True':
+            rnn_cell = StateOutputWrapper(rnn_cell)
+
+
         if encoded is not None:
 
             #create the attention mechanism
-            attention_mechanism = tf.contrib.seq2seq.BahdanauAttention(
+            attention_mechanisms = [attention.factory(
+                conf=self.conf,
                 num_units=rnn_cell.output_size,
-                memory=encoded.values()[0],
-                memory_sequence_length=encoded_seq_length.values()[0]
-            )
+                encoded=encoded[e],
+                encoded_seq_length=encoded_seq_length[e]
+            ) for e in encoded]
+
+            attention_layer_size = \
+                [int(self.conf['num_units'])]*len(attention_mechanisms)
 
             #add attention to the rnn cell
             rnn_cell = tf.contrib.seq2seq.AttentionWrapper(
                 cell=rnn_cell,
-                attention_mechanism=attention_mechanism,
-                attention_layer_size=int(self.conf['num_units']),
+                attention_mechanism=attention_mechanisms,
+                attention_layer_size=attention_layer_size,
                 alignment_history=False,
                 output_attention=True
             )

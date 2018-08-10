@@ -11,19 +11,22 @@ class EDEncoder(object):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, conf, name=None):
+    def __init__(self, conf, constraint, name=None):
         '''EDEncoder constructor
 
         Args:
             conf: the encoder configuration
             name: the encoder name
+            constraint: the constraint for the variables
         '''
 
         #save the configuration
         self.conf = dict(conf.items('encoder'))
 
         self.scope = tf.VariableScope(
-            tf.AUTO_REUSE, name or type(self).__name__)
+            tf.AUTO_REUSE,
+            name or type(self).__name__,
+            constraint=constraint)
 
     def __call__(self, inputs, input_seq_length, is_training):
         '''
@@ -75,7 +78,7 @@ class EDEncoder(object):
 
         variables = tf.get_collection(
             tf.GraphKeys.GLOBAL_VARIABLES,
-            scope=self.scope.name)
+            scope=self.scope.name + '/')
 
         if hasattr(self, 'wrapped'):
             #pylint: disable=E1101
