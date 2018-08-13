@@ -41,27 +41,24 @@ def main(expdir, recipe, mode, computing):
     trainer_cfg_file = os.path.join(recipe, 'trainer.cfg')
     evaluator_cfg_file = os.path.join(recipe, 'validation_evaluator.cfg')
 
-    #read the trainer config file
-    parsed_trainer_cfg = configparser.ConfigParser()
-    parsed_trainer_cfg.read(trainer_cfg_file)
-    trainer_cfg = dict(parsed_trainer_cfg.items('trainer'))
+    if os.path.isdir(expdir):
+        text = ''
+        while text not in ('o', 'r'):
+            text = raw_input('%s already exists, do you want to '
+                             'resume training (r) or overwrite (o) '
+                             '(respond with o or r)' % expdir)
+        if text == 'o':
+            while text not in ('y', 'n'):
+                text = raw_input('%s will be deleted, are you sure (y or n)'
+                                 % expdir)
+            if text == 'y':
+                shutil.rmtree(expdir)
+            else:
+                return 0
 
-    if os.path.isdir(os.path.join(expdir, 'processes')):
-        shutil.rmtree(os.path.join(expdir, 'processes'))
-    os.makedirs(os.path.join(expdir, 'processes'))
+    if not os.path.isdir(expdir):
 
-    if trainer_cfg['resume_training'] == 'True':
-        if not os.path.isdir(expdir):
-            raise Exception('cannot find %s, please set resume_training to '
-                            'False if you want to start a new training process'
-                            % expdir)
-    else:
-        if os.path.isdir(os.path.join(expdir, 'logdir')):
-            shutil.rmtree(os.path.join(expdir, 'logdir'))
-        if not os.path.isdir(expdir):
-            os.makedirs(expdir)
-        if os.path.isdir(os.path.join(expdir, 'model')):
-            shutil.rmtree(os.path.join(expdir, 'model'))
+        os.makedirs(expdir)
         os.makedirs(os.path.join(expdir, 'model'))
 
         #copy the configs to the expdir so they can be read there and the
@@ -74,10 +71,14 @@ def main(expdir, recipe, mode, computing):
         shutil.copyfile(evaluator_cfg_file,
                         os.path.join(expdir, 'validation_evaluator.cfg'))
 
-    shutil.copyfile(trainer_cfg_file, os.path.join(expdir, 'trainer.cfg'))
+        shutil.copyfile(trainer_cfg_file, os.path.join(expdir, 'trainer.cfg'))
 
     computing_cfg_file = 'config/computing/%s/%s.cfg' % (computing,
                                                          mode)
+
+    if os.path.isdir(os.path.join(expdir, 'processes')):
+        shutil.rmtree(os.path.join(expdir, 'processes'))
+    os.makedirs(os.path.join(expdir, 'processes'))
 
     if computing == 'standard':
 
