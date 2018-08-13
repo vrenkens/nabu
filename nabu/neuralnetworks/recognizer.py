@@ -8,6 +8,7 @@ import tensorflow as tf
 from nabu.processing import input_pipeline
 from nabu.neuralnetworks.decoders import decoder_factory
 from nabu.neuralnetworks.components.hooks import LoadAtBegin
+from nabu.tools.default_conf import apply_defaults
 
 class Recognizer(object):
     '''a Recognizer can use a model to produce decode
@@ -26,6 +27,14 @@ class Recognizer(object):
         '''
 
         self.conf = dict(conf.items('recognizer'))
+
+        #apply default configuration
+        default = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'defaults',
+            type(self).__name__.lower() + '.cfg')
+        apply_defaults(self.conf, default)
+
         self.expdir = expdir
         self.model = model
 

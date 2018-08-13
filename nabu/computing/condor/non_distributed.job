@@ -11,7 +11,7 @@ request_GPUs      = 1
 Requirements = (CUDACapability >= 3.0)\
   &&(CUDAGlobalMemoryMb >= $(memory))\
   &&(machine =!= LastRemoteHost)\
-  &&(machine != "andromeda.esat.kuleuven.be")
+  && has_avx
 
 NiceUser = true
 

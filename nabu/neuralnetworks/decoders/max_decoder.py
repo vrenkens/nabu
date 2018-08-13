@@ -7,7 +7,7 @@ import decoder
 from nabu.neuralnetworks.components import ops
 
 class MaxDecoder(decoder.Decoder):
-    '''max Decoder'''
+    '''max Decoder takes the maximum probability at each timestep'''
 
     def __init__(self, conf, model):
         '''

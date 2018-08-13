@@ -2,8 +2,6 @@
 Contains the normalizer factory
 '''
 
-from . import character, aurora4, phones, gp
-
 def factory(normalizer):
     '''get a normalizer class
 
@@ -14,12 +12,16 @@ def factory(normalizer):
         a normalizer class'''
 
     if normalizer == 'aurora4':
+        import aurora4
         return aurora4.normalize
     elif normalizer == 'phones':
+        import phones
         return phones.normalize
     elif normalizer == 'character':
+        import character
         return character.normalize
     elif normalizer == 'gp':
+        import gp
         return gp.normalize
     else:
         raise Exception('Undefined normalizer: %s' % normalizer)

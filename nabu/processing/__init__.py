@@ -5,5 +5,5 @@ This package contains all the functionality for data processing:
 - file interpretation
 '''
 
-from . import target_normalizers, feature_computers, processors, \
-tfreaders, tfwriters
+from . import target_normalizers, processors, tfreaders, tfwriters, \
+input_pipeline

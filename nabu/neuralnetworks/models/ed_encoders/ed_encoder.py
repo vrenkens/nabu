@@ -1,8 +1,10 @@
 '''@file ed_encoder.py
 contains the EDEncoder class'''
 
+import os
 from abc import ABCMeta, abstractmethod
 import tensorflow as tf
+from nabu.tools.default_conf import apply_defaults
 
 class EDEncoder(object):
     '''a general encoder for an encoder decoder system
@@ -22,6 +24,13 @@ class EDEncoder(object):
 
         #save the configuration
         self.conf = dict(conf.items('encoder'))
+
+        #apply default configuration
+        default = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'defaults',
+            type(self).__name__.lower() + '.cfg')
+        apply_defaults(self.conf, default)
 
         self.scope = tf.VariableScope(
             tf.AUTO_REUSE,

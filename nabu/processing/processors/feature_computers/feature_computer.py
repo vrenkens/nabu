@@ -1,7 +1,9 @@
 '''@file feature_computer.py
 contains the FeatureComputer class'''
 
+import os
 from abc import ABCMeta, abstractmethod
+from nabu.tools.default_conf import apply_defaults
 
 class FeatureComputer(object):
     '''A featurecomputer is used to compute features'''
@@ -17,6 +19,14 @@ class FeatureComputer(object):
         '''
 
         self.conf = dict(conf.items('feature'))
+
+        #apply default configuration
+        default = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'defaults',
+            type(self).__name__.lower() + '.cfg')
+        apply_defaults(self.conf, default)
+
 
     def __call__(self, sig, rate):
         '''

@@ -1,9 +1,11 @@
 '''@file evaluator.py
 contains the Evaluator class'''
 
+import os
 from abc import ABCMeta, abstractmethod
 import tensorflow as tf
 from nabu.processing import input_pipeline
+from nabu.tools.default_conf import apply_defaults
 
 class Evaluator(object):
     '''the general evaluator class
@@ -22,6 +24,14 @@ class Evaluator(object):
         '''
 
         self.conf = dict(conf.items('evaluator'))
+
+        #apply default configuration
+        default = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'defaults',
+            type(self).__name__.lower() + '.cfg')
+        apply_defaults(self.conf, default)
+
         self.model = model
 
         #get the database configurations

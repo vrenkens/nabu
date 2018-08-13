@@ -100,10 +100,6 @@ class StringReader(tfreader.TfReader):
             message='not all string elements found in alphabet')
 
         with tf.control_dependencies([assert_op]):
-
-            #pad the data untill the maximal length if required
-            paddings = [[0, self.metadata['max_length'] - sequence_length]]
-            data = tf.pad(data, paddings)
-            data.set_shape([self.metadata['max_length']])
+            data = tf.identity(data)
 
         return data, sequence_length

@@ -94,7 +94,8 @@ class BeamSearchDecoder(decoder.Decoder):
                 end_token=self.model.decoder.output_dims.values()[0]-1,
                 initial_state=initial_state,
                 beam_width=beam_width,
-                length_penalty_weight=float(self.conf['length_penalty']))
+                length_penalty_weight=float(self.conf['length_penalty']),
+                temperature=float(self.conf['temperature']))
 
 
             with tf.variable_scope(self.model.decoder.scope):
@@ -127,7 +128,6 @@ class BeamSearchDecoder(decoder.Decoder):
             with open(os.path.join(directory, name), 'w') as fid:
                 for b in range(sequences.shape[1]):
                     sequence = sequences[i, b, :lengths[i, b]]
-                    #look for the first occurence of a sequence border label
                     text = ' '.join([self.alphabet[s] for s in sequence])
                     fid.write('%f %s\n' % (scores[i, b], text))
             if ('visualize_alignments' in self.conf and
@@ -169,7 +169,7 @@ class BeamSearchDecoder(decoder.Decoder):
 
         #convert the references to sparse representations
         sparse_targets = dense_sequence_to_sparse(
-            references.values()[0], reference_seq_length.values()[0])
+            references.values()[0], reference_seq_length.values()[0]-1)
 
         #convert the best sequences to sparse representations
         sparse_sequences = dense_sequence_to_sparse(
