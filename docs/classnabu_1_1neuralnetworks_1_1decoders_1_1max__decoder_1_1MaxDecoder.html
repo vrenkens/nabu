@@ -71,7 +71,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>max Decode  
+<p>max Decoder takes the maximum probability at each timestep  
  <a href="classnabu_1_1neuralnetworks_1_1decoders_1_1max__decoder_1_1MaxDecoder.html#details">More...</a></p>
 <div class="dynheader">
 Inheritance diagram for nabu.neuralnetworks.decoders.max_decoder.MaxDecoder:</div>
@@ -94,9 +94,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a195b8a8632ed5db719d98fe7c42f981b"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1max__decoder_1_1MaxDecoder.html#a195b8a8632ed5db719d98fe7c42f981b">write</a> (self, outputs, directory, names)</td></tr>
 <tr class="memdesc:a195b8a8632ed5db719d98fe7c42f981b"><td class="mdescLeft">&#160;</td><td class="mdescRight">write the output of the decoder to disk  <a href="#a195b8a8632ed5db719d98fe7c42f981b">More...</a><br /></td></tr>
 <tr class="separator:a195b8a8632ed5db719d98fe7c42f981b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad2ae76029b97efeeb941a67e3fed4391"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1max__decoder_1_1MaxDecoder.html#ad2ae76029b97efeeb941a67e3fed4391">evaluate</a> (self, outputs, references, reference_seq_length)</td></tr>
-<tr class="memdesc:ad2ae76029b97efeeb941a67e3fed4391"><td class="mdescLeft">&#160;</td><td class="mdescRight">evaluate the output of the decoder  <a href="#ad2ae76029b97efeeb941a67e3fed4391">More...</a><br /></td></tr>
-<tr class="separator:ad2ae76029b97efeeb941a67e3fed4391"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa86cfd8c738937c177e0e234b6a07e9d"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1max__decoder_1_1MaxDecoder.html#aa86cfd8c738937c177e0e234b6a07e9d">update_evaluation_loss</a> (self, loss, outputs, references, reference_seq_length)</td></tr>
+<tr class="memdesc:aa86cfd8c738937c177e0e234b6a07e9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">update the evaluation loss  <a href="#aa86cfd8c738937c177e0e234b6a07e9d">More...</a><br /></td></tr>
+<tr class="separator:aa86cfd8c738937c177e0e234b6a07e9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html">nabu.neuralnetworks.decoders.decoder.Decoder</a></td></tr>
 <tr class="memitem:ae54617bb6f81a4352fe94ccf19c8793d inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#ae54617bb6f81a4352fe94ccf19c8793d">__init__</a> (self, conf, model)</td></tr>
 <tr class="memdesc:ae54617bb6f81a4352fe94ccf19c8793d inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html" title="the abstract class for a decode ">Decoder</a> constructor.  <a href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#ae54617bb6f81a4352fe94ccf19c8793d">More...</a><br /></td></tr>
@@ -107,9 +107,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af7a2573ec49bf0ca845368cfb0d111fd inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#af7a2573ec49bf0ca845368cfb0d111fd">write</a> (self, outputs, directory, names)</td></tr>
 <tr class="memdesc:af7a2573ec49bf0ca845368cfb0d111fd inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="mdescLeft">&#160;</td><td class="mdescRight">write the output of the decoder to disk  <a href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#af7a2573ec49bf0ca845368cfb0d111fd">More...</a><br /></td></tr>
 <tr class="separator:af7a2573ec49bf0ca845368cfb0d111fd inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad2025ebd53391e1212633d8ef173ed11 inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#ad2025ebd53391e1212633d8ef173ed11">evaluate</a> (self, outputs, references, reference_seq_length)</td></tr>
-<tr class="memdesc:ad2025ebd53391e1212633d8ef173ed11 inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="mdescLeft">&#160;</td><td class="mdescRight">evaluate the output of the decoder  <a href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#ad2025ebd53391e1212633d8ef173ed11">More...</a><br /></td></tr>
-<tr class="separator:ad2025ebd53391e1212633d8ef173ed11 inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3955d6a8abcb29eb5680e5532f1549f inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#af3955d6a8abcb29eb5680e5532f1549f">update_evaluation_loss</a> (self, loss, outputs, references, reference_seq_length)</td></tr>
+<tr class="memdesc:af3955d6a8abcb29eb5680e5532f1549f inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="mdescLeft">&#160;</td><td class="mdescRight">update the evaluation loss  <a href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#af3955d6a8abcb29eb5680e5532f1549f">More...</a><br /></td></tr>
+<tr class="separator:af3955d6a8abcb29eb5680e5532f1549f inherit pub_methods_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -125,7 +125,7 @@ Public Attributes</h2></td></tr>
 <tr class="separator:af4e2266af863f1d92a1a0e798a75636c inherit pub_attribs_classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>max Decode </p>
+<div class="textblock"><p>max Decoder takes the maximum probability at each timestep </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ae1a954c254794ed12472575bfd075a55"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae1a954c254794ed12472575bfd075a55">&sect;&nbsp;</a></span>__init__()</h2>
@@ -219,17 +219,23 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="ad2ae76029b97efeeb941a67e3fed4391"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad2ae76029b97efeeb941a67e3fed4391">&sect;&nbsp;</a></span>evaluate()</h2>
+<a id="aa86cfd8c738937c177e0e234b6a07e9d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa86cfd8c738937c177e0e234b6a07e9d">&sect;&nbsp;</a></span>update_evaluation_loss()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">def nabu.neuralnetworks.decoders.max_decoder.MaxDecoder.evaluate </td>
+          <td class="memname">def nabu.neuralnetworks.decoders.max_decoder.MaxDecoder.update_evaluation_loss </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>loss</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -257,16 +263,17 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>evaluate the output of the decoder </p>
+<p>update the evaluation loss </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramname">loss</td><td>the current evaluation loss </td></tr>
     <tr><td class="paramname">outputs</td><td>the outputs of the decoder as a dictionary </td></tr>
     <tr><td class="paramname">references</td><td>the references as a dictionary </td></tr>
     <tr><td class="paramname">reference_seq_length</td><td>the sequence lengths of the references</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>the error of the outputs </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>an op to update the evalution loss </dd></dl>
 
 </div>
 </div>

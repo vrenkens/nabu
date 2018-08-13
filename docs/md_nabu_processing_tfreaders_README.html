@@ -62,7 +62,7 @@ $(function() {
 <div class="title">TF Readers </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>a TensorFlow Reader is used to read TFRecord files directly into the graph. To create a new TFReader you should inherit from the general TFReader class defined in <a class="el" href="tfreader_8py.html" title="contains the TfReader class ">tfreader.py</a> and overwrite the abstract methods. You should then add it to the factory method in <a class="el" href="tfreader__factory_8py.html" title="contains the tfreader factory ">tfreader_factory.py</a> and to the package in __init__.py. </p>
+<div class="textblock"><p>a TensorFlow Reader is used to read TFRecord files directly into the graph. To create a new TFReader you should inherit from the general TFReader class defined in <a class="el" href="tfreader_8py.html" title="contains the TfReader class ">tfreader.py</a> and overwrite the abstract methods. You should then add it to the factory method in <a class="el" href="tfreader__factory_8py.html" title="contains the tfreader factory ">tfreader_factory.py</a>. It is also very helpful to create a default configuration in the defaults directory. The name of the file should be the name of the class in lower case with the .cfg extension. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

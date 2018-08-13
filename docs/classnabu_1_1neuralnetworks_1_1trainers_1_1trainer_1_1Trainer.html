@@ -79,12 +79,7 @@ Inheritance diagram for nabu.neuralnetworks.trainers.trainer.Trainer:</div>
  <div class="center">
   <img src="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.png" usemap="#nabu.neuralnetworks.trainers.trainer.Trainer_map" alt=""/>
   <map id="nabu.neuralnetworks.trainers.trainer.Trainer_map" name="nabu.neuralnetworks.trainers.trainer.Trainer_map">
-<area href="classnabu_1_1neuralnetworks_1_1trainers_1_1cross__entropy__trainer_1_1CrossEntropyTrainer.html" title="A trainer that minimises the cross-entropy loss. " alt="nabu.neuralnetworks.trainers.cross_entropy_trainer.CrossEntropyTrainer" shape="rect" coords="0,112,521,136"/>
-<area href="classnabu_1_1neuralnetworks_1_1trainers_1_1ctc__phonology__trainer_1_1CTCPhonologyTrainer.html" title="A trainer that minimises the CTC loss of a phonological feature extractor. " alt="nabu.neuralnetworks.trainers.ctc_phonology_trainer.CTCPhonologyTrainer" shape="rect" coords="531,112,1052,136"/>
-<area href="classnabu_1_1neuralnetworks_1_1trainers_1_1ctc__trainer_1_1CTCTrainer.html" title="A trainer that minimises the CTC loss. " alt="nabu.neuralnetworks.trainers.ctc_trainer.CTCTrainer" shape="rect" coords="1062,112,1583,136"/>
-<area href="classnabu_1_1neuralnetworks_1_1trainers_1_1eos__cross__entropy__trainer_1_1EosCrossEntropyTrainer.html" title="A trainer that minimises the cross-entropy loss with an eos label. " alt="nabu.neuralnetworks.trainers.eos_cross_entropy_trainer.EosCrossEntropyTrainer" shape="rect" coords="1593,112,2114,136"/>
-<area href="classnabu_1_1neuralnetworks_1_1trainers_1_1fisher__trainer_1_1FisherTrainer.html" title="A that computes the fisher information matrix at the end of training. " alt="nabu.neuralnetworks.trainers.fisher_trainer.FisherTrainer" shape="rect" coords="2124,112,2645,136"/>
-<area href="classnabu_1_1neuralnetworks_1_1trainers_1_1sigmoid__cross__entropy__trainer_1_1SigmoidCrossEntropyTrainer.html" title="A trainer that minimises the cross-entropy loss. " alt="nabu.neuralnetworks.trainers.sigmoid_cross_entropy_trainer.SigmoidCrossEntropyTrainer" shape="rect" coords="2655,112,3176,136"/>
+<area href="classnabu_1_1neuralnetworks_1_1trainers_1_1standard__trainer_1_1StandardTrainer.html" title="a trainer with no added functionality " alt="nabu.neuralnetworks.trainers.standard_trainer.StandardTrainer" shape="rect" coords="0,112,370,136"/>
 </map>
  </div></div>
 <table class="memberdecls">
@@ -93,25 +88,18 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af88941cfe44b07b8058fc63367f4f97d"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#af88941cfe44b07b8058fc63367f4f97d">__init__</a> (self, conf, dataconf, modelconf, evaluatorconf, expdir, server, task_index)</td></tr>
 <tr class="memdesc:af88941cfe44b07b8058fc63367f4f97d"><td class="mdescLeft">&#160;</td><td class="mdescRight">NnetTrainer constructor, creates the training graph.  <a href="#af88941cfe44b07b8058fc63367f4f97d">More...</a><br /></td></tr>
 <tr class="separator:af88941cfe44b07b8058fc63367f4f97d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a57d93373b7433043850337dda6cdf375"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a57d93373b7433043850337dda6cdf375">create_graph</a> (self)</td></tr>
-<tr class="memdesc:a57d93373b7433043850337dda6cdf375"><td class="mdescLeft">&#160;</td><td class="mdescRight">create the trainer computational graph  <a href="#a57d93373b7433043850337dda6cdf375">More...</a><br /></td></tr>
-<tr class="separator:a57d93373b7433043850337dda6cdf375"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a796e6aad934cc361e487df85ccc2eac5"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a796e6aad934cc361e487df85ccc2eac5">compute_loss</a> (self, targets, logits, logit_seq_length, target_seq_length)</td></tr>
-<tr class="memdesc:a796e6aad934cc361e487df85ccc2eac5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the loss.  <a href="#a796e6aad934cc361e487df85ccc2eac5">More...</a><br /></td></tr>
-<tr class="separator:a796e6aad934cc361e487df85ccc2eac5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a423ed435afc3cb417fe76cf8a63e477a"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a423ed435afc3cb417fe76cf8a63e477a">trainlabels</a> (self)</td></tr>
-<tr class="memdesc:a423ed435afc3cb417fe76cf8a63e477a"><td class="mdescLeft">&#160;</td><td class="mdescRight">the number of aditional labels the trainer needs (e.g.  <a href="#a423ed435afc3cb417fe76cf8a63e477a">More...</a><br /></td></tr>
-<tr class="separator:a423ed435afc3cb417fe76cf8a63e477a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aad9e40d768ecd96efc635b9e7ff67e60"><td class="memItemLeft" align="right" valign="top"><a id="aad9e40d768ecd96efc635b9e7ff67e60"></a>
-def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#aad9e40d768ecd96efc635b9e7ff67e60">train</a> (self)</td></tr>
-<tr class="memdesc:aad9e40d768ecd96efc635b9e7ff67e60"><td class="mdescLeft">&#160;</td><td class="mdescRight">train the model <br /></td></tr>
-<tr class="separator:aad9e40d768ecd96efc635b9e7ff67e60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43be632325d3b192de1eb48ad1e9794a"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a43be632325d3b192de1eb48ad1e9794a">train</a> (self, testing=False)</td></tr>
+<tr class="memdesc:a43be632325d3b192de1eb48ad1e9794a"><td class="mdescLeft">&#160;</td><td class="mdescRight">train the model  <a href="#a43be632325d3b192de1eb48ad1e9794a">More...</a><br /></td></tr>
+<tr class="separator:a43be632325d3b192de1eb48ad1e9794a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5fa74e1e010359cee2bc4e3bd00e88c0"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a5fa74e1e010359cee2bc4e3bd00e88c0">chief_only_hooks</a> (self, outputs)</td></tr>
 <tr class="memdesc:a5fa74e1e010359cee2bc4e3bd00e88c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">add hooks only for the chief worker  <a href="#a5fa74e1e010359cee2bc4e3bd00e88c0">More...</a><br /></td></tr>
 <tr class="separator:a5fa74e1e010359cee2bc4e3bd00e88c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4d7438ce4a5f233e92c33fb851a1e346"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#a4d7438ce4a5f233e92c33fb851a1e346">hooks</a> (self, outputs)</td></tr>
 <tr class="memdesc:a4d7438ce4a5f233e92c33fb851a1e346"><td class="mdescLeft">&#160;</td><td class="mdescRight">add hooks for the session  <a href="#a4d7438ce4a5f233e92c33fb851a1e346">More...</a><br /></td></tr>
 <tr class="separator:a4d7438ce4a5f233e92c33fb851a1e346"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa851a77cfffed6f30b7e84eef48db84b"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1trainers_1_1trainer_1_1Trainer.html#aa851a77cfffed6f30b7e84eef48db84b">aditional_loss</a> (self)</td></tr>
+<tr class="memdesc:aa851a77cfffed6f30b7e84eef48db84b"><td class="mdescLeft">&#160;</td><td class="mdescRight">add an aditional loss  <a href="#aa851a77cfffed6f30b7e84eef48db84b">More...</a><br /></td></tr>
+<tr class="separator:aa851a77cfffed6f30b7e84eef48db84b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -219,6 +207,27 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="aa851a77cfffed6f30b7e84eef48db84b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa851a77cfffed6f30b7e84eef48db84b">&sect;&nbsp;</a></span>aditional_loss()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def nabu.neuralnetworks.trainers.trainer.Trainer.aditional_loss </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>add an aditional loss </p>
+<dl class="section return"><dt>Returns</dt><dd>the aditional loss or None </dd></dl>
+
+</div>
+</div>
 <a id="a5fa74e1e010359cee2bc4e3bd00e88c0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5fa74e1e010359cee2bc4e3bd00e88c0">&sect;&nbsp;</a></span>chief_only_hooks()</h2>
 
@@ -253,91 +262,6 @@ Public Attributes</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>a list of hooks </dd></dl>
-
-</div>
-</div>
-<a id="a796e6aad934cc361e487df85ccc2eac5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a796e6aad934cc361e487df85ccc2eac5">&sect;&nbsp;</a></span>compute_loss()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">def nabu.neuralnetworks.trainers.trainer.Trainer.compute_loss </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>targets</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>logits</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>logit_seq_length</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>target_seq_length</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Compute the loss. </p>
-<p>Creates the operation to compute the cross-enthropy loss for every input frame (if you want to have a different loss function, overwrite this method)</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">targets</td><td>a list of [batch_size x ...] tensor containing the </td></tr>
-    <tr><td class="paramname">targets</td><td></td></tr>
-    <tr><td class="paramname">logits</td><td>a list of [batch_size x ... tensor containing the </td></tr>
-    <tr><td class="paramname">logits</td><td></td></tr>
-    <tr><td class="paramname">logit_seq_length</td><td>a list of [batch_size] vectors containing the logit sequence lengths </td></tr>
-    <tr><td class="paramname">target_seq_length</td><td>a list of [batch_size] vectors containing the target sequence lengths</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>a scalar value containing the loss </dd></dl>
-
-</div>
-</div>
-<a id="a57d93373b7433043850337dda6cdf375"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a57d93373b7433043850337dda6cdf375">&sect;&nbsp;</a></span>create_graph()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">def nabu.neuralnetworks.trainers.trainer.Trainer.create_graph </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>create the trainer computational graph </p>
-<dl class="section return"><dt>Returns</dt><dd><ul>
-<li>a dictionary of graph outputs </li>
-</ul>
-</dd></dl>
 
 </div>
 </div>
@@ -378,24 +302,40 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a423ed435afc3cb417fe76cf8a63e477a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a423ed435afc3cb417fe76cf8a63e477a">&sect;&nbsp;</a></span>trainlabels()</h2>
+<a id="a43be632325d3b192de1eb48ad1e9794a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a43be632325d3b192de1eb48ad1e9794a">&sect;&nbsp;</a></span>train()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">def nabu.neuralnetworks.trainers.trainer.Trainer.trainlabels </td>
+          <td class="memname">def nabu.neuralnetworks.trainers.trainer.Trainer.train </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em></td><td>)</td>
+          <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>testing</em> = <code>False</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>the number of aditional labels the trainer needs (e.g. </p>
-<p>blank or eos) </p>
+<p>train the model </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">testing</td><td>if true only the graph will be created for debugging </td></tr>
+    <tr><td class="paramname">purposes</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

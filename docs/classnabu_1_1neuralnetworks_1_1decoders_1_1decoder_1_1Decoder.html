@@ -79,11 +79,11 @@ Inheritance diagram for nabu.neuralnetworks.decoders.decoder.Decoder:</div>
  <div class="center">
   <img src="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.png" usemap="#nabu.neuralnetworks.decoders.decoder.Decoder_map" alt=""/>
   <map id="nabu.neuralnetworks.decoders.decoder.Decoder_map" name="nabu.neuralnetworks.decoders.decoder.Decoder_map">
-<area href="classnabu_1_1neuralnetworks_1_1decoders_1_1alignment__decoder_1_1AlignmentDecoder.html" title="feature Decode " alt="nabu.neuralnetworks.decoders.alignment_decoder.AlignmentDecoder" shape="rect" coords="0,112,446,136"/>
+<area href="classnabu_1_1neuralnetworks_1_1decoders_1_1alignment__decoder_1_1AlignmentDecoder.html" title="gets the HMM state posteriors " alt="nabu.neuralnetworks.decoders.alignment_decoder.AlignmentDecoder" shape="rect" coords="0,112,446,136"/>
 <area href="classnabu_1_1neuralnetworks_1_1decoders_1_1beam__search__decoder_1_1BeamSearchDecoder.html" title="Beam search decode. " alt="nabu.neuralnetworks.decoders.beam_search_decoder.BeamSearchDecoder" shape="rect" coords="456,112,902,136"/>
 <area href="classnabu_1_1neuralnetworks_1_1decoders_1_1ctc__decoder_1_1CTCDecoder.html" title="CTC Decode. " alt="nabu.neuralnetworks.decoders.ctc_decoder.CTCDecoder" shape="rect" coords="912,112,1358,136"/>
 <area href="classnabu_1_1neuralnetworks_1_1decoders_1_1feature__decoder_1_1FeatureDecoder.html" title="feature Decode " alt="nabu.neuralnetworks.decoders.feature_decoder.FeatureDecoder" shape="rect" coords="1368,112,1814,136"/>
-<area href="classnabu_1_1neuralnetworks_1_1decoders_1_1max__decoder_1_1MaxDecoder.html" title="max Decode " alt="nabu.neuralnetworks.decoders.max_decoder.MaxDecoder" shape="rect" coords="1824,112,2270,136"/>
+<area href="classnabu_1_1neuralnetworks_1_1decoders_1_1max__decoder_1_1MaxDecoder.html" title="max Decoder takes the maximum probability at each timestep " alt="nabu.neuralnetworks.decoders.max_decoder.MaxDecoder" shape="rect" coords="1824,112,2270,136"/>
 <area href="classnabu_1_1neuralnetworks_1_1decoders_1_1random__decoder_1_1RandomDecoder.html" title="a decoder that returns a random sample from the output distribution " alt="nabu.neuralnetworks.decoders.random_decoder.RandomDecoder" shape="rect" coords="2280,112,2726,136"/>
 <area href="classnabu_1_1neuralnetworks_1_1decoders_1_1threshold__decoder_1_1ThresholdDecoder.html" title="CTC Decode. " alt="nabu.neuralnetworks.decoders.threshold_decoder.ThresholdDecoder" shape="rect" coords="2736,112,3182,136"/>
 </map>
@@ -100,9 +100,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af7a2573ec49bf0ca845368cfb0d111fd"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#af7a2573ec49bf0ca845368cfb0d111fd">write</a> (self, outputs, directory, names)</td></tr>
 <tr class="memdesc:af7a2573ec49bf0ca845368cfb0d111fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">write the output of the decoder to disk  <a href="#af7a2573ec49bf0ca845368cfb0d111fd">More...</a><br /></td></tr>
 <tr class="separator:af7a2573ec49bf0ca845368cfb0d111fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad2025ebd53391e1212633d8ef173ed11"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#ad2025ebd53391e1212633d8ef173ed11">evaluate</a> (self, outputs, references, reference_seq_length)</td></tr>
-<tr class="memdesc:ad2025ebd53391e1212633d8ef173ed11"><td class="mdescLeft">&#160;</td><td class="mdescRight">evaluate the output of the decoder  <a href="#ad2025ebd53391e1212633d8ef173ed11">More...</a><br /></td></tr>
-<tr class="separator:ad2025ebd53391e1212633d8ef173ed11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3955d6a8abcb29eb5680e5532f1549f"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1decoders_1_1decoder_1_1Decoder.html#af3955d6a8abcb29eb5680e5532f1549f">update_evaluation_loss</a> (self, loss, outputs, references, reference_seq_length)</td></tr>
+<tr class="memdesc:af3955d6a8abcb29eb5680e5532f1549f"><td class="mdescLeft">&#160;</td><td class="mdescRight">update the evaluation loss  <a href="#af3955d6a8abcb29eb5680e5532f1549f">More...</a><br /></td></tr>
+<tr class="separator:af3955d6a8abcb29eb5680e5532f1549f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -207,17 +207,23 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="ad2025ebd53391e1212633d8ef173ed11"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad2025ebd53391e1212633d8ef173ed11">&sect;&nbsp;</a></span>evaluate()</h2>
+<a id="af3955d6a8abcb29eb5680e5532f1549f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af3955d6a8abcb29eb5680e5532f1549f">&sect;&nbsp;</a></span>update_evaluation_loss()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">def nabu.neuralnetworks.decoders.decoder.Decoder.evaluate </td>
+          <td class="memname">def nabu.neuralnetworks.decoders.decoder.Decoder.update_evaluation_loss </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>loss</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -245,16 +251,17 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>evaluate the output of the decoder </p>
+<p>update the evaluation loss </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramname">loss</td><td>the current evaluation loss </td></tr>
     <tr><td class="paramname">outputs</td><td>the outputs of the decoder as a dictionary </td></tr>
     <tr><td class="paramname">references</td><td>the references as a dictionary </td></tr>
     <tr><td class="paramname">reference_seq_length</td><td>the sequence lengths of the references</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>the error of the outputs </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>an op to update the evalution loss </dd></dl>
 
 </div>
 </div>

@@ -58,7 +58,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_5a19dd24bd3679bb79d0ed8fbf6eb6c5.html">nabu</a></li><li class="navelem"><a class="el" href="dir_38a0e828cfd915bf1a57174729a2f8cd.html">processing</a></li><li class="navelem"><a class="el" href="dir_d80dad1009716de6e9ca74874ff0ee9b.html">feature_computers</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_5a19dd24bd3679bb79d0ed8fbf6eb6c5.html">nabu</a></li><li class="navelem"><a class="el" href="dir_38a0e828cfd915bf1a57174729a2f8cd.html">processing</a></li><li class="navelem"><a class="el" href="dir_e13f2eda408f5edf365c238eb07cf74b.html">processors</a></li><li class="navelem"><a class="el" href="dir_9dd70351104cb74361e0a1ecfe3b7415.html">feature_computers</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -74,27 +74,27 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ae8f46c7fc11e88549d9b6c51933c88f4"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sigproc_8py.html#ae8f46c7fc11e88549d9b6c51933c88f4">nabu.processing.feature_computers.sigproc.framesig</a> (sig, frame_len, frame_step, winfunc=lambda x:numpy.ones((x,)))</td></tr>
-<tr class="memdesc:ae8f46c7fc11e88549d9b6c51933c88f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frame a signal into overlapping frames.  <a href="sigproc_8py.html#ae8f46c7fc11e88549d9b6c51933c88f4">More...</a><br /></td></tr>
-<tr class="separator:ae8f46c7fc11e88549d9b6c51933c88f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4e7b5591ee823982057538ad6e5aa9ee"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sigproc_8py.html#a4e7b5591ee823982057538ad6e5aa9ee">nabu.processing.feature_computers.sigproc.deframesig</a> (frames, siglen, frame_len, frame_step, winfunc=lambda x:numpy.ones((x,)))</td></tr>
-<tr class="memdesc:a4e7b5591ee823982057538ad6e5aa9ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Does overlap-add procedure to undo the action of framesig.  <a href="sigproc_8py.html#a4e7b5591ee823982057538ad6e5aa9ee">More...</a><br /></td></tr>
-<tr class="separator:a4e7b5591ee823982057538ad6e5aa9ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a82e0c532e557a8ac865323a8e145344e"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sigproc_8py.html#a82e0c532e557a8ac865323a8e145344e">nabu.processing.feature_computers.sigproc.magspec</a> (frames, nfft)</td></tr>
-<tr class="memdesc:a82e0c532e557a8ac865323a8e145344e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the magnitude spectrum of each frame in frames.  <a href="sigproc_8py.html#a82e0c532e557a8ac865323a8e145344e">More...</a><br /></td></tr>
-<tr class="separator:a82e0c532e557a8ac865323a8e145344e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a74a8fc5b11a091c381a312f371655628"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sigproc_8py.html#a74a8fc5b11a091c381a312f371655628">nabu.processing.feature_computers.sigproc.powspec</a> (frames, nfft)</td></tr>
-<tr class="memdesc:a74a8fc5b11a091c381a312f371655628"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the power spectrum of each frame in frames.  <a href="sigproc_8py.html#a74a8fc5b11a091c381a312f371655628">More...</a><br /></td></tr>
-<tr class="separator:a74a8fc5b11a091c381a312f371655628"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afd85100b52c3b0dbe461f8e0f700794a"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sigproc_8py.html#afd85100b52c3b0dbe461f8e0f700794a">nabu.processing.feature_computers.sigproc.logpowspec</a> (frames, nfft, norm=1)</td></tr>
-<tr class="memdesc:afd85100b52c3b0dbe461f8e0f700794a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the log power spectrum of each frame in frames.  <a href="sigproc_8py.html#afd85100b52c3b0dbe461f8e0f700794a">More...</a><br /></td></tr>
-<tr class="separator:afd85100b52c3b0dbe461f8e0f700794a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf072de2e67f9c8ee1144679133798d5"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sigproc_8py.html#abf072de2e67f9c8ee1144679133798d5">nabu.processing.feature_computers.sigproc.preemphasis</a> (signal, coeff=0.95)</td></tr>
-<tr class="memdesc:abf072de2e67f9c8ee1144679133798d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">perform preemphasis on the input signal.  <a href="sigproc_8py.html#abf072de2e67f9c8ee1144679133798d5">More...</a><br /></td></tr>
-<tr class="separator:abf072de2e67f9c8ee1144679133798d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad071a0ab973f9ae7ea510c61be76ae75"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sigproc_8py.html#ad071a0ab973f9ae7ea510c61be76ae75">nabu.processing.feature_computers.sigproc.snip</a> (sig, rate, winlen, winstep)</td></tr>
-<tr class="memdesc:ad071a0ab973f9ae7ea510c61be76ae75"><td class="mdescLeft">&#160;</td><td class="mdescRight">snip the edges of the utterance to fit the sliding window  <a href="sigproc_8py.html#ad071a0ab973f9ae7ea510c61be76ae75">More...</a><br /></td></tr>
-<tr class="separator:ad071a0ab973f9ae7ea510c61be76ae75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b34b7d7067c1c025d1fdc8a049cef24"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sigproc_8py.html#a3b34b7d7067c1c025d1fdc8a049cef24">nabu.processing.processors.feature_computers.sigproc.framesig</a> (sig, frame_len, frame_step, winfunc=lambda x:numpy.ones((x,)))</td></tr>
+<tr class="memdesc:a3b34b7d7067c1c025d1fdc8a049cef24"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frame a signal into overlapping frames.  <a href="sigproc_8py.html#a3b34b7d7067c1c025d1fdc8a049cef24">More...</a><br /></td></tr>
+<tr class="separator:a3b34b7d7067c1c025d1fdc8a049cef24"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20b903a0d7065c999d249590943deb43"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sigproc_8py.html#a20b903a0d7065c999d249590943deb43">nabu.processing.processors.feature_computers.sigproc.deframesig</a> (frames, siglen, frame_len, frame_step, winfunc=lambda x:numpy.ones((x,)))</td></tr>
+<tr class="memdesc:a20b903a0d7065c999d249590943deb43"><td class="mdescLeft">&#160;</td><td class="mdescRight">Does overlap-add procedure to undo the action of framesig.  <a href="sigproc_8py.html#a20b903a0d7065c999d249590943deb43">More...</a><br /></td></tr>
+<tr class="separator:a20b903a0d7065c999d249590943deb43"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fba71fc47e9cb1dc0f5427d6a7612af"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sigproc_8py.html#a4fba71fc47e9cb1dc0f5427d6a7612af">nabu.processing.processors.feature_computers.sigproc.magspec</a> (frames, nfft)</td></tr>
+<tr class="memdesc:a4fba71fc47e9cb1dc0f5427d6a7612af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the magnitude spectrum of each frame in frames.  <a href="sigproc_8py.html#a4fba71fc47e9cb1dc0f5427d6a7612af">More...</a><br /></td></tr>
+<tr class="separator:a4fba71fc47e9cb1dc0f5427d6a7612af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa723b5765e6537fdc8c85eeac3b105ef"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sigproc_8py.html#aa723b5765e6537fdc8c85eeac3b105ef">nabu.processing.processors.feature_computers.sigproc.powspec</a> (frames, nfft)</td></tr>
+<tr class="memdesc:aa723b5765e6537fdc8c85eeac3b105ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the power spectrum of each frame in frames.  <a href="sigproc_8py.html#aa723b5765e6537fdc8c85eeac3b105ef">More...</a><br /></td></tr>
+<tr class="separator:aa723b5765e6537fdc8c85eeac3b105ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c89f348bedbe8eb7c9c48fc13be1ef1"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sigproc_8py.html#a0c89f348bedbe8eb7c9c48fc13be1ef1">nabu.processing.processors.feature_computers.sigproc.logpowspec</a> (frames, nfft, norm=1)</td></tr>
+<tr class="memdesc:a0c89f348bedbe8eb7c9c48fc13be1ef1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the log power spectrum of each frame in frames.  <a href="sigproc_8py.html#a0c89f348bedbe8eb7c9c48fc13be1ef1">More...</a><br /></td></tr>
+<tr class="separator:a0c89f348bedbe8eb7c9c48fc13be1ef1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d2e2e6f8018a3cc47489bb6e7ca2853"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sigproc_8py.html#a0d2e2e6f8018a3cc47489bb6e7ca2853">nabu.processing.processors.feature_computers.sigproc.preemphasis</a> (signal, coeff=0.95)</td></tr>
+<tr class="memdesc:a0d2e2e6f8018a3cc47489bb6e7ca2853"><td class="mdescLeft">&#160;</td><td class="mdescRight">perform preemphasis on the input signal.  <a href="sigproc_8py.html#a0d2e2e6f8018a3cc47489bb6e7ca2853">More...</a><br /></td></tr>
+<tr class="separator:a0d2e2e6f8018a3cc47489bb6e7ca2853"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3ebf758ea515730ef0438bdd51cccfb"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sigproc_8py.html#ac3ebf758ea515730ef0438bdd51cccfb">nabu.processing.processors.feature_computers.sigproc.snip</a> (sig, rate, winlen, winstep)</td></tr>
+<tr class="memdesc:ac3ebf758ea515730ef0438bdd51cccfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">snip the edges of the utterance to fit the sliding window  <a href="sigproc_8py.html#ac3ebf758ea515730ef0438bdd51cccfb">More...</a><br /></td></tr>
+<tr class="separator:ac3ebf758ea515730ef0438bdd51cccfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>contains the signal processing functionality </p>
@@ -105,14 +105,14 @@ Functions</h2></td></tr>
 <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
 <p>This file includes routines for basic signal processing including framing and computing power spectra. </p><dl class="section author"><dt>Author</dt><dd>: James Lyons 2012 </dd></dl>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="file_a4e7b5591ee823982057538ad6e5aa9ee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a4e7b5591ee823982057538ad6e5aa9ee">&sect;&nbsp;</a></span>deframesig()</h2>
+<a id="file_a20b903a0d7065c999d249590943deb43"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a20b903a0d7065c999d249590943deb43">&sect;&nbsp;</a></span>deframesig()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">def nabu.processing.feature_computers.sigproc.deframesig </td>
+          <td class="memname">def nabu.processing.processors.feature_computers.sigproc.deframesig </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>frames</em>, </td>
@@ -164,14 +164,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="file_ae8f46c7fc11e88549d9b6c51933c88f4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_ae8f46c7fc11e88549d9b6c51933c88f4">&sect;&nbsp;</a></span>framesig()</h2>
+<a id="file_a3b34b7d7067c1c025d1fdc8a049cef24"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a3b34b7d7067c1c025d1fdc8a049cef24">&sect;&nbsp;</a></span>framesig()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">def nabu.processing.feature_computers.sigproc.framesig </td>
+          <td class="memname">def nabu.processing.processors.feature_computers.sigproc.framesig </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>sig</em>, </td>
@@ -216,14 +216,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="file_afd85100b52c3b0dbe461f8e0f700794a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_afd85100b52c3b0dbe461f8e0f700794a">&sect;&nbsp;</a></span>logpowspec()</h2>
+<a id="file_a0c89f348bedbe8eb7c9c48fc13be1ef1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a0c89f348bedbe8eb7c9c48fc13be1ef1">&sect;&nbsp;</a></span>logpowspec()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">def nabu.processing.feature_computers.sigproc.logpowspec </td>
+          <td class="memname">def nabu.processing.processors.feature_computers.sigproc.logpowspec </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>frames</em>, </td>
@@ -262,14 +262,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="file_a82e0c532e557a8ac865323a8e145344e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a82e0c532e557a8ac865323a8e145344e">&sect;&nbsp;</a></span>magspec()</h2>
+<a id="file_a4fba71fc47e9cb1dc0f5427d6a7612af"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a4fba71fc47e9cb1dc0f5427d6a7612af">&sect;&nbsp;</a></span>magspec()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">def nabu.processing.feature_computers.sigproc.magspec </td>
+          <td class="memname">def nabu.processing.processors.feature_computers.sigproc.magspec </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>frames</em>, </td>
@@ -301,14 +301,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="file_a74a8fc5b11a091c381a312f371655628"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a74a8fc5b11a091c381a312f371655628">&sect;&nbsp;</a></span>powspec()</h2>
+<a id="file_aa723b5765e6537fdc8c85eeac3b105ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_aa723b5765e6537fdc8c85eeac3b105ef">&sect;&nbsp;</a></span>powspec()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">def nabu.processing.feature_computers.sigproc.powspec </td>
+          <td class="memname">def nabu.processing.processors.feature_computers.sigproc.powspec </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>frames</em>, </td>
@@ -340,14 +340,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="file_abf072de2e67f9c8ee1144679133798d5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_abf072de2e67f9c8ee1144679133798d5">&sect;&nbsp;</a></span>preemphasis()</h2>
+<a id="file_a0d2e2e6f8018a3cc47489bb6e7ca2853"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a0d2e2e6f8018a3cc47489bb6e7ca2853">&sect;&nbsp;</a></span>preemphasis()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">def nabu.processing.feature_computers.sigproc.preemphasis </td>
+          <td class="memname">def nabu.processing.processors.feature_computers.sigproc.preemphasis </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>signal</em>, </td>
@@ -378,14 +378,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="file_ad071a0ab973f9ae7ea510c61be76ae75"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_ad071a0ab973f9ae7ea510c61be76ae75">&sect;&nbsp;</a></span>snip()</h2>
+<a id="file_ac3ebf758ea515730ef0438bdd51cccfb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_ac3ebf758ea515730ef0438bdd51cccfb">&sect;&nbsp;</a></span>snip()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">def nabu.processing.feature_computers.sigproc.snip </td>
+          <td class="memname">def nabu.processing.processors.feature_computers.sigproc.snip </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>sig</em>, </td>

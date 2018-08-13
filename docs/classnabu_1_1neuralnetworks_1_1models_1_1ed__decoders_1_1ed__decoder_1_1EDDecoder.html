@@ -81,22 +81,19 @@ Inheritance diagram for nabu.neuralnetworks.models.ed_decoders.ed_decoder.EDDeco
   <map id="nabu.neuralnetworks.models.ed_5Fdecoders.ed_5Fdecoder.EDDecoder_map" name="nabu.neuralnetworks.models.ed_decoders.ed_decoder.EDDecoder_map">
 <area href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1dnn__decoder_1_1DNNDecoder.html" title="a DNN decode " alt="nabu.neuralnetworks.models.ed_decoders.dnn_decoder.DNNDecoder" shape="rect" coords="0,112,446,136"/>
 <area href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1hotstart__decoder_1_1HotstartDecoder.html" title="a listener object " alt="nabu.neuralnetworks.models.ed_decoders.hotstart_decoder.HotstartDecoder" shape="rect" coords="456,112,902,136"/>
-<area href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1rnn__decoder_1_1RNNDecoder.html" title="a decoder that is used to detect phonological features " alt="nabu.neuralnetworks.models.ed_decoders.rnn_decoder.RNNDecoder" shape="rect" coords="912,112,1358,136"/>
-<area href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1speller_1_1Speller.html" title="a speller decoder for the LAS architecture " alt="nabu.neuralnetworks.models.ed_decoders.speller.Speller" shape="rect" coords="1368,112,1814,136"/>
+<area href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1rnn__decoder_1_1RNNDecoder.html" title="a speller decoder for the LAS architecture " alt="nabu.neuralnetworks.models.ed_decoders.rnn_decoder.RNNDecoder" shape="rect" coords="912,112,1358,136"/>
+<area href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1speller_1_1Speller.html" title="a speller decoder for the LAS architecture " alt="nabu.neuralnetworks.models.ed_decoders.speller.Speller" shape="rect" coords="912,168,1358,192"/>
 </map>
  </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a85b610c5c3cb79432182ba1e9b4359ff"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#a85b610c5c3cb79432182ba1e9b4359ff">__init__</a> (self, conf, trainlabels, outputs, name=None)</td></tr>
-<tr class="memdesc:a85b610c5c3cb79432182ba1e9b4359ff"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html" title="a general decoder for an encoder decoder system ">EDDecoder</a> constructor.  <a href="#a85b610c5c3cb79432182ba1e9b4359ff">More...</a><br /></td></tr>
-<tr class="separator:a85b610c5c3cb79432182ba1e9b4359ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77f29a15d47e04d0462382b1bf86c74d"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#a77f29a15d47e04d0462382b1bf86c74d">__init__</a> (self, conf, output_dims, constraint, name=None)</td></tr>
+<tr class="memdesc:a77f29a15d47e04d0462382b1bf86c74d"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html" title="a general decoder for an encoder decoder system ">EDDecoder</a> constructor.  <a href="#a77f29a15d47e04d0462382b1bf86c74d">More...</a><br /></td></tr>
+<tr class="separator:a77f29a15d47e04d0462382b1bf86c74d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c68c23641fa383309cd33da5e87024d"><td class="memItemLeft" align="right" valign="top"><a id="a4c68c23641fa383309cd33da5e87024d"></a>
 def&#160;</td><td class="memItemRight" valign="bottom"><b>__call__</b> (self, encoded, encoded_seq_length, targets, target_seq_length, is_training)</td></tr>
 <tr class="separator:a4c68c23641fa383309cd33da5e87024d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae1bf38c37f5e3999e0464c3151db038f"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#ae1bf38c37f5e3999e0464c3151db038f">step</a> (self, encoded, encoded_seq_length, targets, state, is_training)</td></tr>
-<tr class="memdesc:ae1bf38c37f5e3999e0464c3151db038f"><td class="mdescLeft">&#160;</td><td class="mdescRight">take a single decoding step  <a href="#ae1bf38c37f5e3999e0464c3151db038f">More...</a><br /></td></tr>
-<tr class="separator:ae1bf38c37f5e3999e0464c3151db038f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad63ca4fd37aef51ec8bf39b6b7605b3c"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#ad63ca4fd37aef51ec8bf39b6b7605b3c">zero_state</a> (self, encoded_dim, batch_size)</td></tr>
 <tr class="memdesc:ad63ca4fd37aef51ec8bf39b6b7605b3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the decoder zero state  <a href="#ad63ca4fd37aef51ec8bf39b6b7605b3c">More...</a><br /></td></tr>
 <tr class="separator:ad63ca4fd37aef51ec8bf39b6b7605b3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -104,9 +101,6 @@ def&#160;</td><td class="memItemRight" valign="bottom"><b>__call__</b> (self, en
 def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#a1894af6a716f3b74fb6d7e18486db57c">variables</a> (self)</td></tr>
 <tr class="memdesc:a1894af6a716f3b74fb6d7e18486db57c"><td class="mdescLeft">&#160;</td><td class="mdescRight">get a list of the models's variables <br /></td></tr>
 <tr class="separator:a1894af6a716f3b74fb6d7e18486db57c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af3b3969bb36940b0dd614ef4fd0531ac"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#af3b3969bb36940b0dd614ef4fd0531ac">get_output_dims</a> (self, trainlabels)</td></tr>
-<tr class="memdesc:af3b3969bb36940b0dd614ef4fd0531ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the decoder output dimensions  <a href="#af3b3969bb36940b0dd614ef4fd0531ac">More...</a><br /></td></tr>
-<tr class="separator:af3b3969bb36940b0dd614ef4fd0531ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -127,8 +121,8 @@ Public Attributes</h2></td></tr>
 <div class="textblock"><p>a general decoder for an encoder decoder system </p>
 <p>converts the high level features into output logits </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a85b610c5c3cb79432182ba1e9b4359ff"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a85b610c5c3cb79432182ba1e9b4359ff">&sect;&nbsp;</a></span>__init__()</h2>
+<a id="a77f29a15d47e04d0462382b1bf86c74d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77f29a15d47e04d0462382b1bf86c74d">&sect;&nbsp;</a></span>__init__()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -149,13 +143,13 @@ Public Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>trainlabels</em>, </td>
+          <td class="paramname"><em>output_dims</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>outputs</em>, </td>
+          <td class="paramname"><em>constraint</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -175,8 +169,9 @@ Public Attributes</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">conf</td><td>the decoder configuration as a ConfigParser </td></tr>
-    <tr><td class="paramname">trainlabels</td><td>the number of extra labels required by the trainer </td></tr>
-    <tr><td class="paramname">outputs</td><td>the name of the outputs of the model </td></tr>
+    <tr><td class="paramname">output_dims</td><td>a dictionary containing the output dimensions for each </td></tr>
+    <tr><td class="paramname">output</td><td></td></tr>
+    <tr><td class="paramname">constraint</td><td>the constraint for the variables </td></tr>
   </table>
   </dd>
 </dl>
@@ -184,103 +179,6 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="af3b3969bb36940b0dd614ef4fd0531ac"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af3b3969bb36940b0dd614ef4fd0531ac">&sect;&nbsp;</a></span>get_output_dims()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">def nabu.neuralnetworks.models.ed_decoders.ed_decoder.EDDecoder.get_output_dims </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>trainlabels</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>get the decoder output dimensions </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">trainlabels</td><td>the number of extra labels the trainer needs</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>a dictionary containing the output dimensions </dd></dl>
-
-</div>
-</div>
-<a id="ae1bf38c37f5e3999e0464c3151db038f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae1bf38c37f5e3999e0464c3151db038f">&sect;&nbsp;</a></span>step()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">def nabu.neuralnetworks.models.ed_decoders.ed_decoder.EDDecoder.step </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>encoded</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>encoded_seq_length</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>targets</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>state</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>is_training</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>take a single decoding step </p>
-<p>encoded the encoded inputs, this is a dictionary of [batch_size x time x ...] tensors encoded_seq_length the sequence lengths of the encoded inputs as a dictionary of [batch_size] vectors targets the targets decoded in the previous step as a dictionary of [batch_size] vectors state the state of the previous deocding step as a possibly nested tupple of [batch_size x ...] vectors is_training whether or not the network is in training mode.</p>
-<dl class="section return"><dt>Returns</dt><dd><ul>
-<li>the output logits of this decoding step as a dictionary of [batch_size x time x ...] tensors</li>
-<li>the updated state as a possibly nested tupple of [batch_size x ...] vectors </li>
-</ul>
-</dd></dl>
-
-</div>
-</div>
 <a id="ad63ca4fd37aef51ec8bf39b6b7605b3c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad63ca4fd37aef51ec8bf39b6b7605b3c">&sect;&nbsp;</a></span>zero_state()</h2>
 

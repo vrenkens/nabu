@@ -77,7 +77,8 @@ $(function() {
 <li>test_evaluator.cfg: This is the configuartion for the evaluator to be used at test time (see validation_evaluator.cfg)</li>
 <li>recognizer.cfg: The configuration for the recognizer to be used for decoding it contains similar fields as the evaluator configs.</li>
 </ul>
-<p>To create your own recipe, simply create a directory containing all of the mentioned configuation files. You can find template configuations in config/templates. </p>
+<p>To create your own recipe, simply create a directory containing all of the mentioned configuation files. You can find template configuations in config/templates.</p>
+<p>All the components in the recipe have default configurations. You can find these configurations in the directory where the component is implemented under the defaults directory. If a field is not defined in the configuration it will be filled in with the default value. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

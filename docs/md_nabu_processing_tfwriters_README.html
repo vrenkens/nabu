@@ -62,7 +62,7 @@ $(function() {
 <div class="title">TF Writers </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>A TensorFlow writer is used to write processed data to TFRecord files in the data preparation. To create a new writer you should inherit from the general TFWriter class defined in <a class="el" href="tfwriter_8py.html" title="contains the TfWriter class ">tfwriter.py</a> and overwrite the abstract methods. You should then add it to the factory method in tfwriter_factory.py and to the package in __init__.py. </p>
+<div class="textblock"><p>A TensorFlow writer is used to write processed data to TFRecord files in the data preparation. To create a new writer you should inherit from the general TFWriter class defined in <a class="el" href="tfwriter_8py.html" title="contains the TfWriter class ">tfwriter.py</a> and overwrite the abstract methods. You should then add it to the factory method in tfwriter_factory.py. It is also very helpful to create a default configuration in the defaults directory. The name of the file should be the name of the class in lower case with the .cfg extension. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

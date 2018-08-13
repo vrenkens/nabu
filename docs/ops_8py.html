@@ -77,78 +77,28 @@ Functions</h2></td></tr>
 <tr class="memitem:aa0526046773823364ea28b5ec2034677"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ops_8py.html#aa0526046773823364ea28b5ec2034677">nabu.neuralnetworks.components.ops.pyramid_stack</a> (inputs, sequence_lengths, numsteps, axis=2, scope=None)</td></tr>
 <tr class="memdesc:aa0526046773823364ea28b5ec2034677"><td class="mdescLeft">&#160;</td><td class="mdescRight">concatenate each two consecutive elements  <a href="ops_8py.html#aa0526046773823364ea28b5ec2034677">More...</a><br /></td></tr>
 <tr class="separator:aa0526046773823364ea28b5ec2034677"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab780fc09ee987701e0f2dcdfe7fd5862"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ops_8py.html#ab780fc09ee987701e0f2dcdfe7fd5862">nabu.neuralnetworks.components.ops.seq2nonseq</a> (sequential, sequence_lengths, name=None)</td></tr>
-<tr class="memdesc:ab780fc09ee987701e0f2dcdfe7fd5862"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert sequential data to non sequential data.  <a href="ops_8py.html#ab780fc09ee987701e0f2dcdfe7fd5862">More...</a><br /></td></tr>
-<tr class="separator:ab780fc09ee987701e0f2dcdfe7fd5862"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a812ed0784ea3e9094de59b1240c720"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ops_8py.html#a3a812ed0784ea3e9094de59b1240c720">nabu.neuralnetworks.components.ops.stack_seq</a> (sequential, sequence_lengths, name=None)</td></tr>
+<tr class="memdesc:a3a812ed0784ea3e9094de59b1240c720"><td class="mdescLeft">&#160;</td><td class="mdescRight">remove padding and stack sequences  <a href="ops_8py.html#a3a812ed0784ea3e9094de59b1240c720">More...</a><br /></td></tr>
+<tr class="separator:a3a812ed0784ea3e9094de59b1240c720"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbea8ae1db9af1c8501d7720d2c90ad3"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ops_8py.html#adbea8ae1db9af1c8501d7720d2c90ad3">nabu.neuralnetworks.components.ops.unstack_seq</a> (nonseq, sequence_lengths, name=None)</td></tr>
+<tr class="memdesc:adbea8ae1db9af1c8501d7720d2c90ad3"><td class="mdescLeft">&#160;</td><td class="mdescRight">unstack sequences and add padding  <a href="ops_8py.html#adbea8ae1db9af1c8501d7720d2c90ad3">More...</a><br /></td></tr>
+<tr class="separator:adbea8ae1db9af1c8501d7720d2c90ad3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2f3941f9c4455335eb5ae4ebcea4f4b8"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ops_8py.html#a2f3941f9c4455335eb5ae4ebcea4f4b8">nabu.neuralnetworks.components.ops.dense_sequence_to_sparse</a> (sequences, sequence_lengths)</td></tr>
 <tr class="memdesc:a2f3941f9c4455335eb5ae4ebcea4f4b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">convert sequence dense representations to sparse representations  <a href="ops_8py.html#a2f3941f9c4455335eb5ae4ebcea4f4b8">More...</a><br /></td></tr>
 <tr class="separator:a2f3941f9c4455335eb5ae4ebcea4f4b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a02b7ebcbbc5fb7579c15740f6c5ed3e7"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ops_8py.html#a02b7ebcbbc5fb7579c15740f6c5ed3e7">nabu.neuralnetworks.components.ops.cross_entropy_loss_eos</a> (targets, logits, logit_seq_length, target_seq_length)</td></tr>
-<tr class="memdesc:a02b7ebcbbc5fb7579c15740f6c5ed3e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the cross_entropy loss with an added end of sequence label.  <a href="ops_8py.html#a02b7ebcbbc5fb7579c15740f6c5ed3e7">More...</a><br /></td></tr>
-<tr class="separator:a02b7ebcbbc5fb7579c15740f6c5ed3e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a259e1c1f8aa0f0fb28d06e562cf4c07e"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ops_8py.html#a259e1c1f8aa0f0fb28d06e562cf4c07e">nabu.neuralnetworks.components.ops.get_indices</a> (sequence_length)</td></tr>
 <tr class="memdesc:a259e1c1f8aa0f0fb28d06e562cf4c07e"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the indices corresponding to sequences (and not padding)  <a href="ops_8py.html#a259e1c1f8aa0f0fb28d06e562cf4c07e">More...</a><br /></td></tr>
 <tr class="separator:a259e1c1f8aa0f0fb28d06e562cf4c07e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae835c0ed426deec384a6b1189344603c"><td class="memItemLeft" align="right" valign="top"><a id="ae835c0ed426deec384a6b1189344603c"></a>
-def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ops_8py.html#ae835c0ed426deec384a6b1189344603c">nabu.neuralnetworks.components.ops.mix</a> (inputs, hidden_dim, scope=None)</td></tr>
-<tr class="memdesc:ae835c0ed426deec384a6b1189344603c"><td class="mdescLeft">&#160;</td><td class="mdescRight">mix the layer in the time dimension <br /></td></tr>
-<tr class="separator:ae835c0ed426deec384a6b1189344603c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8bf6b06b5c1d6e69ad73f2101f2b478a"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ops_8py.html#a8bf6b06b5c1d6e69ad73f2101f2b478a">nabu.neuralnetworks.components.ops.pad_to</a> (tensor, length, axis=0, name=None)</td></tr>
+<tr class="memdesc:a8bf6b06b5c1d6e69ad73f2101f2b478a"><td class="mdescLeft">&#160;</td><td class="mdescRight">pad the tensor to a certain length  <a href="ops_8py.html#a8bf6b06b5c1d6e69ad73f2101f2b478a">More...</a><br /></td></tr>
+<tr class="separator:a8bf6b06b5c1d6e69ad73f2101f2b478a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71d8d0f12f6d57670eecfa88b2f8b41e"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ops_8py.html#a71d8d0f12f6d57670eecfa88b2f8b41e">nabu.neuralnetworks.components.ops.map_ta</a> (fn, ta)</td></tr>
+<tr class="memdesc:a71d8d0f12f6d57670eecfa88b2f8b41e"><td class="mdescLeft">&#160;</td><td class="mdescRight">apply fn to each element in tensorarray  <a href="ops_8py.html#a71d8d0f12f6d57670eecfa88b2f8b41e">More...</a><br /></td></tr>
+<tr class="separator:a71d8d0f12f6d57670eecfa88b2f8b41e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>some operations </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="file_a02b7ebcbbc5fb7579c15740f6c5ed3e7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a02b7ebcbbc5fb7579c15740f6c5ed3e7">&sect;&nbsp;</a></span>cross_entropy_loss_eos()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">def nabu.neuralnetworks.components.ops.cross_entropy_loss_eos </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>targets</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>logits</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>logit_seq_length</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>target_seq_length</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Compute the cross_entropy loss with an added end of sequence label. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">targets</td><td>a [batch_size x time] tensor containing the targets </td></tr>
-    <tr><td class="paramname">logits</td><td>a [batch_size x time x num_classes] tensor containing the logits </td></tr>
-    <tr><td class="paramname">logit_seq_length</td><td>a [batch_size] vector containing the logit sequence lengths </td></tr>
-    <tr><td class="paramname">target_seq_length</td><td>a [batch_size] vector containing the target sequence lengths</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>a scalar value containing the loss </dd></dl>
-
-</div>
-</div>
 <a id="file_a2f3941f9c4455335eb5ae4ebcea4f4b8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#file_a2f3941f9c4455335eb5ae4ebcea4f4b8">&sect;&nbsp;</a></span>dense_sequence_to_sparse()</h2>
 
@@ -214,6 +164,93 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ops_8
 
 </div>
 </div>
+<a id="file_a71d8d0f12f6d57670eecfa88b2f8b41e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a71d8d0f12f6d57670eecfa88b2f8b41e">&sect;&nbsp;</a></span>map_ta()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def nabu.neuralnetworks.components.ops.map_ta </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>fn</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>ta</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>apply fn to each element in tensorarray </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fn</td><td>the function to apply </td></tr>
+    <tr><td class="paramname">ta</td><td>the tensorarray</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>the resulting tensorarray </dd></dl>
+
+</div>
+</div>
+<a id="file_a8bf6b06b5c1d6e69ad73f2101f2b478a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a8bf6b06b5c1d6e69ad73f2101f2b478a">&sect;&nbsp;</a></span>pad_to()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def nabu.neuralnetworks.components.ops.pad_to </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>tensor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>axis</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>name</em> = <code>None</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>pad the tensor to a certain length </p>
+<ul>
+<li>tensor: the tensor to pad</li>
+<li>length: the length to pad to, has to be larger than tensor.shape[axis]</li>
+<li>axis: the axis to pad</li>
+<li>name: the name of the operation</li>
+</ul>
+<dl class="section return"><dt>Returns</dt><dd>the padded tensor </dd></dl>
+
+</div>
+</div>
 <a id="file_aa0526046773823364ea28b5ec2034677"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#file_aa0526046773823364ea28b5ec2034677">&sect;&nbsp;</a></span>pyramid_stack()</h2>
 
@@ -275,14 +312,14 @@ inputs Concatenated inputs <div class="fragment"><div class="line">           [b
 
 </div>
 </div>
-<a id="file_ab780fc09ee987701e0f2dcdfe7fd5862"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_ab780fc09ee987701e0f2dcdfe7fd5862">&sect;&nbsp;</a></span>seq2nonseq()</h2>
+<a id="file_a3a812ed0784ea3e9094de59b1240c720"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a3a812ed0784ea3e9094de59b1240c720">&sect;&nbsp;</a></span>stack_seq()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">def nabu.neuralnetworks.components.ops.seq2nonseq </td>
+          <td class="memname">def nabu.neuralnetworks.components.ops.stack_seq </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>sequential</em>, </td>
@@ -307,7 +344,7 @@ inputs Concatenated inputs <div class="fragment"><div class="line">           [b
       </table>
 </div><div class="memdoc">
 
-<p>Convert sequential data to non sequential data. </p>
+<p>remove padding and stack sequences </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">sequential</td><td>the sequential data which is a [batch_size, max_length, dim] </td></tr>
@@ -318,6 +355,51 @@ inputs Concatenated inputs <div class="fragment"><div class="line">           [b
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>non sequential data, which is a TxF tensor where T is the sum of all sequence lengths </dd></dl>
+
+</div>
+</div>
+<a id="file_adbea8ae1db9af1c8501d7720d2c90ad3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_adbea8ae1db9af1c8501d7720d2c90ad3">&sect;&nbsp;</a></span>unstack_seq()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def nabu.neuralnetworks.components.ops.unstack_seq </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>nonseq</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>sequence_lengths</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>name</em> = <code>None</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>unstack sequences and add padding </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">nonseq</td><td>the non sequential data which is a [sum(sequence_lengths) x dim] tensor </td></tr>
+    <tr><td class="paramname">sequence_lengths</td><td>a [batch_size] vector containing the sequence lengths </td></tr>
+    <tr><td class="paramname">name</td><td>[optional] the name of the operation</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>sequential data, which is a [batch_size, max_length, dim] tensor </dd></dl>
 
 </div>
 </div>

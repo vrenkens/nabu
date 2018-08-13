@@ -62,7 +62,7 @@ $(function() {
 <div class="title">Processors </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>A processor is used to process data in the data preperation script. For example, feature computation for audio or normalization for text. To create a new processor you should inherit from the general Processor class defined in <a class="el" href="processor_8py.html" title="contains the Processor class ">processor.py</a> and overwrite the abstract methods. You should then add it to the factory method in <a class="el" href="processor__factory_8py.html" title="contains the Processor factory method ">processor_factory.py</a> and to the package in __init__.py.</p>
+<div class="textblock"><p>A processor is used to process data in the data preperation script. For example, feature computation for audio or normalization for text. To create a new processor you should inherit from the general Processor class defined in <a class="el" href="processor_8py.html" title="contains the Processor class ">processor.py</a> and overwrite the abstract methods. You should then add it to the factory method in <a class="el" href="processor__factory_8py.html" title="contains the Processor factory method ">processor_factory.py</a>. It is also very helpful to create a default configuration in the defaults directory. The name of the file should be the name of the class in lower case with the .cfg extension.</p>
 <p>You can find more information about feature computers ../feature_computers/README.md "here" and target normalizers ../target_normalizers/README.md "here" </p>
 </div></div><!-- contents -->
 <!-- start footer part -->

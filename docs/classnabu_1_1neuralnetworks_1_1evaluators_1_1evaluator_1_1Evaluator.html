@@ -92,9 +92,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:afc148404b762bc8fbfcfdc60dfb0dc99"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1evaluators_1_1evaluator_1_1Evaluator.html#afc148404b762bc8fbfcfdc60dfb0dc99">evaluate</a> (self)</td></tr>
 <tr class="memdesc:afc148404b762bc8fbfcfdc60dfb0dc99"><td class="mdescLeft">&#160;</td><td class="mdescRight">evaluate the performance of the model  <a href="#afc148404b762bc8fbfcfdc60dfb0dc99">More...</a><br /></td></tr>
 <tr class="separator:afc148404b762bc8fbfcfdc60dfb0dc99"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a988907ea7e232b02b6aee198ef28888b"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1evaluators_1_1evaluator_1_1Evaluator.html#a988907ea7e232b02b6aee198ef28888b">compute_loss</a> (self, inputs, input_seq_length, targets, target_seq_length)</td></tr>
-<tr class="memdesc:a988907ea7e232b02b6aee198ef28888b"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the validation loss for a batch of data  <a href="#a988907ea7e232b02b6aee198ef28888b">More...</a><br /></td></tr>
-<tr class="separator:a988907ea7e232b02b6aee198ef28888b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac131dc34e2f3e807fa9f03a6caaa77f7"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1evaluators_1_1evaluator_1_1Evaluator.html#ac131dc34e2f3e807fa9f03a6caaa77f7">update_loss</a> (self, loss, inputs, input_seq_length, targets, target_seq_length)</td></tr>
+<tr class="memdesc:ac131dc34e2f3e807fa9f03a6caaa77f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">update the validation loss for a batch of data  <a href="#ac131dc34e2f3e807fa9f03a6caaa77f7">More...</a><br /></td></tr>
+<tr class="separator:ac131dc34e2f3e807fa9f03a6caaa77f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -166,17 +166,49 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a988907ea7e232b02b6aee198ef28888b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a988907ea7e232b02b6aee198ef28888b">&sect;&nbsp;</a></span>compute_loss()</h2>
+<a id="afc148404b762bc8fbfcfdc60dfb0dc99"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afc148404b762bc8fbfcfdc60dfb0dc99">&sect;&nbsp;</a></span>evaluate()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">def nabu.neuralnetworks.evaluators.evaluator.Evaluator.compute_loss </td>
+          <td class="memname">def nabu.neuralnetworks.evaluators.evaluator.Evaluator.evaluate </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>evaluate the performance of the model </p>
+<dl class="section return"><dt>Returns</dt><dd><ul>
+<li>the loss as a scalar tensor</li>
+<li>an operation to update the loss</li>
+<li>the number of batches in the validation set as an integer </li>
+</ul>
+</dd></dl>
+
+</div>
+</div>
+<a id="ac131dc34e2f3e807fa9f03a6caaa77f7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac131dc34e2f3e807fa9f03a6caaa77f7">&sect;&nbsp;</a></span>update_loss()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def nabu.neuralnetworks.evaluators.evaluator.Evaluator.update_loss </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>loss</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -210,9 +242,10 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>compute the validation loss for a batch of data </p>
+<p>update the validation loss for a batch of data </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramname">loss</td><td>the current loss </td></tr>
     <tr><td class="paramname">inputs</td><td>the inputs to the neural network, this is a list of [batch_size x ...] tensors </td></tr>
     <tr><td class="paramname">input_seq_length</td><td>The sequence lengths of the input utterances, this is a list of [batch_size] vectors </td></tr>
     <tr><td class="paramname">targets</td><td>the targets to the neural network, this is a list of [batch_size x max_output_length] tensors. </td></tr>
@@ -220,32 +253,7 @@ Public Attributes</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>the loss as a scala </dd></dl>
-
-</div>
-</div>
-<a id="afc148404b762bc8fbfcfdc60dfb0dc99"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afc148404b762bc8fbfcfdc60dfb0dc99">&sect;&nbsp;</a></span>evaluate()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">def nabu.neuralnetworks.evaluators.evaluator.Evaluator.evaluate </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>evaluate the performance of the model </p>
-<dl class="section return"><dt>Returns</dt><dd><ul>
-<li>the loss as a scalar tensor</li>
-<li>the number of batches in the validation set as an integer </li>
-</ul>
-</dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>an operation to update the loss </dd></dl>
 
 </div>
 </div>

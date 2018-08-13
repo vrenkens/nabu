@@ -282,3 +282,18 @@ to use.
 - create a configuration file for your class and put it in templates. You
 should then add this configuration file in whichever recipe you want to use it
 for or create your own recipe using your new class.
+
+## Example experiment
+
+As an example you can find the results for running the LAS/TIMIT recipe. The
+training loss in average cross entropy is plotted in the following image:
+
+![trainloss](images/trainloss.png)
+
+The performance on the validation set measured in character error rate is
+plotted in the folowing image (I don't know why the extra lines are there)
+
+![valid](images/valid.png)
+
+The error rate on the test set is 21.6% and training took just under 4 hours
+on a Nvidia GeForce GTX 1080 Ti.

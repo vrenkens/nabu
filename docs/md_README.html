@@ -64,6 +64,7 @@ $(function() {
 <div class="contents">
 <div class="textblock"><p>Please find the documentation page <a href="http://vrenkens.github.io/nabu">here</a></p>
 <p>Nabu is an ASR framework for end-to-end networks built on top of TensorFlow. Nabu's design focusses on adaptibility, making it easy for the designer to adjust everything from the model structure to the way it is trained.</p>
+<p>Last built with TensorFlow version: 1.8.0</p>
 <h2>Using Nabu</h2>
 <p>Nabu works in several stages: data prepation, training and finally testing and decoding. Each of these stages uses a recipe for a specific model and database. The recipe contains configuration files for the all components and defines all the necesary parameters for the database and the model. You can find more information on the components in a recipe <a class="el" href="md_config_recipes_README.html">here</a>.</p>
 <h3>Data preperation</h3>
@@ -71,7 +72,7 @@ $(function() {
 <p>You can run the data prepation with:</p>
 <div class="fragment"><div class="line">run data --recipe=/path/to/recipe --expdir=/path/to/expdir --computing=&lt;computing&gt;</div></div><!-- fragment --><ul>
 <li>recipe: points to the directory containing the recipe you want to prepare the data for.</li>
-<li>expdir: the path to a directory where you can write to. In this directory all files will be stored, like the configurations and logs</li>
+<li>expdir: the absolute path to a directory where you can write to. In this directory all files will be stored, like the configurations and logs</li>
 <li>computing [default: standard]: the distributed computing software you want to use. One of standard or condor. standard means that no distributed computing software is used and the job will run on the machine where nabu is called from. the condor option uses HTCondor. More information can be found <a class="el" href="md_nabu_computing_README.html">here</a>.</li>
 </ul>
 <h3>Training</h3>
@@ -104,7 +105,7 @@ $(function() {
 <p>The data preperation is database dependent. Kaldi has many scripts for data preperation and you should use them.</p>
 <h4>GMM-HMM training</h4>
 <p>You can train the GMM-HMM model as folows:</p>
-<div class="fragment"><div class="line">nabu/scipts/kaldi/train_gmm.sh &lt;datadir&gt; &lt;langdir&gt; &lt;langdir-test&gt;  &lt;traindir&gt; &lt;kaldi&gt;</div></div><!-- fragment --><p>With the folowing arguments:</p><ul>
+<div class="fragment"><div class="line">nabu/scripts/kaldi/train_gmm.sh &lt;datadir&gt; &lt;langdir&gt; &lt;langdir-test&gt;  &lt;traindir&gt; &lt;kaldi&gt;</div></div><!-- fragment --><p>With the folowing arguments:</p><ul>
 <li>datadir: the directory containing the training data (created in data prep)</li>
 <li>langdir: the directory containing the language model for training (created in data prep)</li>
 <li>langdir-test: the directory containg the language model that should be used for decoding (created in data prep)</li>
@@ -114,10 +115,10 @@ $(function() {
 <p>The script will compute the features, train the GMM-HMM models and align the training data, so you do not have to do this anymore in the coming step. The alignments for the training set can be found in &lt;traindir&gt;/pdfs.</p>
 <h4>Aligning the data</h4>
 <p>The training data has already been aligned in the previous step, but if you want to align e.g. the validation set you can do that as follows:</p>
-<div class="fragment"><div class="line">nabu/scipts/kaldi/align_data.sh &lt;datadir&gt; &lt;langdir&gt; &lt;traindir&gt; &lt;targetdir&gt; &lt;kaldi&gt;</div></div><!-- fragment --><p>the datadir should point to the data you want to align, the traindir should be the traindir you used in the previous step and the targetdir is the directory where the alignments will be written. The alignments can be found in &lt;targetdir&gt;/pdfs</p>
+<div class="fragment"><div class="line">nabu/scripts/kaldi/align_data.sh &lt;datadir&gt; &lt;langdir&gt; &lt;traindir&gt; &lt;targetdir&gt; &lt;kaldi&gt;</div></div><!-- fragment --><p>the datadir should point to the data you want to align, the traindir should be the traindir you used in the previous step and the targetdir is the directory where the alignments will be written. The alignments can be found in &lt;targetdir&gt;/pdfs</p>
 <h4>Computing the prior</h4>
 <p>The prior is needed to convert the pdf posteriors to pdf pseudo-likelihoods. The prior can be computed with:</p>
-<div class="fragment"><div class="line">nabu/scipts/kaldi/compute_prior.sh &lt;traindir&gt;</div></div><!-- fragment --><p>traindir should be the same as the traindir in the previous step. the prior can then be found in numpy format in &lt;traindir&gt;/prior.npy</p>
+<div class="fragment"><div class="line">nabu/scripts/kaldi/compute_prior.sh &lt;traindir&gt;</div></div><!-- fragment --><p>traindir should be the same as the traindir in the previous step. the prior can then be found in numpy format in &lt;traindir&gt;/prior.npy</p>
 <h4>Training the neural net</h4>
 <p>Training the neural network happens using the Nabu framework. In order to do this you should create a recipe for doing so (see the section on training). You can find an example recipe for this in config/recipes/DNN/WSJ. You can use this recipe, but you should still create the database.conf file based on the database.cfg file. In your database configuration you should create sections for the features which is the same as you would do for a normal Nabu neural network and sections for the alignments. The alignment sections should get the special type "alignments". A section should look something like this:</p>
 <div class="fragment"><div class="line">[trainalignments]</div><div class="line">type = alignment</div><div class="line">datafiles = &lt;traindir&gt;/pdfs</div><div class="line">dir = /path/to/dir</div><div class="line">processor_config = path/to/alignment_processor.cfg</div></div><!-- fragment --><p>dir is just the directory where the processed alignments will be written.</p>
@@ -126,16 +127,26 @@ $(function() {
 <p>To decode the using the trained system you should first compute the pseudo-likelihoods as folows:</p>
 <div class="fragment"><div class="line">run decode --expdir=&lt;expdir&gt; --recipe=&lt;recipe&gt; ...</div></div><!-- fragment --><p>The pseudo likelihoods can the be found in &lt;expdir&gt;/decode/decoded/alignments.</p>
 <p>You can then do the Kaldi decoding and scoring with:</p>
-<div class="fragment"><div class="line">nabu/scipts/kaldi/decode.sh &lt;datadir&gt; &lt;traindir&gt; &lt;expdir&gt;/decode/decoded/alignments/feats.scp &lt;outputs&gt; &lt;kaldi&gt;</div></div><!-- fragment --><p>The arguments are similar as the arguments in the script above. The outputs will be written to the &lt;outputs&gt; folder.</p>
+<div class="fragment"><div class="line">nabu/scripts/kaldi/decode.sh &lt;datadir&gt; &lt;traindir&gt; &lt;expdir&gt;/decode/decoded/alignments &lt;outputs&gt; &lt;kaldi&gt;</div></div><!-- fragment --><p>The arguments are similar as the arguments in the script above. The outputs will be written to the &lt;outputs&gt; folder.</p>
 <h2>Designing in Nabu</h2>
-<p>As mentioned in the beginning Nabu focusses on adaptibility. You can easily design new models, trainers etc. Most classes used in Nabu have a general class that defines an interface and common functionality for all children and a factory that is used to create the necessary class. Look into the respective README files to see how to implement a new class.</p>
+<p>As mentioned in the beginning Nabu focusses on adaptibility. Everything in the recipe can be modified (more information about recipes <a class="el" href="md_config_recipes_README.html">here</a>). Most classes used in Nabu have a general class that defines an interface and common functionality for all children and a factory that is used to create the necessary class. Look into the respective README files to see how to implement a new class.</p>
 <p>In general, if you want to add your own type of class (like a new model) you should follow these steps:</p><ul>
 <li>Create a file in the class directory</li>
 <li>Create your child class, let it inherit from the general class and overwrite the abstract methods</li>
 <li>Add your class to the factory method. In the factory method you give your class a name, this does not have to be the name of the class. You will use this name in the configuration file for your model so Nabu knows which class to use.</li>
 <li>Add your file to the package in __init__.py</li>
-<li>create a configuration file for your class and put it in templates. You should then add this configuration file in whichever recipe you want to use it for or create your own recipe using your new class. </li>
+<li>create a configuration file for your class and put it in templates. You should then add this configuration file in whichever recipe you want to use it for or create your own recipe using your new class.</li>
 </ul>
+<h2>Example experiment</h2>
+<p>As an example you can find the results for running the LAS/TIMIT recipe. The training loss in average cross entropy is plotted in the following image:</p>
+<div class="image">
+<img src="images/trainloss.png" alt="trainloss"/>
+</div>
+<p>The performance on the validation set measured in character error rate is plotted in the folowing image (I don't know why the extra lines are there)</p>
+<div class="image">
+<img src="images/valid.png" alt="valid"/>
+</div>
+<p>The error rate on the test set is 21.6% and training took just under 4 hours on a Nvidia GeForce GTX 1080 Ti. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

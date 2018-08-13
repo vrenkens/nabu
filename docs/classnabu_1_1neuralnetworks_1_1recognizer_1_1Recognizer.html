@@ -84,9 +84,9 @@ Inheritance diagram for nabu.neuralnetworks.recognizer.Recognizer:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ae7bacccc1e8dc2eea0fa029e6dbef6d1"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1recognizer_1_1Recognizer.html#ae7bacccc1e8dc2eea0fa029e6dbef6d1">__init__</a> (self, conf, dataconf, expdir)</td></tr>
-<tr class="memdesc:ae7bacccc1e8dc2eea0fa029e6dbef6d1"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classnabu_1_1neuralnetworks_1_1recognizer_1_1Recognizer.html" title="a Recognizer can use a model to produce decode ">Recognizer</a> constructor.  <a href="#ae7bacccc1e8dc2eea0fa029e6dbef6d1">More...</a><br /></td></tr>
-<tr class="separator:ae7bacccc1e8dc2eea0fa029e6dbef6d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aefc5adf4898ab20af3e1139315875af6"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1recognizer_1_1Recognizer.html#aefc5adf4898ab20af3e1139315875af6">__init__</a> (self, model, conf, dataconf, expdir)</td></tr>
+<tr class="memdesc:aefc5adf4898ab20af3e1139315875af6"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classnabu_1_1neuralnetworks_1_1recognizer_1_1Recognizer.html" title="a Recognizer can use a model to produce decode ">Recognizer</a> constructor.  <a href="#aefc5adf4898ab20af3e1139315875af6">More...</a><br /></td></tr>
+<tr class="separator:aefc5adf4898ab20af3e1139315875af6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab95ac6d35a714605fdad9622991e9bc0"><td class="memItemLeft" align="right" valign="top"><a id="ab95ac6d35a714605fdad9622991e9bc0"></a>
 def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1recognizer_1_1Recognizer.html#ab95ac6d35a714605fdad9622991e9bc0">recognize</a> (self)</td></tr>
 <tr class="memdesc:ab95ac6d35a714605fdad9622991e9bc0"><td class="mdescLeft">&#160;</td><td class="mdescRight">perform the recognition <br /></td></tr>
@@ -124,13 +124,19 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a7956e4fa37c2c389e535ea48f55e7504"><td class="memItemLeft" align="right" valign="top"><a id="a7956e4fa37c2c389e535ea48f55e7504"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>decoded</b></td></tr>
 <tr class="separator:a7956e4fa37c2c389e535ea48f55e7504"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1f6c24dcd83684c6933d0c84ef5de1e"><td class="memItemLeft" align="right" valign="top"><a id="ac1f6c24dcd83684c6933d0c84ef5de1e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>eval_summary</b></td></tr>
+<tr class="separator:ac1f6c24dcd83684c6933d0c84ef5de1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa16afc21da4fabadb363ea464fc50a1f"><td class="memItemLeft" align="right" valign="top"><a id="aa16afc21da4fabadb363ea464fc50a1f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>variable_summary</b></td></tr>
+<tr class="separator:aa16afc21da4fabadb363ea464fc50a1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>a <a class="el" href="classnabu_1_1neuralnetworks_1_1recognizer_1_1Recognizer.html" title="a Recognizer can use a model to produce decode ">Recognizer</a> can use a model to produce decode </p>
 <p>stores the results on disk </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="ae7bacccc1e8dc2eea0fa029e6dbef6d1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae7bacccc1e8dc2eea0fa029e6dbef6d1">&sect;&nbsp;</a></span>__init__()</h2>
+<a id="aefc5adf4898ab20af3e1139315875af6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aefc5adf4898ab20af3e1139315875af6">&sect;&nbsp;</a></span>__init__()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -140,6 +146,12 @@ Public Attributes</h2></td></tr>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>model</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -170,6 +182,7 @@ Public Attributes</h2></td></tr>
 <p><a class="el" href="classnabu_1_1neuralnetworks_1_1recognizer_1_1Recognizer.html" title="a Recognizer can use a model to produce decode ">Recognizer</a> constructor. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramname">model</td><td>the model to be tested </td></tr>
     <tr><td class="paramname">conf</td><td>the recognizer configuration as a configparser </td></tr>
     <tr><td class="paramname">modelconf</td><td>the model configuration as a configparser </td></tr>
     <tr><td class="paramname">dataconf</td><td>the database configuration as a configparser </td></tr>

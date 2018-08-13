@@ -70,7 +70,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>a decoder that is used to detect phonological features  
+<p>a speller decoder for the LAS architecture  
  <a href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1rnn__decoder_1_1RNNDecoder.html#details">More...</a></p>
 <div class="dynheader">
 Inheritance diagram for nabu.neuralnetworks.models.ed_decoders.rnn_decoder.RNNDecoder:</div>
@@ -79,30 +79,29 @@ Inheritance diagram for nabu.neuralnetworks.models.ed_decoders.rnn_decoder.RNNDe
   <img src="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1rnn__decoder_1_1RNNDecoder.png" usemap="#nabu.neuralnetworks.models.ed_5Fdecoders.rnn_5Fdecoder.RNNDecoder_map" alt=""/>
   <map id="nabu.neuralnetworks.models.ed_5Fdecoders.rnn_5Fdecoder.RNNDecoder_map" name="nabu.neuralnetworks.models.ed_decoders.rnn_decoder.RNNDecoder_map">
 <area href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html" title="a general decoder for an encoder decoder system " alt="nabu.neuralnetworks.models.ed_decoders.ed_decoder.EDDecoder" shape="rect" coords="0,56,407,80"/>
+<area href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1speller_1_1Speller.html" title="a speller decoder for the LAS architecture " alt="nabu.neuralnetworks.models.ed_decoders.speller.Speller" shape="rect" coords="0,168,407,192"/>
 </map>
  </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a02cb152679655e559c1f3446d2e8695b"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1rnn__decoder_1_1RNNDecoder.html#a02cb152679655e559c1f3446d2e8695b">create_cell</a> (self)</td></tr>
-<tr class="memdesc:a02cb152679655e559c1f3446d2e8695b"><td class="mdescLeft">&#160;</td><td class="mdescRight">create the rnn cell  <a href="#a02cb152679655e559c1f3446d2e8695b">More...</a><br /></td></tr>
-<tr class="separator:a02cb152679655e559c1f3446d2e8695b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea65ba7eb48016f149a0a411fc68a488"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1rnn__decoder_1_1RNNDecoder.html#aea65ba7eb48016f149a0a411fc68a488">create_cell</a> (self, encoded, encoded_seq_length, is_training)</td></tr>
+<tr class="memdesc:aea65ba7eb48016f149a0a411fc68a488"><td class="mdescLeft">&#160;</td><td class="mdescRight">create the rnn cell  <a href="#aea65ba7eb48016f149a0a411fc68a488">More...</a><br /></td></tr>
+<tr class="separator:aea65ba7eb48016f149a0a411fc68a488"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf99d09c6385b3a9694ccf772dcb388f"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1rnn__decoder_1_1RNNDecoder.html#acf99d09c6385b3a9694ccf772dcb388f">zero_state</a> (self, encoded_dim, batch_size)</td></tr>
 <tr class="memdesc:acf99d09c6385b3a9694ccf772dcb388f"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the decoder zero state  <a href="#acf99d09c6385b3a9694ccf772dcb388f">More...</a><br /></td></tr>
 <tr class="separator:acf99d09c6385b3a9694ccf772dcb388f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abffd54f2c296eb6ca928f6dc8986d820"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1rnn__decoder_1_1RNNDecoder.html#abffd54f2c296eb6ca928f6dc8986d820">get_output_dims</a> (self, trainlabels)</td></tr>
-<tr class="memdesc:abffd54f2c296eb6ca928f6dc8986d820"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the decoder output dimensions  <a href="#abffd54f2c296eb6ca928f6dc8986d820">More...</a><br /></td></tr>
-<tr class="separator:abffd54f2c296eb6ca928f6dc8986d820"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e0e46bba474884fc6a88b84f2123650"><td class="memItemLeft" align="right" valign="top"><a id="a7e0e46bba474884fc6a88b84f2123650"></a>
+def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1rnn__decoder_1_1RNNDecoder.html#a7e0e46bba474884fc6a88b84f2123650">__getstate__</a> (self)</td></tr>
+<tr class="memdesc:a7e0e46bba474884fc6a88b84f2123650"><td class="mdescLeft">&#160;</td><td class="mdescRight">getstate <br /></td></tr>
+<tr class="separator:a7e0e46bba474884fc6a88b84f2123650"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html">nabu.neuralnetworks.models.ed_decoders.ed_decoder.EDDecoder</a></td></tr>
-<tr class="memitem:a85b610c5c3cb79432182ba1e9b4359ff inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#a85b610c5c3cb79432182ba1e9b4359ff">__init__</a> (self, conf, trainlabels, outputs, name=None)</td></tr>
-<tr class="memdesc:a85b610c5c3cb79432182ba1e9b4359ff inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html" title="a general decoder for an encoder decoder system ">EDDecoder</a> constructor.  <a href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#a85b610c5c3cb79432182ba1e9b4359ff">More...</a><br /></td></tr>
-<tr class="separator:a85b610c5c3cb79432182ba1e9b4359ff inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77f29a15d47e04d0462382b1bf86c74d inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#a77f29a15d47e04d0462382b1bf86c74d">__init__</a> (self, conf, output_dims, constraint, name=None)</td></tr>
+<tr class="memdesc:a77f29a15d47e04d0462382b1bf86c74d inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html" title="a general decoder for an encoder decoder system ">EDDecoder</a> constructor.  <a href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#a77f29a15d47e04d0462382b1bf86c74d">More...</a><br /></td></tr>
+<tr class="separator:a77f29a15d47e04d0462382b1bf86c74d inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c68c23641fa383309cd33da5e87024d inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="memItemLeft" align="right" valign="top"><a id="a4c68c23641fa383309cd33da5e87024d"></a>
 def&#160;</td><td class="memItemRight" valign="bottom"><b>__call__</b> (self, encoded, encoded_seq_length, targets, target_seq_length, is_training)</td></tr>
 <tr class="separator:a4c68c23641fa383309cd33da5e87024d inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae1bf38c37f5e3999e0464c3151db038f inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#ae1bf38c37f5e3999e0464c3151db038f">step</a> (self, encoded, encoded_seq_length, targets, state, is_training)</td></tr>
-<tr class="memdesc:ae1bf38c37f5e3999e0464c3151db038f inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="mdescLeft">&#160;</td><td class="mdescRight">take a single decoding step  <a href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#ae1bf38c37f5e3999e0464c3151db038f">More...</a><br /></td></tr>
-<tr class="separator:ae1bf38c37f5e3999e0464c3151db038f inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad63ca4fd37aef51ec8bf39b6b7605b3c inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#ad63ca4fd37aef51ec8bf39b6b7605b3c">zero_state</a> (self, encoded_dim, batch_size)</td></tr>
 <tr class="memdesc:ad63ca4fd37aef51ec8bf39b6b7605b3c inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the decoder zero state  <a href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#ad63ca4fd37aef51ec8bf39b6b7605b3c">More...</a><br /></td></tr>
 <tr class="separator:ad63ca4fd37aef51ec8bf39b6b7605b3c inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -110,9 +109,6 @@ def&#160;</td><td class="memItemRight" valign="bottom"><b>__call__</b> (self, en
 def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#a1894af6a716f3b74fb6d7e18486db57c">variables</a> (self)</td></tr>
 <tr class="memdesc:a1894af6a716f3b74fb6d7e18486db57c inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="mdescLeft">&#160;</td><td class="mdescRight">get a list of the models's variables <br /></td></tr>
 <tr class="separator:a1894af6a716f3b74fb6d7e18486db57c inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af3b3969bb36940b0dd614ef4fd0531ac inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#af3b3969bb36940b0dd614ef4fd0531ac">get_output_dims</a> (self, trainlabels)</td></tr>
-<tr class="memdesc:af3b3969bb36940b0dd614ef4fd0531ac inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the decoder output dimensions  <a href="classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder.html#af3b3969bb36940b0dd614ef4fd0531ac">More...</a><br /></td></tr>
-<tr class="separator:af3b3969bb36940b0dd614ef4fd0531ac inherit pub_methods_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -131,10 +127,10 @@ Additional Inherited Members</h2></td></tr>
 <tr class="separator:a45bbefef13ade8d793c1ceda5ac6e68a inherit pub_attribs_classnabu_1_1neuralnetworks_1_1models_1_1ed__decoders_1_1ed__decoder_1_1EDDecoder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>a decoder that is used to detect phonological features </p>
+<div class="textblock"><p>a speller decoder for the LAS architecture </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a02cb152679655e559c1f3446d2e8695b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a02cb152679655e559c1f3446d2e8695b">&sect;&nbsp;</a></span>create_cell()</h2>
+<a id="aea65ba7eb48016f149a0a411fc68a488"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea65ba7eb48016f149a0a411fc68a488">&sect;&nbsp;</a></span>create_cell()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -143,8 +139,30 @@ Additional Inherited Members</h2></td></tr>
           <td class="memname">def nabu.neuralnetworks.models.ed_decoders.rnn_decoder.RNNDecoder.create_cell </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em></td><td>)</td>
+          <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>encoded</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>encoded_seq_length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>is_training</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -160,43 +178,6 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>an RNNCell object </dd></dl>
-
-</div>
-</div>
-<a id="abffd54f2c296eb6ca928f6dc8986d820"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abffd54f2c296eb6ca928f6dc8986d820">&sect;&nbsp;</a></span>get_output_dims()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">def nabu.neuralnetworks.models.ed_decoders.rnn_decoder.RNNDecoder.get_output_dims </td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>self</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>trainlabels</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>get the decoder output dimensions </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">trainlabels</td><td>the number of extra labels the trainer needs</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>a dictionary containing the output dimensions </dd></dl>
 
 </div>
 </div>
@@ -235,7 +216,7 @@ Additional Inherited Members</h2></td></tr>
 <p>get the decoder zero state </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">encoded_dim</td><td>the dimension of the encoded sequence as a list of </td></tr>
+    <tr><td class="paramname">encoded_dim</td><td>the dimension of the encoded dict of </td></tr>
     <tr><td class="paramname">integers</td><td></td></tr>
     <tr><td class="paramname">batch</td><td>the batch size as a scalar Tensor</td></tr>
   </table>
@@ -246,7 +227,7 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>rnn_decoder.py</li>
+<li><a class="el" href="rnn__decoder_8py.html">rnn_decoder.py</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

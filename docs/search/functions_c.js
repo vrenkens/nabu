@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['logpowspec',['logpowspec',['../sigproc_8py.html#afd85100b52c3b0dbe461f8e0f700794a',1,'nabu::processing::feature_computers::sigproc']]]
+  ['logpowspec',['logpowspec',['../sigproc_8py.html#a0c89f348bedbe8eb7c9c48fc13be1ef1',1,'nabu::processing::processors::feature_computers::sigproc']]]
 ];

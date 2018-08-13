@@ -62,7 +62,7 @@ $(function() {
 <div class="title">Evaluators </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>An evaluator is used to evaluate the performance of the model during training or at test time. To create a new evaluator you should inherit from the general Evaluator class defined in <a class="el" href="evaluator_8py.html" title="contains the Evaluator class ">evaluator.py</a> and overwrite all the abstract methods. Afterwards you should add it to the factory method in <a class="el" href="evaluator__factory_8py.html" title="contains the Evaluator factory ">evaluator_factory.py</a> and to the package in __init__.py.</p>
+<div class="textblock"><p>An evaluator is used to evaluate the performance of the model during training or at test time. To create a new evaluator you should inherit from the general Evaluator class defined in <a class="el" href="evaluator_8py.html" title="contains the Evaluator class ">evaluator.py</a> and overwrite all the abstract methods. Afterwards you should add it to the factory method in <a class="el" href="evaluator__factory_8py.html" title="contains the Evaluator factory ">evaluator_factory.py</a>. It is also very helpful to create a default configuration in the defaults directory. The name of the file should be the name of the class in lower case with the .cfg extension.</p>
 <p>The decoder_evaluator will use a decoder to decode the validation set and compare the results with the ground truth. You can find more information about decoders ../decoders/README.md "here". </p>
 </div></div><!-- contents -->
 <!-- start footer part -->

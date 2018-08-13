@@ -62,7 +62,7 @@ $(function() {
 <div class="title">Trainers </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>A trainer is used to update the model parameters to minimize some loss function. To create a new trainer you should inherit from the general Trainer class defined in <a class="el" href="trainer_8py.html" title="neural network trainer environment ">trainer.py</a> and overwrite the abstract methods. Afterwards yo should add the trainer to the factory method in <a class="el" href="trainer__factory_8py.html" title="contains the Trainer factory mehod ">trainer_factory.py</a> and the package in __init__.py </p>
+<div class="textblock"><p>A trainer is used to update the model parameters to minimize some loss function. To create a new trainer you should inherit from the general Trainer class defined in <a class="el" href="trainer_8py.html" title="neural network trainer environment ">trainer.py</a> and overwrite the abstract methods. Afterwards yo should add the trainer to the factory method in <a class="el" href="trainer__factory_8py.html" title="contains the Trainer factory mehod ">trainer_factory.py</a>. It is also very helpful to create a default configuration in the defaults directory. The name of the file should be the name of the class in lower case with the .cfg extension. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

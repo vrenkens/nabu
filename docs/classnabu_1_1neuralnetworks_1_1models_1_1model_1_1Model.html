@@ -84,9 +84,9 @@ Inheritance diagram for nabu.neuralnetworks.models.model.Model:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:af2ba179a35ca20bb299e187ebd394309"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1model_1_1Model.html#af2ba179a35ca20bb299e187ebd394309">__init__</a> (self, conf, trainlabels)</td></tr>
-<tr class="memdesc:af2ba179a35ca20bb299e187ebd394309"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1model_1_1Model.html" title="a general class for an encoder decoder system ">Model</a> constructor.  <a href="#af2ba179a35ca20bb299e187ebd394309">More...</a><br /></td></tr>
-<tr class="separator:af2ba179a35ca20bb299e187ebd394309"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a09e46f8c99f13525c31098a9e5abc55e"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1model_1_1Model.html#a09e46f8c99f13525c31098a9e5abc55e">__init__</a> (self, conf, trainlabels, constraint)</td></tr>
+<tr class="memdesc:a09e46f8c99f13525c31098a9e5abc55e"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1model_1_1Model.html" title="a general class for an encoder decoder system ">Model</a> constructor.  <a href="#a09e46f8c99f13525c31098a9e5abc55e">More...</a><br /></td></tr>
+<tr class="separator:a09e46f8c99f13525c31098a9e5abc55e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae5a09668337da15eb33f8d3120f164a9"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1model_1_1Model.html#ae5a09668337da15eb33f8d3120f164a9">__call__</a> (self, inputs, input_seq_length, targets, target_seq_length, is_training)</td></tr>
 <tr class="memdesc:ae5a09668337da15eb33f8d3120f164a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add the neural net variables and operations to the graph.  <a href="#ae5a09668337da15eb33f8d3120f164a9">More...</a><br /></td></tr>
 <tr class="separator:ae5a09668337da15eb33f8d3120f164a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -94,10 +94,6 @@ Public Member Functions</h2></td></tr>
 def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1model_1_1Model.html#a74bcb6ff6d27ccf8980d63d34ccc92a1">variables</a> (self)</td></tr>
 <tr class="memdesc:a74bcb6ff6d27ccf8980d63d34ccc92a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">get a list of the models's variables <br /></td></tr>
 <tr class="separator:a74bcb6ff6d27ccf8980d63d34ccc92a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aba9348a6359df6b372e35faa024779fa"><td class="memItemLeft" align="right" valign="top"><a id="aba9348a6359df6b372e35faa024779fa"></a>
-def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnabu_1_1neuralnetworks_1_1models_1_1model_1_1Model.html#aba9348a6359df6b372e35faa024779fa">output_dims</a> (self)</td></tr>
-<tr class="memdesc:aba9348a6359df6b372e35faa024779fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the model output dimensions <br /></td></tr>
-<tr class="separator:aba9348a6359df6b372e35faa024779fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -110,6 +106,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a57bcc5b0fe6fc50233efde6750cbf674"><td class="memItemLeft" align="right" valign="top"><a id="a57bcc5b0fe6fc50233efde6750cbf674"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>output_names</b></td></tr>
 <tr class="separator:a57bcc5b0fe6fc50233efde6750cbf674"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17b8c89bf6f0a619f37fe86f0f77253e"><td class="memItemLeft" align="right" valign="top"><a id="a17b8c89bf6f0a619f37fe86f0f77253e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>output_dims</b></td></tr>
+<tr class="separator:a17b8c89bf6f0a619f37fe86f0f77253e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acbb571ec2af88efc3cf2464a3052fffc"><td class="memItemLeft" align="right" valign="top"><a id="acbb571ec2af88efc3cf2464a3052fffc"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>encoder</b></td></tr>
 <tr class="separator:acbb571ec2af88efc3cf2464a3052fffc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -120,8 +119,8 @@ Public Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>a general class for an encoder decoder system </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="af2ba179a35ca20bb299e187ebd394309"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af2ba179a35ca20bb299e187ebd394309">&sect;&nbsp;</a></span>__init__()</h2>
+<a id="a09e46f8c99f13525c31098a9e5abc55e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a09e46f8c99f13525c31098a9e5abc55e">&sect;&nbsp;</a></span>__init__()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -142,7 +141,13 @@ Public Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>trainlabels</em>&#160;</td>
+          <td class="paramname"><em>trainlabels</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>constraint</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -157,6 +162,7 @@ Public Attributes</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">conf</td><td>The model configuration as a configparser object </td></tr>
     <tr><td class="paramname">trainlabels</td><td>the number of extra labels required by the trainer </td></tr>
+    <tr><td class="paramname">constraint</td><td>a constraint for the model paramaters </td></tr>
   </table>
   </dd>
 </dl>
