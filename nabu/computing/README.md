@@ -15,9 +15,9 @@ computation and submits gradients back to the parameter server to update the
 parameters. Multiple workers can work in parallel. A worker job normally runs
 on a GPU.
 
-## Standart
+## Standard
 
-The standart computing modes do not use a distributed comuting system (Like
+The standard computing modes do not use a distributed comuting system (Like
 HTCondor or Kubernetes) but rely on the user to determine on what machines they
 want to run the scripts.
 
