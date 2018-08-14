@@ -17,8 +17,8 @@ tf.app.flags.DEFINE_string('expdir', None,
 tf.app.flags.DEFINE_string('recipe', None,
                            'The directory containing the recipe'
                           )
-tf.app.flags.DEFINE_string('computing', 'standart',
-                           'the distributed computing system one of standart or'
+tf.app.flags.DEFINE_string('computing', 'standard',
+                           'the distributed computing system one of standard or'
                            ' condor'
                           )
 
@@ -78,7 +78,7 @@ def main(_):
                          'nabu/computing/condor/non_distributed.job'])
 
 
-    elif FLAGS.computing == 'standart':
+    elif FLAGS.computing == 'standard':
         decode(expdir=os.path.join(FLAGS.expdir, 'decode'))
 
     else:
