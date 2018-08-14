@@ -57,6 +57,8 @@ def train(clusterfile,
     #parameter server
     if job_name == 'ps':
 
+        print 'starting parameter server'
+
         #create the parameter server
         ps = trainer.ParameterServer(
             conf=trainer_cfg,
@@ -67,6 +69,9 @@ def train(clusterfile,
 
         #let the ps wait untill all workers are finished
         ps.join()
+
+        print 'parameter server stopped'
+
         return
 
     #create the trainer

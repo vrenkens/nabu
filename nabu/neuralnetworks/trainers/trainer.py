@@ -843,6 +843,9 @@ class ParameterServer(object):
         self.server = server
         self.task_index = task_index
 
+        #read the config
+        conf = dict(conf.items('trainer'))
+
         #distributed training
         cluster = tf.train.ClusterSpec(server.server_def.cluster)
         num_replicas = len(cluster.as_dict()['worker'])
@@ -852,24 +855,33 @@ class ParameterServer(object):
             #the chief parameter server should create the data queue
             if task_index == 0:
                 #get the database configurations
-                inputs = modelconf.get('io', 'inputs').split(' ')
-                if inputs == ['']:
-                    inputs = []
-                input_sections = [conf[i] for i in inputs]
+                input_names = modelconf.get('io', 'inputs').split(' ')
+                if input_names == ['']:
+                    input_names = []
+                input_sections = [conf[i].split(' ') for i in input_names]
                 input_dataconfs = []
-                for section in input_sections:
-                    input_dataconfs.append(dict(dataconf.items(section)))
-                outputs = modelconf.get('io', 'outputs').split(' ')
-                if outputs == ['']:
-                    outputs = []
-                target_sections = [conf[o] for o in outputs]
-                target_dataconfs = []
-                for section in target_sections:
-                    target_dataconfs.append(dict(dataconf.items(section)))
+                for sectionset in input_sections:
+                    input_dataconfs.append([])
+                    for section in sectionset:
+                        input_dataconfs[-1].append(
+                            dict(dataconf.items(section)))
 
+                output_names = conf['targets'].split(' ')
+                if output_names == ['']:
+                    output_names = []
+                target_sections = [conf[o].split(' ') for o in output_names]
+                target_dataconfs = []
+                for sectionset in target_sections:
+                    target_dataconfs.append([])
+                    for section in sectionset:
+                        target_dataconfs[-1].append(
+                            dict(dataconf.items(section)))
+
+                #get the filenames
                 data_queue_elements, _ = input_pipeline.get_filenames(
                     input_dataconfs + target_dataconfs)
 
+                #create the data queue and queue runners
                 tf.train.string_input_producer(
                     string_tensor=data_queue_elements,
                     shuffle=True,
