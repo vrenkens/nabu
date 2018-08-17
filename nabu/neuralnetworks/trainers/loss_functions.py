@@ -16,7 +16,7 @@ def factory(loss_function):
 
     if loss_function == 'sum_cross_entropy':
         return sum_cross_entropy
-    if loss_function == 'average_cross_entropy':
+    elif loss_function == 'average_cross_entropy':
         return average_cross_entropy
     elif loss_function == 'CTC':
         return CTC
